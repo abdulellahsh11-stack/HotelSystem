@@ -18,8 +18,7 @@ DATA_DIR = os.path.join(APP_DIR, "data")
 LOG_DIR  = os.path.join(APP_DIR, "logs")
 for d in [DATA_DIR, LOG_DIR]: os.makedirs(d, exist_ok=True)
 
-PORT = 5050
-
+PORT = int(os.environ.get("PORT", 5050))
 logging.basicConfig(
     filename=os.path.join(LOG_DIR, f"system_{date.today()}.log"),
     level=logging.INFO,
@@ -3017,14 +3016,12 @@ async function delRec(i){S.settings.recipients.splice(i,1);await api('/api/setti
 </body>
 </html>"""
 def start_server():
-    server = HTTPServer(("127.0.0.1", PORT), Handler)
+    server = HTTPServer(("0.0.0.0", PORT), Handler)
     logging.info(f"Server started on port {PORT}")
     server.serve_forever()
 
 def open_browser():
-    time.sleep(1.5)
-    webbrowser.open(f"http://127.0.0.1:{PORT}")
-
+    pass
 if __name__ == "__main__":
     print("=" * 55)
     print("  نظام إدارة الفندق والشقق المخدومة — v2.0")
