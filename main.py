@@ -18,7 +18,8 @@ DATA_DIR = os.path.join(APP_DIR, "data")
 LOG_DIR  = os.path.join(APP_DIR, "logs")
 for d in [DATA_DIR, LOG_DIR]: os.makedirs(d, exist_ok=True)
 
-PORT = int(os.environ.get("PORT", 5050))
+PORT = 5050
+
 logging.basicConfig(
     filename=os.path.join(LOG_DIR, f"system_{date.today()}.log"),
     level=logging.INFO,
@@ -1325,6 +1326,7 @@ html,body{height:100%;overflow:hidden;}
 
   <div class="sb-sec">النظام</div>
   <div class="ni" onclick="go('subscriptions')"><span class="ni-ic">💎</span>الاشتراكات</div>
+  <div class="ni" onclick="go('support')"><span class="ni-ic">🎫</span>الدعم الفني<span class="ni-b" id="sup-tix-badge" style="display:none">!</span></div>
   <div class="ni" onclick="go('reports')"><span class="ni-ic">📄</span>التقرير اليومي</div>
   <div class="ni" onclick="go('backup')"><span class="ni-ic">💾</span>نسخ احتياطي</div>
   <div class="ni" onclick="go('cfg')"><span class="ni-ic">⚙️</span>الإعدادات</div>
@@ -1966,6 +1968,51 @@ html,body{height:100%;overflow:hidden;}
     </div>
 
     <!-- ══════ BACKUP ══════ -->
+    <!-- ══════ SUPPORT TICKETS ══════ -->
+    <div class="pg" id="pg-support">
+      <div class="kg3" style="margin-bottom:12px">
+        <div class="gmc gmc-blue" style="padding:14px"><span class="gm-icon" style="font-size:18px;margin-bottom:6px">🎫</span><div class="gm-val" id="tix-open-cnt" style="font-size:20px">0</div><div class="gm-lbl">تذاكر مفتوحة</div></div>
+        <div class="gmc gmc-orange" style="padding:14px"><span class="gm-icon" style="font-size:18px;margin-bottom:6px">💬</span><div class="gm-val" id="tix-replied-cnt" style="font-size:20px">0</div><div class="gm-lbl">في انتظار ردك</div></div>
+        <div class="gmc gmc-green" style="padding:14px"><span class="gm-icon" style="font-size:18px;margin-bottom:6px">✅</span><div class="gm-val" id="tix-closed-cnt" style="font-size:20px">0</div><div class="gm-lbl">مغلقة</div></div>
+      </div>
+      <div class="card cb">
+        <div class="ch"><div class="ch-l"><div class="cico" style="background:var(--pl);color:var(--p)">🎫</div>فتح تذكرة دعم جديدة</div></div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:10px">يصلنا طلبك مباشرة ونرد عليك في أقرب وقت</div>
+        <div class="g2">
+          <div class="fg"><label>موضوع التذكرة *</label><input id="tix-title" placeholder="مثال: مشكلة في تسجيل النزيل..."/></div>
+          <div class="fg"><label>الفئة</label>
+            <select id="tix-cat">
+              <option value="support">🔧 دعم فني</option>
+              <option value="billing">💳 فواتير واشتراكات</option>
+              <option value="feature">💡 طلب ميزة جديدة</option>
+              <option value="bug">🐞 إبلاغ عن خطأ</option>
+              <option value="other">📋 أخرى</option>
+            </select>
+          </div>
+          <div class="fg"><label>الأولوية</label>
+            <select id="tix-priority">
+              <option value="low">منخفضة</option>
+              <option value="normal" selected>عادية</option>
+              <option value="high">عالية</option>
+              <option value="urgent">عاجلة 🔴</option>
+            </select>
+          </div>
+        </div>
+        <div class="fg"><label>تفاصيل المشكلة / الطلب *</label>
+          <textarea id="tix-msg" style="min-height:90px;border:1.5px solid var(--border);border-radius:8px;padding:8px 10px;font-size:12px;background:var(--bg);color:var(--text);width:100%;resize:vertical;font-family:inherit" placeholder="اشرح المشكلة بالتفصيل حتى نتمكن من مساعدتك بسرعة..."></textarea>
+        </div>
+        <button class="btn bg2" onclick="openSupportTicket()">إرسال التذكرة ←</button>
+      </div>
+      <div class="card ca">
+        <div class="ch"><div class="ch-l"><div class="cico" style="background:var(--al);color:var(--a)">📋</div>تذاكرك السابقة</div>
+          <button class="btn sm" onclick="rSupport()">تحديث</button>
+        </div>
+        <div id="tix-list">
+          <div style="text-align:center;padding:16px;font-size:12px;color:var(--muted)">لا توجد تذاكر سابقة</div>
+        </div>
+      </div>
+    </div>
+
     <div class="pg" id="pg-backup">
       <div class="kg3">
         <div class="gmc gmc-blue" style="padding:14px"><span class="gm-icon" style="font-size:18px;margin-bottom:6px">💾</span><div class="gm-val" id="bk-last" style="font-size:14px">—</div><div class="gm-lbl">آخر نسخة احتياطية</div></div>
@@ -2192,6 +2239,69 @@ setInterval(()=>{
   ['tb-cd','match-cd'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=`${h}:${m}:${s2}`;});
 },1000);
 
+// ── SUPPORT TICKETS (CLIENT SIDE) ────────────────────────────
+async function rSupport(){
+  const r = await api('/api/tickets');
+  const tix = r.tickets || [];
+  const open = tix.filter(t=>t.status==='open'||t.status==='replied');
+  const closed = tix.filter(t=>t.status==='closed');
+  ss('tix-open-cnt', tix.filter(t=>t.status==='open').length);
+  ss('tix-replied-cnt', tix.filter(t=>t.status==='replied').length);
+  ss('tix-closed-cnt', closed.length);
+  const badge = document.getElementById('sup-tix-badge');
+  if(badge) badge.style.display = open.length ? 'inline' : 'none';
+  const catL = {support:'دعم فني',billing:'فواتير',feature:'طلب ميزة',bug:'خطأ',other:'أخرى'};
+  const stL  = {open:'مفتوحة',replied:'مُجاب عليه',closed:'مغلقة'};
+  const stC  = {open:'var(--r)',replied:'var(--a)',closed:'var(--g)'};
+  const el = document.getElementById('tix-list');
+  if(!el) return;
+  el.innerHTML = tix.length ? [...tix].reverse().map(t => {
+    const msgs = t.messages || [];
+    const lastMsg = msgs[msgs.length-1];
+    const hasAdminReply = msgs.some(m=>m.from==='admin');
+    return `<div style="background:var(--bg);border-radius:10px;padding:12px;margin-bottom:8px;border:1.5px solid ${hasAdminReply&&t.status!=='closed'?'var(--g)':'var(--border)'}">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:6px">
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--text)">${t.title}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">${catL[t.category]||t.category||'—'} · ${new Date(t.created_at).toLocaleDateString('ar-SA')}</div>
+        </div>
+        <span style="font-size:9px;padding:3px 9px;border-radius:20px;font-weight:700;background:${stC[t.status]||'var(--muted)'}22;color:${stC[t.status]||'var(--muted)'}">${stL[t.status]||t.status}</span>
+      </div>
+      ${msgs.length ? `<div style="margin-top:8px;max-height:160px;overflow-y:auto;display:flex;flex-direction:column;gap:5px">
+        ${msgs.map(m=>`<div style="padding:6px 9px;border-radius:8px;font-size:11px;background:${m.from==='admin'?'var(--gl)':'var(--pl)'};color:${m.from==='admin'?'var(--gd)':'var(--pd)'};max-width:85%;${m.from==='admin'?'margin-right:0':'margin-left:auto'}">
+          <div style="font-size:9px;font-weight:700;margin-bottom:3px">${m.from==='admin'?'🛡️ فريق الدعم':'أنت'}</div>
+          <div>${m.text}</div>
+        </div>`).join('')}
+      </div>` : ''}
+      ${t.status!=='closed'?`<div style="margin-top:8px;display:flex;gap:6px">
+        <input id="tix-reply-${t.id}" placeholder="رد على التذكرة..." style="flex:1;border:1.5px solid var(--border);border-radius:8px;padding:6px 9px;font-size:11px;background:var(--card);color:var(--text)"/>
+        <button class="btn sm bg2" onclick="sendTixMsg(${t.id})">إرسال</button>
+      </div>`:''}
+    </div>`;
+  }).join('') : '<div style="text-align:center;padding:16px;font-size:12px;color:var(--muted)">لا توجد تذاكر — افتح تذكرة جديدة إذا احتجت مساعدة</div>';
+}
+async function openSupportTicket(){
+  const title = gv('tix-title').trim();
+  const msg   = gv('tix-msg').trim();
+  if(!title || !msg){toast_('أدخل الموضوع والتفاصيل',false);return;}
+  const r = await api('/api/tickets/open',{
+    title, message:msg, category:gv('tix-cat'), priority:gv('tix-priority')
+  });
+  if(r.ok){
+    const te=document.getElementById('tix-title'); if(te)te.value='';
+    const me=document.getElementById('tix-msg');   if(me)me.value='';
+    await rSupport();
+    toast_('تم إرسال التذكرة ✓ — سنرد عليك قريباً');
+  } else toast_(r.error||'خطأ في الإرسال',false);
+}
+async function sendTixMsg(id){
+  const el = document.getElementById('tix-reply-'+id);
+  const text = el ? el.value.trim() : '';
+  if(!text){toast_('أدخل رسالة',false);return;}
+  const r = await api('/api/tickets/message',{id,text});
+  if(r.ok){if(el)el.value='';await rSupport();toast_('تم الإرسال ✓');}
+}
+
 async function boot(){
   const r=await fetch('/api/store');S=await r.json();
   ss('sb-name',S.settings.name||'فندق');
@@ -2213,7 +2323,7 @@ function go(pg){
   const m=PAGE_META[pg]||{ic:'📄',bg:'#374151',col:'#fff',title:pg};
   const ti=document.getElementById('tb-ic');if(ti){ti.textContent=m.ic;ti.style.background=m.bg;ti.style.color=m.col;}
   ss('tb-title',m.title);
-  const rs={dash:rDash,kpi:rKPI,pms:rPMS,guests:rGuests,svcs:rSvcs,pos:rPOS,journal:rJnl,trial:rTrial,pl:rPL,recv:rRecv,paybl:rPaybl,suppliers:rSup,invoices:rInv,budget:rBudget,cashflow:rCashflow,match:rMatchPage,subscriptions:rSubscriptions,reports:rReport,backup:rBackup,cfg:rCfg};
+  const rs={dash:rDash,kpi:rKPI,pms:rPMS,guests:rGuests,support:rSupport,svcs:rSvcs,pos:rPOS,journal:rJnl,trial:rTrial,pl:rPL,recv:rRecv,paybl:rPaybl,suppliers:rSup,invoices:rInv,budget:rBudget,cashflow:rCashflow,match:rMatchPage,subscriptions:rSubscriptions,reports:rReport,backup:rBackup,cfg:rCfg};
   if(rs[pg])rs[pg]();
 }
 
@@ -3016,12 +3126,14 @@ async function delRec(i){S.settings.recipients.splice(i,1);await api('/api/setti
 </body>
 </html>"""
 def start_server():
-    server = HTTPServer(("0.0.0.0", PORT), Handler)
+    server = HTTPServer(("127.0.0.1", PORT), Handler)
     logging.info(f"Server started on port {PORT}")
     server.serve_forever()
 
 def open_browser():
-    pass
+    time.sleep(1.5)
+    webbrowser.open(f"http://127.0.0.1:{PORT}")
+
 if __name__ == "__main__":
     print("=" * 55)
     print("  نظام إدارة الفندق والشقق المخدومة — v2.0")
