@@ -1632,10 +1632,6 @@ if __name__ == "__main__":
     t1 = threading.Thread(target=run_client, daemon=True)
     t2 = threading.Thread(target=run_admin,  daemon=True)
     t1.start(); t2.start()
-    def open_b():
-        time.sleep(1.5)
-        webbrowser.open(f"http://localhost:{CLIENT_PORT}")
-    threading.Thread(target=open_b,daemon=True).start()
     try:
         while True: time.sleep(60)
     except KeyboardInterrupt:
