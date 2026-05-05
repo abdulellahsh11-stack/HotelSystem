@@ -145,11 +145,9 @@ class AnalyticsEngine:
                        if (now_ts - datetime.fromisoformat(s["last_seen"]).timestamp()) < 900}
             # clean old sessions
             self.sessions = dict(self.sessions)
-            # عدد الأشخاص الفريدين (وليس الجلسات)
-            unique_cids = {s["cid"] for s in active.values()}
             uptime_s = int((datetime.now() - datetime.fromisoformat(self.system_start)).total_seconds())
             return {
-                "online_now":       len(unique_cids),
+                "online_now":       len({s["cid"] for s in active.values()}),
                 "active_sessions":  [{"cid":s["cid"],"start":s["start"],"last_seen":s["last_seen"],"pages":s["pages"],"actions":s["actions"]} for s in active.values()],
                 "page_hits":        dict(self.page_hits),
                 "top_pages":        sorted(self.page_hits.items(), key=lambda x:-x[1])[:10],
@@ -362,6 +360,7 @@ def _github_restore():
 _t = threading.Thread(target=_github_restore, daemon=True)
 _t.start()
 _t.join(timeout=15)  # أقصى 15 ثانية
+# لا تعريف adm هنا — يُعرَّف بعد هذا السطر ويقرأ الملف المحدَّث
 
 # ══════════════════════════════════════════════════════════════
 #  قاعدة بيانات المالك
@@ -399,9 +398,11 @@ class AdminStore:
         except Exception: pass
 
     def get(self,k,d=None):
-        # Always reload from file to get latest data saved by main_admin
-        self._data = self._load()
         return self._data.get(k,d)
+
+    def reload_from_disk(self):
+        """أعد التحميل من القرص — يُستدعى بعد _github_restore فقط"""
+        self._data = self._load()
     def set(self,k,v):      self._data[k]=v; self.save()
     def append(self,k,i):   self._data.setdefault(k,[]).append(i); self.save()
 
@@ -625,15 +626,15 @@ class ClientHandler(BaseH):
                 self._json({"error":"unauthorized"}, 401); return
             _get_routes = {
                 "/api/admin/stats":         lambda: self._json(self._build_admin_stats(_amod_g)),
-                "/api/admin/clients":       lambda: self._json({"clients":_amod_g.adm.get("clients",[])}),
-                "/api/admin/settings":      lambda: self._json({"settings":_amod_g.adm.get("admin_settings",{})}),
-                "/api/admin/plans":         lambda: self._json({"plans":_amod_g.adm.get("admin_settings",{}).get("plans",[]),"prices":_amod_g.adm.get("admin_settings",{}).get("prices",{})}),
-                "/api/admin/keys":          lambda: self._json({"keys":_amod_g.adm.get("license_keys",[])}),
-                "/api/admin/tickets":       lambda: self._json({"tickets":_amod_g.adm.get("tickets",[])}),
-                "/api/admin/payments":      lambda: self._json({"payments":_amod_g.adm.get("payments",[])}),
-                "/api/admin/market":        lambda: self._json({"competitors":_amod_g.adm.get("admin_settings",{}).get("ai_market_competitors",[]),"last_analysis":_amod_g.adm.get("admin_settings",{}).get("last_market_analysis")}),
+                "/api/admin/clients":       lambda: self._json({"clients":adm.get("clients",[])}),
+                "/api/admin/settings":      lambda: self._json({"settings":adm.get("admin_settings",{})}),
+                "/api/admin/plans":         lambda: self._json({"plans":adm.get("admin_settings",{}).get("plans",[]),"prices":adm.get("admin_settings",{}).get("prices",{})}),
+                "/api/admin/keys":          lambda: self._json({"keys":adm.get("license_keys",[])}),
+                "/api/admin/tickets":       lambda: self._json({"tickets":adm.get("tickets",[])}),
+                "/api/admin/payments":      lambda: self._json({"payments":adm.get("payments",[])}),
+                "/api/admin/market":        lambda: self._json({"competitors":adm.get("admin_settings",{}).get("ai_market_competitors",[]),"last_analysis":adm.get("admin_settings",{}).get("last_market_analysis")}),
                 "/api/admin/analytics":     lambda: self._json(analytics.snapshot()),
-                "/api/admin/update/status": lambda: self._json({"ok":True,"history":_amod_g.adm.get("update_history",[])[-10:]}),
+                "/api/admin/update/status": lambda: self._json({"ok":True,"history":adm.get("update_history",[])[-10:]}),
                 "/api/admin/backup/status": lambda: self._admin_backup_status(),
                 "/api/admin/backup/status1":lambda: self._admin_backup_status(),
             }
@@ -713,21 +714,21 @@ class ClientHandler(BaseH):
             # Route to admin handler method
             _admin_routes = {
                 "/api/admin/stats":     lambda: self._json(self._build_admin_stats(_amod3)),
-                "/api/admin/clients":   lambda: self._json({"clients":_amod3.adm.get("clients",[])}),
-                "/api/admin/settings":  lambda: self._json({"settings":_amod3.adm.get("admin_settings",{})}),
+                "/api/admin/clients":   lambda: self._json({"clients":adm.get("clients",[])}),
+                "/api/admin/settings":  lambda: self._json({"settings":adm.get("admin_settings",{})}),
                 "/api/admin/settings/save": lambda: self._admin_save_settings(_amod3, b),
                 "/api/admin/settings/ai":   lambda: self._admin_save_ai_settings(_amod3, b),
                 "/api/admin/settings/ai/test": lambda: self._admin_test_claude_key(b),
                 "/api/admin/backup/status":     lambda: self._admin_backup_status(),
                 "/api/admin/backup/status1":    lambda: self._admin_backup_status(),
                 "/api/admin/backup/restore":    lambda: self._admin_backup_restore(),
-                "/api/admin/plans":     lambda: self._json({"plans":_amod3.adm.get("admin_settings",{}).get("plans",[]),"prices":_amod3.adm.get("admin_settings",{}).get("prices",{})}),
-                "/api/admin/keys":      lambda: self._json({"keys":_amod3.adm.get("license_keys",[])}),
-                "/api/admin/tickets":   lambda: self._json({"tickets":_amod3.adm.get("tickets",[])}),
-                "/api/admin/payments":  lambda: self._json({"payments":_amod3.adm.get("payments",[])}),
-                "/api/admin/market":    lambda: self._json({"competitors":_amod3.adm.get("admin_settings",{}).get("ai_market_competitors",[]),"last_analysis":_amod3.adm.get("admin_settings",{}).get("last_market_analysis")}),
+                "/api/admin/plans":     lambda: self._json({"plans":adm.get("admin_settings",{}).get("plans",[]),"prices":adm.get("admin_settings",{}).get("prices",{})}),
+                "/api/admin/keys":      lambda: self._json({"keys":adm.get("license_keys",[])}),
+                "/api/admin/tickets":   lambda: self._json({"tickets":adm.get("tickets",[])}),
+                "/api/admin/payments":  lambda: self._json({"payments":adm.get("payments",[])}),
+                "/api/admin/market":    lambda: self._json({"competitors":adm.get("admin_settings",{}).get("ai_market_competitors",[]),"last_analysis":adm.get("admin_settings",{}).get("last_market_analysis")}),
                 "/api/admin/analytics": lambda: self._json(analytics.snapshot()),
-                "/api/admin/update/status": lambda: self._json({"ok":True,"history":_amod3.adm.get("update_history",[])[-10:]}),
+                "/api/admin/update/status": lambda: self._json({"ok":True,"history":adm.get("update_history",[])[-10:]}),
             }
             _fn = _admin_routes.get(path)
             if _fn:
@@ -2770,7 +2771,7 @@ document.querySelectorAll('.fade').forEach(el=>obs.observe(el));
         for k in allowed_keys:
             if k in b:
                 s[k] = b[k]
-        amod.adm.set("admin_settings", s)
+        adm.set("admin_settings", s)
         self._json({"ok": True})
 
     def _admin_save_ai_settings(self, amod, b):
