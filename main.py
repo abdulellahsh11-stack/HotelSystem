@@ -68,6 +68,18 @@ async def lifespan(app_: FastAPI):
     app_.state.db = db
     app_.state.store = store
 
+    # ── v3 migrations — جميع الوحدات الـ 15 + وجهات سياحية ──
+    try:
+        from db.migrations import run_all_migrations
+        run_all_migrations(db)
+    except Exception as e:
+        log.warning(f"v1 migrations: {e}")
+    try:
+        from db.schema_v3 import run_v3_migrations
+        run_v3_migrations(db)
+    except Exception as e:
+        log.warning(f"v3 migrations: {e}")
+
     # Load optional Month-3 services
     try:
         from services.dynamic_pricing import DynamicPricingEngine
@@ -91,7 +103,7 @@ async def lifespan(app_: FastAPI):
 # ──────────────────────────────────────────────────────────────
 #  App
 # ──────────────────────────────────────────────────────────────
-app = FastAPI(title="ضيوف — Dheuof Hotel SaaS", version="2.0.0", lifespan=lifespan, docs_url=None, redoc_url=None)
+app = FastAPI(title="ضيوف — Dheuof Hotel SaaS", version="3.0.0", lifespan=lifespan, docs_url=None, redoc_url=None)
 
 app.add_middleware(
     CORSMiddleware,
@@ -103,6 +115,70 @@ app.add_middleware(
 
 os.makedirs("static", exist_ok=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# ── Module Routers — جميع الوحدات الـ 15 + وجهات سياحية ─────
+try:
+    from routes.m02_frontdesk import router as m02_router
+    app.include_router(m02_router)
+    log.info("✓ M02 Front Desk")
+except Exception as e:
+    log.warning(f"M02: {e}")
+
+try:
+    from routes.m06_hr import router as m06_router
+    app.include_router(m06_router)
+    log.info("✓ M06 HR")
+except Exception as e:
+    log.warning(f"M06: {e}")
+
+try:
+    from routes.m07_housekeeping import router as m07_router
+    app.include_router(m07_router)
+    log.info("✓ M07 Housekeeping")
+except Exception as e:
+    log.warning(f"M07: {e}")
+
+try:
+    from routes.m08_maintenance import router as m08_router
+    app.include_router(m08_router)
+    log.info("✓ M08 Maintenance")
+except Exception as e:
+    log.warning(f"M08: {e}")
+
+try:
+    from routes.m10_crm import router as m10_router
+    app.include_router(m10_router)
+    log.info("✓ M10 CRM")
+except Exception as e:
+    log.warning(f"M10: {e}")
+
+try:
+    from routes.m11_kpi import router as m11_router
+    app.include_router(m11_router)
+    log.info("✓ M11 KPI")
+except Exception as e:
+    log.warning(f"M11: {e}")
+
+try:
+    from routes.m13_warehouses import router as m13_router
+    app.include_router(m13_router)
+    log.info("✓ M13 Warehouses")
+except Exception as e:
+    log.warning(f"M13: {e}")
+
+try:
+    from routes.m14_tourism import router as m14_router
+    app.include_router(m14_router)
+    log.info("✓ M14 Tourism Tours")
+except Exception as e:
+    log.warning(f"M14: {e}")
+
+try:
+    from routes.m14b_destinations import router as m14b_router
+    app.include_router(m14b_router)
+    log.info("✓ M14b Tourist Destinations")
+except Exception as e:
+    log.warning(f"M14b: {e}")
 
 
 # ──────────────────────────────────────────────────────────────
@@ -1999,6 +2075,73 @@ async def open_availability(
         "SELECT * FROM rooms WHERE client_id=%s AND status='available'", (cid,), fetch="all"
     )
     return {"data": [dict(r) for r in (rows or [])]}
+
+
+# ──────────────────────────────────────────────────────────────
+#  Module Catalog — كتالوج الوحدات القابلة للاشتراك
+# ──────────────────────────────────────────────────────────────
+MODULE_CATALOG = [
+    {"code": "m01", "name_ar": "إدارة الضيوف",        "name_en": "Guest Management",        "category": "core",       "price": 299,  "unit": "شهر"},
+    {"code": "m02", "name_ar": "الاستقبال",            "name_en": "Front Desk",               "category": "core",       "price": 199,  "unit": "شهر"},
+    {"code": "m03", "name_ar": "مدير القنوات",         "name_en": "Channel Manager",          "category": "revenue",    "price": 499,  "unit": "شهر"},
+    {"code": "m04", "name_ar": "المحاسبة + POS",       "name_en": "Accounting + POS",         "category": "operations", "price": 599,  "unit": "شهر"},
+    {"code": "m05", "name_ar": "المخزون",              "name_en": "Inventory",                "category": "operations", "price": 249,  "unit": "شهر"},
+    {"code": "m06", "name_ar": "الموارد البشرية",      "name_en": "HR & Payroll",             "category": "operations", "price": 399,  "unit": "شهر + 15/موظف"},
+    {"code": "m07", "name_ar": "الإشراف الداخلي",      "name_en": "Housekeeping",             "category": "core",       "price": 199,  "unit": "شهر"},
+    {"code": "m08", "name_ar": "الصيانة",              "name_en": "Maintenance",              "category": "operations", "price": 249,  "unit": "شهر"},
+    {"code": "m09", "name_ar": "المفتاح الذكي",        "name_en": "Smart Key & Fraud",        "category": "intel",      "price": 699,  "unit": "شهر + 8/غرفة"},
+    {"code": "m10", "name_ar": "CRM والولاء",          "name_en": "CRM & Loyalty",            "category": "revenue",    "price": 349,  "unit": "شهر"},
+    {"code": "m11", "name_ar": "مؤشرات الأداء",        "name_en": "KPI Analytics",            "category": "intel",      "price": 299,  "unit": "شهر"},
+    {"code": "m12", "name_ar": "الرؤى الذكية",         "name_en": "Data Insights (AI)",       "category": "intel",      "price": 599,  "unit": "شهر"},
+    {"code": "m13", "name_ar": "المستودعات",           "name_en": "Warehouses & Procurement", "category": "operations", "price": 249,  "unit": "شهر"},
+    {"code": "m14", "name_ar": "الجولات السياحية",     "name_en": "Tourism Tours",            "category": "revenue",    "price": 199,  "unit": "شهر"},
+    {"code": "m14b","name_ar": "وجهات سياحية",         "name_en": "Tourist Destinations",     "category": "revenue",    "price": 149,  "unit": "شهر"},
+    {"code": "m15", "name_ar": "تطبيق الموظفين",       "name_en": "Staff Mobile App",         "category": "addon",      "price": 29,   "unit": "مستخدم/شهر"},
+]
+
+PLANS_CATALOG = [
+    {"code": "trial",        "name_ar": "تجربة مجانية",  "price": 0,     "modules": ["m01","m02","m03","m04","m05","m06","m07","m08","m09","m10","m11","m12","m13","m14","m14b","m15"], "discount": 0,   "days": 30},
+    {"code": "starter",      "name_ar": "Starter",        "price": 599,   "modules": ["m01","m02","m07"],                                                                               "discount": 20,  "days": None},
+    {"code": "operations",   "name_ar": "Operations",     "price": 1099,  "modules": ["m01","m02","m07","m05","m08","m13"],                                                              "discount": 25,  "days": None},
+    {"code": "professional", "name_ar": "Professional",   "price": 2299,  "modules": ["m01","m02","m07","m05","m08","m13","m03","m04","m06","m11"],                                     "discount": 30,  "days": None},
+    {"code": "enterprise",   "name_ar": "Enterprise",     "price": None,  "modules": ["m01","m02","m03","m04","m05","m06","m07","m08","m09","m10","m11","m12","m13","m14","m14b","m15"],"discount": 40,  "days": None},
+]
+
+
+@app.get("/api/modules/catalog")
+async def modules_catalog():
+    return {"success": True, "modules": MODULE_CATALOG, "plans": PLANS_CATALOG}
+
+
+@app.get("/api/modules/client")
+async def client_modules(request: Request, session=Depends(require_client)):
+    store: "DataStore" = request.app.state.store
+    client = store.get_client(session["client_id"]) or {}
+    plan = client.get("plan", "trial")
+    plan_data = next((p for p in PLANS_CATALOG if p["code"] == plan), PLANS_CATALOG[0])
+    active_modules = plan_data["modules"]
+    return {
+        "success": True,
+        "plan": plan,
+        "active_modules": active_modules,
+        "all_modules": MODULE_CATALOG,
+    }
+
+
+# ──────────────────────────────────────────────────────────────
+#  Dashboard Page — لوحة التحكم الكاملة
+# ──────────────────────────────────────────────────────────────
+@app.get("/dashboard", response_class=HTMLResponse)
+async def dashboard_page(request: Request):
+    session = get_client_session(request)
+    if not session:
+        return RedirectResponse("/login")
+    import os
+    dash_path = os.path.join("static", "dashboard.html")
+    if os.path.exists(dash_path):
+        with open(dash_path, "r", encoding="utf-8") as f:
+            return HTMLResponse(f.read())
+    return RedirectResponse("/")
 
 
 # ──────────────────────────────────────────────────────────────
