@@ -1,623 +1,2247 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ضيوف — منصة إدارة الضيافة الذكية | dheuof.com</title>
+<html lang="ar" dir="rtl" data-screen-label="Home · Launcher"><head>
+<meta charset="utf-8">
+<title>ضيوف · لوحة البرامج</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>/* =========================================================================
+   Dheuof / ضيوف — Foundation tokens
+   Bilingual Arabic-first (RTL) + English (LTR) — luxury hospitality SaaS
+   ========================================================================= */
+
+/* --- Webfonts (Google Fonts — see README "Type substitution" note) ------- */
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Cormorant';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("b864c526-67d8-4354-9f65-7565ea7b7ef6") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Cormorant';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("d67463f7-c092-4e9d-b62a-8c4b932d45b9") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Cormorant';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("c5e10938-3fe0-4007-8b37-af1021c0a87e") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Cormorant';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("cc7e5a5f-ec60-416e-92ff-44d10edaa6fe") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Cormorant';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("82202b7e-5787-455c-9ff7-57e871bc8182") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Cormorant';
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url("b864c526-67d8-4354-9f65-7565ea7b7ef6") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Cormorant';
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url("d67463f7-c092-4e9d-b62a-8c4b932d45b9") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Cormorant';
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url("c5e10938-3fe0-4007-8b37-af1021c0a87e") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Cormorant';
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url("cc7e5a5f-ec60-416e-92ff-44d10edaa6fe") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Cormorant';
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url("82202b7e-5787-455c-9ff7-57e871bc8182") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Cormorant';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("0ad65b79-f66c-4f4b-a115-6d0642dd2a4d") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Cormorant';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("5322471c-ebca-4ff6-992c-4a33d58ea701") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Cormorant';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("42b3b387-b931-4dd8-a5d4-a3fdb35370bc") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Cormorant';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("1a17efba-5f06-4157-aeb5-d4c054600a83") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Cormorant';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("19cbb059-5e67-4e31-a65a-076d505b3889") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Cormorant';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("0ad65b79-f66c-4f4b-a115-6d0642dd2a4d") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Cormorant';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("5322471c-ebca-4ff6-992c-4a33d58ea701") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Cormorant';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("42b3b387-b931-4dd8-a5d4-a3fdb35370bc") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Cormorant';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("1a17efba-5f06-4157-aeb5-d4c054600a83") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Cormorant';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("19cbb059-5e67-4e31-a65a-076d505b3889") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Cormorant';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("0ad65b79-f66c-4f4b-a115-6d0642dd2a4d") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Cormorant';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("5322471c-ebca-4ff6-992c-4a33d58ea701") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Cormorant';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("42b3b387-b931-4dd8-a5d4-a3fdb35370bc") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Cormorant';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("1a17efba-5f06-4157-aeb5-d4c054600a83") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Cormorant';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("19cbb059-5e67-4e31-a65a-076d505b3889") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Cormorant';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("0ad65b79-f66c-4f4b-a115-6d0642dd2a4d") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Cormorant';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("5322471c-ebca-4ff6-992c-4a33d58ea701") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Cormorant';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("42b3b387-b931-4dd8-a5d4-a3fdb35370bc") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Cormorant';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("1a17efba-5f06-4157-aeb5-d4c054600a83") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Cormorant';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("19cbb059-5e67-4e31-a65a-076d505b3889") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("a0e89dc2-849c-42da-b873-c30b1d0ff3c9") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("fe1e530d-85fb-4114-9c9b-14c5f274efae") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("9eeb6f29-bfcb-4b11-bd1f-06bb97a59d12") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("3517ae42-bddd-44b0-8edc-85b258949cac") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("b84fe1ae-0e4b-4e8a-8887-b4182179f962") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("108f3a4a-305c-40a0-8782-c273de4f6c5b") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("901f14d8-8a35-478a-ba9e-45a7d13ad451") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("091213b0-3321-4989-bbd0-839f7974b5f4") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("531044fb-bbd5-46de-867b-c6badf0e6599") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("f8d0e35b-d265-4342-ae3a-d140bbd164e6") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("6dbf791b-4a5a-4ef5-bca1-5a91cf4c46d1") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("c5f0dfef-eb1b-4471-b338-9f472f2e8b52") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("47b77115-1363-40b2-8954-de6dc5c19a0b") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("f35b2e83-f43c-40d4-bef0-d08b451bc0a8") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("2a2baba0-d456-40d3-9162-50080d65b4b2") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 300;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("daf85afa-d126-4a9b-8a6f-688bdf692499") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 300;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("b728436b-dbc0-4e82-9af9-64cfda4fdb7d") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 300;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("fa25c2f0-3841-4758-a8ee-5afffda66605") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 300;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("84484ef9-7a3f-44d1-85a0-89ce4545b43f") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 300;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("e8989e92-dd2a-4d5d-a791-8ba9d53d1840") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 300;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("b9e72eb7-798b-4467-a975-e2a270ed9bb7") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("daf85afa-d126-4a9b-8a6f-688bdf692499") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("b728436b-dbc0-4e82-9af9-64cfda4fdb7d") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("fa25c2f0-3841-4758-a8ee-5afffda66605") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("84484ef9-7a3f-44d1-85a0-89ce4545b43f") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("e8989e92-dd2a-4d5d-a791-8ba9d53d1840") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("b9e72eb7-798b-4467-a975-e2a270ed9bb7") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("daf85afa-d126-4a9b-8a6f-688bdf692499") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("b728436b-dbc0-4e82-9af9-64cfda4fdb7d") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("fa25c2f0-3841-4758-a8ee-5afffda66605") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("84484ef9-7a3f-44d1-85a0-89ce4545b43f") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("e8989e92-dd2a-4d5d-a791-8ba9d53d1840") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("b9e72eb7-798b-4467-a975-e2a270ed9bb7") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("daf85afa-d126-4a9b-8a6f-688bdf692499") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("b728436b-dbc0-4e82-9af9-64cfda4fdb7d") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("fa25c2f0-3841-4758-a8ee-5afffda66605") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("84484ef9-7a3f-44d1-85a0-89ce4545b43f") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("e8989e92-dd2a-4d5d-a791-8ba9d53d1840") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("b9e72eb7-798b-4467-a975-e2a270ed9bb7") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("daf85afa-d126-4a9b-8a6f-688bdf692499") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("b728436b-dbc0-4e82-9af9-64cfda4fdb7d") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("fa25c2f0-3841-4758-a8ee-5afffda66605") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("84484ef9-7a3f-44d1-85a0-89ce4545b43f") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("e8989e92-dd2a-4d5d-a791-8ba9d53d1840") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("b9e72eb7-798b-4467-a975-e2a270ed9bb7") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* arabic */
+@font-face {
+  font-family: 'IBM Plex Sans Arabic';
+  font-style: normal;
+  font-weight: 100;
+  font-display: swap;
+  src: url("20e6b5ba-43c3-4977-9072-71e110edde00") format('woff2');
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC, U+102E0-102FB, U+10E60-10E7E, U+10EC2-10EC4, U+10EFC-10EFF, U+1EE00-1EE03, U+1EE05-1EE1F, U+1EE21-1EE22, U+1EE24, U+1EE27, U+1EE29-1EE32, U+1EE34-1EE37, U+1EE39, U+1EE3B, U+1EE42, U+1EE47, U+1EE49, U+1EE4B, U+1EE4D-1EE4F, U+1EE51-1EE52, U+1EE54, U+1EE57, U+1EE59, U+1EE5B, U+1EE5D, U+1EE5F, U+1EE61-1EE62, U+1EE64, U+1EE67-1EE6A, U+1EE6C-1EE72, U+1EE74-1EE77, U+1EE79-1EE7C, U+1EE7E, U+1EE80-1EE89, U+1EE8B-1EE9B, U+1EEA1-1EEA3, U+1EEA5-1EEA9, U+1EEAB-1EEBB, U+1EEF0-1EEF1;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'IBM Plex Sans Arabic';
+  font-style: normal;
+  font-weight: 100;
+  font-display: swap;
+  src: url("3d023c79-61bc-4294-b208-8607404cf27d") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'IBM Plex Sans Arabic';
+  font-style: normal;
+  font-weight: 100;
+  font-display: swap;
+  src: url("edf56ada-c8f4-475e-a663-98bb5f7a7eb4") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'IBM Plex Sans Arabic';
+  font-style: normal;
+  font-weight: 100;
+  font-display: swap;
+  src: url("717ed3f3-901a-481a-913e-79ea11cb96c2") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* arabic */
+@font-face {
+  font-family: 'IBM Plex Sans Arabic';
+  font-style: normal;
+  font-weight: 200;
+  font-display: swap;
+  src: url("af858f51-9447-464f-9151-8394c5b4fae3") format('woff2');
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC, U+102E0-102FB, U+10E60-10E7E, U+10EC2-10EC4, U+10EFC-10EFF, U+1EE00-1EE03, U+1EE05-1EE1F, U+1EE21-1EE22, U+1EE24, U+1EE27, U+1EE29-1EE32, U+1EE34-1EE37, U+1EE39, U+1EE3B, U+1EE42, U+1EE47, U+1EE49, U+1EE4B, U+1EE4D-1EE4F, U+1EE51-1EE52, U+1EE54, U+1EE57, U+1EE59, U+1EE5B, U+1EE5D, U+1EE5F, U+1EE61-1EE62, U+1EE64, U+1EE67-1EE6A, U+1EE6C-1EE72, U+1EE74-1EE77, U+1EE79-1EE7C, U+1EE7E, U+1EE80-1EE89, U+1EE8B-1EE9B, U+1EEA1-1EEA3, U+1EEA5-1EEA9, U+1EEAB-1EEBB, U+1EEF0-1EEF1;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'IBM Plex Sans Arabic';
+  font-style: normal;
+  font-weight: 200;
+  font-display: swap;
+  src: url("e7bebaed-6895-4cc9-82e9-b8b6e13196a9") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'IBM Plex Sans Arabic';
+  font-style: normal;
+  font-weight: 200;
+  font-display: swap;
+  src: url("b15766ab-8d5e-4978-b7e2-917ef23493b5") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'IBM Plex Sans Arabic';
+  font-style: normal;
+  font-weight: 200;
+  font-display: swap;
+  src: url("e6f40ef6-22c0-4235-8953-cfa415419bd0") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* arabic */
+@font-face {
+  font-family: 'IBM Plex Sans Arabic';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url("c19654f5-14ac-4694-807a-6988651d3210") format('woff2');
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC, U+102E0-102FB, U+10E60-10E7E, U+10EC2-10EC4, U+10EFC-10EFF, U+1EE00-1EE03, U+1EE05-1EE1F, U+1EE21-1EE22, U+1EE24, U+1EE27, U+1EE29-1EE32, U+1EE34-1EE37, U+1EE39, U+1EE3B, U+1EE42, U+1EE47, U+1EE49, U+1EE4B, U+1EE4D-1EE4F, U+1EE51-1EE52, U+1EE54, U+1EE57, U+1EE59, U+1EE5B, U+1EE5D, U+1EE5F, U+1EE61-1EE62, U+1EE64, U+1EE67-1EE6A, U+1EE6C-1EE72, U+1EE74-1EE77, U+1EE79-1EE7C, U+1EE7E, U+1EE80-1EE89, U+1EE8B-1EE9B, U+1EEA1-1EEA3, U+1EEA5-1EEA9, U+1EEAB-1EEBB, U+1EEF0-1EEF1;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'IBM Plex Sans Arabic';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url("d1db4a7e-e228-4fd3-a579-85edcb882905") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'IBM Plex Sans Arabic';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url("9a4812a0-7b1f-4033-87ee-34b0737291ad") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'IBM Plex Sans Arabic';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url("b50e3d51-99c3-4808-bb76-43aa4a18fb2f") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* arabic */
+@font-face {
+  font-family: 'IBM Plex Sans Arabic';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("64fa58d6-c4bc-4fdd-931c-abf3d9a41570") format('woff2');
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC, U+102E0-102FB, U+10E60-10E7E, U+10EC2-10EC4, U+10EFC-10EFF, U+1EE00-1EE03, U+1EE05-1EE1F, U+1EE21-1EE22, U+1EE24, U+1EE27, U+1EE29-1EE32, U+1EE34-1EE37, U+1EE39, U+1EE3B, U+1EE42, U+1EE47, U+1EE49, U+1EE4B, U+1EE4D-1EE4F, U+1EE51-1EE52, U+1EE54, U+1EE57, U+1EE59, U+1EE5B, U+1EE5D, U+1EE5F, U+1EE61-1EE62, U+1EE64, U+1EE67-1EE6A, U+1EE6C-1EE72, U+1EE74-1EE77, U+1EE79-1EE7C, U+1EE7E, U+1EE80-1EE89, U+1EE8B-1EE9B, U+1EEA1-1EEA3, U+1EEA5-1EEA9, U+1EEAB-1EEBB, U+1EEF0-1EEF1;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'IBM Plex Sans Arabic';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("ec456d27-eb64-4822-883e-5a12b192f364") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'IBM Plex Sans Arabic';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("ceffa9ca-01c4-4541-af8d-1031ff07a351") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'IBM Plex Sans Arabic';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("6ecbd44f-5bbb-410f-806b-5215723bdfa8") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* arabic */
+@font-face {
+  font-family: 'IBM Plex Sans Arabic';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("a4740d89-9ba8-46a4-88ea-9b7d1e5bf37e") format('woff2');
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC, U+102E0-102FB, U+10E60-10E7E, U+10EC2-10EC4, U+10EFC-10EFF, U+1EE00-1EE03, U+1EE05-1EE1F, U+1EE21-1EE22, U+1EE24, U+1EE27, U+1EE29-1EE32, U+1EE34-1EE37, U+1EE39, U+1EE3B, U+1EE42, U+1EE47, U+1EE49, U+1EE4B, U+1EE4D-1EE4F, U+1EE51-1EE52, U+1EE54, U+1EE57, U+1EE59, U+1EE5B, U+1EE5D, U+1EE5F, U+1EE61-1EE62, U+1EE64, U+1EE67-1EE6A, U+1EE6C-1EE72, U+1EE74-1EE77, U+1EE79-1EE7C, U+1EE7E, U+1EE80-1EE89, U+1EE8B-1EE9B, U+1EEA1-1EEA3, U+1EEA5-1EEA9, U+1EEAB-1EEBB, U+1EEF0-1EEF1;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'IBM Plex Sans Arabic';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("ac7d7e51-c3db-4fc5-b101-6b6049bc282c") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'IBM Plex Sans Arabic';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("599d59dd-fd0f-4a74-a64a-cdcd95b8f6d8") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'IBM Plex Sans Arabic';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("6c26e48b-4ea4-4ffa-be7b-37de7cb16e5d") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* arabic */
+@font-face {
+  font-family: 'IBM Plex Sans Arabic';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("a21ebd9d-c5ee-49a6-a2d8-ccb0fe6f8222") format('woff2');
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC, U+102E0-102FB, U+10E60-10E7E, U+10EC2-10EC4, U+10EFC-10EFF, U+1EE00-1EE03, U+1EE05-1EE1F, U+1EE21-1EE22, U+1EE24, U+1EE27, U+1EE29-1EE32, U+1EE34-1EE37, U+1EE39, U+1EE3B, U+1EE42, U+1EE47, U+1EE49, U+1EE4B, U+1EE4D-1EE4F, U+1EE51-1EE52, U+1EE54, U+1EE57, U+1EE59, U+1EE5B, U+1EE5D, U+1EE5F, U+1EE61-1EE62, U+1EE64, U+1EE67-1EE6A, U+1EE6C-1EE72, U+1EE74-1EE77, U+1EE79-1EE7C, U+1EE7E, U+1EE80-1EE89, U+1EE8B-1EE9B, U+1EEA1-1EEA3, U+1EEA5-1EEA9, U+1EEAB-1EEBB, U+1EEF0-1EEF1;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'IBM Plex Sans Arabic';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("a2d0d845-6734-4b8c-a5c9-79a8d1975bf6") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'IBM Plex Sans Arabic';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("4de5acc0-9a9e-4b36-b43c-1f4c3ee380c1") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'IBM Plex Sans Arabic';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("fcf8f9ad-ffca-4c7c-9ed1-a51def4dabaf") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* arabic */
+@font-face {
+  font-family: 'IBM Plex Sans Arabic';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("e6e378a4-90bf-4787-bda9-ee4c26d689cc") format('woff2');
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC, U+102E0-102FB, U+10E60-10E7E, U+10EC2-10EC4, U+10EFC-10EFF, U+1EE00-1EE03, U+1EE05-1EE1F, U+1EE21-1EE22, U+1EE24, U+1EE27, U+1EE29-1EE32, U+1EE34-1EE37, U+1EE39, U+1EE3B, U+1EE42, U+1EE47, U+1EE49, U+1EE4B, U+1EE4D-1EE4F, U+1EE51-1EE52, U+1EE54, U+1EE57, U+1EE59, U+1EE5B, U+1EE5D, U+1EE5F, U+1EE61-1EE62, U+1EE64, U+1EE67-1EE6A, U+1EE6C-1EE72, U+1EE74-1EE77, U+1EE79-1EE7C, U+1EE7E, U+1EE80-1EE89, U+1EE8B-1EE9B, U+1EEA1-1EEA3, U+1EEA5-1EEA9, U+1EEAB-1EEBB, U+1EEF0-1EEF1;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'IBM Plex Sans Arabic';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("f32847e4-a8f4-464c-9228-49259ffe63d2") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'IBM Plex Sans Arabic';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("2d1fa8f1-4a5a-403d-a7f8-fd66d8f25530") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'IBM Plex Sans Arabic';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("067a2f6e-280a-417b-b9a2-65491acdd19f") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* arabic */
+@font-face {
+  font-family: 'Reem Kufi';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("237d7de0-1fab-40ca-9c51-bd0d298bc7d2") format('woff2');
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC, U+102E0-102FB, U+10E60-10E7E, U+10EC2-10EC4, U+10EFC-10EFF, U+1EE00-1EE03, U+1EE05-1EE1F, U+1EE21-1EE22, U+1EE24, U+1EE27, U+1EE29-1EE32, U+1EE34-1EE37, U+1EE39, U+1EE3B, U+1EE42, U+1EE47, U+1EE49, U+1EE4B, U+1EE4D-1EE4F, U+1EE51-1EE52, U+1EE54, U+1EE57, U+1EE59, U+1EE5B, U+1EE5D, U+1EE5F, U+1EE61-1EE62, U+1EE64, U+1EE67-1EE6A, U+1EE6C-1EE72, U+1EE74-1EE77, U+1EE79-1EE7C, U+1EE7E, U+1EE80-1EE89, U+1EE8B-1EE9B, U+1EEA1-1EEA3, U+1EEA5-1EEA9, U+1EEAB-1EEBB, U+1EEF0-1EEF1;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Reem Kufi';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("785c2fca-a4b6-46bf-8a77-005e894a1d45") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Reem Kufi';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("efe611f2-8e4b-43b4-bdf6-fade0f74b84a") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Reem Kufi';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("0e91b55c-c035-4ea4-91c0-e8362b040db4") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* arabic */
+@font-face {
+  font-family: 'Reem Kufi';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("237d7de0-1fab-40ca-9c51-bd0d298bc7d2") format('woff2');
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC, U+102E0-102FB, U+10E60-10E7E, U+10EC2-10EC4, U+10EFC-10EFF, U+1EE00-1EE03, U+1EE05-1EE1F, U+1EE21-1EE22, U+1EE24, U+1EE27, U+1EE29-1EE32, U+1EE34-1EE37, U+1EE39, U+1EE3B, U+1EE42, U+1EE47, U+1EE49, U+1EE4B, U+1EE4D-1EE4F, U+1EE51-1EE52, U+1EE54, U+1EE57, U+1EE59, U+1EE5B, U+1EE5D, U+1EE5F, U+1EE61-1EE62, U+1EE64, U+1EE67-1EE6A, U+1EE6C-1EE72, U+1EE74-1EE77, U+1EE79-1EE7C, U+1EE7E, U+1EE80-1EE89, U+1EE8B-1EE9B, U+1EEA1-1EEA3, U+1EEA5-1EEA9, U+1EEAB-1EEBB, U+1EEF0-1EEF1;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Reem Kufi';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("785c2fca-a4b6-46bf-8a77-005e894a1d45") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Reem Kufi';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("efe611f2-8e4b-43b4-bdf6-fade0f74b84a") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Reem Kufi';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("0e91b55c-c035-4ea4-91c0-e8362b040db4") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* arabic */
+@font-face {
+  font-family: 'Reem Kufi';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("237d7de0-1fab-40ca-9c51-bd0d298bc7d2") format('woff2');
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC, U+102E0-102FB, U+10E60-10E7E, U+10EC2-10EC4, U+10EFC-10EFF, U+1EE00-1EE03, U+1EE05-1EE1F, U+1EE21-1EE22, U+1EE24, U+1EE27, U+1EE29-1EE32, U+1EE34-1EE37, U+1EE39, U+1EE3B, U+1EE42, U+1EE47, U+1EE49, U+1EE4B, U+1EE4D-1EE4F, U+1EE51-1EE52, U+1EE54, U+1EE57, U+1EE59, U+1EE5B, U+1EE5D, U+1EE5F, U+1EE61-1EE62, U+1EE64, U+1EE67-1EE6A, U+1EE6C-1EE72, U+1EE74-1EE77, U+1EE79-1EE7C, U+1EE7E, U+1EE80-1EE89, U+1EE8B-1EE9B, U+1EEA1-1EEA3, U+1EEA5-1EEA9, U+1EEAB-1EEBB, U+1EEF0-1EEF1;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Reem Kufi';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("785c2fca-a4b6-46bf-8a77-005e894a1d45") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Reem Kufi';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("efe611f2-8e4b-43b4-bdf6-fade0f74b84a") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Reem Kufi';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("0e91b55c-c035-4ea4-91c0-e8362b040db4") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* arabic */
+@font-face {
+  font-family: 'Reem Kufi';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("237d7de0-1fab-40ca-9c51-bd0d298bc7d2") format('woff2');
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC, U+102E0-102FB, U+10E60-10E7E, U+10EC2-10EC4, U+10EFC-10EFF, U+1EE00-1EE03, U+1EE05-1EE1F, U+1EE21-1EE22, U+1EE24, U+1EE27, U+1EE29-1EE32, U+1EE34-1EE37, U+1EE39, U+1EE3B, U+1EE42, U+1EE47, U+1EE49, U+1EE4B, U+1EE4D-1EE4F, U+1EE51-1EE52, U+1EE54, U+1EE57, U+1EE59, U+1EE5B, U+1EE5D, U+1EE5F, U+1EE61-1EE62, U+1EE64, U+1EE67-1EE6A, U+1EE6C-1EE72, U+1EE74-1EE77, U+1EE79-1EE7C, U+1EE7E, U+1EE80-1EE89, U+1EE8B-1EE9B, U+1EEA1-1EEA3, U+1EEA5-1EEA9, U+1EEAB-1EEBB, U+1EEF0-1EEF1;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Reem Kufi';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("785c2fca-a4b6-46bf-8a77-005e894a1d45") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Reem Kufi';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("efe611f2-8e4b-43b4-bdf6-fade0f74b84a") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Reem Kufi';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("0e91b55c-c035-4ea4-91c0-e8362b040db4") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+
+:root {
+  /* ── Brand colors ─────────────────────────────────────────────────────── */
+  /* Forest green — primary brand. Deep, calm, dignified. */
+  --brand-900: #0E2A22;
+  --brand-800: #143A2E;
+  --brand-700: #1B4D3D; /* default brand */
+  --brand-600: #266554;
+  --brand-500: #3B8772;
+  --brand-400: #6BAB9A;
+  --brand-300: #9CCBBE;
+  --brand-200: #C7E1D8;
+  --brand-100: #E4F0EB;
+  --brand-50:  #F2F8F5;
+
+  /* Gold — accent. Refined, never gaudy. */
+  --gold-900: #5C4419;
+  --gold-800: #7A5A22;
+  --gold-700: #9A7430; /* default gold */
+  --gold-600: #B68F40;
+  --gold-500: #C9A85F; /* default highlight */
+  --gold-400: #DBC084;
+  --gold-300: #E8D5A8;
+  --gold-200: #F1E6C8;
+  --gold-100: #F8F1DF;
+  --gold-50:  #FBF7EC;
+
+  /* Ink — warm-black text scale */
+  --ink-900: #14110E; /* heading */
+  --ink-800: #1F1A15;
+  --ink-700: #322B23;
+  --ink-600: #4A4137;
+  --ink-500: #6B6052; /* body */
+  --ink-400: #8B8175;
+  --ink-300: #AEA597; /* muted */
+  --ink-200: #CFC8BB;
+  --ink-100: #E6DFD1;
+  --ink-50:  #F2EDE3;
+
+  /* Paper — warm neutral surfaces */
+  --paper:        #FAF7F2;
+  --paper-tint:   #F5F0E6;
+  --sand:         #F2EDE3;
+  --sand-strong:  #E8E1D2;
+
+  /* Pure */
+  --white: #FFFFFF;
+  --black: #000000;
+
+  /* ── Semantic — light surfaces ───────────────────────────────────────── */
+  --success-700: #2F6E54;
+  --success-500: #4A9476;
+  --success-100: #DCEEE6;
+
+  --warning-700: #9A6D14;
+  --warning-500: #C99428;
+  --warning-100: #F6E7C2;
+
+  --danger-700:  #8B3A2A;
+  --danger-500:  #BE5A45;
+  --danger-100:  #F1D8CF;
+
+  --info-700:    #2A4F7A;
+  --info-500:    #4670A0;
+  --info-100:    #D6E1F0;
+
+  /* ── Surfaces & roles ────────────────────────────────────────────────── */
+  --bg:           var(--paper);
+  --surface:      var(--white);
+  --surface-2:    var(--sand);
+  --surface-3:    var(--paper-tint);
+
+  --fg:           var(--ink-900);
+  --fg-1:         var(--ink-700);
+  --fg-2:         var(--ink-500);
+  --fg-3:         var(--ink-400);
+  --fg-muted:     var(--ink-300);
+  --fg-inverse:   var(--paper);
+
+  --border:       var(--ink-100);
+  --border-strong:var(--ink-200);
+  --hairline:     #ECE5D6;
+
+  --brand:        var(--brand-700);
+  --brand-fg:     var(--paper);
+  --accent:       var(--gold-500);
+  --accent-deep:  var(--gold-700);
+
+  /* ── Shadows — soft, warm, lifted-paper feel ────────────────────────── */
+  --shadow-1: 0 1px 0 rgba(20,17,14,0.04), 0 1px 2px rgba(20,17,14,0.04);
+  --shadow-2: 0 2px 4px rgba(20,17,14,0.04), 0 4px 12px rgba(20,17,14,0.06);
+  --shadow-3: 0 6px 16px rgba(20,17,14,0.08), 0 12px 32px rgba(20,17,14,0.06);
+  --shadow-4: 0 14px 40px rgba(20,17,14,0.12), 0 24px 64px rgba(20,17,14,0.08);
+  --shadow-inset: inset 0 1px 0 rgba(255,255,255,0.6), inset 0 -1px 0 rgba(20,17,14,0.05);
+  --shadow-focus: 0 0 0 3px rgba(201,168,95,0.35); /* gold focus ring */
+
+  /* ── Radii — small, restrained. Luxury feels calm, not rounded-soft. ── */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-pill: 999px;
+
+  /* ── Spacing scale ───────────────────────────────────────────────────── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+
+  /* ── Type families ───────────────────────────────────────────────────── */
+  --font-ar-display: "Reem Kufi", "IBM Plex Sans Arabic", system-ui, sans-serif;
+  --font-ar:         "IBM Plex Sans Arabic", "Reem Kufi", system-ui, sans-serif;
+  --font-en-display: "Cormorant", "Times New Roman", Georgia, serif;
+  --font-en:         "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --font-mono:       "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+
+  /* Default bilingual stacks — Arabic-first, Latin falls back gracefully */
+  --font-display: var(--font-ar-display), var(--font-en-display);
+  --font-body:    var(--font-ar), var(--font-en);
+
+  /* ── Type scale (px / line-height) — 1.250 modular ratio ─────────────── */
+  --fs-12: 12px;
+  --fs-13: 13px;
+  --fs-14: 14px;
+  --fs-15: 15px;
+  --fs-16: 16px;
+  --fs-18: 18px;
+  --fs-20: 20px;
+  --fs-24: 24px;
+  --fs-28: 28px;
+  --fs-32: 32px;
+  --fs-40: 40px;
+  --fs-48: 48px;
+  --fs-60: 60px;
+  --fs-72: 72px;
+  --fs-96: 96px;
+
+  /* ── Motion ──────────────────────────────────────────────────────────── */
+  --ease-out:     cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-in-out:  cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-decel:   cubic-bezier(0, 0, 0.2, 1);
+  --dur-fast:   120ms;
+  --dur-med:    220ms;
+  --dur-slow:   400ms;
+
+  /* ── Z-layers ────────────────────────────────────────────────────────── */
+  --z-base: 1;
+  --z-sticky: 100;
+  --z-overlay: 500;
+  --z-modal: 800;
+  --z-toast: 900;
+}
+
+/* =========================================================================
+   Semantic typography — bilingual roles
+   Use these classes (or copy the rules) instead of raw font-size.
+   ========================================================================= */
+
+.t-display-1 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(48px, 6vw, 96px);
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  color: var(--fg);
+}
+.t-display-2 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(36px, 4.4vw, 64px);
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+  color: var(--fg);
+}
+.t-h1 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-40);
+  line-height: 1.14;
+  letter-spacing: -0.01em;
+  color: var(--fg);
+}
+.t-h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-32);
+  line-height: 1.18;
+  letter-spacing: -0.005em;
+  color: var(--fg);
+}
+.t-h3 {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--fs-24);
+  line-height: 1.25;
+  color: var(--fg);
+}
+.t-h4 {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--fs-18);
+  line-height: 1.35;
+  color: var(--fg);
+}
+.t-eyebrow {
+  font-family: var(--font-en);
+  font-weight: 500;
+  font-size: var(--fs-12);
+  line-height: 1;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent-deep);
+}
+.t-eyebrow-ar {
+  font-family: var(--font-ar);
+  font-weight: 500;
+  font-size: var(--fs-13);
+  line-height: 1;
+  letter-spacing: 0.04em;
+  color: var(--accent-deep);
+}
+.t-lead {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: var(--fs-20);
+  line-height: 1.5;
+  color: var(--fg-1);
+}
+.t-body {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: var(--fs-15);
+  line-height: 1.6;
+  color: var(--fg-1);
+}
+.t-body-sm {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: var(--fs-13);
+  line-height: 1.5;
+  color: var(--fg-2);
+}
+.t-caption {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: var(--fs-12);
+  line-height: 1.4;
+  color: var(--fg-3);
+}
+.t-mono {
+  font-family: var(--font-mono);
+  font-size: var(--fs-13);
+  line-height: 1.5;
+  letter-spacing: 0;
+  color: var(--fg-1);
+}
+.t-numeric {
+  font-family: var(--font-en);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* =========================================================================
+   RTL handling — Arabic-first
+   ========================================================================= */
+html[dir="rtl"] {
+  font-family: var(--font-ar);
+}
+html[dir="ltr"] {
+  font-family: var(--font-en);
+}
+
+/* Use `:lang(ar)` to scope Arabic-only inside mixed text */
+:lang(ar) { font-family: var(--font-ar); }
+:lang(en) { font-family: var(--font-en); }
+
+/* =========================================================================
+   Base reset (opt-in — UI kits import this)
+   ========================================================================= */
+.dheuof-base, .dheuof-base * { box-sizing: border-box; }
+.dheuof-base {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: var(--fs-15);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+.dheuof-base ::selection {
+  background: var(--gold-200);
+  color: var(--ink-900);
+}
+
+/* Focus ring — gold, accessible */
+.dheuof-base :focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+  border-radius: var(--radius-sm);
+}
+
+/* =========================================================================
+   Abbreviation tooltip — for F&B, RevPAR, ADR, OCC, GOPPAR, ALOS, KPI, etc.
+   Usage:
+     <abbr class="nz-abbr" data-ar="الأطعمة والمشروبات"
+                            data-en="Food & Beverage"
+                            data-meaning="إيرادات المطاعم والكافي والبار">F&B</abbr>
+   ========================================================================= */
+.nz-abbr {
+  position: relative;
+  display: inline-flex; align-items: center; gap: 4px;
+  text-decoration: none;
+  cursor: help;
+  font-style: normal;
+  border-bottom: 1px dotted currentColor;
+  padding-bottom: 1px;
+}
+/* Up-arrow indicator above the term */
+.nz-abbr::before {
+  content: "▲";
+  position: absolute;
+  inset-block-end: calc(100% + 2px);
+  inset-inline-start: 50%;
+  transform: translateX(-50%) scale(0.85);
+  font-size: 8px;
+  line-height: 1;
+  color: var(--gold-700);
+  opacity: 0;
+  transition: opacity 160ms, inset-block-end 160ms;
+  pointer-events: none;
+}
+.nz-abbr:hover::before,
+.nz-abbr:focus-visible::before {
+  opacity: 1;
+  inset-block-end: calc(100% + 6px);
+}
+
+/* The tooltip card itself */
+.nz-abbr::after {
+  content: attr(data-ar) " · " attr(data-en) " — " attr(data-meaning);
+  position: absolute;
+  inset-block-end: calc(100% + 10px);
+  inset-inline-start: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background: var(--ink-900);
+  color: var(--paper);
+  font-family: var(--font-ar);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.55;
+  white-space: normal;
+  width: max-content;
+  max-width: 280px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  box-shadow: 0 12px 32px -8px rgba(20,17,14,0.4);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 180ms, visibility 180ms, transform 180ms;
+  z-index: 9999;
+  text-align: start;
+  letter-spacing: 0;
+}
+/* Little triangle pointing down toward the term */
+.nz-abbr .nz-abbr-arrow,
+.nz-abbr-arrow {
+  display: none;
+}
+
+.nz-abbr:hover::after,
+.nz-abbr:focus-visible::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* When meaning is empty, fall back to AR · EN only */
+.nz-abbr[data-meaning=""]::after {
+  content: attr(data-ar) " · " attr(data-en);
+}
+
+/* Variant for use on a dark background (inverts colors) */
+.nz-abbr.on-dark {
+  border-bottom-color: currentColor;
+}
+.nz-abbr.on-dark::after {
+  background: var(--paper);
+  color: var(--ink-900);
+  box-shadow: 0 12px 32px -8px rgba(0,0,0,0.6);
+}
+.nz-abbr.on-dark::before {
+  color: var(--gold-400);
+}
+
+</style>
+<style>/* =========================================================================
+   Dheuof motion toolkit — CSS animations + scroll-triggered classes
+   Showcase-grade. Subtle for ops surfaces, expressive for marketing/slides.
+   ========================================================================= */
+
+/* ── Tokens ─────────────────────────────────────────────────────────────── */
+:root {
+  --m-fast:   220ms;
+  --m-med:    480ms;
+  --m-slow:   820ms;
+  --m-xslow: 1200ms;
+  --m-out:    cubic-bezier(0.22, 1, 0.36, 1);     /* decel — for arrivals */
+  --m-ease:   cubic-bezier(0.65, 0, 0.35, 1);     /* symmetric */
+  --m-spring: cubic-bezier(0.34, 1.56, 0.64, 1);  /* gentle overshoot */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* =========================================================================
+   1) Floating — gentle perpetual bob
+   Apply as: <div class="m-float">. Variants control phase + range.
+   ========================================================================= */
+@keyframes m-float {
+  0%, 100% { transform: translateY(0) rotate(var(--m-rot, 0deg)); }
+  50%      { transform: translateY(calc(-1 * var(--m-range, 12px))) rotate(var(--m-rot, 0deg)); }
+}
+.m-float    { animation: m-float 6s ease-in-out infinite; will-change: transform; }
+.m-float-1  { animation: m-float 5s ease-in-out -1.2s infinite; }
+.m-float-2  { animation: m-float 7s ease-in-out -2.8s infinite; }
+.m-float-3  { animation: m-float 8s ease-in-out -4.1s infinite; }
+
+/* Use --m-range and --m-rot to vary per-element */
+
+/* =========================================================================
+   2) Fade-up on scroll
+   Drop `.m-rise` on any element + add `[data-m-rise]` so the IO observes it.
+   Active when `.is-in` is added.
+   ========================================================================= */
+[data-m-rise] {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity var(--m-med) var(--m-out), transform var(--m-med) var(--m-out);
+  will-change: opacity, transform;
+}
+[data-m-rise].is-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Stagger children — add data-m-rise-stagger to the parent.
+   Children get an incremental --i set by JS. */
+[data-m-rise-stagger] > * {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity var(--m-med) var(--m-out), transform var(--m-med) var(--m-out);
+  transition-delay: calc(var(--i, 0) * 80ms);
+  will-change: opacity, transform;
+}
+[data-m-rise-stagger].is-in > * {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* =========================================================================
+   3) Word-by-word reveal
+   Wrap text with: <h1 data-m-words>…</h1>. JS splits to <span class="m-word">.
+   ========================================================================= */
+.m-words .m-word {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(0.6em) rotateX(-30deg);
+  transform-origin: 50% 100%;
+  transition: opacity var(--m-slow) var(--m-out), transform var(--m-slow) var(--m-out);
+  transition-delay: calc(var(--w-i, 0) * 80ms);
+  will-change: opacity, transform;
+}
+.m-words.is-in .m-word {
+  opacity: 1;
+  transform: translateY(0) rotateX(0);
+}
+
+/* =========================================================================
+   4) Hover shimmer — gold glint sliding across a button / card
+   Apply: <button class="m-shimmer">. Requires position: relative; overflow: hidden.
+   ========================================================================= */
+.m-shimmer {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.m-shimmer::after {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0;
+  inset-inline-start: -120%;
+  width: 60%;
+  background: linear-gradient(120deg,
+    transparent 0%,
+    rgba(255,255,255,0.0) 25%,
+    rgba(255,235,180,0.45) 50%,
+    rgba(255,255,255,0.0) 75%,
+    transparent 100%);
+  transform: skewX(-22deg);
+  transition: inset-inline-start var(--m-slow) var(--m-out);
+  pointer-events: none;
+  z-index: 1;
+}
+.m-shimmer:hover::after { inset-inline-start: 120%; }
+
+/* Continuous shimmer for hero cards */
+@keyframes m-shimmer-loop {
+  0%   { inset-inline-start: -120%; }
+  60%  { inset-inline-start: 120%;  }
+  100% { inset-inline-start: 120%;  }
+}
+.m-shimmer-loop::after {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0;
+  inset-inline-start: -120%;
+  width: 40%;
+  background: linear-gradient(120deg,
+    transparent, rgba(255,235,180,0.35), transparent);
+  transform: skewX(-22deg);
+  animation: m-shimmer-loop 4.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* =========================================================================
+   5) Number count-up
+   <span data-m-count="22" data-m-suffix="٪">٢٢٪</span>
+   JS animates from 0 to target when in view.
+   ========================================================================= */
+[data-m-count] { font-variant-numeric: tabular-nums; }
+
+/* =========================================================================
+   6) Parallax — JS sets --m-park on the element (negative px); css consumes
+   ========================================================================= */
+.m-parallax { transform: translateY(var(--m-park, 0px)); will-change: transform; }
+
+/* =========================================================================
+   7) Hover lift — universal "buttoned" feel for cards
+   ========================================================================= */
+.m-lift { transition: transform var(--m-fast) var(--m-out), box-shadow var(--m-fast) var(--m-out); }
+.m-lift:hover { transform: translateY(-2px); }
+
+/* =========================================================================
+   8) Glow pulse — for live/recording indicators
+   ========================================================================= */
+@keyframes m-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(201,168,95,0.45); }
+  50%      { box-shadow: 0 0 0 10px rgba(201,168,95,0); }
+}
+.m-glow { animation: m-glow 1.8s var(--m-ease) infinite; }
+
+/* =========================================================================
+   9) Slide enter (deck) — used by the pitch deck on slide change
+   ========================================================================= */
+.m-enter > * {
+  opacity: 0;
+  transform: translateY(32px);
+  animation: m-enter-in var(--m-slow) var(--m-out) forwards;
+  animation-delay: calc(var(--i, 0) * 110ms);
+}
+@keyframes m-enter-in {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* =========================================================================
+   10) Marquee — for trust strip / endless logo bar
+   ========================================================================= */
+@keyframes m-marquee { 0% { transform: translateX(0); } 100% { transform: translateX(50%); } }
+.m-marquee { display: flex; animation: m-marquee 30s linear infinite; }
+[dir="rtl"] .m-marquee { animation-direction: reverse; }
+</style>
 <style>
-  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-  :root {
-    --navy:   #0F2640;
-    --blue:   #185FA5;
-    --green:  #10B981;
-    --gold:   #F59E0B;
-    --bg:     #F8FAFC;
-    --text:   #1e293b;
-    --muted:  #64748b;
-    --border: #e2e8f0;
-    --white:  #ffffff;
-    --shadow: 0 1px 4px rgba(0,0,0,0.08);
-    --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--paper);
+    color: var(--ink-900);
+    font-family: var(--font-ar);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
   }
-  html { scroll-behavior: smooth; }
-  body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; background: var(--bg); color: var(--text); font-size: 16px; line-height: 1.6; }
-  a { text-decoration: none; color: inherit; }
+  * { box-sizing: border-box; }
+  a { text-decoration: none; color: inherit; cursor: pointer; }
+  button { font: inherit; cursor: pointer; }
 
-  .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
-  .text-center { text-align: center; }
-
-  .btn {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 12px 28px; border-radius: 10px; border: none;
-    font-size: 0.95rem; font-weight: 600; cursor: pointer;
-    transition: all 0.2s; font-family: inherit;
+  /* ───── Top header ──────────────────────────────────────────────── */
+  .top {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 22px 48px;
+    border-bottom: 1px solid var(--hairline);
+    background: var(--paper);
+    position: sticky; top: 0; z-index: 50;
   }
-  .btn-primary  { background: var(--blue);  color: #fff; }
-  .btn-primary:hover { background: var(--navy); transform: translateY(-1px); }
-  .btn-outline  { background: transparent; color: var(--blue); border: 2px solid var(--blue); }
-  .btn-outline:hover { background: var(--blue); color: #fff; }
-  .btn-gold { background: var(--gold); color: var(--navy); }
-  .btn-gold:hover { background: #d97706; transform: translateY(-1px); }
+  .top .brand { display: inline-flex; align-items: center; gap: 14px; }
+  .top .brand img { width: 40px; height: 40px; }
+  .top .brand .ar { font-family: var(--font-ar-display); font-weight: 600; font-size: 22px; color: var(--ink-900); }
+  .top .brand .en { font-family: var(--font-en-display); font-style: italic; font-size: 14px; color: var(--gold-700); margin-inline-start: 4px; }
+  .top .links { display: flex; gap: 4px; }
+  .top .links a { padding: 8px 14px; border-radius: 999px; font-size: 13px; color: var(--ink-700); transition: background 120ms; }
+  .top .links a:hover { background: var(--surface-2); color: var(--ink-900); }
+  .top .actions { display: flex; align-items: center; gap: 10px; }
+  .top .lang { padding: 6px 10px; font-size: 12px; font-family: var(--font-en); border-radius: 4px; color: var(--fg-2); }
+  .top .lang:hover { background: var(--surface-2); }
+  .top .cta { padding: 9px 18px; font-size: 13px; font-weight: 500; background: var(--brand-700); color: var(--paper); border-radius: 999px; transition: background 120ms; }
+  .top .cta:hover { background: var(--brand-800); }
 
-  .section-tag {
-    display: inline-block; background: rgba(24,95,165,0.1);
-    color: var(--blue); padding: 6px 16px; border-radius: 20px;
-    font-size: 0.8rem; font-weight: 600; margin-bottom: 16px; letter-spacing: 0.05em;
-  }
-  .section-title { font-size: 2rem; font-weight: 700; color: var(--navy); margin-bottom: 12px; }
-  .section-subtitle { font-size: 1.05rem; color: var(--muted); max-width: 600px; margin: 0 auto; }
-
-  /* Header */
-  .header {
-    position: sticky; top: 0; z-index: 100;
-    background: rgba(15,38,64,0.97); backdrop-filter: blur(8px);
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-  }
-  .nav { display: flex; align-items: center; justify-content: space-between; height: 68px; }
-  .nav-logo { display: flex; align-items: center; gap: 10px; color: #fff; font-size: 1.4rem; font-weight: 700; }
-  .nav-logo .dot { color: var(--gold); }
-  .nav-links { display: flex; align-items: center; gap: 28px; }
-  .nav-links a { color: rgba(255,255,255,0.75); font-size: 0.9rem; transition: 0.2s; }
-  .nav-links a:hover { color: #fff; }
-  .nav-cta { display: flex; gap: 10px; }
-
-  /* Hero */
+  /* ───── Hero ────────────────────────────────────────────────────── */
   .hero {
-    background: linear-gradient(135deg, var(--navy) 0%, #1a3a5f 50%, #0d4a7a 100%);
-    color: #fff; padding: 100px 0 80px; position: relative; overflow: hidden;
+    max-width: 1280px;
+    margin: 60px auto 56px;
+    padding: 0 48px;
+    text-align: center;
   }
-  .hero::before {
-    content: ''; position: absolute; inset: 0;
-    background: radial-gradient(ellipse at 80% 50%, rgba(24,95,165,0.3) 0%, transparent 60%);
+  .hero .eyebrow {
+    display: inline-block;
+    font-family: var(--font-en); font-size: 12px; letter-spacing: 0.24em; text-transform: uppercase;
+    color: var(--gold-700); font-weight: 500;
   }
-  .hero-content { position: relative; max-width: 680px; }
-  .hero-badge {
-    display: inline-flex; align-items: center; gap: 8px;
-    background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3);
-    color: var(--gold); padding: 7px 16px; border-radius: 24px;
-    font-size: 0.82rem; font-weight: 600; margin-bottom: 24px;
+  .hero h1 {
+    font-family: var(--font-ar-display); font-weight: 600;
+    font-size: clamp(48px, 6vw, 84px); line-height: 1.04;
+    color: var(--ink-900); margin: 18px 0 22px;
+    letter-spacing: -0.02em;
   }
-  .hero h1 { font-size: 3rem; font-weight: 800; line-height: 1.2; margin-bottom: 20px; letter-spacing: -0.02em; }
-  .hero h1 .highlight { color: var(--gold); }
-  .hero p { font-size: 1.15rem; color: rgba(255,255,255,0.78); margin-bottom: 36px; line-height: 1.7; }
-  .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; }
-  .hero-stats {
-    display: flex; gap: 40px; margin-top: 56px;
-    padding-top: 40px; border-top: 1px solid rgba(255,255,255,0.1);
+  .hero h1 .accent { color: var(--gold-700); }
+  .hero .lead {
+    font-size: 19px; color: var(--fg-1);
+    max-width: 640px; margin: 0 auto;
+    line-height: 1.6;
   }
-  .hero-stat .num { font-size: 1.8rem; font-weight: 700; color: var(--gold); }
-  .hero-stat .lbl { font-size: 0.82rem; color: rgba(255,255,255,0.6); margin-top: 2px; }
+  .hero .meta {
+    display: inline-flex; gap: 32px; align-items: center;
+    margin-top: 28px;
+    font-size: 13px; color: var(--fg-3);
+  }
+  .hero .meta .pill {
+    background: var(--brand-50); color: var(--brand-800);
+    padding: 6px 14px; border-radius: 999px;
+    display: inline-flex; align-items: center; gap: 6px;
+    font-weight: 500;
+  }
+  .hero .meta .pill .d { width: 6px; height: 6px; background: var(--brand-700); border-radius: 999px; }
 
-  /* Features */
-  .features { padding: 80px 0; background: var(--white); }
-  .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 28px; margin-top: 48px; }
-  .feature-item { text-align: center; padding: 28px 20px; }
-  .feature-item .fi-icon { width: 64px; height: 64px; border-radius: 16px; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; }
-  .fi-blue   { background: rgba(24,95,165,0.1); }
-  .fi-green  { background: rgba(16,185,129,0.1); }
-  .fi-gold   { background: rgba(245,158,11,0.1); }
-  .fi-purple { background: rgba(139,92,246,0.1); }
-  .feature-item h3 { font-size: 1rem; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
-  .feature-item p { font-size: 0.875rem; color: var(--muted); }
+  /* ───── 12-program grid ─────────────────────────────────────────── */
+  .grid-wrap { max-width: 1280px; margin: 0 auto 100px; padding: 0 48px; }
 
-  /* Modules */
-  .modules { padding: 80px 0; }
-  .modules-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-top: 48px; }
-  .module-card {
-    background: var(--white); border-radius: 14px; border: 1.5px solid var(--border);
-    padding: 24px; transition: all 0.22s; position: relative; overflow: hidden;
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
   }
-  .module-card::before {
-    content: ''; position: absolute; top: 0; right: 0; width: 4px; height: 100%;
-    background: var(--blue); transform: scaleY(0); transition: 0.22s; transform-origin: top;
+  .tile {
+    background: var(--white);
+    border: 1px solid var(--hairline);
+    border-radius: 16px;
+    padding: 26px 26px 24px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1),
+                border-color 220ms;
+    isolation: isolate;
+    min-height: 220px;
+    display: flex; flex-direction: column;
   }
-  .module-card:hover { border-color: var(--blue); box-shadow: var(--shadow-lg); transform: translateY(-2px); }
-  .module-card:hover::before { transform: scaleY(1); }
-  .module-card .module-icon {
-    width: 48px; height: 48px; border-radius: 12px;
-    background: linear-gradient(135deg, var(--blue), #1d4ed8);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.4rem; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(24,95,165,0.25);
+  .tile:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 48px rgba(20,17,14,0.10), 0 6px 16px rgba(20,17,14,0.06);
+    border-color: var(--gold-300);
   }
-  .module-card .module-num {
-    position: absolute; top: 16px; left: 16px; font-size: 0.7rem; font-weight: 700;
-    color: var(--muted); background: var(--bg); padding: 3px 8px; border-radius: 10px;
+  /* Gold sheen on hover */
+  .tile::after {
+    content: "";
+    position: absolute;
+    inset-block-start: 0; inset-inline-start: -100%;
+    width: 50%; height: 100%;
+    background: linear-gradient(120deg, transparent, rgba(255,225,150,0.35), transparent);
+    transform: skewX(-22deg);
+    transition: inset-inline-start 700ms cubic-bezier(0.22, 1, 0.36, 1);
+    z-index: 1;
+    pointer-events: none;
   }
-  .module-card h3 { font-size: 1rem; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
-  .module-card p { font-size: 0.85rem; color: var(--muted); line-height: 1.5; margin-bottom: 14px; }
-  .module-price { font-size: 0.88rem; font-weight: 600; color: var(--blue); }
-  .module-price .amount { font-size: 1.1rem; color: var(--navy); }
-  .module-price .per { font-size: 0.75rem; color: var(--muted); font-weight: 400; }
+  .tile:hover::after { inset-inline-start: 100%; }
+  .tile > * { position: relative; z-index: 2; }
 
-  /* Pricing */
-  .pricing { padding: 80px 0; }
-  .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-top: 48px; align-items: start; }
-  .plan-card {
-    background: var(--white); border-radius: 16px; border: 1.5px solid var(--border);
-    padding: 28px 24px; transition: all 0.22s; position: relative;
+  .tile .num {
+    position: absolute;
+    top: 16px; inset-inline-end: 18px;
+    font-family: var(--font-mono);
+    font-size: 11px; letter-spacing: 0.16em;
+    color: var(--fg-3);
+    font-weight: 500;
   }
-  .plan-card.popular { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(24,95,165,0.12), var(--shadow-lg); transform: scale(1.02); }
-  .plan-card:hover:not(.popular) { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
-  .popular-badge {
-    position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
-    background: linear-gradient(135deg, var(--blue), #1d4ed8); color: #fff;
-    padding: 5px 18px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; white-space: nowrap;
+  .tile .ic {
+    width: 60px; height: 60px;
+    background: linear-gradient(135deg, var(--paper-tint), var(--sand));
+    border: 1px solid var(--hairline);
+    border-radius: 14px;
+    display: grid; place-items: center;
+    font-size: 28px;
+    margin-bottom: 18px;
+    transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
   }
-  .plan-card .plan-name { font-size: 0.85rem; font-weight: 600; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.08em; }
-  .plan-card .plan-price { font-size: 2rem; font-weight: 800; color: var(--navy); margin-bottom: 4px; }
-  .plan-card .plan-price span { font-size: 0.9rem; color: var(--muted); font-weight: 400; }
-  .plan-card .plan-desc { font-size: 0.85rem; color: var(--muted); margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
-  .plan-features { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
-  .plan-features li { display: flex; align-items: flex-start; gap: 10px; font-size: 0.875rem; color: var(--text); }
-  .plan-features li .check { color: var(--green); font-size: 0.9rem; flex-shrink: 0; margin-top: 2px; }
-  .plan-btn { width: 100%; text-align: center; justify-content: center; }
-
-  /* Compare */
-  .compare { padding: 80px 0; background: var(--white); }
-  .compare-table { width: 100%; border-collapse: collapse; margin-top: 40px; font-size: 0.875rem; }
-  .compare-table th, .compare-table td { padding: 12px 14px; text-align: right; border-bottom: 1px solid var(--border); }
-  .compare-table th { background: var(--navy); color: #fff; font-weight: 600; }
-  .compare-table th:first-child { border-radius: 8px 0 0 0; }
-  .compare-table th:last-child  { border-radius: 0 8px 0 0; }
-  .compare-table tr:nth-child(even) td { background: #f8fafc; }
-  .compare-table tr:hover td { background: rgba(24,95,165,0.04); }
-  .compare-table .yes { color: var(--green); font-weight: 700; font-size: 1rem; }
-  .compare-table .no  { color: #d1d5db; }
-  .compare-table .add { color: var(--gold); font-weight: 600; font-size: 0.8rem; }
-
-  /* CTA */
-  .cta-section { background: linear-gradient(135deg, var(--navy) 0%, #1a3a5f 100%); color: #fff; padding: 80px 0; text-align: center; }
-  .cta-section h2 { font-size: 2.2rem; font-weight: 700; margin-bottom: 16px; }
-  .cta-section p { font-size: 1.05rem; color: rgba(255,255,255,0.75); margin-bottom: 36px; max-width: 520px; margin-left: auto; margin-right: auto; }
-  .cta-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
-
-  /* Footer */
-  .footer { background: var(--navy); color: rgba(255,255,255,0.6); padding: 48px 0 28px; }
-  .footer-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 32px; margin-bottom: 40px; }
-  .footer-col h4 { color: #fff; font-size: 0.9rem; font-weight: 600; margin-bottom: 14px; }
-  .footer-col a { display: block; color: rgba(255,255,255,0.55); font-size: 0.85rem; margin-bottom: 8px; transition: 0.2s; }
-  .footer-col a:hover { color: #fff; }
-  .footer-logo { font-size: 1.5rem; font-weight: 700; color: #fff; margin-bottom: 10px; }
-  .footer-logo .dot { color: var(--gold); }
-  .footer-desc { font-size: 0.85rem; line-height: 1.6; }
-  .footer-bottom { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem; flex-wrap: wrap; gap: 10px; }
-  .footer-bottom a { color: rgba(255,255,255,0.55); }
-  .footer-bottom a:hover { color: #fff; }
-
-  @media (max-width: 768px) {
-    .hero h1 { font-size: 2rem; }
-    .hero { padding: 64px 0 56px; }
-    .hero-stats { gap: 24px; flex-wrap: wrap; }
-    .nav-links { display: none; }
-    .footer-grid { grid-template-columns: 1fr 1fr; }
-    .section-title { font-size: 1.6rem; }
-    .compare-table { font-size: 0.78rem; }
-    .compare-table th, .compare-table td { padding: 8px 8px; }
+  .tile:hover .ic {
+    transform: scale(1.08) rotate(-4deg);
+    background: linear-gradient(135deg, var(--gold-200), var(--gold-100));
+    border-color: var(--gold-300);
   }
-  @media (max-width: 480px) {
-    .footer-grid { grid-template-columns: 1fr; }
-    .pricing-grid { grid-template-columns: 1fr; }
-    .plan-card.popular { transform: none; }
+  .tile .ar-name {
+    font-family: var(--font-ar-display);
+    font-size: 21px; font-weight: 600;
+    color: var(--ink-900);
+    line-height: 1.2;
   }
+  .tile .en-name {
+    font-family: var(--font-en);
+    font-size: 12px; color: var(--gold-700);
+    margin-top: 3px;
+    font-style: italic;
+    letter-spacing: 0.01em;
+  }
+  .tile .desc {
+    font-size: 13px;
+    color: var(--fg-1);
+    line-height: 1.55;
+    margin: 14px 0 0;
+    flex: 1;
+  }
+  .tile .foot {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid var(--hairline);
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12px;
+  }
+  .tile .foot .stat {
+    color: var(--fg-3);
+    font-family: var(--font-ar);
+  }
+  .tile .foot .stat .v {
+    font-family: var(--font-en);
+    font-variant-numeric: tabular-nums;
+    font-weight: 600; color: var(--ink-900);
+    margin-inline-start: 3px;
+  }
+  .tile .foot .arrow {
+    width: 28px; height: 28px;
+    background: var(--paper-tint);
+    border-radius: 999px;
+    display: grid; place-items: center;
+    color: var(--ink-700);
+    font-size: 14px;
+    transition: all 180ms;
+  }
+  .tile:hover .foot .arrow {
+    background: var(--gold-500);
+    color: var(--brand-900);
+    transform: translateX(4px);
+  }
+  [dir="rtl"] .tile .foot .arrow { transform: rotate(180deg); }
+  [dir="rtl"] .tile:hover .foot .arrow { transform: rotate(180deg) translateX(4px); }
+
+  /* Highlight VIP card */
+  .tile.featured {
+    background: linear-gradient(160deg, var(--brand-800) 0%, var(--brand-900) 100%);
+    border-color: transparent;
+    color: var(--paper);
+  }
+  .tile.featured .num { color: var(--gold-400); }
+  .tile.featured .ic {
+    background: var(--gold-500);
+    border-color: var(--gold-600);
+    color: var(--brand-900);
+  }
+  .tile.featured:hover .ic {
+    background: var(--gold-400);
+    border-color: var(--gold-500);
+  }
+  .tile.featured .ar-name { color: var(--paper); }
+  .tile.featured .en-name { color: var(--gold-400); }
+  .tile.featured .desc { color: var(--gold-200); }
+  .tile.featured .foot { border-top-color: rgba(201,168,95,0.2); }
+  .tile.featured .foot .stat { color: var(--gold-300); }
+  .tile.featured .foot .stat .v { color: var(--paper); }
+  .tile.featured .foot .arrow { background: rgba(255,255,255,0.1); color: var(--gold-300); }
+
+  /* ───── Companion sections (bottom) ─────────────────────────────── */
+  .extras {
+    background: var(--paper-tint);
+    border-top: 1px solid var(--hairline);
+    padding: 80px 48px;
+  }
+  .extras .inner { max-width: 1280px; margin: 0 auto; }
+  .extras h2 {
+    font-family: var(--font-ar-display);
+    font-size: 32px; font-weight: 600;
+    color: var(--ink-900); margin: 0 0 28px;
+    letter-spacing: -0.01em;
+  }
+  .extras h2 .accent { color: var(--gold-700); }
+  .extras .row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .extras .ex-card {
+    background: var(--white);
+    border: 1px solid var(--hairline);
+    border-radius: 14px;
+    padding: 22px 24px 26px;
+    transition: transform 180ms, box-shadow 180ms;
+  }
+  .extras .ex-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-2); }
+  .extras .ex-card .ic { width: 44px; height: 44px; background: var(--paper-tint); border: 1px solid var(--hairline); border-radius: 10px; display: grid; place-items: center; font-size: 22px; margin-bottom: 14px; }
+  .extras .ex-card .ttl { font-family: var(--font-ar-display); font-weight: 600; font-size: 17px; color: var(--ink-900); }
+  .extras .ex-card .en-sub { font-family: var(--font-en); font-style: italic; font-size: 12px; color: var(--gold-700); margin-top: 2px; }
+  .extras .ex-card .desc { font-size: 13px; color: var(--fg-1); margin: 10px 0 14px; line-height: 1.55; }
+  .extras .ex-card .open { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--brand-700); font-weight: 600; }
+  .extras .ex-card .open .a { text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--gold-500); text-decoration-thickness: 1px; }
+
+  /* ───── Footer ──────────────────────────────────────────────────── */
+  footer {
+    background: var(--brand-900);
+    color: var(--gold-100);
+    padding: 40px 48px;
+    text-align: center;
+    font-size: 13px;
+  }
+  footer .brand-line { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  footer .brand-line .ar { font-family: var(--font-ar-display); font-size: 18px; color: var(--paper); font-weight: 600; }
+  footer .cop { color: var(--gold-400); margin-top: 8px; font-family: var(--font-en); }
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
-<header class="header">
-  <nav class="nav container">
-    <div class="nav-logo">
-      &#127960; ضيوف<span class="dot">.</span>
+
+
+<header class="top" data-m-rise="">
+  <a class="brand" href="index.html">
+    <img src="3e0b9ff7-7eb8-4f15-9520-57063a91deb5" alt="">
+    <div>
+      <span class="ar">ضيوف</span>
+      <span class="en">Dheuof</span>
     </div>
-    <div class="nav-links">
-      <a href="#modules">الوحدات</a>
-      <a href="#pricing">الأسعار</a>
-      <a href="#compare">المقارنة</a>
-      <a href="#contact">تواصل معنا</a>
-    </div>
-    <div class="nav-cta">
-      <a href="/login" class="btn btn-outline" style="padding:9px 20px;font-size:0.875rem">دخول</a>
-      <a href="/login" class="btn btn-gold" style="padding:9px 20px;font-size:0.875rem">ابدأ مجاناً</a>
-    </div>
+  </a>
+  <nav class="links">
+    <a href="modules/01-guests/index.html">البرامج</a>
+    <a href="website/index.html">الموقع التسويقي</a>
+    <a href="slides/index.html">العرض التعريفي</a>
   </nav>
+  <div class="actions">
+    <a class="lang">EN</a>
+    <a class="cta">احجز عرضاً تجريبياً</a>
+  </div>
 </header>
 
-<!-- HERO -->
 <section class="hero">
-  <div class="container">
-    <div class="hero-content">
-      <div class="hero-badge">
-        &#9889; منصة SaaS متكاملة للضيافة السعودية
+  <span class="eyebrow" data-m-rise="">منصة إدارة الضيافة الكاملة</span>
+  <h1 data-en="All your hotel runs in one place.">كل ما يديره فندقك في مكان واحد.</h1>
+  <p class="lead" data-m-rise="">ضيوف برنامج متكامل PMS يجمع الحجوزات، والمحاسبة، والمخزون، والصيانة، والمفتاح الذكي لكشف الاحتيال، والموارد البشرية، Booking وقنوات أخرى تحت لوحة تحكم واحدة مصممة للسوق السعودي والخليجي — وقريباً سوف تتصل ZATCA.</p>
+  <div class="meta" data-m-rise="" style="margin-top: 18px;">
+    <span style="font-size: 14px; color: var(--brand-700); font-weight: 600;">ضيف</span>
+    <span style="color: var(--gold-500);">•</span>
+    <span style="font-size: 14px; color: var(--brand-700); font-weight: 600;">سياحة</span>
+    <span style="color: var(--gold-500);">•</span>
+    <span style="font-size: 14px; color: var(--brand-700); font-weight: 600;">شموس</span>
+    <span style="color: var(--gold-500);">•</span>
+    <span style="font-size: 14px; color: var(--brand-700); font-weight: 600;">مستندات حكومية</span>
+  </div>
+  <div class="meta" data-m-rise="">
+    <span class="pill"><span class="d"></span>١٢ برنامج جاهز للتجربة</span>
+    <span>· عربي أولاً · ZATCA Phase 2 · متكامل مع قوى</span>
+  </div>
+</section>
+
+<div class="grid-wrap">
+  <div class="grid" data-m-rise-stagger="">
+
+    <a class="tile featured" href="modules/01-guests/checkin.html">
+      <span class="num">01</span>
+      <div class="ic">🛏</div>
+      <div class="ar-name">الضيوف</div>
+      <div class="en-name">ضيوف بمناجمنت</div>
+      <p class="desc">تسجيل دخول سريع (امسح الهوية أو الإقامة)، الحجوزات، التسعير الديناميكي، KPIs.</p>
+      <div class="foot">
+        <span class="stat">إشغال الليلة <span class="v">٨٧٪</span></span>
+        <span class="arrow">→</span>
       </div>
-      <h1>إدارة فندقك <span class="highlight">باحترافية</span><br>في كل مكان</h1>
-      <p>
-        ضيوف — منصة متكاملة تضم 15 وحدة لإدارة الفنادق والشقق المخدومة.
-        من إدارة النزلاء والحجوزات إلى الذكاء الاصطناعي ومدير القنوات.
-        كل ما تحتاجه في نظام واحد.
-      </p>
-      <div class="hero-actions">
-        <a href="/login" class="btn btn-gold" style="font-size:1rem;padding:14px 32px">ابدأ التجربة المجانية — 30 يوم</a>
-        <a href="#pricing" class="btn btn-outline" style="font-size:1rem;padding:14px 32px;color:#fff;border-color:rgba(255,255,255,0.35)">عرض الأسعار</a>
+    </a>
+
+    <a class="tile" href="modules/02-shumus/index.html">
+      <span class="num">02</span>
+      <div class="ic">🛡</div>
+      <div class="ar-name">شموس</div>
+      <div class="en-name">Identify · MOI add-on</div>
+      <p class="desc">إضافة بسيطة أمام الضيف — تتعرّف عليه فوراً بالربط مع وزارة الداخلية.</p>
+      <div class="foot">
+        <span class="stat">تعرّفات اليوم <span class="v">٢٤٨</span></span>
+        <span class="arrow">→</span>
       </div>
-      <div class="hero-stats">
-        <div class="hero-stat"><div class="num">15</div><div class="lbl">وحدة متكاملة</div></div>
-        <div class="hero-stat"><div class="num">5</div><div class="lbl">باقات مرنة</div></div>
-        <div class="hero-stat"><div class="num">30</div><div class="lbl">يوم تجربة مجانية</div></div>
-        <div class="hero-stat"><div class="num">24/7</div><div class="lbl">دعم فني</div></div>
+    </a>
+
+    <a class="tile" href="modules/03-tourism/index.html">
+      <span class="num">03</span>
+      <div class="ic">📋</div>
+      <div class="ar-name">المستندات والاشتراكات</div>
+      <div class="en-name">Government Docs · Renewals</div>
+      <p class="desc">رفع المستندات الحكومية + تخصيص تنبيهات انتهاء الاشتراكات للمدير.</p>
+      <div class="foot">
+        <span class="stat">تنتهي ≤ ٣٠ يوم <span class="v">٣</span></span>
+        <span class="arrow">→</span>
       </div>
+    </a>
+
+    <a class="tile" href="modules/04-inventory/index.html">
+      <span class="num">04</span>
+      <div class="ic">🛏</div>
+      <div class="ar-name">مخزون الضيافة</div>
+      <div class="en-name">Hospitality Inventory · Standalone subscription</div>
+      <p class="desc">تجهيز الغرف: لُحف، فوط، عطور، صابون، أموينيتيز ومستلزمات <abbr class="nz-abbr" data-ar="الأطعمة والمشروبات" data-en="Food &amp; Beverage" data-meaning="موردي المطاعم والمقهى والبار">F&amp;B</abbr> — برنامج مستقل قابل للاشتراك بمفرده.</p>
+      <div class="foot">
+        <span class="stat">أصناف <span class="v">١٬٢٤٦</span></span>
+        <span class="arrow">→</span>
+      </div>
+    </a>
+
+    <a class="tile" href="modules/05-warehouse/index.html">
+      <span class="num">05</span>
+      <div class="ic">🔧</div>
+      <div class="ar-name">مستودع الصيانة</div>
+      <div class="en-name">Maintenance Warehouse · Standalone subscription</div>
+      <p class="desc">قطع الغيار، أدوات الصيانة، الأسلاك، الإنارة، الأصباغ، السلالم — برنامج مستقل قابل للاشتراك بمفرده.</p>
+      <div class="foot">
+        <span class="stat">تذاكر مفتوحة <span class="v">٧</span></span>
+        <span class="arrow">→</span>
+      </div>
+    </a>
+
+    <a class="tile" href="modules/06-accounting/index.html">
+      <span class="num">06</span>
+      <div class="ic">💳</div>
+      <div class="ar-name">المحاسبة</div>
+      <div class="en-name">Accounting · + Custom accounts</div>
+      <p class="desc">دفتر اليومية، P&amp;L، VAT، مع تخصيص حسابات جديدة حسب الحاجة.</p>
+      <div class="foot">
+        <span class="stat">ربح اليوم <span class="v">١٦٬٤٤٠</span></span>
+        <span class="arrow">→</span>
+      </div>
+    </a>
+
+    <a class="tile" href="modules/07-pos/index.html">
+      <span class="num">07</span>
+      <div class="ic">🏧</div>
+      <div class="ar-name">نقاط البيع</div>
+      <div class="en-name">POS Sync</div>
+      <p class="desc">٦ أجهزة متصلة، إقفال يومي تلقائي، MADA + Apple Pay.</p>
+      <div class="foot">
+        <span class="stat">حركات اليوم <span class="v">٢٤٨</span></span>
+        <span class="arrow">→</span>
+      </div>
+    </a>
+
+    <a class="tile" href="modules/08-smart-key/index.html">
+      <span class="num">08</span>
+      <div class="ic">🔐</div>
+      <div class="ar-name">المفتاح الذكي</div>
+      <div class="en-name">Smart Key · All-in-one Guard</div>
+      <p class="desc">يراقب جميع البرامج دفعة واحدة ويصدر إنذارات فورية — بسعر منخفض.</p>
+      <div class="foot">
+        <span class="stat">إنذارات نشطة <span class="v">٤</span></span>
+        <span class="arrow">→</span>
+      </div>
+    </a>
+
+    <a class="tile" href="modules/09-hr/index.html">
+      <span class="num">09</span>
+      <div class="ic">👥</div>
+      <div class="ar-name">الموارد البشرية</div>
+      <div class="en-name">HR &amp; Payroll</div>
+      <p class="desc">رواتب، إقامات، قوى، GOSI، عقود، تأمين طبي.</p>
+      <div class="foot">
+        <span class="stat">موظفين نشطين <span class="v">٨٤</span></span>
+        <span class="arrow">→</span>
+      </div>
+    </a>
+
+    <a class="tile" href="modules/10-channel-marketing/index.html">
+      <span class="num">10</span>
+      <div class="ic">🌐</div>
+      <div class="ar-name">تسويق القنوات</div>
+      <div class="en-name">Channel Marketing</div>
+      <p class="desc">Booking، Agoda، Expedia، Almosafer — ٤٢ قناة في لوحة واحدة.</p>
+      <div class="foot">
+        <span class="stat">حجوزات الشهر <span class="v">٢٢٤</span></span>
+        <span class="arrow">→</span>
+      </div>
+    </a>
+
+    <a class="tile" href="modules/11-kpis/index.html">
+      <span class="num">11</span>
+      <div class="ic">📈</div>
+      <div class="ar-name">مؤشرات الأداء</div>
+      <div class="en-name">KPIs</div>
+      <p class="desc"><abbr class="nz-abbr" data-ar="الإيراد لكل غرفة متاحة" data-en="Revenue Per Available Room" data-meaning="إجمالي إيراد الغرف ÷ الغرف المتاحة">RevPAR</abbr>، <abbr class="nz-abbr" data-ar="متوسط سعر الغرفة" data-en="Average Daily Rate" data-meaning="إيراد الغرف ÷ الغرف المبيعة">ADR</abbr>، <abbr class="nz-abbr" data-ar="نسبة الإشغال" data-en="Occupancy Rate" data-meaning="الغرف المبيعة ÷ إجمالي الغرف">OCC</abbr>، <abbr class="nz-abbr" data-ar="الربح التشغيلي لكل غرفة متاحة" data-en="Gross Operating Profit Per Available Room" data-meaning="صافي الربح ÷ الغرف المتاحة">GOPPAR</abbr> — مع رسوم بيانية وتحليل اتجاهات.</p>
+      <div class="foot">
+        <span class="stat">RevPAR <span class="v">٦٢٦</span></span>
+        <span class="arrow">→</span>
+      </div>
+    </a>
+
+    <a class="tile" href="modules/12-analytics/index.html">
+      <span class="num">12</span>
+      <div class="ic">🧠</div>
+      <div class="ar-name">تحليل البيانات</div>
+      <div class="en-name">Insights &amp; Analysis</div>
+      <p class="desc">SWOT تلقائي، تنبؤ ٩٠ يوم، توصيات شهرية بقيمة محسوبة.</p>
+      <div class="foot">
+        <span class="stat">رؤى نشطة <span class="v">١٤</span></span>
+        <span class="arrow">→</span>
+      </div>
+    </a>
+
+    <a class="tile" href="modules/13-staff-tracker/index.html">
+      <span class="num">13</span>
+      <div class="ic">⏰</div>
+      <div class="ar-name">أداء الموظفين</div>
+      <div class="en-name">Staff Performance · Custom subscription</div>
+      <p class="desc">الحضور هو الأداء — تسجيل دخول وتأخير، حوافز أسبوعية تربط الانضباط بالمكافأة، تنبيه يوم الراحة قبلها بيومين.</p>
+      <div class="foot">
+        <span class="stat">حاضرون <span class="v">١٨/٢٠</span></span>
+        <span class="arrow">→</span>
+      </div>
+    </a>
+
+    <a class="tile" href="modules/14-manager-goals/index.html">
+      <span class="num">14</span>
+      <div class="ic">🎯</div>
+      <div class="ar-name">أهداف المدير</div>
+      <div class="en-name">Manager Goals · Custom subscription</div>
+      <p class="desc">أهداف شهرية وفصلية مع تتبع مباشر، تنبيهات، معلومات إضافية لكل هدف.</p>
+      <div class="foot">
+        <span class="stat">الإنجاز الكلي <span class="v">٧٨٪</span></span>
+        <span class="arrow">→</span>
+      </div>
+    </a>
+
+  </div>
+</div>
+
+<section class="extras">
+  <div class="inner">
+    <h2 data-m-rise="">أدوات <span class="accent">إضافية</span></h2>
+    <div class="row" data-m-rise-stagger="">
+      <a class="ex-card" href="onboarding.html">
+        <div class="ic">📝</div>
+        <div class="ttl">تسجيل منشأة جديدة</div>
+        <div class="en-sub">Onboarding · Manager sign-up</div>
+        <p class="desc">سجّل بيانات مدير المنشأة، واحصل على رقم وصول مكوّن من ٥ خانات وكلمة سر فور التفعيل.</p>
+        <span class="open"><span class="a">ابدأ التسجيل →</span></span>
+      </a>
+      <a class="ex-card" href="reports.html">
+        <div class="ic">📊</div>
+        <div class="ttl">مركز التقارير</div>
+        <div class="en-sub">Reports center · cross-link any 2 programs</div>
+        <p class="desc">كل برنامج له تقاريره الخاصة. واربط تقريرين معاً للحصول على رؤى مدمجة بنقرة واحدة.</p>
+        <span class="open"><span class="a">افتح المركز ←</span></span>
+      </a>
+      <a class="ex-card" href="packages.html">
+        <div class="ic">💎</div>
+        <div class="ttl">الباقات والأسعار</div>
+        <div class="en-sub">Packages · Pricing tiers</div>
+        <p class="desc">باقة الضيافة الكاملة، باقة الإدارة، باقة المطاعم — مخصّصة حسب حاجة المنشأة.</p>
+        <span class="open"><span class="a">عرض الباقات →</span></span>
+      </a>
+    </div>
+    <div class="row" data-m-rise-stagger="" style="margin-top: 14px;">
+      <a class="ex-card" href="reports.html">
+        <div class="ic">📊</div>
+        <div class="ttl">مركز التقارير</div>
+        <div class="en-sub">Reports center · cross-link any 2 programs</div>
+        <p class="desc">كل برنامج له تقاريره الخاصة. واربط تقريرين معاً للحصول على رؤى مدمجة بنقرة واحدة.</p>
+        <span class="open"><span class="a">افتح المركز ←</span></span>
+      </a>
+      <a class="ex-card" href="website/index.html">
+        <div class="ic">🌐</div>
+        <div class="ttl">الموقع التسويقي</div>
+        <div class="en-sub">Public marketing site</div>
+        <p class="desc">صفحة الهبوط الرئيسية لضيوف — تقدّم النظام للعملاء المحتملين بأسلوب فخم وأنيق.</p>
+        <span class="open"><span class="a">افتح →</span></span>
+      </a>
+      <a class="ex-card" href="staff-mobile/index.html">
+        <div class="ic">📱</div>
+        <div class="ttl">تطبيق الموظفين</div>
+        <div class="en-sub">Staff mobile app</div>
+        <p class="desc">واجهة iOS للتدبير والصيانة — قائمة المهام، تتبع التقدم، تفاصيل الغرفة.</p>
+        <span class="open"><span class="a">افتح →</span></span>
+      </a>
+      <a class="ex-card" href="slides/index.html">
+        <div class="ic">🎤</div>
+        <div class="ttl">العرض التعريفي</div>
+        <div class="en-sub">Pitch deck — 7 slides</div>
+        <p class="desc">عرض ٧ شرائح لتقديم ضيوف لمستثمرين أو شركاء جدد — يستخدم تقنية الكشف التدريجي.</p>
+        <span class="open"><span class="a">افتح →</span></span>
+      </a>
     </div>
   </div>
 </section>
 
-<!-- FEATURES -->
-<section class="features">
-  <div class="container">
-    <div class="text-center">
-      <div class="section-tag">لماذا ضيوف؟</div>
-      <h2 class="section-title">المزايا التي تجعلنا مختلفين</h2>
-      <p class="section-subtitle">صُمّمت المنصة خصيصاً للسوق السعودي مع مراعاة جميع المتطلبات المحلية</p>
-    </div>
-    <div class="features-grid">
-      <div class="feature-item">
-        <div class="fi-icon fi-blue">&#127760;</div>
-        <h3>مدير القنوات المتكامل</h3>
-        <p>اربط فندقك بـ Booking.com ومواسم وأكثر من 40 منصة حجز عالمية وأدر الأسعار من مكان واحد</p>
-      </div>
-      <div class="feature-item">
-        <div class="fi-icon fi-green">&#129504;</div>
-        <h3>ذكاء اصطناعي متقدم</h3>
-        <p>رؤى ذكية تساعدك على فهم بيانات فندقك واتخاذ قرارات أفضل في التسعير والتشغيل</p>
-      </div>
-      <div class="feature-item">
-        <div class="fi-icon fi-gold">&#128181;</div>
-        <h3>محاسبة ونقطة بيع</h3>
-        <p>فواتير الضريبة والمحاسبة الكاملة مع نظام نقطة بيع متطور للخدمات الإضافية</p>
-      </div>
-      <div class="feature-item">
-        <div class="fi-icon fi-purple">&#128273;</div>
-        <h3>المفتاح الذكي</h3>
-        <p>تحكم في أبواب غرفك رقمياً وأرسل مفاتيح الدخول لضيوفك قبل وصولهم بسهولة</p>
-      </div>
-      <div class="feature-item">
-        <div class="fi-icon fi-blue">&#128202;</div>
-        <h3>تقارير KPI متكاملة</h3>
-        <p>مؤشرات أداء شاملة تشمل الإشغال والإيرادات وتقييمات الضيوف ومقارنة السوق</p>
-      </div>
-      <div class="feature-item">
-        <div class="fi-icon fi-green">&#128241;</div>
-        <h3>تطبيق الموظفين</h3>
-        <p>تطبيق موبايل لفريق عملك لإدارة المهام والغرف وطلبات الضيوف بكفاءة عالية</p>
-      </div>
-    </div>
+<footer>
+  <div class="brand-line">
+    <img src="3e0b9ff7-7eb8-4f15-9520-57063a91deb5" alt="" style="width: 26px; height: 26px;">
+    <span class="ar">ضيوف</span>
   </div>
-</section>
-
-<!-- MODULES -->
-<section class="modules" id="modules">
-  <div class="container">
-    <div class="text-center">
-      <div class="section-tag">الوحدات</div>
-      <h2 class="section-title">15 وحدة متكاملة لكل احتياجاتك</h2>
-      <p class="section-subtitle">اختر الوحدات التي تناسب عملك أو اشترك في باقة كاملة بسعر أفضل</p>
-    </div>
-    <div class="modules-grid">
-
-      <div class="module-card">
-        <div class="module-num">M01</div>
-        <div class="module-icon">&#128101;</div>
-        <h3>إدارة الضيوف</h3>
-        <p>تسجيل النزلاء، إدارة الهوية والأبشر، ملفات شاملة لكل ضيف وسجل كامل للإقامات السابقة</p>
-        <div class="module-price"><span class="amount">299</span> ر.س/شهر</div>
-      </div>
-
-      <div class="module-card">
-        <div class="module-num">M02</div>
-        <div class="module-icon">&#127968;</div>
-        <h3>الاستقبال</h3>
-        <p>إدارة الغرف والحجوزات والوصول والمغادرة مع لوحة تحكم تفاعلية للاستقبال</p>
-        <div class="module-price"><span class="amount">199</span> ر.س/شهر</div>
-      </div>
-
-      <div class="module-card">
-        <div class="module-num">M03</div>
-        <div class="module-icon">&#127760;</div>
-        <h3>مدير القنوات</h3>
-        <p>ربط مع Booking.com ومواسم وأكثر من 40 منصة حجز عالمية مع مزامنة فورية للأسعار والتوافر</p>
-        <div class="module-price"><span class="amount">499</span> ر.س/شهر</div>
-      </div>
-
-      <div class="module-card">
-        <div class="module-num">M04</div>
-        <div class="module-icon">&#128184;</div>
-        <h3>المحاسبة + POS</h3>
-        <p>فواتير ضريبية معتمدة، نقطة بيع للخدمات الإضافية، تقارير مالية شاملة وتصدير للمحاسبة</p>
-        <div class="module-price"><span class="amount">599</span> ر.س/شهر</div>
-      </div>
-
-      <div class="module-card">
-        <div class="module-num">M05</div>
-        <div class="module-icon">&#128230;</div>
-        <h3>المخزون</h3>
-        <p>إدارة مخزون الغرف والخدمات، تنبيهات النقص، وتتبع الاستهلاك اليومي والشهري</p>
-        <div class="module-price"><span class="amount">249</span> ر.س/شهر</div>
-      </div>
-
-      <div class="module-card">
-        <div class="module-num">M06</div>
-        <div class="module-icon">&#128188;</div>
-        <h3>الموارد البشرية</h3>
-        <p>إدارة الموظفين والمناوبات والرواتب وسجلات الحضور والإجازات بشكل منظم واحترافي</p>
-        <div class="module-price"><span class="amount">399</span> ر.س/شهر <span class="per">+ 15 ر.س/موظف</span></div>
-      </div>
-
-      <div class="module-card">
-        <div class="module-num">M07</div>
-        <div class="module-icon">&#128737;</div>
-        <h3>الإشراف الداخلي</h3>
-        <p>جدولة تنظيف الغرف، متابعة حالة كل غرفة، وتقارير الإشراف اليومية للإدارة</p>
-        <div class="module-price"><span class="amount">199</span> ر.س/شهر</div>
-      </div>
-
-      <div class="module-card">
-        <div class="module-num">M08</div>
-        <div class="module-icon">&#128295;</div>
-        <h3>الصيانة</h3>
-        <p>إدارة أوامر الصيانة، تتبع الأعطال، جدولة الصيانة الدورية وسجل كامل للإصلاحات</p>
-        <div class="module-price"><span class="amount">249</span> ر.س/شهر</div>
-      </div>
-
-      <div class="module-card">
-        <div class="module-num">M09</div>
-        <div class="module-icon">&#128273;</div>
-        <h3>المفتاح الذكي</h3>
-        <p>تحكم ذكي في أقفال الغرف، إصدار مفاتيح رقمية للضيوف وإدارة الوصول عن بُعد</p>
-        <div class="module-price"><span class="amount">699</span> ر.س/شهر <span class="per">+ 8 ر.س/غرفة</span></div>
-      </div>
-
-      <div class="module-card">
-        <div class="module-num">M10</div>
-        <div class="module-icon">&#127891;</div>
-        <h3>CRM والولاء</h3>
-        <p>برنامج ولاء للضيوف المتكررين، عروض مخصصة، تتبع رضا الضيوف وإدارة المراجعات</p>
-        <div class="module-price"><span class="amount">349</span> ر.س/شهر</div>
-      </div>
-
-      <div class="module-card">
-        <div class="module-num">M11</div>
-        <div class="module-icon">&#128202;</div>
-        <h3>مؤشرات الأداء KPI</h3>
-        <p>لوحة مؤشرات شاملة تشمل معدل الإشغال، RevPAR، ADR، ومقارنة مع السوق والمنافسين</p>
-        <div class="module-price"><span class="amount">299</span> ر.س/شهر</div>
-      </div>
-
-      <div class="module-card">
-        <div class="module-num">M12</div>
-        <div class="module-icon">&#129504;</div>
-        <h3>الرؤى الذكية AI</h3>
-        <p>تحليلات مدعومة بالذكاء الاصطناعي، تنبؤات الطلب، توصيات التسعير وتحليل سلوك الضيوف</p>
-        <div class="module-price"><span class="amount">599</span> ر.س/شهر</div>
-      </div>
-
-      <div class="module-card">
-        <div class="module-num">M13</div>
-        <div class="module-icon">&#128722;</div>
-        <h3>المستودعات والمشتريات</h3>
-        <p>إدارة المشتريات والموردين، طلبات الشراء، استلام البضاعة وتقارير التكاليف</p>
-        <div class="module-price"><span class="amount">249</span> ر.س/شهر</div>
-      </div>
-
-      <div class="module-card">
-        <div class="module-num">M14</div>
-        <div class="module-icon">&#127966;</div>
-        <h3>الجولات السياحية</h3>
-        <p>إدارة الرحلات والجولات السياحية، حجوزات النقل والخدمات الإضافية للضيوف</p>
-        <div class="module-price"><span class="amount">199</span> ر.س/شهر</div>
-      </div>
-
-      <div class="module-card">
-        <div class="module-num">M15</div>
-        <div class="module-icon">&#128241;</div>
-        <h3>تطبيق الموظفين</h3>
-        <p>تطبيق موبايل للموظفين لاستقبال المهام، إدارة الغرف والإبلاغ عن الأعطال فوراً</p>
-        <div class="module-price"><span class="amount">29</span> ر.س <span class="per">/مستخدم/شهر</span></div>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<!-- PRICING -->
-<section class="pricing" id="pricing">
-  <div class="container">
-    <div class="text-center">
-      <div class="section-tag">الباقات</div>
-      <h2 class="section-title">أسعار شفافة تناسب كل حجم</h2>
-      <p class="section-subtitle">ابدأ مجاناً وطوّر اشتراكك مع نمو منشأتك — بدون رسوم خفية</p>
-    </div>
-    <div class="pricing-grid">
-
-      <div class="plan-card">
-        <div class="plan-name">Trial</div>
-        <div class="plan-price">مجاني <span>/ 30 يوم</span></div>
-        <div class="plan-desc">جرّب المنصة كاملاً بدون الحاجة لبطاقة ائتمانية</div>
-        <ul class="plan-features">
-          <li><span class="check">&#10003;</span> وحدة إدارة الضيوف (M01)</li>
-          <li><span class="check">&#10003;</span> وحدة الاستقبال (M02)</li>
-          <li><span class="check">&#10003;</span> حتى 30 حجزاً في الشهر</li>
-          <li><span class="check">&#10003;</span> دعم فني أساسي</li>
-        </ul>
-        <a href="/login" class="btn btn-outline plan-btn">ابدأ التجربة</a>
-      </div>
-
-      <div class="plan-card">
-        <div class="plan-name">Starter</div>
-        <div class="plan-price">599 <span>ر.س / شهر</span></div>
-        <div class="plan-desc">مثالي للفنادق والشقق الصغيرة التي تبدأ رحلتها الرقمية</div>
-        <ul class="plan-features">
-          <li><span class="check">&#10003;</span> إدارة الضيوف (M01)</li>
-          <li><span class="check">&#10003;</span> الاستقبال (M02)</li>
-          <li><span class="check">&#10003;</span> الإشراف الداخلي (M07)</li>
-          <li><span class="check">&#10003;</span> تقارير أساسية</li>
-          <li><span class="check">&#10003;</span> دعم فني عبر البريد</li>
-        </ul>
-        <a href="/login" class="btn btn-outline plan-btn">ابدأ الآن</a>
-      </div>
-
-      <div class="plan-card popular">
-        <div class="popular-badge">الأكثر شعبية</div>
-        <div class="plan-name">Operations</div>
-        <div class="plan-price">1,099 <span>ر.س / شهر</span></div>
-        <div class="plan-desc">للفنادق المتوسطة التي تريد تشغيلاً احترافياً كاملاً</div>
-        <ul class="plan-features">
-          <li><span class="check">&#10003;</span> كل وحدات Starter</li>
-          <li><span class="check">&#10003;</span> المخزون (M05)</li>
-          <li><span class="check">&#10003;</span> الصيانة (M08)</li>
-          <li><span class="check">&#10003;</span> المستودعات والمشتريات (M13)</li>
-          <li><span class="check">&#10003;</span> تقارير متقدمة</li>
-          <li><span class="check">&#10003;</span> دعم فني مخصص</li>
-        </ul>
-        <a href="/login" class="btn btn-primary plan-btn">ابدأ الآن</a>
-      </div>
-
-      <div class="plan-card">
-        <div class="plan-name">Professional</div>
-        <div class="plan-price">2,299 <span>ر.س / شهر</span></div>
-        <div class="plan-desc">للفنادق الكبيرة والمجموعات الفندقية التي تسعى للنمو</div>
-        <ul class="plan-features">
-          <li><span class="check">&#10003;</span> كل وحدات Operations</li>
-          <li><span class="check">&#10003;</span> مدير القنوات (M03)</li>
-          <li><span class="check">&#10003;</span> المحاسبة + POS (M04)</li>
-          <li><span class="check">&#10003;</span> الموارد البشرية (M06)</li>
-          <li><span class="check">&#10003;</span> مؤشرات الأداء KPI (M11)</li>
-          <li><span class="check">&#10003;</span> دعم أولوية 24/7</li>
-        </ul>
-        <a href="/login" class="btn btn-outline plan-btn">ابدأ الآن</a>
-      </div>
-
-      <div class="plan-card">
-        <div class="plan-name">Enterprise</div>
-        <div class="plan-price">تفاوضي</div>
-        <div class="plan-desc">للمجموعات الكبيرة التي تحتاج كل الوحدات والدعم المتميز</div>
-        <ul class="plan-features">
-          <li><span class="check">&#10003;</span> جميع الوحدات الـ 15</li>
-          <li><span class="check">&#10003;</span> CRM والولاء (M10)</li>
-          <li><span class="check">&#10003;</span> الرؤى الذكية AI (M12)</li>
-          <li><span class="check">&#10003;</span> المفتاح الذكي (M09)</li>
-          <li><span class="check">&#10003;</span> تطبيق الموظفين (M15)</li>
-          <li><span class="check">&#10003;</span> مدير حساب مخصص</li>
-          <li><span class="check">&#10003;</span> تكامل مع أنظمتك الحالية</li>
-        </ul>
-        <a href="#contact" class="btn btn-gold plan-btn">تواصل معنا</a>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<!-- COMPARISON TABLE -->
-<section class="compare" id="compare">
-  <div class="container">
-    <div class="text-center">
-      <div class="section-tag">المقارنة</div>
-      <h2 class="section-title">قارن بين الباقات</h2>
-      <p class="section-subtitle">جدول مقارنة شامل لمساعدتك على اختيار الباقة المناسبة</p>
-    </div>
-    <div style="overflow-x:auto">
-    <table class="compare-table">
-      <thead>
-        <tr>
-          <th>الوحدة</th>
-          <th>Trial</th>
-          <th>Starter</th>
-          <th>Operations</th>
-          <th>Professional</th>
-          <th>Enterprise</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td>M01 — إدارة الضيوف</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td></tr>
-        <tr><td>M02 — الاستقبال</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td></tr>
-        <tr><td>M07 — الإشراف الداخلي</td><td class="no">—</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td></tr>
-        <tr><td>M05 — المخزون</td><td class="no">—</td><td class="no">—</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td></tr>
-        <tr><td>M08 — الصيانة</td><td class="no">—</td><td class="no">—</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td></tr>
-        <tr><td>M13 — المستودعات والمشتريات</td><td class="no">—</td><td class="no">—</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td></tr>
-        <tr><td>M03 — مدير القنوات</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td></tr>
-        <tr><td>M04 — المحاسبة + POS</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td></tr>
-        <tr><td>M06 — الموارد البشرية</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td></tr>
-        <tr><td>M11 — مؤشرات الأداء KPI</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td></tr>
-        <tr><td>M10 — CRM والولاء</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="yes">&#10003;</td></tr>
-        <tr><td>M12 — الرؤى الذكية AI</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="yes">&#10003;</td></tr>
-        <tr><td>M09 — المفتاح الذكي</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="add">+ 8 ر.س/غرفة</td></tr>
-        <tr><td>M14 — الجولات السياحية</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="yes">&#10003;</td></tr>
-        <tr><td>M15 — تطبيق الموظفين</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="add">+ 29 ر.س/مستخدم</td></tr>
-        <tr>
-          <td style="font-weight:700;color:var(--navy)">السعر الشهري</td>
-          <td style="font-weight:700;color:#16a34a">مجاني</td>
-          <td style="font-weight:700">599 ر.س</td>
-          <td style="font-weight:700;color:var(--blue)">1,099 ر.س</td>
-          <td style="font-weight:700">2,299 ر.س</td>
-          <td style="font-weight:700;color:var(--gold)">تفاوضي</td>
-        </tr>
-      </tbody>
-    </table>
-    </div>
-  </div>
-</section>
-
-<!-- CTA -->
-<section class="cta-section" id="contact">
-  <div class="container">
-    <h2>جاهز لتطوير إدارة فندقك؟</h2>
-    <p>انضم إلى مئات الفنادق والشقق المخدومة التي تثق بمنصة ضيوف لإدارة عملياتها اليومية</p>
-    <div class="cta-actions">
-      <a href="/login" class="btn btn-gold" style="font-size:1rem;padding:14px 32px">ابدأ التجربة المجانية — 30 يوم</a>
-      <a href="mailto:info@dheuof.com" class="btn btn-outline" style="font-size:1rem;padding:14px 32px;color:#fff;border-color:rgba(255,255,255,0.35)">تواصل مع فريق المبيعات</a>
-    </div>
-    <p style="margin-top:24px;font-size:0.85rem;color:rgba(255,255,255,0.5)">
-      لا يلزم بطاقة ائتمانية &nbsp;&#124;&nbsp; إلغاء في أي وقت &nbsp;&#124;&nbsp; دعم عربي كامل
-    </p>
-  </div>
-</section>
-
-<!-- FOOTER -->
-<footer class="footer">
-  <div class="container">
-    <div class="footer-grid">
-      <div class="footer-col">
-        <div class="footer-logo">&#127960; ضيوف<span class="dot">.</span></div>
-        <div class="footer-desc">منصة SaaS متكاملة لإدارة الفنادق والشقق المخدومة في المملكة العربية السعودية. صُممت لتلبية احتياجات القطاع الفندقي المحلي.</div>
-      </div>
-      <div class="footer-col">
-        <h4>المنتج</h4>
-        <a href="#modules">الوحدات</a>
-        <a href="#pricing">الأسعار</a>
-        <a href="#compare">المقارنة</a>
-        <a href="/login">تسجيل الدخول</a>
-      </div>
-      <div class="footer-col">
-        <h4>الشركة</h4>
-        <a href="#">من نحن</a>
-        <a href="#">المدونة</a>
-        <a href="#">الشركاء</a>
-        <a href="#">وظائف</a>
-      </div>
-      <div class="footer-col">
-        <h4>الدعم والقانوني</h4>
-        <a href="#">مركز المساعدة</a>
-        <a href="#">سياسة الخصوصية</a>
-        <a href="#">شروط الاستخدام</a>
-        <a href="mailto:info@dheuof.com">info@dheuof.com</a>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <div>جميع الحقوق محفوظة &copy; 2025 — منصة ضيوف (dheuof.com)</div>
-      <div style="display:flex;gap:16px">
-        <a href="#">سياسة الخصوصية</a>
-        <a href="#">شروط الاستخدام</a>
-      </div>
-    </div>
-  </div>
+  <div>منصة إدارة الضيافة الكاملة للسوق السعودي والخليجي</div>
+  <div class="cop">© 2026 DHEUOF · صُمّم وطُوّر في السعودية 🇸🇦</div>
 </footer>
 
-</body>
-</html>
+<script src="b2624558-8381-48be-9165-3e4ac8f7955d"></script>
+
+
+</body></html>
