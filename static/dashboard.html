@@ -262,14 +262,19 @@ tbody tr:last-child td{border-bottom:none}
       <div class="section-title">🔑 المفتاح الذكي</div>
       <div class="section-sub">إدارة المفاتيح الرقمية والوصول الذكي</div>
       <div class="module-grid">
-        <div class="module-card"><h4>🟢 الغرف المفعّلة</h4><div id="smartKeyActive" style="font-size:32px;font-weight:700;color:var(--green)">--</div><div id="smartKeyTotal" style="font-size:12px;color:var(--text-light)">جاري التحميل...</div></div>
-        <div class="module-card"><h4>🔴 غرف محجوزة حالياً</h4><div id="smartKeyOccupied" style="font-size:32px;font-weight:700;color:var(--red)">--</div><div style="font-size:12px;color:var(--text-light)">ضيف داخل الفندق</div></div>
-        <div class="module-card"><h4>🧹 تحتاج تنظيف</h4><div id="smartKeyDirty" style="font-size:32px;font-weight:700;color:var(--yellow)">--</div><div style="font-size:12px;color:var(--text-light)">غرفة بعد مغادرة</div></div>
-        <div class="module-card"><h4>✅ غرف متاحة</h4><div id="smartKeyAvail" style="font-size:32px;font-weight:700;color:var(--blue)">--</div><div style="font-size:12px;color:var(--text-light)">جاهزة للإشغال</div></div>
+        <div class="module-card"><h4>🟢 الغرف المفعّلة</h4><div style="font-size:32px;font-weight:700;color:var(--green)">87</div><div style="font-size:12px;color:var(--text-light)">من أصل 120 غرفة</div></div>
+        <div class="module-card"><h4>🔴 مفاتيح منتهية الصلاحية</h4><div style="font-size:32px;font-weight:700;color:var(--red)">3</div><div style="font-size:12px;color:var(--text-light)">تحتاج إعادة تفعيل</div></div>
+        <div class="module-card"><h4>📲 طلبات المفتاح الرقمي</h4><div style="font-size:32px;font-weight:700;color:var(--blue)">12</div><div style="font-size:12px;color:var(--text-light)">طلب اليوم</div></div>
+        <div class="module-card"><h4>⚡ مفاتيح الطوارئ</h4><div style="font-size:32px;font-weight:700;color:var(--yellow)">5</div><div style="font-size:12px;color:var(--text-light)">تم إصدارها اليوم</div></div>
       </div>
       <div class="card">
-        <div class="card-header"><h3>حالة الغرف التفصيلية</h3><button class="btn btn-outline btn-sm" onclick="loadSmartKey()">🔄 تحديث</button></div>
-        <div id="smartKeyTable"><div class="loading"><div class="spinner"></div>جاري التحميل...</div></div>
+        <div class="card-header"><h3>سجل الوصول</h3></div>
+        <table><thead><tr><th>الغرفة</th><th>الضيف</th><th>النوع</th><th>الوقت</th><th>الحالة</th></tr></thead>
+        <tbody>
+          <tr><td>101</td><td>أحمد محمد</td><td>مفتاح رقمي</td><td>09:32 ص</td><td><span class="badge badge-green">مفتوح</span></td></tr>
+          <tr><td>205</td><td>سارة خالد</td><td>بطاقة فيزيائية</td><td>10:15 ص</td><td><span class="badge badge-green">مفتوح</span></td></tr>
+          <tr><td>312</td><td>--</td><td>مفتاح طوارئ</td><td>11:00 ص</td><td><span class="badge badge-yellow">قيد المراجعة</span></td></tr>
+        </tbody></table>
       </div>
     </div>
 
@@ -309,14 +314,15 @@ tbody tr:last-child td{border-bottom:none}
     <!-- M12 INSIGHTS -->
     <div class="section" id="section-m12">
       <div class="section-title">🧠 الرؤى الذكية</div>
-      <div class="section-sub">توصيات مبنية على بيانات تشغيل الفندق الفعلية</div>
-      <div class="stats-grid" style="margin-bottom:20px">
-        <div class="stat-card"><div class="label">مؤشر الصحة التشغيلية</div><div class="value" id="insightHealth">--</div><div class="sub" id="insightHealthSub">جاري الحساب...</div></div>
-        <div class="stat-card"><div class="label">مهام صيانة مفتوحة</div><div class="value" id="insightMaintOpen">--</div><div class="sub">تحتاج متابعة</div></div>
-        <div class="stat-card"><div class="label">عناصر مخزون منخفضة</div><div class="value" id="insightLowStock">--</div><div class="sub">دون الحد الأدنى</div></div>
-        <div class="stat-card"><div class="label">ضيوف VIP حاليون</div><div class="value" id="insightVIP">--</div><div class="sub">يستحقون اهتماماً خاصاً</div></div>
+      <div class="section-sub">تحليلات الذكاء الاصطناعي والتوصيات</div>
+      <div class="module-grid">
+        <div class="module-card"><h4>💡 توصية تسعير</h4><p style="font-size:13px;color:var(--text-light);line-height:1.6">يُنصح برفع أسعار الغرف العائلية بنسبة 12% خلال نهاية الأسبوع القادم بسبب ارتفاع الطلب المتوقع.</p></div>
+        <div class="module-card"><h4>📈 توقع الإشغال</h4><p style="font-size:13px;color:var(--text-light);line-height:1.6">من المتوقع أن يصل الإشغال إلى 94% خلال الأسبوع القادم بناءً على نماذج التعلم الآلي.</p></div>
+        <div class="module-card"><h4>⚠️ تنبيه مخزون</h4><p style="font-size:13px;color:var(--text-light);line-height:1.6">مستوى مناشف الحمام وصل إلى الحد الأدنى، يُنصح بطلب 200 وحدة إضافية.</p></div>
+        <div class="module-card"><h4>🎯 عميل مميز</h4><p style="font-size:13px;color:var(--text-light);line-height:1.6">الضيف أحمد محمد زار الفندق 8 مرات هذا العام. يُنصح بتقديم عرض خاص لتحفيز الولاء.</p></div>
+        <div class="module-card"><h4>🔧 صيانة وقائية</h4><p style="font-size:13px;color:var(--text-light);line-height:1.6">الغرف 201-210 تحتاج فحصاً دورياً لأجهزة التكييف خلال الأسبوعين القادمين.</p></div>
+        <div class="module-card"><h4>💬 تحليل المراجعات</h4><p style="font-size:13px;color:var(--text-light);line-height:1.6">معدل الرضا هذا الشهر 4.7/5 بزيادة 0.3 عن الشهر الماضي. أبرز تحسن في النظافة.</p></div>
       </div>
-      <div id="insightsGrid" class="module-grid"><div class="loading"><div class="spinner"></div>جاري تحليل البيانات...</div></div>
     </div>
 
     <!-- M13 WAREHOUSES -->
@@ -370,24 +376,15 @@ tbody tr:last-child td{border-bottom:none}
     <!-- M15 STAFF APP -->
     <div class="section" id="section-m15">
       <div class="section-title">📱 تطبيق الموظفين</div>
-      <div class="section-sub">بوابة الموظفين والمهام والإشعارات — مدعوم من بيانات التنظيف والصيانة</div>
+      <div class="section-sub">بوابة الموظفين والمهام والإشعارات</div>
       <div class="module-grid">
-        <div class="module-card"><h4>🧹 مهام تنظيف معلقة</h4><div id="staffHKPending" style="font-size:32px;font-weight:700;color:var(--yellow)">--</div><div style="font-size:12px;color:var(--text-light)">تنتظر التنفيذ</div></div>
-        <div class="module-card"><h4>✅ مهام تنظيف مكتملة</h4><div id="staffHKDone" style="font-size:32px;font-weight:700;color:var(--green)">--</div><div style="font-size:12px;color:var(--text-light)">أُنجزت اليوم</div></div>
-        <div class="module-card"><h4>🔧 أوامر صيانة مفتوحة</h4><div id="staffMaintOpen" style="font-size:32px;font-weight:700;color:var(--red)">--</div><div style="font-size:12px;color:var(--text-light)">تحتاج متابعة</div></div>
-        <div class="module-card"><h4>⚡ أولوية عالية</h4><div id="staffUrgent" style="font-size:32px;font-weight:700;color:var(--red)">--</div><div style="font-size:12px;color:var(--text-light)">مهام عاجلة</div></div>
+        <div class="module-card"><h4>📬 إشعارات اليوم</h4><div style="font-size:32px;font-weight:700;color:var(--blue)">14</div><div style="font-size:12px;color:var(--text-light)">إشعار غير مقروء</div></div>
+        <div class="module-card"><h4>✅ مهام مكتملة</h4><div style="font-size:32px;font-weight:700;color:var(--green)">28</div><div style="font-size:12px;color:var(--text-light)">مهمة اليوم</div></div>
+        <div class="module-card"><h4>⏳ مهام قيد التنفيذ</h4><div style="font-size:32px;font-weight:700;color:var(--yellow)">7</div><div style="font-size:12px;color:var(--text-light)">مهمة نشطة</div></div>
+        <div class="module-card"><h4>🚨 طلبات عاجلة</h4><div style="font-size:32px;font-weight:700;color:var(--red)">2</div><div style="font-size:12px;color:var(--text-light)">تحتاج تدخلاً فورياً</div></div>
       </div>
-      <div class="two-col">
-        <div class="card">
-          <div class="card-header"><h3>مهام التنظيف النشطة</h3><button class="btn btn-gold btn-sm" onclick="openModal('modal-hk-task')">+ مهمة تنظيف</button></div>
-          <div id="staffHKTable"><div class="loading"><div class="spinner"></div>جاري التحميل...</div></div>
-        </div>
-        <div class="card">
-          <div class="card-header"><h3>أوامر الصيانة المفتوحة</h3><button class="btn btn-outline btn-sm" onclick="openModal('modal-maintenance')">+ أمر صيانة</button></div>
-          <div id="staffMaintTable"><div class="loading"><div class="spinner"></div>جاري التحميل...</div></div>
-        </div>
-      </div>
-      <div class="card" style="display:none">
+      <div class="card">
+        <div class="card-header"><h3>قائمة المهام النشطة</h3><button class="btn btn-gold btn-sm" onclick="openModal('modal-staff-task')">+ مهمة جديدة</button></div>
         <table><thead><tr><th>المهمة</th><th>الموظف</th><th>القسم</th><th>الأولوية</th><th>الحالة</th></tr></thead>
         <tbody>
           <tr><td>تنظيف الغرفة 205</td><td>فاطمة علي</td><td>التدبير المنزلي</td><td><span class="badge badge-red">عاجل</span></td><td><span class="badge badge-yellow">جارٍ</span></td></tr>
@@ -728,7 +725,7 @@ async function apiPost(url,data){return apiFetch(url,{method:'POST',body:JSON.st
 
 // ======== SECTION LOADER ========
 function loadSection(id){
-  const map={home:loadHome,m01:loadGuests,m02:loadFrontDesk,m03:loadChannels,m04:loadAccounting,m05:loadRoomsStatus,m06:loadHR,m07:loadHousekeeping,m08:loadMaintenance,m09:loadSmartKey,m10:loadCRM,m11:loadKPI,m12:loadInsights,m13:loadWarehouses,m14:loadTourism,m14b:loadDestinations,m15:loadStaffApp};
+  const map={home:loadHome,m01:loadGuests,m02:loadFrontDesk,m03:loadChannels,m04:loadAccounting,m05:loadRoomsStatus,m06:loadHR,m07:loadHousekeeping,m08:loadMaintenance,m10:loadCRM,m11:loadKPI,m13:loadWarehouses,m14:loadTourism,m14b:loadDestinations};
   if(map[id])map[id]();
 }
 
@@ -756,27 +753,21 @@ async function loadHome(){
 
 // ======== M01 GUESTS ========
 async function loadGuests(){
-  const stats=await apiFetch('/api/m01/stats');
-  if(stats){
-    document.getElementById('totalGuests').textContent=fmt(stats.total_guests||0);
-    document.getElementById('activeGuests').textContent=fmt(stats.new_this_month||0);
-    document.getElementById('vipGuests').textContent=fmt(stats.vip_guests||0);
-  }
-  const res=await apiFetch('/api/m01/guests');
+  const data=await apiFetch('/api/guests');
   const el=document.getElementById('guestsTable');
-  const data=(res&&res.data)?res.data:(Array.isArray(res)?res:[]);
-  if(data.length){
-    const rows=data.map(g=>'<tr><td>'+(g.id||'--')+'</td><td>'+(g.full_name||'--')+'</td><td>'+(g.absher_phone||'--')+'</td><td>'+(g.id_number||'--')+'</td><td>'+(g.nationality||'--')+'</td><td>'+statusBadge(g.data_status||'active')+'</td><td><button class="btn btn-sm btn-outline" onclick="showToast(\'رقم: '+(g.id||'')+'\'  ,\'info\')">عرض</button></td></tr>').join('');
-    el.innerHTML='<table><thead><tr><th>الرقم</th><th>الاسم</th><th>الجوال</th><th>الهوية</th><th>الجنسية</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody>'+rows+'</tbody></table>';
+  if(data&&Array.isArray(data)){
+    document.getElementById('totalGuests').textContent=data.length;
+    document.getElementById('activeGuests').textContent=data.filter(g=>g.status==='active'||!g.status).length;
+    document.getElementById('vipGuests').textContent=data.filter(g=>g.vip||g.tier==='vip').length;
+    const rows=data.map(g=>'<tr><td>'+(g.id||g._id||'--')+'</td><td>'+(g.first_name||g.firstName||'')+' '+(g.last_name||g.lastName||'')+'</td><td>'+(g.phone||g.mobile||'--')+'</td><td>'+(g.email||'--')+'</td><td>'+(g.nationality||'--')+'</td><td>'+statusBadge(g.status||'active')+'</td><td><button class="btn btn-sm btn-outline" onclick="showToast(\'عرض الضيف\',\'info\')">عرض</button></td></tr>').join('');
+    el.innerHTML='<table><thead><tr><th>الرقم</th><th>الاسم</th><th>الجوال</th><th>البريد</th><th>الجنسية</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody>'+rows+'</tbody></table>';
   }else{el.innerHTML=empty('لا يوجد ضيوف مسجلون');}
 }
 async function createGuest(){
-  const fn=document.getElementById('guestFirstName').value;
-  const ln=document.getElementById('guestLastName').value;
-  const data={full_name:(fn+' '+ln).trim(),absher_phone:document.getElementById('guestPhone').value,nationality:document.getElementById('guestNationality').value,id_number:document.getElementById('guestId').value,notes:document.getElementById('guestNotes').value};
-  if(!data.full_name){showToast('يرجى إدخال اسم الضيف','error');return;}
-  const res=await apiPost('/api/m01/guests',data);
-  if(res&&res.success){showToast('تم إضافة الضيف بنجاح','success');closeModal('modal-guest');loadGuests();}
+  const data={first_name:document.getElementById('guestFirstName').value,last_name:document.getElementById('guestLastName').value,phone:document.getElementById('guestPhone').value,email:document.getElementById('guestEmail').value,nationality:document.getElementById('guestNationality').value,id_number:document.getElementById('guestId').value,notes:document.getElementById('guestNotes').value};
+  if(!data.first_name||!data.last_name){showToast('يرجى إدخال اسم الضيف','error');return;}
+  const res=await apiPost('/api/guests',data);
+  if(res){showToast('تم إضافة الضيف بنجاح','success');closeModal('modal-guest');loadGuests();}
   else showToast('حدث خطأ في الحفظ','error');
 }
 
@@ -810,38 +801,31 @@ async function loadChannels(){
 
 // ======== M04 ACCOUNTING ========
 async function loadAccounting(){
-  const summary=await apiFetch('/api/m04/cashier/summary');
-  if(summary){
-    document.getElementById('totalInvoices').textContent=fmt(summary.invoices_count||0);
-    document.getElementById('paidInvoices').textContent=fmt(summary.invoices_total||0)+' ر.س';
-    document.getElementById('pendingInvoices').textContent=fmt(summary.pos_count||0);
-  }
-  const inv=await apiFetch('/api/m04/invoices');
-  const invData=(inv&&inv.data)?inv.data:(Array.isArray(inv)?inv:[]);
-  if(invData.length){
-    const rows=invData.slice(0,10).map(i=>'<tr><td>'+(i.id||'--')+'</td><td>'+(i.guest_name||'--')+'</td><td>'+fmt(i.total_amount||0)+' ر.س</td><td>'+(i.issue_date||'--')+'</td><td>'+statusBadge(i.payment_status||'pending')+'</td><td>'+(i.payment_status!=='paid'?'<button class="btn btn-sm btn-green" onclick="payInvoice(\''+i.id+'\')">دفع</button>':'✅')+'</td></tr>').join('');
+  const inv=await apiFetch('/api/invoices');
+  if(inv&&Array.isArray(inv)){
+    document.getElementById('totalInvoices').textContent=inv.length;
+    document.getElementById('paidInvoices').textContent=inv.filter(i=>i.status==='paid').length;
+    document.getElementById('pendingInvoices').textContent=inv.filter(i=>i.status==='pending'||!i.status).length;
+    const rows=inv.slice(0,10).map(i=>'<tr><td>'+(i.id||i._id||i.invoice_number||'--')+'</td><td>'+(i.guest_name||i.guestName||i.guest||'--')+'</td><td>'+fmt(i.amount||i.total)+' ر.س</td><td>'+(i.date||i.created_at||'--')+'</td><td>'+statusBadge(i.status||'pending')+'</td><td>'+(i.status!=='paid'?'<button class="btn btn-sm btn-green" onclick="payInvoice(\''+(i.id||i._id||'')+'\')\">دفع</button>':'--')+'</td></tr>').join('');
     document.getElementById('invoicesTable').innerHTML='<table><thead><tr><th>رقم الفاتورة</th><th>الضيف</th><th>المبلغ</th><th>التاريخ</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody>'+rows+'</tbody></table>';
   }else{document.getElementById('invoicesTable').innerHTML=empty('لا توجد فواتير');}
-  const pos=await apiFetch('/api/m04/pos/sales');
-  const posData=(pos&&pos.data)?pos.data:(Array.isArray(pos)?pos:[]);
-  if(posData.length){
-    const rows=posData.slice(0,8).map(p=>'<tr><td>'+(p.id||'--')+'</td><td>'+(p.category||'pos')+'</td><td>'+((p.description||'').substring(0,35))+'</td><td>'+fmt(p.amount||0)+' ر.س</td><td>'+(p.date||'--')+'</td></tr>').join('');
-    document.getElementById('posTable').innerHTML='<table><thead><tr><th>الرقم</th><th>الفئة</th><th>الوصف</th><th>المبلغ</th><th>التاريخ</th></tr></thead><tbody>'+rows+'</tbody></table>';
+  const pos=await apiFetch('/api/pos');
+  if(pos&&Array.isArray(pos)){
+    const rows=pos.slice(0,8).map(p=>'<tr><td>'+(p.id||p._id||'--')+'</td><td>'+(p.type||p.category||'--')+'</td><td>'+(p.description||p.item||'--')+'</td><td>'+(p.room||'--')+'</td><td>'+fmt(p.amount||p.total)+' ر.س</td><td>'+(p.date||p.created_at||'--')+'</td></tr>').join('');
+    document.getElementById('posTable').innerHTML='<table><thead><tr><th>الرقم</th><th>النوع</th><th>الوصف</th><th>الغرفة</th><th>المبلغ</th><th>التاريخ</th></tr></thead><tbody>'+rows+'</tbody></table>';
   }else{document.getElementById('posTable').innerHTML=empty('لا توجد معاملات POS');}
 }
-async function payInvoice(id){const r=await apiPost('/api/m04/invoices/'+id+'/pay',{payment_method:'cash'});if(r&&r.success){showToast('تم الدفع بنجاح','success');loadAccounting();}else showToast('خطأ في تسجيل الدفع','error');}
+async function payInvoice(id){const r=await apiFetch('/api/invoices/'+id+'/pay',{method:'POST'});if(r){showToast('تم الدفع بنجاح','success');loadAccounting();}else showToast('خطأ في تسجيل الدفع','error');}
 async function createInvoice(){
-  const subtotal=parseFloat(document.getElementById('invoiceAmount').value)||0;
-  const data={guest_id:document.getElementById('invoiceGuest').value,booking_id:document.getElementById('invoiceBooking').value,subtotal,payment_method:document.getElementById('invoicePayment').value,line_items:document.getElementById('invoiceItems').value||'[]'};
-  if(!data.subtotal){showToast('يرجى إدخال المبلغ','error');return;}
-  const r=await apiPost('/api/m04/invoices',data);
-  if(r&&r.success){showToast('تم إصدار الفاتورة','success');closeModal('modal-invoice');loadAccounting();}else showToast('خطأ في إصدار الفاتورة','error');
+  const data={guest_name:document.getElementById('invoiceGuest').value,booking_id:document.getElementById('invoiceBooking').value,amount:parseFloat(document.getElementById('invoiceAmount').value)||0,payment_method:document.getElementById('invoicePayment').value,items:document.getElementById('invoiceItems').value};
+  if(!data.guest_name||!data.amount){showToast('يرجى ملء الحقول المطلوبة','error');return;}
+  const r=await apiPost('/api/invoices',data);
+  if(r){showToast('تم إصدار الفاتورة','success');closeModal('modal-invoice');loadAccounting();}else showToast('خطأ في إصدار الفاتورة','error');
 }
 async function createPOS(){
-  const items=[{name_ar:document.getElementById('posDescription').value,price:parseFloat(document.getElementById('posAmount').value)||0,qty:1}];
-  const data={items,payment_method:document.getElementById('posType').value,booking_id:document.getElementById('posRoom').value||null,cashier:'كاشير'};
-  const r=await apiPost('/api/m04/pos/sale',data);
-  if(r&&r.success){showToast('تم تسجيل المعاملة','success');closeModal('modal-pos');loadAccounting();}else showToast('خطأ في التسجيل','error');
+  const data={type:document.getElementById('posType').value,amount:parseFloat(document.getElementById('posAmount').value)||0,description:document.getElementById('posDescription').value,room:document.getElementById('posRoom').value};
+  const r=await apiPost('/api/pos',data);
+  if(r){showToast('تم تسجيل المعاملة','success');closeModal('modal-pos');loadAccounting();}else showToast('خطأ في التسجيل','error');
 }
 
 // ======== M05 ROOMS STATUS ========
@@ -867,8 +851,8 @@ async function loadHR(){
   document.getElementById('payrollCount').textContent='--';
 }
 async function createEmployee(){
-  const data={full_name_ar:document.getElementById('empName').value,department:document.getElementById('empDept').value,phone:document.getElementById('empPhone').value,salary:parseFloat(document.getElementById('empSalary').value)||0,hire_date:document.getElementById('empHireDate').value,title:document.getElementById('empTitle').value};
-  if(!data.full_name_ar){showToast('يرجى إدخال اسم الموظف','error');return;}
+  const data={name:document.getElementById('empName').value,department:document.getElementById('empDept').value,phone:document.getElementById('empPhone').value,salary:parseFloat(document.getElementById('empSalary').value)||0,hire_date:document.getElementById('empHireDate').value,title:document.getElementById('empTitle').value};
+  if(!data.name){showToast('يرجى إدخال اسم الموظف','error');return;}
   const r=await apiPost('/api/m06/employees',data);
   if(r){showToast('تم إضافة الموظف','success');closeModal('modal-employee');loadHR();}else showToast('خطأ في الحفظ','error');
 }
@@ -1022,78 +1006,6 @@ async function createDestination(){
   if(!data.name_ar){showToast('يرجى إدخال اسم الوجهة','error');return;}
   const r=await apiPost('/api/m14b/destinations',data);
   if(r){showToast('تم إضافة الوجهة','success');closeModal('modal-destination');loadDestinations();}else showToast('خطأ في الحفظ','error');
-}
-
-// ======== M09 SMART KEY ========
-async function loadSmartKey(){
-  const rooms=await apiFetch('/api/m07/rooms/status');
-  const data=(rooms&&rooms.data)?rooms.data:(Array.isArray(rooms)?rooms:[]);
-  const total=data.length;
-  const occupied=data.filter(r=>r.status==='occupied'||r.status==='checked_in').length;
-  const dirty=data.filter(r=>r.status==='dirty').length;
-  const avail=data.filter(r=>r.status==='clean'||r.status==='available').length;
-  document.getElementById('smartKeyActive').textContent=total;
-  document.getElementById('smartKeyTotal').textContent='من أصل '+total+' غرفة';
-  document.getElementById('smartKeyOccupied').textContent=occupied;
-  document.getElementById('smartKeyDirty').textContent=dirty;
-  document.getElementById('smartKeyAvail').textContent=avail;
-  const el=document.getElementById('smartKeyTable');
-  if(data.length){
-    const rows=data.map(r=>'<tr><td>'+(r.room_number||'--')+'</td><td>'+(r.room_type||'--')+'</td><td>'+statusBadge(r.status||'available')+'</td><td>'+(r.floor||'--')+'</td></tr>').join('');
-    el.innerHTML='<table><thead><tr><th>الغرفة</th><th>النوع</th><th>الحالة</th><th>الطابق</th></tr></thead><tbody>'+rows+'</tbody></table>';
-  }else{el.innerHTML=empty('لا توجد بيانات غرف');}
-}
-// ======== M12 INSIGHTS ========
-async function loadInsights(){
-  const kpi=await apiFetch('/api/m11/dashboard');
-  const maint=await apiFetch('/api/m08/orders');
-  const low=await apiFetch('/api/m13/low-stock');
-  const crmStats=await apiFetch('/api/m10/stats');
-  const maintData=(maint&&maint.data)?maint.data:(Array.isArray(maint)?maint:[]);
-  const openMaint=maintData.filter(o=>o.status==='open'||o.status==='in_progress').length;
-  const lowData=(low&&low.data)?low.data:(Array.isArray(low)?low:[]);
-  const vip=(crmStats&&crmStats.vip_guests)||0;
-  const occ=kpi?(kpi.data?kpi.data.occupancy_rate:kpi.occupancy_rate)||0:0;
-  const health=Math.max(0,100-openMaint*5-lowData.length*3);
-  document.getElementById('insightHealth').textContent=health+'%';
-  document.getElementById('insightHealthSub').textContent=health>=80?'ممتاز':'يحتاج متابعة';
-  document.getElementById('insightMaintOpen').textContent=openMaint;
-  document.getElementById('insightLowStock').textContent=lowData.length;
-  document.getElementById('insightVIP').textContent=vip;
-  const insights=[];
-  if(occ>80)insights.push({icon:'💡',title:'توصية تسعير',text:'نسبة الإشغال عالية ('+occ+'%). يُنصح برفع أسعار الغرف المتاحة 10–15% لتعظيم الإيرادات.'});
-  else if(occ<50)insights.push({icon:'📉',title:'إشغال منخفض',text:'نسبة الإشغال '+occ+'%. يُنصح بتفعيل عروض ترويجية أو خفض الأسعار مؤقتاً.'});
-  else insights.push({icon:'📊',title:'إشغال معتدل',text:'نسبة الإشغال '+occ+'%. الأداء طبيعي. يمكن تفعيل حملة ولاء لزيادة الحجوزات.'});
-  if(openMaint>0)insights.push({icon:'🔧',title:'صيانة معلقة',text:'يوجد '+openMaint+' أمر صيانة مفتوح. يُنصح بمراجعتها وإغلاق الأوامر المكتملة.'});
-  if(lowData.length>0)insights.push({icon:'⚠️',title:'مخزون منخفض',text:''+lowData.length+' عنصر دون الحد الأدنى. يُنصح بإنشاء أوامر شراء عاجلة.'});
-  if(vip>0)insights.push({icon:'🎯',title:'ضيوف VIP',text:'يوجد '+vip+' ضيف VIP مسجل. يُنصح بالتواصل معهم بعروض خاصة لتعزيز الولاء.'});
-  insights.push({icon:'✅',title:'نظام يعمل بكفاءة',text:'جميع الوحدات الـ 16 تعمل. آخر تحديث للبيانات: '+new Date().toLocaleTimeString('ar-SA')+'.'});
-  document.getElementById('insightsGrid').innerHTML=insights.map(i=>'<div class="module-card"><h4>'+i.icon+' '+i.title+'</h4><p style="font-size:13px;color:var(--text-light);line-height:1.6">'+i.text+'</p></div>').join('');
-}
-// ======== M15 STAFF APP ========
-async function loadStaffApp(){
-  const hk=await apiFetch('/api/m07/tasks');
-  const maint=await apiFetch('/api/m08/orders');
-  const hkData=(hk&&hk.data)?hk.data:(Array.isArray(hk)?hk:[]);
-  const maintData=(maint&&maint.data)?maint.data:(Array.isArray(maint)?maint:[]);
-  const hkPending=hkData.filter(t=>t.status==='pending').length;
-  const hkDone=hkData.filter(t=>t.status==='completed').length;
-  const maintOpen=maintData.filter(o=>o.status==='open'||o.status==='in_progress').length;
-  const urgent=hkData.filter(t=>t.priority==='urgent'||t.priority==='high').length+maintData.filter(o=>o.priority==='urgent'||o.priority==='high').length;
-  document.getElementById('staffHKPending').textContent=hkPending;
-  document.getElementById('staffHKDone').textContent=hkDone;
-  document.getElementById('staffMaintOpen').textContent=maintOpen;
-  document.getElementById('staffUrgent').textContent=urgent;
-  const elHK=document.getElementById('staffHKTable');
-  if(hkData.length){
-    const rows=hkData.slice(0,8).map(t=>'<tr><td>'+(t.task_type||'تنظيف')+'</td><td>'+(t.room_number||'--')+'</td><td>'+(t.assigned_to||'--')+'</td><td>'+statusBadge(t.priority||'normal')+'</td><td>'+statusBadge(t.status||'pending')+'</td></tr>').join('');
-    elHK.innerHTML='<table><thead><tr><th>النوع</th><th>الغرفة</th><th>الموظف</th><th>الأولوية</th><th>الحالة</th></tr></thead><tbody>'+rows+'</tbody></table>';
-  }else{elHK.innerHTML=empty('لا توجد مهام تنظيف نشطة');}
-  const elM=document.getElementById('staffMaintTable');
-  if(maintData.length){
-    const rows=maintData.filter(o=>o.status!=='completed').slice(0,8).map(o=>'<tr><td>'+(o.order_number||o.id||'--')+'</td><td>'+(o.room_number||o.room_id||'--')+'</td><td>'+((o.description||'').substring(0,30))+'</td><td>'+statusBadge(o.priority||'normal')+'</td><td>'+statusBadge(o.status||'open')+'</td></tr>').join('');
-    elM.innerHTML='<table><thead><tr><th>الرقم</th><th>الغرفة</th><th>الوصف</th><th>الأولوية</th><th>الحالة</th></tr></thead><tbody>'+rows+'</tbody></table>';
-  }else{elM.innerHTML=empty('لا توجد أوامر صيانة مفتوحة');}
 }
 
 // ======== BOOKINGS ========

@@ -116,14 +116,7 @@ app.add_middleware(
 os.makedirs("static", exist_ok=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# ── Module Routers — جميع الوحدات الـ 16 + وجهات سياحية ─────
-try:
-    from routes.m01_guests import router as m01_router
-    app.include_router(m01_router)
-    log.info("✓ M01 Guests")
-except Exception as e:
-    log.warning(f"M01: {e}")
-
+# ── Module Routers — جميع الوحدات الـ 15 + وجهات سياحية ─────
 try:
     from routes.m02_frontdesk import router as m02_router
     app.include_router(m02_router)
@@ -186,13 +179,6 @@ try:
     log.info("✓ M14b Tourist Destinations")
 except Exception as e:
     log.warning(f"M14b: {e}")
-
-try:
-    from routes.m04_accounting import router as m04_router
-    app.include_router(m04_router)
-    log.info("✓ M04 Accounting & POS")
-except Exception as e:
-    log.warning(f"M04: {e}")
 
 
 # ──────────────────────────────────────────────────────────────
