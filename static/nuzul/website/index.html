@@ -27,13 +27,13 @@ function App() {
       <ModuleGrid/>
       <StatsBand/>
       <Testimonial/>
+      <PricingSection/>
       <CtaFooter/>
       <Footer/>
     </>
   );
 }
 ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
-// Re-init DheuofMotion after React mount
 requestAnimationFrame(() => {
   if (window.DheuofMotion) window.DheuofMotion.init();
 });
