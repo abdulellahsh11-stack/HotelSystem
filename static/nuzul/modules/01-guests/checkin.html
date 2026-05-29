@@ -4,11 +4,11 @@
 <meta charset="utf-8"/>
 <title>ضيوف · تسجيل دخول سريع</title>
 <meta name="viewport" content="width=1440, initial-scale=1"/>
-<link rel="stylesheet" href="../../colors_and_type.css"/>
-<link rel="stylesheet" href="../../assets/animations.css"/>
-<link rel="stylesheet" href="../../shared/chrome.css"/>
-<link rel="stylesheet" href="../../shared/module.css"/>
-<link rel="stylesheet" href="frontdesk.css"/>
+<link rel="stylesheet" href="/static/nuzul/colors_and_type.css"/>
+<link rel="stylesheet" href="/static/nuzul/assets/animations.css"/>
+<link rel="stylesheet" href="/static/nuzul/shared/chrome.css"/>
+<link rel="stylesheet" href="/static/nuzul/shared/module.css"/>
+<link rel="stylesheet" href="/static/nuzul/modules/01-guests/frontdesk.css"/>
 </head>
 <body>
 <div id="root"></div>
@@ -17,9 +17,9 @@
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 
-<script type="text/babel" src="../../shared/chrome.jsx"></script>
-<script type="text/babel" src="ArrivalDepart.jsx"></script>
-<script type="text/babel" src="CheckInPanel.jsx"></script>
+<script type="text/babel" src="/static/nuzul/shared/chrome.jsx"></script>
+<script type="text/babel" src="/static/nuzul/modules/01-guests/ArrivalDepart.jsx"></script>
+<script type="text/babel" src="/static/nuzul/modules/01-guests/CheckInPanel.jsx"></script>
 
 <script type="text/babel">
 const { useState } = React;
@@ -38,7 +38,7 @@ function App() {
             sub="امسح الهوية أو الإقامة — ٢٤ وصول متوقع · ١٨ مغادرة"
             actions={<>
               <button className="nz-btn is-secondary"><NzIcon.search/>بحث عن حجز</button>
-              <a href="registration.html" style={{textDecoration:"none"}}><button className="nz-btn is-primary"><NzIcon.plus/>تسجيل يدوي</button></a>
+              <a href="/static/nuzul/modules/01-guests/registration.html" style={{textDecoration:"none"}}><button className="nz-btn is-primary"><NzIcon.plus/>تسجيل يدوي</button></a>
             </>}
           />
 
