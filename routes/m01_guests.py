@@ -128,19 +128,15 @@ async def upsert_profile(request: Request, session=Depends(_require_client)):
     if db.use_postgres:
         row = db.execute("""
             INSERT INTO guest_profiles
-                (client_id,guest_id,preferences,dietary_restrictions,
-                 special_requests,vip_level,language_pref)
-            VALUES (%s,%s,%s,%s,%s,%s,%s)
+                (client_id,guest_id,vip_level,dietary_notes,tags)
+            VALUES (%s,%s,%s,%s,%s)
             ON CONFLICT (client_id,guest_id) DO UPDATE SET
-                preferences=EXCLUDED.preferences,
-                dietary_restrictions=EXCLUDED.dietary_restrictions,
-                special_requests=EXCLUDED.special_requests,
                 vip_level=EXCLUDED.vip_level,
-                language_pref=EXCLUDED.language_pref
+                dietary_notes=EXCLUDED.dietary_notes,
+                tags=EXCLUDED.tags
             RETURNING *
-        """, (cid, data.get("guest_id"), data.get("preferences"),
-              data.get("dietary_restrictions"), data.get("special_requests"),
-              data.get("vip_level", "regular"), data.get("language_pref", "ar")),
+        """, (cid, data.get("guest_id"), data.get("vip_level", "standard"),
+              data.get("dietary_notes"), data.get("tags", "[]")),
               fetch="one")
         return {"success": True, "data": dict(row)}
     return {"success": True, "data": data}

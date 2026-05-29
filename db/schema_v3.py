@@ -25,7 +25,8 @@ CREATE TABLE IF NOT EXISTS guest_profiles (
     total_revenue DECIMAL(12,2) DEFAULT 0,
     tags          JSONB DEFAULT '[]',
     created_at    TIMESTAMPTZ DEFAULT NOW(),
-    updated_at    TIMESTAMPTZ DEFAULT NOW()
+    updated_at    TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(client_id, guest_id)
 );
 CREATE INDEX IF NOT EXISTS idx_gp_client ON guest_profiles(client_id);
 CREATE INDEX IF NOT EXISTS idx_gp_guest  ON guest_profiles(guest_id);

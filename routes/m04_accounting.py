@@ -121,8 +121,9 @@ async def process_sale(request: Request, session=Depends(_require_client)):
     if not items:
         raise HTTPException(400, "لا توجد بنود في البيع")
     if db.use_postgres:
-        amount = sum(float(i.get("price", 0)) * int(i.get("qty", 1)) for i in items)
-        vat_amount = round(amount * 0.15, 2)
+        net_amount = sum(float(i.get("price", 0)) * int(i.get("qty", 1)) for i in items)
+        vat_amount = round(net_amount * 0.15, 2)
+        gross_amount = round(net_amount + vat_amount, 2)
         description = "، ".join(
             f"{i.get('name_ar', i.get('name', ''))} x{i.get('qty',1)}" for i in items)
         row = db.execute("""
@@ -130,7 +131,7 @@ async def process_sale(request: Request, session=Depends(_require_client)):
                 amount,vat_amount,net_amount,category,description,cashier)
             VALUES (%s,%s,CURRENT_DATE,%s,%s,%s,%s,%s,%s,%s) RETURNING *
         """, (cid, data.get("booking_id"), data.get("payment_method", "cash"),
-              amount, vat_amount, amount - vat_amount,
+              gross_amount, vat_amount, net_amount,
               data.get("category", "pos"), description,
               data.get("cashier", "كاشير")), fetch="one")
         return {"success": True, "data": dict(row)}
