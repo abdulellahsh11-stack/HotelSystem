@@ -1,0 +1,119 @@
+/* =========================================================================
+   Shared module styles — used by stub experiences (modules/02, 03, 05, etc).
+   Adds patterns the live UI kits don't share through the chrome.
+   ========================================================================= */
+
+/* ── Page head — module title with module number badge ──────────────────── */
+.mod-head {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 24px; margin-bottom: 22px;
+}
+.mod-head .left { display: flex; flex-direction: column; gap: 8px; }
+.mod-head .num-row { display: inline-flex; align-items: center; gap: 12px; }
+.mod-head .num {
+  font-family: var(--font-mono);
+  font-size: 11px; letter-spacing: 0.22em;
+  color: var(--gold-700);
+  background: var(--gold-100);
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+.mod-head .en-tag {
+  font-family: var(--font-en); font-style: italic;
+  font-size: 14px; color: var(--fg-3);
+}
+.mod-head h1 {
+  font-family: var(--font-ar-display);
+  font-size: 36px; font-weight: 600;
+  color: var(--ink-900);
+  margin: 0; line-height: 1.05;
+}
+.mod-head .sub { color: var(--fg-2); font-size: 14px; max-width: 680px; line-height: 1.5; }
+.mod-head .actions { display: flex; gap: 10px; }
+
+/* ── Stat row ────────────────────────────────────────────────────────────── */
+.mod-stats { display: grid; grid-template-columns: repeat(var(--cols, 4), 1fr); gap: 12px; margin-bottom: 22px; }
+.mod-stat { background: var(--white); border: 1px solid var(--hairline); border-radius: 10px; padding: 15px 18px; }
+.mod-stat .lbl { font-size: 12px; color: var(--fg-2); }
+.mod-stat .v { font-family: var(--font-en); font-variant-numeric: tabular-nums; font-size: 28px; font-weight: 600; color: var(--ink-900); line-height: 1.05; margin-top: 4px; }
+.mod-stat .v.is-good  { color: var(--success-700); }
+.mod-stat .v.is-warn  { color: var(--warning-700); }
+.mod-stat .v.is-bad   { color: var(--danger-700); }
+.mod-stat .v .cur     { font-size: 13px; color: var(--fg-3); font-family: var(--font-ar); font-weight: 400; margin-inline-start: 4px; }
+.mod-stat .meta { font-size: 11px; color: var(--fg-3); margin-top: 4px; }
+.mod-stat .meta.up    { color: var(--success-700); font-weight: 600; }
+.mod-stat .meta.down  { color: var(--danger-700);  font-weight: 600; }
+
+/* ── 2-column layout helper ──────────────────────────────────────────────── */
+.mod-2col       { display: grid; grid-template-columns: 1fr 1fr;   gap: 16px; }
+.mod-2col-wide  { display: grid; grid-template-columns: 1.5fr 1fr; gap: 16px; }
+.mod-2col-narrow{ display: grid; grid-template-columns: 1fr 1.5fr; gap: 16px; }
+
+/* ── Standard card / panel ──────────────────────────────────────────────── */
+.mod-card { background: var(--white); border: 1px solid var(--hairline); border-radius: 12px; overflow: hidden; }
+.mod-card-pad { padding: 18px 20px; }
+
+/* ── Generic table row pattern ──────────────────────────────────────────── */
+.mod-tbl { display: flex; flex-direction: column; }
+.mod-tr {
+  display: grid;
+  grid-template-columns: var(--grid, repeat(6, 1fr));
+  gap: 14px;
+  align-items: center;
+  padding: 13px 20px;
+  border-top: 1px solid var(--hairline);
+  font-size: 13px;
+}
+.mod-tr.is-head {
+  background: var(--surface-2);
+  font-size: 11px;
+  color: var(--fg-3);
+  font-weight: 500;
+  border-top: none;
+}
+.mod-tr .num-cell { font-family: var(--font-mono); font-size: 11px; color: var(--fg-3); }
+.mod-tr .v-num { font-family: var(--font-en); font-variant-numeric: tabular-nums; font-weight: 600; color: var(--ink-900); }
+.mod-tr .v-num .cur { font-size: 10px; color: var(--fg-3); font-family: var(--font-ar); margin-inline-start: 2px; font-weight: 400; }
+
+/* ── Tag pills used inside cards ────────────────────────────────────────── */
+.mod-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 3px 9px; border-radius: 999px;
+  font-size: 11px; font-weight: 500;
+}
+.mod-tag .d { width: 6px; height: 6px; border-radius: 999px; background: currentColor; }
+.mod-tag.ok    { background: #DCEEE6; color: var(--success-700); }
+.mod-tag.warn  { background: #F6E7C2; color: var(--warning-700); }
+.mod-tag.err   { background: #F1D8CF; color: var(--danger-700); }
+.mod-tag.info  { background: #D6E1F0; color: var(--info-700); }
+.mod-tag.neu   { background: var(--sand); color: var(--fg-2); }
+.mod-tag.gold  { background: var(--gold-100); color: var(--gold-800); }
+.mod-tag.brand { background: var(--brand-100); color: var(--brand-800); }
+
+/* ── Card head used inside sections ─────────────────────────────────────── */
+.mod-section-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 18px 20px 14px; }
+.mod-section-head .ttl { font-family: var(--font-ar-display); font-size: 17px; font-weight: 600; color: var(--ink-900); }
+.mod-section-head .sub { font-family: var(--font-en); font-size: 11px; color: var(--fg-3); letter-spacing: 0.02em; margin-top: 3px; }
+
+/* ── Coming-soon overlay (used selectively on stub-only sub-features) ──── */
+.mod-soon {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--gold-100);
+  color: var(--gold-800);
+  font-family: var(--font-en);
+  font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 4px;
+  font-weight: 600;
+}
+
+/* ── Channel logo / circular icon ───────────────────────────────────────── */
+.mod-logo-circle {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  background: var(--paper-tint);
+  border: 1px solid var(--hairline);
+  display: grid; place-items: center;
+  font-family: var(--font-en); font-weight: 600; font-size: 13px;
+  color: var(--ink-800);
+}

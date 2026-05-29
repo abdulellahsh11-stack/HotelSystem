@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-screen-label="03 Government Docs">
+<head>
+<meta charset="utf-8"/>
+<title>ضيوف · المستندات والاشتراكات</title>
+<meta name="viewport" content="width=1440, initial-scale=1"/>
+<link rel="stylesheet" href="../../colors_and_type.css"/>
+<link rel="stylesheet" href="../../assets/animations.css"/>
+<link rel="stylesheet" href="../../shared/chrome.css"/>
+<link rel="stylesheet" href="../../shared/module.css"/>
+<style>
+  body { background: var(--paper-tint); }
+
+  /* Alert banner */
+  .doc-alert {
+    background: linear-gradient(135deg, #C99428, #9A6D14);
+    color: var(--paper);
+    border-radius: 14px;
+    padding: 22px 26px;
+    margin-bottom: 22px;
+    display: grid; grid-template-columns: auto 1fr auto; gap: 22px; align-items: center;
+    position: relative; overflow: hidden;
+  }
+  .doc-alert::after { content: ""; position: absolute; top: -40px; inset-inline-end: -40px; width: 200px; height: 200px; border-radius: 999px; background: radial-gradient(circle, rgba(255,255,255,0.18), transparent 60%); }
+  .doc-alert > * { position: relative; }
+  .doc-alert .ic { width: 52px; height: 52px; background: var(--paper); color: #9A6D14; border-radius: 12px; display: grid; place-items: center; font-size: 26px; }
+  .doc-alert .ar { font-family: var(--font-ar-display); font-weight: 600; font-size: 19px; }
+  .doc-alert .en { font-family: var(--font-en); font-style: italic; font-size: 12px; color: rgba(255,255,255,0.75); margin-top: 3px; }
+  .doc-alert .meta { font-size: 13px; color: rgba(255,255,255,0.9); margin-top: 8px; }
+  .doc-alert .v { font-family: var(--font-en); font-variant-numeric: tabular-nums; font-size: 38px; font-weight: 600; color: var(--paper); line-height: 1; }
+  .doc-alert .v-lbl { font-size: 11px; color: rgba(255,255,255,0.75); margin-top: 4px; font-family: var(--font-en); letter-spacing: 0.06em; text-transform: uppercase; }
+  .doc-alert button { background: var(--paper); color: #9A6D14; border: none; padding: 10px 18px; border-radius: 6px; font-family: var(--font-ar); font-weight: 600; font-size: 13px; cursor: pointer; }
+
+  /* Upload zone */
+  .doc-upload {
+    background: var(--white);
+    border: 1.5px dashed var(--gold-400);
+    border-radius: 12px;
+    padding: 22px 24px;
+    display: grid; grid-template-columns: auto 1fr auto; gap: 20px; align-items: center;
+    margin-bottom: 22px;
+  }
+  .doc-upload .ic { width: 50px; height: 50px; background: var(--gold-100); color: var(--gold-800); border-radius: 10px; display: grid; place-items: center; font-size: 22px; }
+  .doc-upload .body .ttl { font-family: var(--font-ar-display); font-weight: 600; font-size: 16px; color: var(--ink-900); }
+  .doc-upload .body .sub { font-size: 12px; color: var(--fg-2); margin-top: 3px; }
+  .doc-upload button { background: var(--brand-700); color: var(--paper); border: none; padding: 10px 18px; border-radius: 6px; font-family: var(--font-ar); font-weight: 500; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+
+  /* Documents table */
+  .doc-tbl { background: var(--white); border: 1px solid var(--hairline); border-radius: 12px; overflow: hidden; }
+  .doc-tr {
+    display: grid;
+    grid-template-columns: auto 2.2fr 1.4fr 1.4fr 1.6fr 90px;
+    gap: 14px; align-items: center;
+    padding: 14px 22px;
+    border-top: 1px solid var(--hairline);
+    font-size: 13px;
+  }
+  .doc-tr.is-head { background: var(--surface-2); font-size: 11px; color: var(--fg-3); font-weight: 500; border-top: none; }
+
+  .doc-ic {
+    width: 40px; height: 40px;
+    background: var(--paper-tint);
+    border-radius: 8px;
+    display: grid; place-items: center;
+    font-size: 18px;
+    border: 1px solid var(--hairline);
+  }
+  .doc-tr .nm { font-weight: 500; color: var(--ink-900); }
+  .doc-tr .sub { font-size: 11px; color: var(--fg-3); margin-top: 2px; }
+  .doc-tr .auth { font-size: 12px; color: var(--ink-700); }
+
+  .doc-date { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .doc-date .v { color: var(--ink-800); font-weight: 500; font-size: 13px; }
+  .doc-date .ago { font-size: 10px; color: var(--fg-3); margin-top: 2px; font-family: var(--font-ar); }
+
+  /* Expiry bar with status */
+  .doc-exp { display: flex; flex-direction: column; gap: 6px; }
+  .doc-exp .bar {
+    position: relative;
+    height: 6px;
+    background: var(--sand);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .doc-exp .fill { height: 100%; border-radius: 999px; }
+  .doc-exp.ok    .fill { background: var(--success-500); width: 80%; }
+  .doc-exp.warn  .fill { background: var(--warning-500); width: 35%; }
+  .doc-exp.err   .fill { background: var(--danger-500);  width: 10%; }
+  .doc-exp .row { display: flex; align-items: center; justify-content: space-between; }
+  .doc-exp .date { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 12px; color: var(--ink-800); font-weight: 500; }
+  .doc-exp .days { font-family: var(--font-ar); font-size: 11px; font-weight: 600; }
+  .doc-exp.ok    .days { color: var(--success-700); }
+  .doc-exp.warn  .days { color: var(--warning-700); }
+  .doc-exp.err   .days { color: var(--danger-700); }
+
+  .doc-tr .acts button {
+    background: transparent;
+    border: 1px solid var(--ink-100);
+    color: var(--fg-2);
+    font-family: var(--font-ar); font-size: 11px;
+    padding: 5px 10px; border-radius: 5px; cursor: pointer;
+  }
+  .doc-tr .acts button:hover { color: var(--ink-900); border-color: var(--ink-200); }
+
+  /* Notification preferences */
+  .doc-notify {
+    margin-top: 22px;
+    background: var(--white);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 22px 26px;
+  }
+  .doc-notify h4 { font-family: var(--font-ar-display); font-weight: 600; font-size: 16px; color: var(--ink-900); margin: 0 0 4px; }
+  .doc-notify .sub { font-family: var(--font-en); font-style: italic; font-size: 12px; color: var(--fg-3); margin-bottom: 18px; }
+  .doc-pref-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .doc-pref {
+    background: var(--paper-tint);
+    border: 1px solid var(--hairline);
+    border-radius: 10px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all 120ms;
+    position: relative;
+  }
+  .doc-pref.is-on { background: var(--brand-50); border-color: var(--brand-700); }
+  .doc-pref .head { display: flex; align-items: center; justify-content: space-between; }
+  .doc-pref .days { font-family: var(--font-en); font-variant-numeric: tabular-nums; font-weight: 600; font-size: 28px; color: var(--ink-900); line-height: 1; }
+  .doc-pref.is-on .days { color: var(--brand-800); }
+  .doc-pref .lbl { font-family: var(--font-ar); font-size: 12px; color: var(--ink-700); margin-top: 6px; }
+  .doc-pref .check {
+    width: 22px; height: 22px; border-radius: 6px;
+    border: 1.5px solid var(--ink-200);
+    background: var(--white);
+    display: grid; place-items: center;
+  }
+  .doc-pref.is-on .check { background: var(--brand-700); border-color: var(--brand-700); color: var(--paper); }
+  .doc-pref .ch-tt { font-size: 14px; }
+
+  .doc-channels {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    padding: 14px 16px; background: var(--paper-tint); border-radius: 8px; margin-top: 16px;
+    align-items: center;
+  }
+  .doc-channels .lbl { font-size: 12px; color: var(--ink-800); font-weight: 600; margin-inline-end: 6px; }
+  .doc-channels label { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-700); cursor: pointer; }
+  .doc-channels input { width: 14px; height: 14px; accent-color: var(--brand-700); }
+</style>
+</head>
+<body>
+<div class="nz-app">
+  <div id="sidebar-slot"></div>
+  <div>
+    <div id="topbar-slot"></div>
+    <main class="nz-main">
+
+      <div class="mod-head" data-m-rise>
+        <div class="left">
+          <div class="num-row">
+            <span class="num">03 · DOCS</span>
+            <span class="en-tag">Government Docs &amp; Subscription Expiry</span>
+          </div>
+          <h1>المستندات الحكومية والاشتراكات</h1>
+          <p class="sub">رفع جميع المستندات الحكومية، تخصيص تنبيهات الاشتراكات، وإخبار مدير المنشأة بتاريخ كل وثيقة ومتى تنتهي.</p>
+        </div>
+        <div class="actions">
+          <button style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">📋 سجل التنبيهات</button>
+          <button style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--brand-700);color:var(--paper);border:none;cursor:pointer">+ رفع مستند جديد</button>
+        </div>
+      </div>
+
+      <div class="doc-alert" data-m-rise>
+        <div class="ic">⚠</div>
+        <div>
+          <div class="ar">٣ مستندات تنتهي خلال ٣٠ يوم</div>
+          <div class="en">3 documents expire within 30 days · manager notified</div>
+          <div class="meta">آخر إشعار مُرسَل إلى سارة أحمد قبل ١٤ ساعة عبر WhatsApp و البريد</div>
+        </div>
+        <div style="text-align: center">
+          <div class="v">٣</div>
+          <div class="v-lbl">عاجلة</div>
+        </div>
+        <button>تجديد فوري</button>
+      </div>
+
+      <div class="mod-stats" style="--cols: 4">
+        <div class="mod-stat"><div class="lbl">إجمالي المستندات</div><div class="v">٢٤</div><div class="meta">١٨ سارية · ٦ تنبيهات</div></div>
+        <div class="mod-stat"><div class="lbl">تنتهي ≤ ٣٠ يوم</div><div class="v is-bad">٣</div><div class="meta">عاجلة — تجديد فوري</div></div>
+        <div class="mod-stat"><div class="lbl">تنتهي ≤ ٩٠ يوم</div><div class="v is-warn">٣</div><div class="meta">تنبيه مبكر</div></div>
+        <div class="mod-stat"><div class="lbl">آخر تجديد</div><div class="v">٢١<span class="cur">يوم</span></div><div class="meta">رخصة الدفاع المدني</div></div>
+      </div>
+
+      <div class="doc-upload" data-m-rise>
+        <div class="ic">📤</div>
+        <div class="body">
+          <div class="ttl">اسحب وأفلت المستند هنا — أو اختر ملفاً</div>
+          <div class="sub">يدعم PDF، JPG، PNG · حجم أقصى ١٠ ميجا · يُستخرج تاريخ الانتهاء تلقائياً من النص</div>
+        </div>
+        <button>📁 اختر ملفاً</button>
+      </div>
+
+      <div class="mod-section-head" style="padding-inline: 0">
+        <div>
+          <div class="ttl">المستندات الحكومية النشطة</div>
+          <div class="sub">Active government documents · sorted by expiry</div>
+        </div>
+      </div>
+
+      <div class="doc-tbl" data-m-rise-stagger>
+        <div class="doc-tr is-head">
+          <span></span>
+          <span>المستند</span>
+          <span>الجهة المُصدِرة</span>
+          <span>تاريخ الإصدار</span>
+          <span>صلاحية الانتهاء</span>
+          <span></span>
+        </div>
+
+        <div class="doc-tr">
+          <div class="doc-ic">⚠</div>
+          <div><div class="nm">رخصة بلدية المنشأة</div><div class="sub">رقم: BLD-2024-RYD-08172 · PDF · 2.1MB</div></div>
+          <div class="auth">أمانة الرياض</div>
+          <div class="doc-date"><div class="v">2024-06-12</div><div class="ago">منذ ١١ شهراً</div></div>
+          <div class="doc-exp err">
+            <div class="row"><span class="date">2025-06-12</span><span class="days">١٤ يوم متبقّي</span></div>
+            <div class="bar"><div class="fill"></div></div>
+          </div>
+          <div class="acts"><button>تجديد</button></div>
+        </div>
+
+        <div class="doc-tr">
+          <div class="doc-ic">🚨</div>
+          <div><div class="nm">شهادة الدفاع المدني</div><div class="sub">رقم: CD-2023-FE-94821 · PDF · 1.4MB</div></div>
+          <div class="auth">الدفاع المدني</div>
+          <div class="doc-date"><div class="v">2023-04-22</div><div class="ago">منذ سنتين</div></div>
+          <div class="doc-exp err">
+            <div class="row"><span class="date">2025-06-22</span><span class="days">٢٤ يوم متبقّي</span></div>
+            <div class="bar"><div class="fill"></div></div>
+          </div>
+          <div class="acts"><button>تجديد</button></div>
+        </div>
+
+        <div class="doc-tr">
+          <div class="doc-ic">🏛</div>
+          <div><div class="nm">السجل التجاري</div><div class="sub">رقم: CR-1010847291 · PDF · 0.8MB</div></div>
+          <div class="auth">وزارة التجارة</div>
+          <div class="doc-date"><div class="v">2024-03-08</div><div class="ago">منذ ١٤ شهراً</div></div>
+          <div class="doc-exp err">
+            <div class="row"><span class="date">2025-06-25</span><span class="days">٢٧ يوم متبقّي</span></div>
+            <div class="bar"><div class="fill"></div></div>
+          </div>
+          <div class="acts"><button>تجديد</button></div>
+        </div>
+
+        <div class="doc-tr">
+          <div class="doc-ic">🏨</div>
+          <div><div class="nm">ترخيص هيئة السياحة</div><div class="sub">رقم: STA-HTL-2024-1284 · PDF · 3.2MB</div></div>
+          <div class="auth">هيئة السياحة</div>
+          <div class="doc-date"><div class="v">2024-08-14</div><div class="ago">منذ ٩ أشهر</div></div>
+          <div class="doc-exp warn">
+            <div class="row"><span class="date">2025-08-14</span><span class="days">٧٨ يوم متبقّي</span></div>
+            <div class="bar"><div class="fill"></div></div>
+          </div>
+          <div class="acts"><button>عرض</button></div>
+        </div>
+
+        <div class="doc-tr">
+          <div class="doc-ic">📜</div>
+          <div><div class="nm">شهادة الزكاة والضريبة</div><div class="sub">رقم: ZK-2024-308472 · PDF · 0.6MB</div></div>
+          <div class="auth">هيئة الزكاة والضريبة</div>
+          <div class="doc-date"><div class="v">2024-12-31</div><div class="ago">منذ ٥ أشهر</div></div>
+          <div class="doc-exp warn">
+            <div class="row"><span class="date">2025-08-30</span><span class="days">٩٤ يوم متبقّي</span></div>
+            <div class="bar"><div class="fill"></div></div>
+          </div>
+          <div class="acts"><button>عرض</button></div>
+        </div>
+
+        <div class="doc-tr">
+          <div class="doc-ic">✅</div>
+          <div><div class="nm">شهادة الاشتراك في GOSI</div><div class="sub">رقم: GS-2025-094271 · PDF · 0.4MB</div></div>
+          <div class="auth">التأمينات الاجتماعية</div>
+          <div class="doc-date"><div class="v">2025-01-15</div><div class="ago">منذ ٤ أشهر</div></div>
+          <div class="doc-exp ok">
+            <div class="row"><span class="date">2026-01-15</span><span class="days">٢٣٤ يوم متبقّي</span></div>
+            <div class="bar"><div class="fill"></div></div>
+          </div>
+          <div class="acts"><button>عرض</button></div>
+        </div>
+
+        <div class="doc-tr">
+          <div class="doc-ic">⚖</div>
+          <div><div class="nm">ترخيص قوى — العمالة</div><div class="sub">رقم: QW-2025-A84612 · PDF · 1.1MB</div></div>
+          <div class="auth">وزارة الموارد البشرية</div>
+          <div class="doc-date"><div class="v">2025-02-28</div><div class="ago">منذ ٣ أشهر</div></div>
+          <div class="doc-exp ok">
+            <div class="row"><span class="date">2026-02-28</span><span class="days">٢٧٧ يوم متبقّي</span></div>
+            <div class="bar"><div class="fill"></div></div>
+          </div>
+          <div class="acts"><button>عرض</button></div>
+        </div>
+      </div>
+
+      <div class="doc-notify" data-m-rise>
+        <h4>تخصيص الاشتراكات — متى يصلني الإشعار؟</h4>
+        <div class="sub">Customize notification thresholds · we'll alert the manager via the chosen channels</div>
+
+        <div class="doc-pref-grid">
+          <div class="doc-pref is-on">
+            <div class="head"><span class="days">٩٠</span><div class="check"><span class="ch-tt">✓</span></div></div>
+            <div class="lbl">قبل ٩٠ يوم — تنبيه مبكر</div>
+          </div>
+          <div class="doc-pref is-on">
+            <div class="head"><span class="days">٦٠</span><div class="check"><span class="ch-tt">✓</span></div></div>
+            <div class="lbl">قبل ٦٠ يوم — تذكير</div>
+          </div>
+          <div class="doc-pref is-on">
+            <div class="head"><span class="days">٣٠</span><div class="check"><span class="ch-tt">✓</span></div></div>
+            <div class="lbl">قبل ٣٠ يوم — عاجل</div>
+          </div>
+          <div class="doc-pref is-on">
+            <div class="head"><span class="days">٧</span><div class="check"><span class="ch-tt">✓</span></div></div>
+            <div class="lbl">قبل ٧ أيام — تنبيه يومي</div>
+          </div>
+        </div>
+
+        <div class="doc-channels">
+          <span class="lbl">قنوات الإشعار:</span>
+          <label><input type="checkbox" checked/> 📧 البريد الإلكتروني</label>
+          <label><input type="checkbox" checked/> 💬 WhatsApp</label>
+          <label><input type="checkbox" checked/> 📱 رسالة نصية (SMS)</label>
+          <label><input type="checkbox"/> 🔔 إشعار داخل النظام</label>
+          <span style="margin-inline-start: auto; font-size: 12px; color: var(--fg-3)">المستلم: <strong style="color: var(--ink-900)">سارة أحمد المالكي</strong> · مدير المنشأة</span>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="../../shared/sidebar.js"></script>
+<script>StaticSidebar.mount({ activeId: "03-tourism", placeholder: "بحث في المستندات والاشتراكات..." });</script>
+<script src="../../assets/animations.js"></script>
+</body>
+</html>

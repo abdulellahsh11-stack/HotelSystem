@@ -1,0 +1,84 @@
+/* =========================================================================
+   Smart Key — fraud alarms panel
+   ========================================================================= */
+
+.sk-banner {
+  background: linear-gradient(135deg, #8B3A2A 0%, #5C2419 100%);
+  color: var(--paper);
+  border-radius: 14px;
+  padding: 22px 26px;
+  margin-bottom: 22px;
+  display: grid; grid-template-columns: auto 1fr auto; gap: 22px; align-items: center;
+  position: relative; overflow: hidden;
+}
+.sk-banner::after { content: ""; position: absolute; inset-block-start: -40px; inset-inline-end: -40px; width: 200px; height: 200px; border-radius: 999px; background: radial-gradient(circle, rgba(255,180,150,0.25), transparent 60%); }
+.sk-banner > * { position: relative; }
+.sk-banner .ic { width: 56px; height: 56px; background: var(--paper); color: #8B3A2A; border-radius: 12px; display: grid; place-items: center; font-size: 26px; }
+.sk-banner .ar { font-family: var(--font-ar-display); font-weight: 600; font-size: 20px; }
+.sk-banner .en { font-family: var(--font-en); font-style: italic; font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 3px; }
+.sk-banner .meta { font-size: 13px; color: rgba(255,255,255,0.85); margin-top: 8px; }
+.sk-banner .v { font-family: var(--font-en); font-variant-numeric: tabular-nums; font-size: 48px; font-weight: 600; color: var(--paper); line-height: 1; }
+.sk-banner .v-lbl { font-size: 11px; color: rgba(255,255,255,0.7); margin-top: 4px; font-family: var(--font-en); letter-spacing: 0.04em; text-transform: uppercase; }
+.sk-banner button { background: var(--paper); color: #8B3A2A; border: none; padding: 10px 18px; border-radius: 6px; font-family: var(--font-ar); font-weight: 600; font-size: 13px; cursor: pointer; }
+
+/* Alarm list */
+.sk-alarms { background: var(--white); border: 1px solid var(--hairline); border-radius: 12px; overflow: hidden; }
+.sk-alarm {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  gap: 16px; align-items: center;
+  padding: 16px 22px;
+  border-top: 1px solid var(--hairline);
+  transition: background 120ms;
+}
+.sk-alarm:hover { background: var(--paper-tint); }
+.sk-alarm.sev-high { background: #FDF4F0; }
+.sk-alarm.sev-high:hover { background: #FBE8E0; }
+.sk-alarm .sev {
+  width: 44px; height: 44px;
+  border-radius: 10px;
+  display: grid; place-items: center;
+  font-size: 20px;
+}
+.sk-alarm.sev-high .sev { background: var(--danger-100); color: var(--danger-700); }
+.sk-alarm.sev-med .sev { background: var(--warning-100); color: var(--warning-700); animation: sk-pulse 2s ease-in-out infinite; }
+.sk-alarm.sev-low .sev { background: var(--gold-100); color: var(--gold-800); }
+.sk-alarm.sev-info .sev { background: var(--brand-100); color: var(--brand-800); }
+@keyframes sk-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
+.sk-alarm .body .ttl { font-weight: 600; color: var(--ink-900); font-size: 14px; }
+.sk-alarm .body .sub { font-size: 12px; color: var(--fg-2); margin-top: 3px; }
+.sk-alarm .body .src {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 6px;
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--fg-3);
+}
+.sk-alarm .body .src .chip { background: var(--sand); padding: 2px 7px; border-radius: 4px; }
+.sk-alarm .when { text-align: end; }
+.sk-alarm .when .t { font-family: var(--font-en); font-variant-numeric: tabular-nums; font-weight: 600; font-size: 13px; color: var(--ink-800); }
+.sk-alarm .when .ago { font-size: 11px; color: var(--fg-3); margin-top: 2px; }
+.sk-alarm .acts { display: flex; gap: 6px; }
+.sk-alarm .acts button {
+  background: var(--white); border: 1px solid var(--ink-100);
+  color: var(--ink-700); font-family: var(--font-ar); font-size: 11px;
+  padding: 6px 12px; border-radius: 6px; cursor: pointer;
+}
+.sk-alarm .acts button:hover { background: var(--surface-2); }
+.sk-alarm .acts button.pr { background: var(--brand-700); color: var(--paper); border-color: var(--brand-700); }
+.sk-alarm .acts button.pr:hover { background: var(--brand-800); }
+
+/* Cross-program listening grid */
+.sk-watch { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 22px; }
+.sk-watch .card {
+  background: var(--white);
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.sk-watch .card .row1 { display: flex; align-items: center; justify-content: space-between; }
+.sk-watch .card .ic { width: 32px; height: 32px; background: var(--paper-tint); border-radius: 8px; display: grid; place-items: center; font-size: 16px; border: 1px solid var(--hairline); }
+.sk-watch .card .live { width: 8px; height: 8px; background: var(--success-500); border-radius: 999px; box-shadow: 0 0 0 0 rgba(74,148,118,0.5); animation: sk-dot 1.5s infinite; }
+@keyframes sk-dot { 0% { box-shadow: 0 0 0 0 rgba(74,148,118,0.5); } 100% { box-shadow: 0 0 0 6px rgba(74,148,118,0); } }
+.sk-watch .card .nm { font-size: 12px; color: var(--ink-800); font-weight: 500; }
+.sk-watch .card .events { font-family: var(--font-mono); font-size: 10px; color: var(--fg-3); }

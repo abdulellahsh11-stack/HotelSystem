@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-screen-label="08 Smart Key · Fraud Guard">
+<head>
+<meta charset="utf-8"/>
+<title>ضيوف · المفتاح الذكي</title>
+<meta name="viewport" content="width=1440, initial-scale=1"/>
+<link rel="stylesheet" href="../../colors_and_type.css"/>
+<link rel="stylesheet" href="../../assets/animations.css"/>
+<link rel="stylesheet" href="../../shared/chrome.css"/>
+<link rel="stylesheet" href="../../shared/module.css"/>
+<link rel="stylesheet" href="alarms.css"/>
+</head>
+<body>
+<div class="nz-app">
+  <div id="sidebar-slot"></div>
+  <div>
+    <div id="topbar-slot"></div>
+    <main class="nz-main">
+
+      <div class="mod-head" data-m-rise>
+        <div class="left">
+          <div class="num-row">
+            <span class="num">08 · SMART KEY</span>
+            <span class="en-tag">Cross-program fraud guardian</span>
+          </div>
+          <h1>المفتاح الذكي — حارس البيانات</h1>
+          <p class="sub">يراقب جميع البرامج (الضيوف، المحاسبة، نقاط البيع، شموس، الموارد البشرية، القنوات) ويُصدر إنذاراً للمسؤول عند اكتشاف نزيل غير مسجَّل أو ثغرة بيانات.</p>
+        </div>
+        <div class="actions">
+          <button style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">⚙ قواعد الإنذار</button>
+          <button style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--brand-700);color:var(--paper);border:none;cursor:pointer">📥 سجلّ كامل</button>
+        </div>
+      </div>
+
+      <div class="sk-banner" data-m-rise>
+        <div class="ic">🛡</div>
+        <div>
+          <div class="ar">المفتاح الذكي يراقب جميع البرامج</div>
+          <div class="en">Cross-program guardian · listens to programs 01–12</div>
+          <div class="meta">آخر فحص قبل ٢٢ ثانية · ٤ حالات تحتاج تدخّل</div>
+        </div>
+        <div style="text-align: center">
+          <div class="v">٤</div>
+          <div class="v-lbl">إنذارات نشطة</div>
+        </div>
+        <button>عرض السجلّ الكامل</button>
+      </div>
+
+      <div class="sk-watch" data-m-rise-stagger>
+        <div class="card"><div class="row1"><div class="ic">🛏</div><div class="live"></div></div><div class="nm">الضيوف</div><div class="events">٢٤ حدث · مباشر</div></div>
+        <div class="card"><div class="row1"><div class="ic">💳</div><div class="live"></div></div><div class="nm">المحاسبة</div><div class="events">٤٢ حدث · مباشر</div></div>
+        <div class="card"><div class="row1"><div class="ic">🏧</div><div class="live"></div></div><div class="nm">نقاط البيع</div><div class="events">٢٤٨ حدث · مباشر</div></div>
+        <div class="card"><div class="row1"><div class="ic">🛡</div><div class="live"></div></div><div class="nm">شموس</div><div class="events">٢٤٨ حدث · مباشر</div></div>
+        <div class="card"><div class="row1"><div class="ic">🌐</div><div class="live"></div></div><div class="nm">القنوات</div><div class="events">٢٢٤ حدث · مباشر</div></div>
+      </div>
+
+      <div class="mod-section-head" style="padding-inline: 0; margin-top: 22px;">
+        <div>
+          <div class="ttl">إنذارات نشطة — تحتاج إجراء</div>
+          <div class="sub">Active alarms · escalated to property manager</div>
+        </div>
+      </div>
+
+      <div class="sk-alarms" data-m-rise>
+        <div class="sk-alarm sev-high">
+          <div class="sev">⚠</div>
+          <div class="body">
+            <div class="ttl">نزيل غير مسجّل — دفع POS بدون رقم غرفة</div>
+            <div class="sub">دفع ١٬٢٤٠ ر.س في مطعم الواحة قبل ١٤ دقيقة، لكن لا يوجد نزيل مسجّل في الغرفة المرتبطة (٢١٨).</div>
+            <div class="src"><span class="chip">المصدر: نقاط البيع</span> ← <span class="chip">الضيوف · لا تطابق</span></div>
+          </div>
+          <div class="when"><div class="t">14:32</div><div class="ago">قبل ١٤ دقيقة</div></div>
+          <div class="acts"><button>تجاهل</button><button class="pr">سجّل النزيل الآن</button></div>
+        </div>
+
+        <div class="sk-alarm sev-high">
+          <div class="sev">⚠</div>
+          <div class="body">
+            <div class="ttl">دخول جناح ٤١٠ — بدون تسجيل بيانات</div>
+            <div class="sub">المفتاح الذكي فُتح قبل ٣٢ دقيقة بهوية لم تمرّ بمكتب الاستقبال. لم تُسجَّل بيانات النزيل في برنامج الضيوف.</div>
+            <div class="src"><span class="chip">المصدر: المفتاح الذكي</span> ← <span class="chip">الضيوف · مفقود</span></div>
+          </div>
+          <div class="when"><div class="t">14:14</div><div class="ago">قبل ٣٢ دقيقة</div></div>
+          <div class="acts"><button>تجاهل</button><button class="pr">سجّل الآن</button></div>
+        </div>
+
+        <div class="sk-alarm sev-med">
+          <div class="sev">!</div>
+          <div class="body">
+            <div class="ttl">مرافق بدون بيانات كاملة — غرفة ٣٠٧</div>
+            <div class="sub">النزيل Layla Karam سجّلت مرافقاً (طفل ١٢ سنة) بدون رقم جوال. نقص في البيانات الإلزامية.</div>
+            <div class="src"><span class="chip">المصدر: الضيوف</span> ← <span class="chip">المرافقون · نقص</span></div>
+          </div>
+          <div class="when"><div class="t">13:48</div><div class="ago">قبل ٥٨ دقيقة</div></div>
+          <div class="acts"><button>تجاهل</button><button class="pr">استكمل البيانات</button></div>
+        </div>
+
+        <div class="sk-alarm sev-low">
+          <div class="sev">i</div>
+          <div class="body">
+            <div class="ttl">إقامة قاربت على الانتهاء — تجديد مطلوب</div>
+            <div class="sub">Rajesh Kumar — إقامة تنتهي بعد ٦٣ يوماً. يُنصح ببدء طلب التجديد عبر قوى.</div>
+            <div class="src"><span class="chip">المصدر: الموارد البشرية</span> ← <span class="chip">إقامة · تنبيه مبكر</span></div>
+          </div>
+          <div class="when"><div class="t">10:20</div><div class="ago">قبل ٤ ساعات</div></div>
+          <div class="acts"><button>تأجيل</button><button class="pr">افتح في قوى</button></div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="../../shared/sidebar.js"></script>
+<script>StaticSidebar.mount({ activeId: "08-smart-key", placeholder: "بحث في الإنذارات والسجل..." });</script>
+<script src="../../assets/animations.js"></script>
+</body>
+</html>

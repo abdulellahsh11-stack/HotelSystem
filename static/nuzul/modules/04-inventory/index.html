@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-screen-label="Inventory">
+<head>
+<meta charset="utf-8"/>
+<title>ضيوف · مخزون الضيافة</title>
+<meta name="viewport" content="width=1440, initial-scale=1"/>
+<link rel="stylesheet" href="../../colors_and_type.css"/>
+<link rel="stylesheet" href="../../shared/chrome.css"/>
+<link rel="stylesheet" href="inventory.css"/>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="../../shared/chrome.jsx"></script>
+<script type="text/babel" src="Items.jsx"></script>
+
+<script type="text/babel">
+const { useState } = React;
+
+const ITEMS = {
+  linens: [
+    { sku: "LN-2401", ic: "🛏", name: "لحاف قطن مصري — كينج", loc: "المستودع أ — الطابق ٢", zone: "رف A-12", qty: 240, par: 360, reorder: 100, dir: "out", move: 12, when: "قبل ساعتين" },
+    { sku: "LN-2402", ic: "🛏", name: "لحاف صوف — كوين",       loc: "المستودع أ — الطابق ٢", zone: "رف A-14", qty: 86,  par: 240, reorder: 100, dir: "out", move: 8,  when: "قبل ٤ ساعات" },
+    { sku: "LN-2403", ic: "🛏", name: "لحاف كشمير VIP",         loc: "خزينة الأجنحة", zone: "S-VIP",  qty: 18,  par: 40,  reorder: 12,  dir: "in",  move: 6,  when: "أمس" },
+    { sku: "TW-3010", ic: "🧺", name: "فوط استحمام كبيرة",      loc: "المستودع أ — الطابق ١", zone: "B-08",   qty: 420, par: 800, reorder: 250, dir: "out", move: 36, when: "اليوم" },
+    { sku: "PR-5081", ic: "✨", name: "عطر التوقيع — Dheuof Signature 50ml", loc: "خزينة الأجنحة", zone: "S-PR", qty: 14, par: 60, reorder: 20, dir: "in", move: 30, when: "البارحة" },
+    { sku: "SP-1102", ic: "🧼", name: "صابون فاخر — مرسيليا",  loc: "مخزن العناية",          zone: "C-04",   qty: 1840, par: 2400, reorder: 800, dir: "out", move: 60, when: "اليوم" },
+  ]
+};
+
+function App() {
+  const [active, setActive] = useState("inventory");
+  const [cat, setCat] = useState("linens");
+  return (
+    <div className="nz-app">
+      <NzSidebar active={active} onChange={setActive}/>
+      <div>
+        <NzTopBar placeholder="بحث في المنتجات والـ SKUs..."/>
+        <main className="nz-main">
+          <NzPageHead
+            eyebrow="العمليات · مخزون الضيافة وتجهيز الغرف"
+            title="مخزون الضيافة"
+            sub="لُحف، فوط، عطور، صابون، تجهيزات غرف · إدارة مستقلة عن مستودع الصيانة · جرد آلي يومي؋ ٢ صباحاً"
+            actions={<>
+              <button className="nz-btn is-secondary"><NzIcon.download/>تصدير الجرد</button>
+              <button className="nz-btn is-primary"><NzIcon.plus/>سند صرف</button>
+              <button className="nz-btn is-gold"><NzIcon.plus/>سند توريد</button>
+            </>}
+          />
+
+          <div className="inv-kpi">
+            <div className="card"><div className="lbl">إجمالي الأصناف</div><div className="v">١٬٢٤٦</div><div className="sub">في ١٣ فئة</div></div>
+            <div className="card"><div className="lbl">قيمة المخزون</div><div className="v">٤٨٤٬٢٠٠ <span style={{fontSize:14, color:"var(--fg-3)"}}>ر.س</span></div><div className="sub">آخر تقييم: اليوم</div></div>
+            <div className="card"><div className="lbl">تحت حد الطلب</div><div className="v is-warn">٢٢</div><div className="sub">صنف يحتاج تجديد</div></div>
+            <div className="card"><div className="lbl">نفد المخزون</div><div className="v is-err">٤</div><div className="sub">أصناف بحاجة عاجلة</div></div>
+          </div>
+
+          <div className="inv-shell">
+            <CategoryRail active={cat} onChange={setCat}/>
+            <div className="inv-tbl-card">
+              <div className="nz-card-head">
+                <div>
+                  <div className="ttl">لُحف وأغطية وعناية شخصية</div>
+                  <div className="sub">Linens &amp; amenities · 6 items shown</div>
+                </div>
+                <div className="nz-card-actions">
+                  <button className="nz-chip is-on">الكل</button>
+                  <button className="nz-chip">منخفض</button>
+                  <button className="nz-chip">VIP فقط</button>
+                  <button className="nz-icon-btn"><NzIcon.filter/></button>
+                </div>
+              </div>
+              <ItemsTable items={ITEMS.linens}/>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+
+</body>
+</html>

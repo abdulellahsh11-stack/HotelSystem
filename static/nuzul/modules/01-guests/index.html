@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-screen-label="Admin Dashboard">
+<head>
+<meta charset="utf-8"/>
+<title>ضيوف · لوحة التحكم</title>
+<meta name="viewport" content="width=1440, initial-scale=1"/>
+<link rel="stylesheet" href="../../colors_and_type.css"/>
+<link rel="stylesheet" href="../../assets/animations.css"/>
+<link rel="stylesheet" href="dashboard.css"/>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="Sidebar.jsx"></script>
+<script type="text/babel" src="TopBar.jsx"></script>
+<script type="text/babel" src="KpiGrid.jsx"></script>
+<script type="text/babel" src="OccupancyHeatmap.jsx"></script>
+<script type="text/babel" src="BookingsTable.jsx"></script>
+<script type="text/babel" src="RevenueChart.jsx"></script>
+<script type="text/babel" src="Panels.jsx"></script>
+
+<script type="text/babel">
+const { useState } = React;
+
+function App() {
+  const [active, setActive] = useState("dashboard");
+  const [lang, setLang] = useState("ar");
+
+  return (
+    <div className="nz-app">
+      <Sidebar active={active} onChange={setActive} />
+      <div>
+        <TopBar lang={lang} onLang={setLang} />
+        <main className="nz-main">
+          <div className="nz-page-head" data-m-rise>
+            <div className="ttl-grp">
+              <span className="nz-eyebrow">الإثنين · ١٢ أبريل ٢٠٢٥</span>
+              <h1 className="nz-page-title">صباح الخير، سارة</h1>
+              <div className="nz-page-sub">إليكِ ما يحدث في فندق الواحة الذهبية اليوم.</div>
+            </div>
+            <div className="nz-page-actions">
+              <button className="nz-btn is-secondary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                تصدير تقرير
+              </button>
+              <button className="nz-btn is-primary m-shimmer">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                حجز جديد
+              </button>
+            </div>
+          </div>
+
+          <KpiGrid />
+
+          <div data-m-rise>
+            <OccupancyHeatmap />
+          </div>
+
+          <div className="nz-2col" data-m-rise-stagger>
+            <RevenueChart />
+            <ChannelMix />
+          </div>
+
+          <div className="nz-2col-table" data-m-rise>
+            <div style={{gridColumn: "1 / -1"}}>
+              <BookingsTable />
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+
+<script src="../../assets/animations.js"></script>
+<script>
+  // Re-init after React mount
+  setTimeout(() => window.DheuofMotion && window.DheuofMotion.init(), 100);
+</script>
+
+</body>
+</html>

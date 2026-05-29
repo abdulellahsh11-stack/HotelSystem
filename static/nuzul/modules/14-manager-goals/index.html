@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-screen-label="14 Manager Goals">
+<head>
+<meta charset="utf-8"/>
+<title>ضيوف - أهداف المدير</title>
+<meta name="viewport" content="width=1440, initial-scale=1"/>
+<link rel="stylesheet" href="../../colors_and_type.css"/>
+<link rel="stylesheet" href="../../assets/animations.css"/>
+<link rel="stylesheet" href="../../shared/chrome.css"/>
+<link rel="stylesheet" href="../../shared/module.css"/>
+<style>
+  body { background: var(--paper-tint); }
+
+  .gl-hero {
+    background: linear-gradient(135deg, var(--brand-800), var(--brand-900));
+    color: var(--paper);
+    border-radius: 16px;
+    padding: 30px 32px;
+    margin-bottom: 22px;
+    display: grid; grid-template-columns: 1fr auto; gap: 28px; align-items: center;
+    position: relative; overflow: hidden;
+  }
+  .gl-hero::after { content: ""; position: absolute; top: -60px; inset-inline-end: -60px; width: 280px; height: 280px; border-radius: 999px; background: radial-gradient(circle, rgba(201,168,95,0.22), transparent 60%); }
+  .gl-hero > * { position: relative; }
+  .gl-hero .lbl { font-family: var(--font-en); font-size: 11px; letter-spacing: 0.22em; color: var(--gold-400); font-weight: 600; }
+  .gl-hero h2 { font-family: var(--font-ar-display); font-weight: 600; font-size: 28px; margin: 8px 0 6px; }
+  .gl-hero .sub { font-size: 14px; color: var(--gold-200); line-height: 1.55; max-width: 540px; }
+
+  /* Circular progress */
+  .gl-ring { position: relative; width: 160px; height: 160px; }
+  .gl-ring svg { transform: rotate(-90deg); }
+  .gl-ring .center {
+    position: absolute; inset: 0;
+    display: grid; place-items: center;
+    flex-direction: column;
+  }
+  .gl-ring .v {
+    font-family: var(--font-en); font-variant-numeric: tabular-nums;
+    font-size: 44px; font-weight: 700; color: var(--gold-400);
+    line-height: 1;
+  }
+  .gl-ring .label { font-size: 11px; color: var(--gold-300); margin-top: 4px; }
+
+  /* Goal cards */
+  .gl-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .gl-card {
+    background: var(--white);
+    border: 1px solid var(--hairline);
+    border-radius: 14px;
+    padding: 22px 24px 24px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 200ms, box-shadow 200ms;
+  }
+  .gl-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-2); }
+  .gl-card.done { background: linear-gradient(135deg, var(--brand-50), var(--paper)); border-color: var(--brand-300); }
+  .gl-card.behind { background: linear-gradient(135deg, #FDF4F0, var(--paper)); border-color: #E8AC9F; }
+  .gl-card .head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .gl-card .ic { width: 44px; height: 44px; background: var(--paper-tint); border-radius: 10px; display: grid; place-items: center; font-size: 22px; border: 1px solid var(--hairline); }
+  .gl-card .pct { font-family: var(--font-en); font-variant-numeric: tabular-nums; font-size: 28px; font-weight: 700; color: var(--brand-700); }
+  .gl-card.done .pct { color: var(--success-700); }
+  .gl-card.behind .pct { color: var(--danger-700); }
+  .gl-card .nm { font-family: var(--font-ar-display); font-weight: 600; font-size: 16px; color: var(--ink-900); }
+  .gl-card .target { font-size: 12px; color: var(--fg-2); margin-top: 4px; }
+  .gl-card .bar { height: 7px; background: var(--sand); border-radius: 999px; margin: 12px 0 8px; overflow: hidden; }
+  .gl-card .bar div { height: 100%; background: linear-gradient(to left, var(--brand-500), var(--brand-700)); border-radius: 999px; }
+  .gl-card.done .bar div { background: linear-gradient(to left, var(--success-500), var(--success-700)); }
+  .gl-card.behind .bar div { background: linear-gradient(to left, var(--danger-500), var(--danger-700)); }
+  .gl-card .foot-info { display: flex; justify-content: space-between; font-size: 11px; color: var(--fg-3); }
+  .gl-card .foot-info .now { font-family: var(--font-en); font-variant-numeric: tabular-nums; font-weight: 600; color: var(--ink-800); }
+
+  /* Notification feed */
+  .gl-notify {
+    background: var(--white);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 22px 24px;
+    margin-top: 22px;
+  }
+  .gl-notify h4 { font-family: var(--font-ar-display); font-weight: 600; font-size: 16px; color: var(--ink-900); margin: 0 0 14px; display: flex; align-items: center; gap: 10px; }
+  .gl-notify h4 .pulse { width: 8px; height: 8px; background: var(--success-500); border-radius: 999px; box-shadow: 0 0 0 0 rgba(74,148,118,0.5); animation: gl-pulse 1.5s infinite; }
+  @keyframes gl-pulse { 0% { box-shadow: 0 0 0 0 rgba(74,148,118,0.5); } 100% { box-shadow: 0 0 0 8px rgba(74,148,118,0); } }
+  .gl-notify .item { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; padding: 10px 0; border-top: 1px solid var(--hairline); align-items: center; }
+  .gl-notify .item:first-of-type { border-top: none; }
+  .gl-notify .item .ic { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; font-size: 14px; }
+  .gl-notify .item .ic.good { background: #DCEEE6; color: var(--success-700); }
+  .gl-notify .item .ic.warn { background: #F6E7C2; color: var(--warning-700); }
+  .gl-notify .item .ic.info { background: #D6E1F0; color: var(--info-700); }
+  .gl-notify .item .body { font-size: 13px; color: var(--ink-900); line-height: 1.45; }
+  .gl-notify .item .body .sub { font-size: 11px; color: var(--fg-3); margin-top: 2px; }
+  .gl-notify .item .when { font-family: var(--font-mono); font-size: 11px; color: var(--fg-3); }
+</style>
+</head>
+<body>
+<div class="nz-app">
+  <div id="sidebar-slot"></div>
+  <div>
+    <div id="topbar-slot"></div>
+    <main class="nz-main">
+
+      <div class="mod-head" data-m-rise>
+        <div class="left">
+          <div class="num-row">
+            <span class="num">14 - GOALS</span>
+            <span class="en-tag">Manager Goals and Achievements</span>
+          </div>
+          <h1>أهدافي كمدير منشأة</h1>
+          <p class="sub">أهداف شهرية وفصلية مع متابعة فورية. تنبيهات عند تجاوز الهدف أو التأخر عنه، مع معلومات إضافية لكل هدف.</p>
+        </div>
+        <div class="actions">
+          <button style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">سجل الأهداف</button>
+          <button style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--brand-700);color:var(--paper);border:none;cursor:pointer">إضافة هدف جديد</button>
+        </div>
+      </div>
+
+      <div class="gl-hero" data-m-rise>
+        <div>
+          <div class="lbl">MAY 2025 - OVERALL PROGRESS</div>
+          <h2>أداء هذا الشهر</h2>
+          <p class="sub">٤ أهداف من أصل ٦ تم تحقيقها أو تجاوزت المستهدف. الإيرادات تتقدم على الجدول بنسبة ١٢٪. إقامات الموظفين تحتاج اهتمام.</p>
+        </div>
+        <div class="gl-ring">
+          <svg width="160" height="160">
+            <circle cx="80" cy="80" r="68" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="14"/>
+            <circle cx="80" cy="80" r="68" fill="none" stroke="#C9A85F" stroke-width="14"
+                    stroke-dasharray="${0.78 * 2 * Math.PI * 68} ${2 * Math.PI * 68}"
+                    stroke-linecap="round"/>
+          </svg>
+          <div class="center"><div><div class="v">٧٨٪</div><div class="label">إجمالي الأهداف</div></div></div>
+        </div>
+      </div>
+
+      <div class="gl-grid" data-m-rise-stagger>
+
+        <div class="gl-card done">
+          <div class="head">
+            <div class="ic">📈</div>
+            <div class="pct">١١٢٪</div>
+          </div>
+          <div class="nm">إيرادات الشهر</div>
+          <div class="target">المستهدف: ٤٢٠ ألف ر.س</div>
+          <div class="bar"><div style="width: 100%"></div></div>
+          <div class="foot-info"><span>محقق:</span><span class="now">٤٧٠٬٢٤٠ ر.س</span></div>
+        </div>
+
+        <div class="gl-card done">
+          <div class="head">
+            <div class="ic">🛏</div>
+            <div class="pct">١٠٤٪</div>
+          </div>
+          <div class="nm">معدل الإشغال</div>
+          <div class="target">المستهدف: ٨٣٪</div>
+          <div class="bar"><div style="width: 100%"></div></div>
+          <div class="foot-info"><span>محقق:</span><span class="now">٨٧٪</span></div>
+        </div>
+
+        <div class="gl-card">
+          <div class="head">
+            <div class="ic">💎</div>
+            <div class="pct">٨٦٪</div>
+          </div>
+          <div class="nm">حجوزات الجولات</div>
+          <div class="target">المستهدف: ٢٤ جولة</div>
+          <div class="bar"><div style="width: 86%"></div></div>
+          <div class="foot-info"><span>محقق:</span><span class="now">٢٠ جولة</span></div>
+        </div>
+
+        <div class="gl-card">
+          <div class="head">
+            <div class="ic">⭐</div>
+            <div class="pct">٩٦٪</div>
+          </div>
+          <div class="nm">تقييمات النزلاء</div>
+          <div class="target">المستهدف: ٤٫٧ / ٥</div>
+          <div class="bar"><div style="width: 96%"></div></div>
+          <div class="foot-info"><span>المحقق:</span><span class="now">٤٫٨ / ٥</span></div>
+        </div>
+
+        <div class="gl-card behind">
+          <div class="head">
+            <div class="ic">👥</div>
+            <div class="pct">٤٢٪</div>
+          </div>
+          <div class="nm">تجديد إقامات الموظفين</div>
+          <div class="target">المستهدف: ١٠ تجديدات</div>
+          <div class="bar"><div style="width: 42%"></div></div>
+          <div class="foot-info"><span>محقق:</span><span class="now">٤ / ١٠</span></div>
+        </div>
+
+        <div class="gl-card">
+          <div class="head">
+            <div class="ic">💳</div>
+            <div class="pct">٧٢٪</div>
+          </div>
+          <div class="nm">تقليل التكاليف التشغيلية</div>
+          <div class="target">المستهدف: ٨٪ توفير</div>
+          <div class="bar"><div style="width: 72%"></div></div>
+          <div class="foot-info"><span>محقق:</span><span class="now">٥٫٨٪</span></div>
+        </div>
+
+      </div>
+
+      <div class="gl-notify" data-m-rise>
+        <h4><span class="pulse"></span>تنبيهات الأهداف - مباشر</h4>
+        <div class="item">
+          <div class="ic good">✓</div>
+          <div class="body">تجاوزت هدف الإيرادات الشهري قبل ٣ أيام من النهاية - ١١٢٪<div class="sub">يمكن رفع المستهدف للشهر القادم بنسبة ٨٪</div></div>
+          <div class="when">قبل ساعة</div>
+        </div>
+        <div class="item">
+          <div class="ic warn">!</div>
+          <div class="body">٦ إقامات للموظفين تحتاج تجديد - اضغط لفتح قوى<div class="sub">إذا لم تُجدَّد قبل ١٥ يونيو، توقف العمل ل ٣ موظفين</div></div>
+          <div class="when">قبل ٣ ساعات</div>
+        </div>
+        <div class="item">
+          <div class="ic info">i</div>
+          <div class="body">جولات السياحة متأخرة عن الهدف بنسبة ١٤٪ - راجع الكتالوج<div class="sub">جولة "منطاد العلا" لا تحقق حجوزات - فكر في إيقافها</div></div>
+          <div class="when">أمس</div>
+        </div>
+        <div class="item">
+          <div class="ic good">✓</div>
+          <div class="body">معدل تقييمات النزلاء تخطى ٤٫٨ هذا الأسبوع<div class="sub">السبا والمطعم يحصلان على أعلى التقييمات</div></div>
+          <div class="when">قبل يومين</div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="../../shared/sidebar.js"></script>
+<script>StaticSidebar.mount({ activeId: "14-manager-goals", placeholder: "بحث في الأهداف..." });</script>
+<script src="../../assets/animations.js"></script>
+</body>
+</html>

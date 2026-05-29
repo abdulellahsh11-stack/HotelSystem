@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 64" fill="none" aria-label="Dheuof wordmark Arabic">
+  <rect x="0" y="0" width="64" height="64" rx="8" fill="#1B4D3D"></rect>
+  <path d="M32 14a10 10 0 1 0 7.5 16.6A7.5 7.5 0 0 1 32 14z" fill="#C9A85F"></path>
+  <path d="M22 50V36a10 10 0 1 1 20 0v14" stroke="#C9A85F" stroke-width="2.5" stroke-linecap="round"></path>
+  <path d="M18 50h28" stroke="#C9A85F" stroke-width="2.5" stroke-linecap="round"></path>
+  <text x="80" y="42" font-family="Reem Kufi, IBM Plex Sans Arabic, sans-serif" font-size="34" font-weight="600" fill="#14110E" direction="rtl">ضيوف</text>
+</svg>

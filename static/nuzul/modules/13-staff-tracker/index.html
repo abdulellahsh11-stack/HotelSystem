@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-screen-label="13 Staff Tracker">
+<head>
+<meta charset="utf-8"/>
+<title>ضيوف - أداء الموظفين</title>
+<meta name="viewport" content="width=1440, initial-scale=1"/>
+<link rel="stylesheet" href="../../colors_and_type.css"/>
+<link rel="stylesheet" href="../../assets/animations.css"/>
+<link rel="stylesheet" href="../../shared/chrome.css"/>
+<link rel="stylesheet" href="../../shared/module.css"/>
+<style>
+  body { background: var(--paper-tint); }
+
+  .st-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+  .st-list { background: var(--white); border: 1px solid var(--hairline); border-radius: 12px; overflow: hidden; }
+  .st-row { display: grid; grid-template-columns: auto 1.6fr 1fr 1.2fr 1fr 100px; gap: 14px; align-items: center; padding: 14px 22px; border-top: 1px solid var(--hairline); font-size: 13px; }
+  .st-row.is-head { background: var(--surface-2); font-size: 11px; color: var(--fg-3); font-weight: 500; border-top: none; }
+  .st-av { width: 40px; height: 40px; border-radius: 999px; background: var(--brand-200); color: var(--brand-800); display: grid; place-items: center; font-family: var(--font-ar); font-size: 12px; font-weight: 600; }
+  .st-nm { font-weight: 500; color: var(--ink-900); }
+  .st-sub { font-size: 11px; color: var(--fg-3); margin-top: 2px; }
+  .st-time { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .st-time.late { color: var(--danger-700); font-weight: 600; }
+  .st-time.ok { color: var(--success-700); font-weight: 600; }
+  .st-bonus { font-family: var(--font-en); font-variant-numeric: tabular-nums; font-weight: 600; color: var(--gold-700); font-size: 13px; }
+  .st-bonus .cur { font-size: 10px; color: var(--fg-3); font-family: var(--font-ar); margin-inline-start: 3px; font-weight: 400; }
+
+  /* Day-off card */
+  .st-side { display: flex; flex-direction: column; gap: 14px; }
+  .st-rest { background: linear-gradient(135deg, var(--gold-600), var(--gold-800)); color: var(--paper); border-radius: 12px; padding: 22px 24px; }
+  .st-rest .lbl { font-family: var(--font-en); font-size: 10px; letter-spacing: 0.22em; color: rgba(255,255,255,0.75); }
+  .st-rest .ttl { font-family: var(--font-ar-display); font-weight: 600; font-size: 18px; margin: 6px 0 12px; }
+  .st-rest .who { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: rgba(0,0,0,0.18); border-radius: 8px; margin-bottom: 8px; }
+  .st-rest .who .av { width: 32px; height: 32px; border-radius: 999px; background: var(--paper); color: var(--gold-800); display: grid; place-items: center; font-size: 11px; font-weight: 600; }
+  .st-rest .who .n { flex: 1; font-size: 13px; }
+  .st-rest .who .d { font-family: var(--font-mono); font-size: 11px; color: rgba(255,255,255,0.8); }
+
+  .st-perf { background: var(--white); border: 1px solid var(--hairline); border-radius: 12px; padding: 18px 22px; }
+  .st-perf .head { font-family: var(--font-ar-display); font-weight: 600; font-size: 15px; color: var(--ink-900); }
+  .st-perf .stat-row { display: flex; justify-content: space-between; padding: 8px 0; border-top: 1px solid var(--hairline); font-size: 12px; }
+  .st-perf .stat-row:first-of-type { border-top: 1px solid var(--hairline); margin-top: 10px; padding-top: 10px; }
+  .st-perf .stat-row .v { font-family: var(--font-en); font-variant-numeric: tabular-nums; font-weight: 600; }
+  .st-perf .stat-row .v.ok { color: var(--success-700); }
+  .st-perf .stat-row .v.warn { color: var(--warning-700); }
+</style>
+</head>
+<body>
+<div class="nz-app">
+  <div id="sidebar-slot"></div>
+  <div>
+    <div id="topbar-slot"></div>
+    <main class="nz-main">
+
+      <div class="mod-head" data-m-rise>
+        <div class="left">
+          <div class="num-row">
+            <span class="num">13 - PERFORMANCE</span>
+            <span class="en-tag">Staff Performance · attendance = performance</span>
+          </div>
+          <h1>أداء الموظفين</h1>
+          <p class="sub">الحضور هو مقياس الأداء. تسجيل دخول وخروج الموظفين، حساب التأخير، وحوافز أسبوعية تربط الانضباط بالمكافأة. تنبيه يوم الراحة قبل يومين.</p>
+        </div>
+        <div class="actions">
+          <button style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">جدول الراحات</button>
+          <button style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--brand-700);color:var(--paper);border:none;cursor:pointer">منح حافز</button>
+        </div>
+      </div>
+
+      <div class="mod-stats" style="--cols: 4">
+        <div class="mod-stat"><div class="lbl">حاضرون الآن</div><div class="v is-good">١٨ <span class="cur">من ٢٠</span></div><div class="meta">في الموقع</div></div>
+        <div class="mod-stat"><div class="lbl">متأخرون اليوم</div><div class="v is-warn">٢</div><div class="meta">معدل التأخير ٢١ دقيقة</div></div>
+        <div class="mod-stat"><div class="lbl">في إجازة</div><div class="v">٤</div><div class="meta">يعودون السبت</div></div>
+        <div class="mod-stat"><div class="lbl">حوافز هذا الأسبوع</div><div class="v" style="color: var(--gold-700)">٣٬٢٠٠ <span class="cur">ر.س</span></div><div class="meta">٨ موظفين</div></div>
+      </div>
+
+      <div class="st-grid">
+
+        <div class="st-list">
+          <div class="mod-section-head">
+            <div>
+              <div class="ttl">حضور اليوم</div>
+              <div class="sub">Today attendance log - sorted by check-in time</div>
+            </div>
+          </div>
+          <div class="st-row is-head">
+            <span></span>
+            <span>الموظف</span>
+            <span>الموعد</span>
+            <span>الدخول الفعلي</span>
+            <span>الحالة</span>
+            <span>حافز الأسبوع</span>
+          </div>
+          <div class="st-row">
+            <div class="st-av">ر‬ك</div>
+            <div><div class="st-nm">Rajesh Kumar</div><div class="st-sub">رئيس الاستقبال</div></div>
+            <div class="st-time">07:00</div>
+            <div class="st-time ok">06:54</div>
+            <div><span class="mod-tag ok"><span class="d"></span>مبكر</span></div>
+            <div class="st-bonus">٢٤٠<span class="cur">ر.س</span></div>
+          </div>
+          <div class="st-row">
+            <div class="st-av" style="background: var(--gold-200); color: var(--gold-800)">س‬أ</div>
+            <div><div class="st-nm">سارة أحمد</div><div class="st-sub">مدير المنشأة</div></div>
+            <div class="st-time">08:00</div>
+            <div class="st-time ok">07:58</div>
+            <div><span class="mod-tag ok"><span class="d"></span>في الوقت</span></div>
+            <div class="st-bonus">-</div>
+          </div>
+          <div class="st-row">
+            <div class="st-av">M‬a</div>
+            <div><div class="st-nm">Maria Santos</div><div class="st-sub">مشرفة الإسكان</div></div>
+            <div class="st-time">07:00</div>
+            <div class="st-time late">07:24</div>
+            <div><span class="mod-tag warn"><span class="d"></span>تأخر ٢٤ د</span></div>
+            <div class="st-bonus">١٢٠<span class="cur">ر.س</span></div>
+          </div>
+          <div class="st-row">
+            <div class="st-av">م‬ع</div>
+            <div><div class="st-nm">محمد العتيبي</div><div class="st-sub">رئيس الأمن</div></div>
+            <div class="st-time">14:00</div>
+            <div class="st-time ok">13:48</div>
+            <div><span class="mod-tag ok"><span class="d"></span>مبكر</span></div>
+            <div class="st-bonus">٢٠٠<span class="cur">ر.س</span></div>
+          </div>
+          <div class="st-row">
+            <div class="st-av">ج‬م</div>
+            <div><div class="st-nm">جمال المتروك</div><div class="st-sub">فني صيانة</div></div>
+            <div class="st-time">08:00</div>
+            <div class="st-time late">08:42</div>
+            <div><span class="mod-tag err"><span class="d"></span>تأخر ٤٢ د</span></div>
+            <div class="st-bonus">-</div>
+          </div>
+          <div class="st-row">
+            <div class="st-av">ف‬س</div>
+            <div><div class="st-nm">فاطمة السعيدي</div><div class="st-sub">محاسبة</div></div>
+            <div class="st-time">09:00</div>
+            <div class="st-time ok">08:50</div>
+            <div><span class="mod-tag ok"><span class="d"></span>مبكر</span></div>
+            <div class="st-bonus">٢٤٠<span class="cur">ر.س</span></div>
+          </div>
+        </div>
+
+        <div class="st-side">
+
+          <div class="st-rest">
+            <div class="lbl">DAY-OFF REMINDER - 2 days ahead</div>
+            <div class="ttl">تنبيه يوم الراحة</div>
+            <div class="who">
+              <div class="av">ر‬ك</div>
+              <div class="n">Rajesh Kumar<div style="font-size: 11px; opacity: 0.7">يستحق راحة الأربعاء</div></div>
+              <div class="d">بعد يومين</div>
+            </div>
+            <div class="who">
+              <div class="av">س‬أ</div>
+              <div class="n">سارة أحمد<div style="font-size: 11px; opacity: 0.7">يوم الجمعة الراحة</div></div>
+              <div class="d">بعد ٣ أيام</div>
+            </div>
+            <div class="who">
+              <div class="av">م‬ع</div>
+              <div class="n">محمد العتيبي<div style="font-size: 11px; opacity: 0.7">يستحق راحة الأربعاء</div></div>
+              <div class="d">بعد يومين</div>
+            </div>
+          </div>
+
+          <div class="st-perf">
+            <div class="head">سرعة خدمة الضيوف</div>
+            <div class="stat-row"><span>متوسط زمن تسجيل الدخول</span><span class="v ok">٣:٢٤ د</span></div>
+            <div class="stat-row"><span>متوسط زمن تسجيل الخروج</span><span class="v ok">١:٤٨ د</span></div>
+            <div class="stat-row"><span>متوسط زمن تنظيف الغرفة</span><span class="v">٢٤ د</span></div>
+            <div class="stat-row"><span>زمن الاستجابة للطلبات</span><span class="v warn">٨ د</span></div>
+            <div class="stat-row"><span>تذاكر صيانة - متوسط الإغلاق</span><span class="v">١:٤٢ س</span></div>
+          </div>
+
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="../../shared/sidebar.js"></script>
+<script>StaticSidebar.mount({ activeId: "13-staff-tracker", placeholder: "بحث عن موظف..." });</script>
+<script src="../../assets/animations.js"></script>
+</body>
+</html>

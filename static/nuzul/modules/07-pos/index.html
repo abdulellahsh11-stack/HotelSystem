@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-screen-label="07 POS Sync">
+<head>
+<meta charset="utf-8"/>
+<title>ضيوف · نقاط البيع</title>
+<meta name="viewport" content="width=1440, initial-scale=1"/>
+<link rel="stylesheet" href="../../colors_and_type.css"/>
+<link rel="stylesheet" href="../../assets/animations.css"/>
+<link rel="stylesheet" href="../../shared/chrome.css"/>
+<link rel="stylesheet" href="../../shared/module.css"/>
+<style>
+  body { background: var(--paper-tint); }
+
+  /* Live stream banner */
+  .ps-live {
+    background: linear-gradient(135deg, #0E2A22 0%, #1B4D3D 100%);
+    color: var(--paper);
+    border-radius: 12px;
+    padding: 22px 24px;
+    display: flex; align-items: center; gap: 22px;
+    margin-bottom: 22px;
+    position: relative; overflow: hidden;
+  }
+  .ps-live::after { content:""; position:absolute; inset-inline-end: -40px; top: -40px; width: 180px; height: 180px; border-radius: 999px; background: radial-gradient(circle, rgba(201,168,95,0.18), transparent 60%); }
+  .ps-live > * { position: relative; }
+  .ps-live .ic {
+    width: 52px; height: 52px;
+    background: var(--gold-500); color: var(--brand-900);
+    border-radius: 12px;
+    display: grid; place-items: center;
+    font-size: 24px;
+    position: relative;
+  }
+  .ps-live .ic::before {
+    content: ""; position: absolute; inset: -4px;
+    border: 2px solid var(--gold-400);
+    border-radius: 16px;
+    opacity: 0.5;
+    animation: ps-pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes ps-pulse {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50%      { transform: scale(1.12); opacity: 0; }
+  }
+  .ps-live .body { flex: 1; }
+  .ps-live .ar { font-family: var(--font-ar-display); font-size: 19px; font-weight: 600; }
+  .ps-live .en { font-family: var(--font-en); font-style: italic; font-size: 12px; color: var(--gold-300); margin-top: 2px; }
+  .ps-live .meta { display: flex; gap: 18px; margin-top: 10px; font-size: 12px; color: var(--gold-200); }
+  .ps-live .meta span { display: inline-flex; align-items: center; gap: 6px; }
+  .ps-live .dot { width: 7px; height: 7px; background: #4A9476; border-radius: 999px; box-shadow: 0 0 0 0 rgba(74,148,118,0.5); animation: ps-dot 1.4s ease-out infinite; }
+  @keyframes ps-dot { 0% { box-shadow: 0 0 0 0 rgba(74,148,118,0.5); } 100% { box-shadow: 0 0 0 8px rgba(74,148,118,0); } }
+
+  .ps-eod {
+    text-align: end;
+  }
+  .ps-eod .lbl { font-family: var(--font-en); font-size: 10px; letter-spacing: 0.18em; color: var(--gold-400); }
+  .ps-eod .time { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 22px; font-weight: 600; color: var(--paper); margin-top: 4px; }
+
+  /* Terminal cards */
+  .ps-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+  .ps-card {
+    background: var(--white);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 18px 20px;
+    display: flex; flex-direction: column; gap: 10px;
+    position: relative;
+  }
+  .ps-card.live::before { content:""; position:absolute; top: 16px; inset-inline-end: 16px; width: 8px; height: 8px; background: var(--success-500); border-radius: 999px; box-shadow: 0 0 0 4px rgba(74,148,118,0.15); }
+  .ps-card.offline { opacity: 0.6; }
+  .ps-card.offline::before { content:""; position:absolute; top: 16px; inset-inline-end: 16px; width: 8px; height: 8px; background: var(--danger-500); border-radius: 999px; }
+  .ps-card .head { display: flex; align-items: center; gap: 10px; }
+  .ps-card .head .ic { width: 36px; height: 36px; background: var(--paper-tint); border-radius: 8px; display: grid; place-items: center; font-size: 18px; border: 1px solid var(--hairline); }
+  .ps-card .head .nm { font-weight: 500; color: var(--ink-900); font-size: 14px; }
+  .ps-card .head .id { font-family: var(--font-mono); font-size: 10px; color: var(--fg-3); margin-top: 2px; }
+  .ps-card .figures { display: flex; align-items: baseline; gap: 14px; padding-top: 10px; border-top: 1px solid var(--hairline); margin-top: 4px; }
+  .ps-card .figures .fig { display: flex; flex-direction: column; gap: 2px; }
+  .ps-card .figures .fig .l { font-size: 10px; color: var(--fg-3); text-transform: uppercase; letter-spacing: 0.1em; font-family: var(--font-en); }
+  .ps-card .figures .fig .v { font-family: var(--font-en); font-variant-numeric: tabular-nums; font-weight: 600; font-size: 16px; color: var(--ink-900); }
+  .ps-card .figures .fig .v .cur { font-size: 11px; color: var(--fg-3); font-family: var(--font-ar); margin-inline-start: 2px; font-weight: 400; }
+
+  /* Provider tag row inside outlet card */
+  .ps-card .prov {
+    display: flex; align-items: center; gap: 8px;
+    padding-top: 8px; border-top: 1px dashed var(--hairline);
+    flex-wrap: wrap;
+  }
+  .prov-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--font-en); font-weight: 600; font-size: 11px;
+    padding: 4px 9px; border-radius: 999px;
+    letter-spacing: 0.02em;
+  }
+  .prov-tag .d {
+    width: 6px; height: 6px; border-radius: 999px;
+    background: var(--success-500);
+    box-shadow: 0 0 0 3px rgba(74,148,118,0.18);
+    animation: ps-dot 1.4s ease-out infinite;
+  }
+  .prov-tag .d.err { background: var(--danger-500); box-shadow: 0 0 0 3px rgba(196,76,42,0.2); animation: none; }
+  .prov-tag.native    { background: var(--brand-100); color: var(--brand-800); }
+  .prov-tag.foodics   { background: #FCE9D5; color: #8C4316; }
+  .prov-tag.marn      { background: #DCEEE6; color: #2F6E54; }
+  .prov-tag.book4time { background: var(--gold-100); color: var(--gold-800); }
+  .prov-tag.custom    { background: #ECEAE5; color: var(--ink-700); }
+  .prov-tag.oracle    { background: #F8D2C4; color: var(--danger-700); }
+  .prov-meta {
+    font-family: var(--font-en); font-size: 10.5px;
+    color: var(--fg-3); letter-spacing: 0.02em;
+    margin-inline-start: auto;
+  }
+
+  /* Add custom outlet tile */
+  .ps-card.add-outlet {
+    background: transparent;
+    border: 1.5px dashed var(--ink-200);
+    cursor: pointer; text-align: center;
+    align-items: center; justify-content: center;
+    padding: 24px 18px;
+    transition: all 160ms;
+    font-family: var(--font-ar);
+  }
+  .ps-card.add-outlet:hover { border-color: var(--brand-500); background: var(--brand-50); }
+  .ps-card.add-outlet .plus {
+    width: 44px; height: 44px;
+    border-radius: 999px;
+    background: var(--paper-tint); color: var(--brand-700);
+    display: grid; place-items: center;
+    font-size: 24px; font-weight: 300;
+    margin-bottom: 4px;
+  }
+  .ps-card.add-outlet:hover .plus { background: var(--brand-700); color: var(--paper); }
+  .ps-card.add-outlet .t {
+    font-family: var(--font-ar-display); font-weight: 600;
+    font-size: 14px; color: var(--ink-900);
+  }
+  .ps-card.add-outlet .m {
+    font-family: var(--font-en); font-style: italic;
+    font-size: 11px; color: var(--fg-3); margin-top: 2px;
+  }
+  .ps-card.add-outlet .providers {
+    display: flex; gap: 4px; flex-wrap: wrap;
+    justify-content: center; margin-top: 10px;
+  }
+  .ps-card.add-outlet .providers span {
+    font-family: var(--font-en); font-size: 10px;
+    padding: 2px 7px; border-radius: 4px;
+    background: var(--paper-tint); color: var(--ink-700);
+    border: 1px solid var(--hairline);
+  }
+
+  /* Transactions stream */
+  .ps-tx { background: var(--white); border: 1px solid var(--hairline); border-radius: 12px; overflow: hidden; }
+  .ps-tx-row {
+    display: grid;
+    grid-template-columns: 80px 1.6fr 1.2fr 1fr 1fr 0.8fr;
+    gap: 14px;
+    align-items: center;
+    padding: 12px 20px;
+    border-top: 1px solid var(--hairline);
+    font-size: 13px;
+  }
+  .ps-tx-row.is-head { background: var(--surface-2); font-size: 11px; color: var(--fg-3); font-weight: 500; border-top: none; }
+  .ps-tx-row .id { font-family: var(--font-mono); font-size: 11px; color: var(--fg-3); }
+  .ps-tx-row .nm { font-weight: 500; color: var(--ink-900); }
+  .ps-tx-row .sub { font-size: 11px; color: var(--fg-3); margin-top: 2px; }
+  .ps-tx-row .pay {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--font-en); font-weight: 600; font-size: 12px;
+    padding: 4px 9px; border-radius: 6px;
+  }
+  .ps-tx-row .pay.mada { background: #E8F1ED; color: #2F6E54; }
+  .ps-tx-row .pay.applepay { background: #ECEAE5; color: var(--ink-700); }
+  .ps-tx-row .pay.cash { background: #F8F1DF; color: var(--gold-800); }
+  .ps-tx-row .v { font-family: var(--font-en); font-variant-numeric: tabular-nums; font-weight: 600; color: var(--ink-900); text-align: end; }
+  .ps-tx-row .v .cur { font-size: 10px; color: var(--fg-3); font-family: var(--font-ar); margin-inline-start: 3px; font-weight: 400; }
+
+  /* API bridge banner */
+  .ps-api {
+    background: var(--paper-tint);
+    border: 1px dashed var(--gold-400);
+    border-radius: 12px;
+    padding: 18px 20px;
+    display: grid; grid-template-columns: 40px minmax(0, 1fr) 260px;
+    gap: 18px; align-items: start;
+    margin-top: 22px;
+  }
+  .ps-api .ic { width: 40px; height: 40px; background: var(--gold-200); color: var(--gold-800); border-radius: 8px; display: grid; place-items: center; font-size: 18px; }
+  .ps-api .body { min-width: 0; }
+  .ps-api .ar { font-family: var(--font-ar-display); font-weight: 600; font-size: 15px; color: var(--ink-900); }
+  .ps-api .sub { font-size: 12px; color: var(--fg-2); margin-top: 3px; line-height: 1.6; }
+  .ps-api .providers-row {
+    display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px;
+  }
+  .ps-api .prov-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--font-en); font-size: 11px; font-weight: 600;
+    padding: 4px 10px; border-radius: 999px;
+    background: var(--white); border: 1px solid var(--hairline);
+    color: var(--ink-800);
+  }
+  .ps-api .prov-pill .d {
+    width: 6px; height: 6px; border-radius: 999px;
+    background: var(--gold-500);
+  }
+  .ps-api .prov-pill .d.ok { background: var(--success-500); }
+  .ps-api .api-key-block {
+    background: var(--white);
+    border: 1px solid var(--hairline);
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .ps-api .api-key-block .lbl {
+    font-family: var(--font-en); font-size: 10px;
+    letter-spacing: 0.16em; color: var(--fg-3); font-weight: 600;
+    text-transform: uppercase; margin-bottom: 8px;
+  }
+  .ps-api .api-key-block .key-row {
+    display: flex; gap: 8px; align-items: center;
+  }
+  .ps-api .key {
+    font-family: var(--font-mono); font-size: 11.5px;
+    background: var(--paper-tint); padding: 7px 10px;
+    border-radius: 6px; border: 1px solid var(--ink-100);
+    color: var(--ink-800); direction: ltr;
+    flex: 1; min-width: 0;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .ps-api .copy {
+    background: var(--brand-700); color: var(--paper);
+    border: none; padding: 7px 14px; border-radius: 6px;
+    font-family: var(--font-ar); font-weight: 500; font-size: 12px;
+    cursor: pointer;
+  }
+  .ps-api .copy:hover { background: var(--brand-800); }
+  .ps-api .docs-link {
+    display: inline-block; margin-top: 10px;
+    font-family: var(--font-ar); font-size: 12px; font-weight: 500;
+    color: var(--brand-700); cursor: pointer;
+  }
+  .ps-api .docs-link:hover { color: var(--brand-800); text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="nz-app">
+  <div id="sidebar-slot"></div>
+  <div>
+    <div id="topbar-slot"></div>
+    <main class="nz-main">
+
+      <div class="mod-head" data-m-rise>
+        <div class="left">
+          <div class="num-row">
+            <span class="num">07 · POS SYNC</span>
+            <span class="en-tag">Terminals · End-of-day · API bridge</span>
+          </div>
+          <h1>نقاط البيع المتصلة</h1>
+          <p class="sub">الاستقبال، المطعم، الكافي، السبا + أي منفذ مخصص — كل منفذ يُربط عبر API من مزوّد خدمته. الحركات تتدفّق تلقائيّاً إلى فواتير النزلاء ودفتر المحاسبة.</p>
+        </div>
+        <div class="actions">
+          <button style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">📥 تصدير حركات اليوم</button>
+          <button style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--brand-700);color:var(--paper);border:none;cursor:pointer">⚡ مزامنة فورية</button>
+        </div>
+      </div>
+
+      <div class="ps-live" data-m-rise>
+        <div class="ic">⚡</div>
+        <div class="body">
+          <div class="ar">المزامنة المباشرة فعّالة</div>
+          <div class="en">Live sync active — transactions stream every 30s</div>
+          <div class="meta">
+            <span><span class="dot"></span>١٦٢ حركة اليوم · ٥ منافذ متّصلة</span>
+            <span>•</span>
+            <span>آخر تحديث قبل ١٢ ثانية</span>
+            <span>•</span>
+            <span style="color: #F8D2C4">منفذ واحد منقطع</span>
+          </div>
+        </div>
+        <div class="ps-eod">
+          <div class="lbl">EOD AUTO SYNC</div>
+          <div class="time">23:59:00</div>
+        </div>
+      </div>
+
+      <div class="mod-section-head" style="padding-inline: 0">
+        <div>
+          <div class="ttl">المنافذ (Outlets)</div>
+          <div class="sub">Each outlet · its POS provider · API health</div>
+        </div>
+      </div>
+
+      <div class="ps-grid" data-m-rise-stagger>
+        <div class="ps-card live">
+          <div class="head">
+            <div class="ic">🛎️</div>
+            <div>
+              <div class="nm">الاستقبال — Front Desk</div>
+              <div class="id">OUTLET-RECEPTION · مدمج مع ضيوف</div>
+            </div>
+          </div>
+          <div class="prov">
+            <span class="prov-tag native"><span class="d"></span>مدمج · Dheuof Native</span>
+            <span class="prov-meta">٢ شاشات</span>
+          </div>
+          <div class="figures">
+            <div class="fig"><span class="l">Today</span><span class="v">٨٬٦٤٠<span class="cur">ر.س</span></span></div>
+            <div class="fig"><span class="l">Txns</span><span class="v">١٨</span></div>
+          </div>
+        </div>
+
+        <div class="ps-card live">
+          <div class="head">
+            <div class="ic">🍽</div>
+            <div>
+              <div class="nm">المطعم — مطعم الواحة</div>
+              <div class="id">OUTLET-RESTAURANT · Foodics</div>
+            </div>
+          </div>
+          <div class="prov">
+            <span class="prov-tag foodics"><span class="d"></span>Foodics API · v3</span>
+            <span class="prov-meta">٢ POS · webhook ✓</span>
+          </div>
+          <div class="figures">
+            <div class="fig"><span class="l">Today</span><span class="v">٨٬١٠٠<span class="cur">ر.س</span></span></div>
+            <div class="fig"><span class="l">Txns</span><span class="v">٧٠</span></div>
+          </div>
+        </div>
+
+        <div class="ps-card live">
+          <div class="head">
+            <div class="ic">☕</div>
+            <div>
+              <div class="nm">الكافي — مقهى الردهة</div>
+              <div class="id">OUTLET-CAFE · Marn</div>
+            </div>
+          </div>
+          <div class="prov">
+            <span class="prov-tag marn"><span class="d"></span>Marn API · v2.1</span>
+            <span class="prov-meta">١ POS · webhook ✓</span>
+          </div>
+          <div class="figures">
+            <div class="fig"><span class="l">Today</span><span class="v">١٬٢٤٠<span class="cur">ر.س</span></span></div>
+            <div class="fig"><span class="l">Txns</span><span class="v">٣٨</span></div>
+          </div>
+        </div>
+
+        <div class="ps-card live">
+          <div class="head">
+            <div class="ic">🧖</div>
+            <div>
+              <div class="nm">السبا — سبا الواحة</div>
+              <div class="id">OUTLET-SPA · Book4Time</div>
+            </div>
+          </div>
+          <div class="prov">
+            <span class="prov-tag book4time"><span class="d"></span>Book4Time API</span>
+            <span class="prov-meta">١ POS · booking + bill</span>
+          </div>
+          <div class="figures">
+            <div class="fig"><span class="l">Today</span><span class="v">٢٬٢٠٠<span class="cur">ر.س</span></span></div>
+            <div class="fig"><span class="l">Txns</span><span class="v">١٤</span></div>
+          </div>
+        </div>
+
+        <div class="ps-card live">
+          <div class="head">
+            <div class="ic">🌊</div>
+            <div>
+              <div class="nm">منفذ مخصّص — بار الشاطئ</div>
+              <div class="id">OUTLET-CUSTOM-01 · REST API</div>
+            </div>
+          </div>
+          <div class="prov">
+            <span class="prov-tag custom"><span class="d"></span>Custom REST · مفتاح خاص</span>
+            <span class="prov-meta">١ POS · رابط داخلي</span>
+          </div>
+          <div class="figures">
+            <div class="fig"><span class="l">Today</span><span class="v">١٬٨٤٠<span class="cur">ر.س</span></span></div>
+            <div class="fig"><span class="l">Txns</span><span class="v">٢٢</span></div>
+          </div>
+        </div>
+
+        <div class="ps-card offline">
+          <div class="head">
+            <div class="ic">🛍</div>
+            <div>
+              <div class="nm">منفذ مخصّص — متجر الهدايا</div>
+              <div class="id">OUTLET-CUSTOM-02 · Oracle MICROS</div>
+            </div>
+          </div>
+          <div class="prov">
+            <span class="prov-tag oracle"><span class="d err"></span>Oracle MICROS · انقطاع API</span>
+            <span class="prov-meta">آخر مزامنة ١١:٠٤</span>
+          </div>
+          <div class="figures">
+            <div class="fig"><span class="l">Yesterday</span><span class="v">٤٢٠<span class="cur">ر.س</span></span></div>
+            <div class="fig"><span class="l">Status</span><span class="v" style="color: var(--danger-700); font-size: 12px;">انقطاع API</span></div>
+          </div>
+        </div>
+
+        <button class="ps-card add-outlet">
+          <div class="plus">＋</div>
+          <div class="t">إضافة منفذ مخصّص</div>
+          <div class="m">Add custom outlet · choose provider or REST</div>
+          <div class="providers">
+            <span>Foodics</span>
+            <span>Marn</span>
+            <span>Oracle MICROS</span>
+            <span>Book4Time</span>
+            <span>Square</span>
+            <span>REST مخصص</span>
+          </div>
+        </button>
+      </div>
+
+      <div style="margin-top: 22px;" data-m-rise>
+        <div class="mod-section-head" style="padding-inline: 0">
+          <div>
+            <div class="ttl">آخر الحركات</div>
+            <div class="sub">Live transactions — newest first</div>
+          </div>
+        </div>
+        <div class="ps-tx">
+          <div class="ps-tx-row is-head">
+            <span>#</span>
+            <span>الجهاز / الموقع</span>
+            <span>العميل</span>
+            <span>طريقة الدفع</span>
+            <span style="text-align:end">المبلغ</span>
+            <span>الوقت</span>
+          </div>
+          <div class="ps-tx-row">
+            <span class="id">TX-0248</span>
+            <div><div class="nm">مطعم الواحة — POS 01</div><div class="sub">٤ ضيوف · غداء</div></div>
+            <div><div>غرفة ٤٠٢</div><div class="sub">أحمد الفهد</div></div>
+            <div><span class="pay mada">MADA •••• 4421</span></div>
+            <div class="v">١٬٢٤٠<span class="cur">ر.س</span></div>
+            <div class="sub" style="font-family:var(--font-mono)">14:32</div>
+          </div>
+          <div class="ps-tx-row">
+            <span class="id">TX-0247</span>
+            <div><div class="nm">مقهى الردهة</div><div class="sub">قهوة + كرواسون</div></div>
+            <div><div>زائر</div><div class="sub">—</div></div>
+            <div><span class="pay applepay"> Pay</span></div>
+            <div class="v">٤٨<span class="cur">ر.س</span></div>
+            <div class="sub" style="font-family:var(--font-mono)">14:28</div>
+          </div>
+          <div class="ps-tx-row">
+            <span class="id">TX-0246</span>
+            <div><div class="nm">بار الشاطئ</div><div class="sub">مشروبات × ٣</div></div>
+            <div><div>كابانا ١٢</div><div class="sub">على فاتورة الغرفة ٣٠٧</div></div>
+            <div><span class="pay applepay">على الفاتورة</span></div>
+            <div class="v">١٨٠<span class="cur">ر.س</span></div>
+            <div class="sub" style="font-family:var(--font-mono)">14:24</div>
+          </div>
+          <div class="ps-tx-row">
+            <span class="id">TX-0245</span>
+            <div><div class="nm">سبا الواحة</div><div class="sub">حمام مغربي ٦٠ د</div></div>
+            <div><div>غرفة ٢١٨</div><div class="sub">نورة المنصور</div></div>
+            <div><span class="pay applepay">على الفاتورة</span></div>
+            <div class="v">٤٢٠<span class="cur">ر.س</span></div>
+            <div class="sub" style="font-family:var(--font-mono)">14:18</div>
+          </div>
+          <div class="ps-tx-row">
+            <span class="id">TX-0244</span>
+            <div><div class="nm">مطعم الواحة — POS 02</div><div class="sub">عشاء × ٢</div></div>
+            <div><div>زوار</div><div class="sub">—</div></div>
+            <div><span class="pay cash">نقدي</span></div>
+            <div class="v">٦٢٠<span class="cur">ر.س</span></div>
+            <div class="sub" style="font-family:var(--font-mono)">14:12</div>
+          </div>
+          <div class="ps-tx-row">
+            <span class="id">TX-0243</span>
+            <div><div class="nm">مطعم الواحة — POS 01</div><div class="sub">غداء × ٦</div></div>
+            <div><div>جناح ٤١٠</div><div class="sub">فاطمة الزهراني</div></div>
+            <div><span class="pay applepay">على الفاتورة</span></div>
+            <div class="v">١٬٨٦٠<span class="cur">ر.س</span></div>
+            <div class="sub" style="font-family:var(--font-mono)">14:05</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ps-api" data-m-rise>
+        <div class="ic">🔑</div>
+        <div class="body">
+          <div class="ar">API Bridge — اربط مزوّد POS لكل منفذ بمفتاح خاص</div>
+          <div class="sub">كل منفذ (مطعم / كافي / سبا / مخصّص) يُربط مستقلّاً عبر API مزوّد خدمته. الاستقبال مدمج أصلاً مع ضيوف. الحركات تتدفّق تلقائياً إلى فواتير النزلاء ودفتر المحاسبة.</div>
+          <div class="providers-row">
+            <span class="prov-pill"><span class="d ok"></span>Foodics</span>
+            <span class="prov-pill"><span class="d ok"></span>Marn</span>
+            <span class="prov-pill"><span class="d ok"></span>Oracle MICROS</span>
+            <span class="prov-pill"><span class="d ok"></span>Book4Time</span>
+            <span class="prov-pill"><span class="d ok"></span>Square</span>
+            <span class="prov-pill"><span class="d ok"></span>Loyverse</span>
+            <span class="prov-pill"><span class="d"></span>REST مخصص (Webhook + JSON)</span>
+          </div>
+        </div>
+        <div class="api-key-block">
+          <div class="lbl">مفتاح حساب المنشأة</div>
+          <div class="key-row">
+            <span class="key">dheuof_pk_a7b3c9d2e4f1g8h6•••••••</span>
+            <button class="copy">نسخ</button>
+          </div>
+          <a class="docs-link">↗ توثيق API الكامل</a>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="../../shared/sidebar.js"></script>
+<script>StaticSidebar.mount({ activeId: "07-pos", placeholder: "بحث في الحركات والأجهزة..." });</script>
+<script src="../../assets/animations.js"></script>
+</body>
+</html>

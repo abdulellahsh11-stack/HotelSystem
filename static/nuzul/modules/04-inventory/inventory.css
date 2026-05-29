@@ -1,0 +1,83 @@
+/* =========================================================================
+   Inventory — kit-specific
+   ========================================================================= */
+
+.inv-shell { display: grid; grid-template-columns: 240px 1fr; gap: 16px; align-items: start; }
+
+/* ── Category rail ─────────────────────────────────────────────────────── */
+.inv-rail { background: var(--white); border: 1px solid var(--hairline); border-radius: 12px; padding: 12px 10px; position: sticky; top: 76px; max-height: calc(100vh - 100px); overflow-y: auto; }
+.inv-grp { display: flex; flex-direction: column; gap: 2px; margin-bottom: 14px; }
+.inv-grp-lbl { font-family: var(--font-en); font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--fg-3); padding: 6px 10px 4px; font-weight: 500; }
+.inv-cat { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 6px; cursor: pointer; font-size: 13px; color: var(--ink-800); transition: background var(--dur-fast); }
+.inv-cat:hover { background: var(--surface-2); }
+.inv-cat.is-on { background: var(--brand-50); color: var(--brand-800); }
+.inv-cat .ic { width: 22px; height: 22px; display: grid; place-items: center; background: var(--sand); border-radius: 5px; font-size: 13px; flex-shrink: 0; }
+.inv-cat.is-on .ic { background: var(--gold-200); }
+.inv-cat .nm { flex: 1; font-weight: 500; }
+.inv-cat .ct { font-family: var(--font-mono); font-size: 11px; color: var(--fg-3); font-variant-numeric: tabular-nums; }
+.inv-cat.is-on .ct { color: var(--brand-700); font-weight: 600; }
+.inv-cat.is-add { color: var(--fg-3); border: 1px dashed var(--ink-100); justify-content: center; margin-top: 4px; }
+.inv-cat.is-add svg { width: 12px; height: 12px; }
+.inv-cat.is-add:hover { background: var(--paper); border-color: var(--gold-400); color: var(--brand-700); }
+
+/* ── KPI strip ─────────────────────────────────────────────────────────── */
+.inv-kpi { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+.inv-kpi .card { background: var(--white); border: 1px solid var(--hairline); border-radius: 10px; padding: 14px 16px; }
+.inv-kpi .card .lbl { font-size: 12px; color: var(--fg-2); }
+.inv-kpi .card .v  { font-family: var(--font-en); font-variant-numeric: tabular-nums; font-size: 28px; font-weight: 600; color: var(--ink-900); line-height: 1.05; margin-top: 4px; }
+.inv-kpi .card .v.is-warn  { color: var(--warning-700); }
+.inv-kpi .card .v.is-err   { color: var(--danger-700); }
+.inv-kpi .card .sub { font-size: 11px; color: var(--fg-3); margin-top: 4px; }
+
+/* ── Items table ───────────────────────────────────────────────────────── */
+.inv-tbl-card { background: var(--white); border: 1px solid var(--hairline); border-radius: 12px; overflow: hidden; }
+.inv-tbl { display: flex; flex-direction: column; }
+.inv-tr {
+  display: grid;
+  grid-template-columns: 2.4fr 1.4fr 1.6fr 1fr 0.8fr 36px;
+  gap: 14px;
+  align-items: center;
+  padding: 14px 20px;
+  border-top: 1px solid var(--hairline);
+  font-size: 13px;
+}
+.inv-tr.inv-th { background: var(--surface-2); font-size: 11px; color: var(--fg-3); font-weight: 500; border-top: none; }
+.inv-name { display: flex; align-items: center; gap: 12px; }
+.inv-name .ico {
+  width: 38px; height: 38px;
+  background: var(--paper-tint);
+  border-radius: 6px;
+  display: grid; place-items: center;
+  font-size: 18px;
+  flex-shrink: 0;
+  border: 1px solid var(--hairline);
+}
+.inv-name .ar { font-weight: 500; color: var(--ink-900); }
+.inv-name .sku { font-family: var(--font-mono); font-size: 10px; color: var(--fg-3); margin-top: 1px; }
+.loc .sub { font-size: 11px; color: var(--fg-3); margin-top: 1px; }
+
+/* ── Stock bar ─────────────────────────────────────────────────────────── */
+.inv-stock { display: flex; flex-direction: column; gap: 4px; }
+.inv-stock .bar {
+  position: relative;
+  height: 8px;
+  background: var(--sand);
+  border-radius: 999px;
+  overflow: visible;
+}
+.inv-stock .fill { height: 100%; border-radius: 999px; transition: width var(--dur-med); }
+.inv-stock .fill.ok   { background: linear-gradient(to left, var(--brand-500), var(--brand-700)); }
+.inv-stock .fill.warn { background: linear-gradient(to left, var(--gold-500), var(--gold-700)); }
+.inv-stock .fill.low  { background: linear-gradient(to left, var(--danger-500), var(--danger-700)); }
+.inv-stock .par-mark { position: absolute; top: -2px; bottom: -2px; width: 0; pointer-events: none; }
+.inv-stock .par-tick { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--ink-700); border-radius: 1px; }
+.inv-stock .par-lab { position: absolute; top: -16px; transform: translateX(50%); font-family: var(--font-ar); font-size: 9px; color: var(--ink-700); white-space: nowrap; opacity: 0.6; }
+.inv-stock .num { font-family: var(--font-en); font-variant-numeric: tabular-nums; font-size: 12px; color: var(--ink-800); display: flex; gap: 3px; }
+.inv-stock .num .v { font-weight: 600; }
+.inv-stock .num .sep { color: var(--fg-3); }
+.inv-stock .num .p { color: var(--fg-3); }
+
+.mv .d { font-family: var(--font-en); font-variant-numeric: tabular-nums; font-weight: 600; font-size: 13px; }
+.mv .d.in  { color: var(--success-700); }
+.mv .d.out { color: var(--danger-700); }
+.mv .sub { font-size: 11px; color: var(--fg-3); margin-top: 1px; }

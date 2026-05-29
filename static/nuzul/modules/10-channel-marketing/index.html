@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-screen-label="10 Channel Marketing">
+<head>
+<meta charset="utf-8"/>
+<title>ضيوف · تسويق القنوات</title>
+<meta name="viewport" content="width=1440, initial-scale=1"/>
+<link rel="stylesheet" href="../../colors_and_type.css"/>
+<link rel="stylesheet" href="../../assets/animations.css"/>
+<link rel="stylesheet" href="../../shared/chrome.css"/>
+<link rel="stylesheet" href="../../shared/module.css"/>
+<style>
+  body { background: var(--paper-tint); }
+
+  /* Channel sync banner */
+  .ch-banner {
+    background: linear-gradient(135deg, var(--brand-700), var(--brand-900));
+    color: var(--paper);
+    border-radius: 12px;
+    padding: 22px 26px;
+    margin-bottom: 22px;
+    display: grid; grid-template-columns: 1fr auto auto; gap: 22px; align-items: center;
+    position: relative; overflow: hidden;
+  }
+  .ch-banner::after { content:""; position:absolute; top:-50px; inset-inline-end: -50px; width: 240px; height: 240px; border-radius: 999px; background: radial-gradient(circle, rgba(201,168,95,0.18), transparent 60%); }
+  .ch-banner > * { position: relative; }
+  .ch-banner .ar { font-family: var(--font-ar-display); font-weight: 600; font-size: 22px; }
+  .ch-banner .en { font-family: var(--font-en); font-style: italic; font-size: 13px; color: var(--gold-300); margin-top: 3px; }
+  .ch-banner .meta { font-size: 13px; color: var(--gold-200); margin-top: 8px; display: flex; align-items: center; gap: 8px; }
+  .ch-banner .dot { width: 7px; height: 7px; background: var(--success-500); border-radius: 999px; box-shadow: 0 0 0 0 rgba(74,148,118,0.5); animation: ch-pulse 1.4s infinite; }
+  @keyframes ch-pulse { 0% { box-shadow: 0 0 0 0 rgba(74,148,118,0.5); } 100% { box-shadow: 0 0 0 8px rgba(74,148,118,0); } }
+  .ch-banner .v { font-family: var(--font-en); font-variant-numeric: tabular-nums; font-size: 48px; font-weight: 600; line-height: 1; color: var(--gold-400); }
+  .ch-banner .v-lbl { font-size: 11px; color: var(--gold-300); margin-top: 4px; font-family: var(--font-en); letter-spacing: 0.04em; text-transform: uppercase; }
+  .ch-banner button {
+    background: var(--gold-500); color: var(--brand-900);
+    border: none; padding: 12px 22px; border-radius: 8px;
+    font-family: var(--font-ar); font-weight: 600; font-size: 13px;
+    cursor: pointer;
+  }
+
+  /* Channel cards */
+  .ch-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .ch-card {
+    background: var(--white);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 20px 22px;
+    transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 180ms;
+  }
+  .ch-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(20,17,14,0.06); }
+  .ch-card.is-off { opacity: 0.6; }
+  .ch-card .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+  .ch-card .logo { font-family: var(--font-en); font-weight: 700; font-size: 18px; padding: 8px 14px; border-radius: 8px; }
+  .ch-card .logo.booking { background: #003580; color: #FFFFFF; }
+  .ch-card .logo.agoda { background: #D72481; color: #FFFFFF; }
+  .ch-card .logo.expedia { background: #FECB00; color: #003463; }
+  .ch-card .logo.airbnb { background: #FF5A5F; color: #FFFFFF; }
+  .ch-card .logo.almosafer { background: #002B5C; color: #C9A85F; }
+  .ch-card .logo.tripcom { background: #2577E3; color: #FFFFFF; }
+  .ch-card .logo.direct { background: var(--gold-500); color: var(--brand-900); }
+  .ch-card .figures { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 14px 0; border-top: 1px solid var(--hairline); border-bottom: 1px solid var(--hairline); margin: 6px 0; }
+  .ch-card .fig { display: flex; flex-direction: column; gap: 2px; }
+  .ch-card .fig .l { font-size: 10px; color: var(--fg-3); text-transform: uppercase; letter-spacing: 0.08em; font-family: var(--font-en); }
+  .ch-card .fig .v { font-family: var(--font-en); font-variant-numeric: tabular-nums; font-weight: 600; font-size: 20px; color: var(--ink-900); line-height: 1; }
+  .ch-card .fig .v .cur { font-size: 11px; color: var(--fg-3); font-family: var(--font-ar); margin-inline-start: 3px; font-weight: 400; }
+  .ch-card .delta { font-family: var(--font-en); font-size: 11px; font-weight: 600; }
+  .ch-card .delta.up { color: var(--success-700); }
+  .ch-card .delta.dn { color: var(--danger-700); }
+  .ch-card .foot-row { display: flex; align-items: center; justify-content: space-between; font-size: 11px; }
+  .ch-card .foot-row .sync { font-family: var(--font-mono); color: var(--fg-3); }
+  .ch-card .commission { font-family: var(--font-en); font-variant-numeric: tabular-nums; color: var(--fg-2); font-weight: 500; }
+
+  /* Rate parity table */
+  .ch-parity { background: var(--white); border: 1px solid var(--hairline); border-radius: 12px; overflow: hidden; }
+  .ch-pr-row {
+    display: grid;
+    grid-template-columns: 2fr repeat(5, 1fr) 0.8fr;
+    gap: 14px;
+    align-items: center;
+    padding: 13px 20px;
+    border-top: 1px solid var(--hairline);
+    font-size: 13px;
+  }
+  .ch-pr-row.is-head { background: var(--surface-2); font-size: 11px; color: var(--fg-3); font-weight: 500; border-top: none; text-align: center; }
+  .ch-pr-row.is-head > :first-child { text-align: start; }
+  .ch-pr-row .room { font-weight: 500; color: var(--ink-900); }
+  .ch-pr-row .sub { font-size: 11px; color: var(--fg-3); margin-top: 1px; }
+  .ch-pr-row .rate {
+    font-family: var(--font-en); font-variant-numeric: tabular-nums;
+    font-weight: 600; text-align: center;
+    padding: 4px 0; border-radius: 4px;
+  }
+  .ch-pr-row .rate.match  { color: var(--ink-900); }
+  .ch-pr-row .rate.lower  { color: var(--success-700); background: #DCEEE6; }
+  .ch-pr-row .rate.higher { color: var(--danger-700); background: #F1D8CF; }
+  .ch-pr-row .rate.na     { color: var(--ink-200); }
+  .ch-pr-row .rate small  { font-size: 10px; opacity: 0.7; font-family: var(--font-ar); }
+  .ch-pr-row .status { text-align: end; }
+</style>
+</head>
+<body>
+<div class="nz-app">
+  <div id="sidebar-slot"></div>
+  <div>
+    <div id="topbar-slot"></div>
+    <main class="nz-main">
+
+      <div class="mod-head" data-m-rise>
+        <div class="left">
+          <div class="num-row">
+            <span class="num">10 · CHANNELS</span>
+            <span class="en-tag">Channel Manager · OTA Sync</span>
+          </div>
+          <h1>تسويق القنوات</h1>
+          <p class="sub">إدارة موحّدة لجميع قنوات الحجز الخارجية — أسعار، إتاحة، عمولات، أداء.</p>
+        </div>
+        <div class="actions">
+          <button style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">📊 تقرير الأداء</button>
+          <button style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--brand-700);color:var(--paper);border:none;cursor:pointer">+ ربط قناة جديدة</button>
+        </div>
+      </div>
+
+      <div class="ch-banner" data-m-rise>
+        <div>
+          <div class="ar">٧ قنوات متصلة · ٤٢ قناة متاحة</div>
+          <div class="en">Channels synced — pushed pricing &amp; availability</div>
+          <div class="meta"><span class="dot"></span>آخر مزامنة قبل ٤٢ ثانية · ١٦٤ غرفة محدّثة</div>
+        </div>
+        <div style="text-align: center">
+          <div class="v">٢٢٤</div>
+          <div class="v-lbl">حجوزات هذا الشهر</div>
+        </div>
+        <button>مزامنة فورية</button>
+      </div>
+
+      <div class="mod-stats" style="--cols: 4">
+        <div class="mod-stat"><div class="lbl">حجوزات القنوات (الشهر)</div><div class="v">٢٢٤</div><div class="meta up">+٢٦٪ عن أبريل</div></div>
+        <div class="mod-stat"><div class="lbl">إيرادات القنوات</div><div class="v">٣١٢٬٤٠٠ <span class="cur">ر.س</span></div><div class="meta up">٦٢٪ من إجمالي الحجوزات</div></div>
+        <div class="mod-stat"><div class="lbl">العمولات المدفوعة</div><div class="v">٤٦٬٨٦٠ <span class="cur">ر.س</span></div><div class="meta">١٥٪ متوسط</div></div>
+        <div class="mod-stat"><div class="lbl">تطابق التسعير</div><div class="v is-good">٩٤<span class="cur">٪</span></div><div class="meta">٣ غرف خارج التطابق</div></div>
+      </div>
+
+      <div class="mod-section-head" style="padding-inline: 0">
+        <div>
+          <div class="ttl">القنوات المتصلة</div>
+          <div class="sub">Connected OTAs · this month's performance</div>
+        </div>
+      </div>
+
+      <div class="ch-grid" data-m-rise-stagger>
+        <div class="ch-card">
+          <div class="top">
+            <div class="logo booking">Booking</div>
+            <span class="mod-tag ok"><span class="d"></span>متصل</span>
+          </div>
+          <div class="figures">
+            <div class="fig"><span class="l">Bookings</span><span class="v">٧٢</span></div>
+            <div class="fig"><span class="l">Revenue</span><span class="v">٩٨٬٤٠٠<span class="cur">ر.س</span></span></div>
+          </div>
+          <div class="foot-row">
+            <span class="commission">عمولة: ١٥٪</span>
+            <span class="sync">آخر مزامنة: 14:32</span>
+          </div>
+        </div>
+
+        <div class="ch-card">
+          <div class="top">
+            <div class="logo agoda">agoda</div>
+            <span class="mod-tag ok"><span class="d"></span>متصل</span>
+          </div>
+          <div class="figures">
+            <div class="fig"><span class="l">Bookings</span><span class="v">٤٨</span></div>
+            <div class="fig"><span class="l">Revenue</span><span class="v">٦٢٬٨٠٠<span class="cur">ر.س</span></span></div>
+          </div>
+          <div class="foot-row">
+            <span class="commission">عمولة: ١٧٪</span>
+            <span class="sync">آخر مزامنة: 14:30</span>
+          </div>
+        </div>
+
+        <div class="ch-card">
+          <div class="top">
+            <div class="logo expedia">Expedia</div>
+            <span class="mod-tag ok"><span class="d"></span>متصل</span>
+          </div>
+          <div class="figures">
+            <div class="fig"><span class="l">Bookings</span><span class="v">٢٨</span></div>
+            <div class="fig"><span class="l">Revenue</span><span class="v">٣٨٬٤٠٠<span class="cur">ر.س</span></span></div>
+          </div>
+          <div class="foot-row">
+            <span class="commission">عمولة: ١٨٪</span>
+            <span class="sync">آخر مزامنة: 14:32</span>
+          </div>
+        </div>
+
+        <div class="ch-card">
+          <div class="top">
+            <div class="logo almosafer">Almosafer</div>
+            <span class="mod-tag ok"><span class="d"></span>متصل</span>
+          </div>
+          <div class="figures">
+            <div class="fig"><span class="l">Bookings</span><span class="v">٢٢</span></div>
+            <div class="fig"><span class="l">Revenue</span><span class="v">٢٨٬٢٠٠<span class="cur">ر.س</span></span></div>
+          </div>
+          <div class="foot-row">
+            <span class="commission">عمولة: ١٢٪</span>
+            <span class="sync">آخر مزامنة: 14:31</span>
+          </div>
+        </div>
+
+        <div class="ch-card">
+          <div class="top">
+            <div class="logo tripcom">Trip.com</div>
+            <span class="mod-tag warn"><span class="d"></span>مزامنة بطيئة</span>
+          </div>
+          <div class="figures">
+            <div class="fig"><span class="l">Bookings</span><span class="v">١٤</span></div>
+            <div class="fig"><span class="l">Revenue</span><span class="v">١٨٬٢٠٠<span class="cur">ر.س</span></span></div>
+          </div>
+          <div class="foot-row">
+            <span class="commission">عمولة: ١٦٪</span>
+            <span class="sync">آخر مزامنة: قبل ١٢ د</span>
+          </div>
+        </div>
+
+        <div class="ch-card is-off">
+          <div class="top">
+            <div class="logo airbnb">airbnb</div>
+            <span class="mod-tag neu"><span class="d"></span>غير مفعّل</span>
+          </div>
+          <div class="figures">
+            <div class="fig"><span class="l">Bookings</span><span class="v">—</span></div>
+            <div class="fig"><span class="l">Revenue</span><span class="v">—</span></div>
+          </div>
+          <div class="foot-row">
+            <span class="commission">عمولة: ١٤٪</span>
+            <span class="sync">انقر للتفعيل</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 22px;" data-m-rise>
+        <div class="mod-section-head" style="padding-inline: 0">
+          <div>
+            <div class="ttl">تطابق التسعير عبر القنوات</div>
+            <div class="sub">Rate parity check — flagged when prices differ from direct rate</div>
+          </div>
+          <button class="nz-chip is-on" style="background: var(--brand-800); color: var(--paper); border-color: var(--brand-800); font-family: var(--font-ar); font-size: 12px; padding: 6px 12px; border-radius: 999px; font-weight: 500; border: 1px solid transparent; cursor: pointer">٢٨ مايو</button>
+        </div>
+        <div class="ch-parity">
+          <div class="ch-pr-row is-head">
+            <span>نوع الغرفة</span>
+            <span>الموقع المباشر</span>
+            <span>Booking</span>
+            <span>Agoda</span>
+            <span>Expedia</span>
+            <span>Almosafer</span>
+            <span>الحالة</span>
+          </div>
+          <div class="ch-pr-row">
+            <div><div class="room">ستاندرد</div><div class="sub">24 غرفة</div></div>
+            <span class="rate match">٤٢٠ <small>ر.س</small></span>
+            <span class="rate match">٤٢٠</span>
+            <span class="rate match">٤٢٠</span>
+            <span class="rate match">٤٢٠</span>
+            <span class="rate match">٤٢٠</span>
+            <span class="status"><span class="mod-tag ok"><span class="d"></span>متطابق</span></span>
+          </div>
+          <div class="ch-pr-row">
+            <div><div class="room">ديلوكس</div><div class="sub">18 غرفة</div></div>
+            <span class="rate match">٧٢٠ <small>ر.س</small></span>
+            <span class="rate match">٧٢٠</span>
+            <span class="rate higher">٧٥٠</span>
+            <span class="rate match">٧٢٠</span>
+            <span class="rate match">٧٢٠</span>
+            <span class="status"><span class="mod-tag warn"><span class="d"></span>تنبيه — Agoda</span></span>
+          </div>
+          <div class="ch-pr-row">
+            <div><div class="room">جناح</div><div class="sub">8 أجنحة</div></div>
+            <span class="rate match">١٬٢٠٠ <small>ر.س</small></span>
+            <span class="rate match">١٬٢٠٠</span>
+            <span class="rate match">١٬٢٠٠</span>
+            <span class="rate lower">١٬١٤٠</span>
+            <span class="rate match">١٬٢٠٠</span>
+            <span class="status"><span class="mod-tag ok"><span class="d"></span>سعر تنافسي</span></span>
+          </div>
+          <div class="ch-pr-row">
+            <div><div class="room">ملكي</div><div class="sub">2 أجنحة</div></div>
+            <span class="rate match">٢٬٤٠٠ <small>ر.س</small></span>
+            <span class="rate match">٢٬٤٠٠</span>
+            <span class="rate match">٢٬٤٠٠</span>
+            <span class="rate higher">٢٬٥٢٠</span>
+            <span class="rate na">—</span>
+            <span class="status"><span class="mod-tag warn"><span class="d"></span>تنبيه — Expedia</span></span>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="../../shared/sidebar.js"></script>
+<script>StaticSidebar.mount({ activeId: "10-channel-marketing", placeholder: "بحث في القنوات والحجوزات الخارجية..." });</script>
+<script src="../../assets/animations.js"></script>
+</body>
+</html>

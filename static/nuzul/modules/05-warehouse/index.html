@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-screen-label="05 Warehouse">
+<head>
+<meta charset="utf-8"/>
+<title>ضيوف · مستودع الصيانة</title>
+<meta name="viewport" content="width=1440, initial-scale=1"/>
+<link rel="stylesheet" href="../../colors_and_type.css"/>
+<link rel="stylesheet" href="../../assets/animations.css"/>
+<link rel="stylesheet" href="../../shared/chrome.css"/>
+<link rel="stylesheet" href="../../shared/module.css"/>
+<style>
+  body { background: var(--paper-tint); }
+  .wh-tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--ink-100); padding: 0 4px; margin-bottom: 18px; }
+  .wh-tab { background: transparent; border: none; padding: 12px 16px; color: var(--fg-2); font-family: var(--font-ar); font-size: 13px; font-weight: 500; cursor: pointer; position: relative; }
+  .wh-tab:hover { color: var(--ink-800); }
+  .wh-tab.is-on { color: var(--brand-800); }
+  .wh-tab.is-on::after { content: ""; position: absolute; bottom: -1px; left: 12px; right: 12px; height: 2px; background: var(--gold-500); border-radius: 2px; }
+  .wh-tab .ct { display: inline-block; background: var(--sand); color: var(--fg-2); border-radius: 999px; font-size: 10px; padding: 1px 7px; margin-inline-start: 6px; font-family: var(--font-mono); font-weight: 600; }
+  .wh-tab.is-on .ct { background: var(--danger-100); color: var(--danger-700); }
+
+  /* Tickets list */
+  .wh-tk { background: var(--white); border: 1px solid var(--hairline); border-radius: 12px; overflow: hidden; }
+  .wh-tk-row {
+    display: grid;
+    grid-template-columns: 60px 60px 2.2fr 1.4fr 1.4fr 1fr 36px;
+    gap: 14px;
+    align-items: center;
+    padding: 14px 20px;
+    border-top: 1px solid var(--hairline);
+    font-size: 13px;
+  }
+  .wh-tk-row.is-head { background: var(--surface-2); font-size: 11px; color: var(--fg-3); font-weight: 500; border-top: none; }
+  .wh-tk-row .id { font-family: var(--font-mono); font-size: 11px; color: var(--fg-3); }
+  .wh-tk-row .prio {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: grid; place-items: center;
+    font-size: 16px;
+  }
+  .wh-tk-row .prio.urgent { background: #F1D8CF; color: var(--danger-700); }
+  .wh-tk-row .prio.high   { background: #F6E7C2; color: var(--warning-700); }
+  .wh-tk-row .prio.norm   { background: var(--sand); color: var(--fg-2); }
+  .wh-tk-row .ttl { font-weight: 500; color: var(--ink-900); }
+  .wh-tk-row .sub { font-size: 11px; color: var(--fg-3); margin-top: 2px; }
+  .wh-tk-row .assignee { display: flex; align-items: center; gap: 8px; }
+  .wh-tk-row .assignee .av { width: 28px; height: 28px; border-radius: 999px; background: var(--brand-200); color: var(--brand-800); display: grid; place-items: center; font-family: var(--font-ar); font-size: 11px; font-weight: 600; }
+
+  /* Parts ribbon */
+  .wh-parts-ribbon { background: var(--paper); border: 1px solid var(--hairline); border-radius: 12px; padding: 0; margin-top: 22px; overflow: hidden; }
+  .wh-parts-ribbon .body { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
+  .wh-parts-ribbon .part { padding: 18px 22px; border-inline-start: 1px solid var(--hairline); display: flex; flex-direction: column; gap: 8px; }
+  .wh-parts-ribbon .part:first-child { border-inline-start: none; }
+  .wh-parts-ribbon .part .row1 { display: flex; align-items: center; gap: 12px; }
+  .wh-parts-ribbon .part .ic { width: 36px; height: 36px; background: var(--paper-tint); border-radius: 8px; display: grid; place-items: center; font-size: 18px; border: 1px solid var(--hairline); }
+  .wh-parts-ribbon .part .nm { font-weight: 500; color: var(--ink-900); font-size: 13px; }
+  .wh-parts-ribbon .part .sku { font-family: var(--font-mono); font-size: 10px; color: var(--fg-3); }
+  .wh-parts-ribbon .part .qty-row { display: flex; align-items: baseline; justify-content: space-between; }
+  .wh-parts-ribbon .part .qty { font-family: var(--font-en); font-variant-numeric: tabular-nums; font-weight: 600; font-size: 20px; color: var(--ink-900); }
+  .wh-parts-ribbon .part .qty.low { color: var(--danger-700); }
+  .wh-parts-ribbon .part .par { font-size: 11px; color: var(--fg-3); font-family: var(--font-mono); }
+</style>
+</head>
+<body>
+<div class="nz-app">
+  <div id="sidebar-slot"></div>
+  <div>
+    <div id="topbar-slot"></div>
+    <main class="nz-main">
+
+      <div class="mod-head" data-m-rise>
+        <div class="left">
+          <div class="num-row">
+            <span class="num">05 · WAREHOUSE</span>
+            <span class="en-tag">Maintenance · Spare parts · Tools</span>
+          </div>
+          <h1>مستودع الصيانة وقطع الغيار</h1>
+          <p class="sub">أدوات الفنيين، قطع الغيار، الإنارة، الأسلاك، الأصباغ، والسلالم. مستقل تماماً عن مخزون الضيافة — متكامل مع تطبيق الفنيين وتذاكر الاستقبال.</p></p>
+        </div>
+        <div class="actions">
+          <button style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">طلب توريد</button>
+          <button style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--brand-700);color:var(--paper);border:none;cursor:pointer">+ تذكرة جديدة</button>
+        </div>
+      </div>
+
+      <div class="mod-stats" style="--cols: 5">
+        <div class="mod-stat"><div class="lbl">تذاكر مفتوحة</div><div class="v">٧</div><div class="meta down">+٢ منذ الأمس</div></div>
+        <div class="mod-stat"><div class="lbl">عاجلة</div><div class="v is-bad">٢</div><div class="meta">تتطلب تدخل فوري</div></div>
+        <div class="mod-stat"><div class="lbl">قيد التنفيذ</div><div class="v">٤</div><div class="meta">٣ فنيين متاحون</div></div>
+        <div class="mod-stat"><div class="lbl">مكتملة (الأسبوع)</div><div class="v is-good">٢٨</div><div class="meta up">+١٢ عن المتوقع</div></div>
+        <div class="mod-stat"><div class="lbl">قطع تحت حد الطلب</div><div class="v is-warn">٦</div><div class="meta">في ٤ فئات</div></div>
+      </div>
+
+      <div class="wh-tabs">
+        <button class="wh-tab is-on">المفتوحة<span class="ct">٧</span></button>
+        <button class="wh-tab">قيد التنفيذ<span class="ct">٤</span></button>
+        <button class="wh-tab">مكتملة</button>
+        <button class="wh-tab">مؤرشفة</button>
+        <button class="wh-tab">قطع تحت الطلب<span class="ct">٦</span></button>
+      </div>
+
+      <div class="wh-tk" data-m-rise-stagger>
+        <div class="wh-tk-row is-head">
+          <span>#</span>
+          <span>أولوية</span>
+          <span>التذكرة</span>
+          <span>الموقع</span>
+          <span>الفني</span>
+          <span>الحالة</span>
+          <span></span>
+        </div>
+        <div class="wh-tk-row">
+          <span class="id">TK-2841</span>
+          <div class="prio urgent">⚠</div>
+          <div>
+            <div class="ttl">عطل مكيف — درجة حرارة عالية</div>
+            <div class="sub">منذ ١٤ دقيقة · أبلغت عنها الاستقبال</div>
+          </div>
+          <div><div>غرفة ٢١٨</div><div class="sub">الطابق الثاني — الجناح الشرقي</div></div>
+          <div class="assignee"><div class="av">ر‬ك</div><div><div>Rajesh K.</div><div class="sub">في الطريق</div></div></div>
+          <div><span class="mod-tag err"><span class="d"></span>عاجلة</span></div>
+          <div>⋯</div>
+        </div>
+        <div class="wh-tk-row">
+          <span class="id">TK-2840</span>
+          <div class="prio urgent">⚠</div>
+          <div>
+            <div class="ttl">تسريب مياه تحت المغسلة</div>
+            <div class="sub">منذ ٢٦ دقيقة · أبلغت عنها التدبير</div>
+          </div>
+          <div><div>جناح ٤٠٢</div><div class="sub">VIP — أحمد الفهد</div></div>
+          <div class="assignee"><div class="av">م‬ع">م‬ع</div><div><div>محمد العتيبي</div><div class="sub">في الموقع</div></div></div>
+          <div><span class="mod-tag err"><span class="d"></span>عاجلة</span></div>
+          <div>⋯</div>
+        </div>
+        <div class="wh-tk-row">
+          <span class="id">TK-2839</span>
+          <div class="prio high">!</div>
+          <div>
+            <div class="ttl">استبدال لمبة LED — ٤ وحدات</div>
+            <div class="sub">منذ ٢ ساعة</div>
+          </div>
+          <div><div>الردهة الرئيسية</div><div class="sub">الطابق الأرضي</div></div>
+          <div class="assignee"><div class="av">س‬ح">س‬ح</div><div><div>سعيد الحارثي</div><div class="sub">قيد التنفيذ</div></div></div>
+          <div><span class="mod-tag warn"><span class="d"></span>عالية</span></div>
+          <div>⋯</div>
+        </div>
+        <div class="wh-tk-row">
+          <span class="id">TK-2838</span>
+          <div class="prio norm">•</div>
+          <div>
+            <div class="ttl">طلاء جدار — تجديد</div>
+            <div class="sub">منذ ٥ ساعات</div>
+          </div>
+          <div><div>غرفة ١٠٤</div><div class="sub">الطابق الأرضي</div></div>
+          <div class="assignee"><div class="av">ج‬م">ج‬م</div><div><div>جمال المتروك</div><div class="sub">مجدولة لغد</div></div></div>
+          <div><span class="mod-tag info"><span class="d"></span>عادية</span></div>
+          <div>⋯</div>
+        </div>
+        <div class="wh-tk-row">
+          <span class="id">TK-2837</span>
+          <div class="prio norm">•</div>
+          <div>
+            <div class="ttl">استبدال مفتاح كهرباء</div>
+            <div class="sub">أمس · جدولة عادية</div>
+          </div>
+          <div><div>غرفة ٣٠٧</div><div class="sub">الطابق الثالث</div></div>
+          <div class="assignee"><div class="av">ر‬ك">ر‬ك</div><div><div>Rajesh K.</div><div class="sub">مجدولة</div></div></div>
+          <div><span class="mod-tag info"><span class="d"></span>عادية</span></div>
+          <div>⋯</div>
+        </div>
+        <div class="wh-tk-row">
+          <span class="id">TK-2836</span>
+          <div class="prio norm">•</div>
+          <div>
+            <div class="ttl">صيانة سلم النجاة الشرقي</div>
+            <div class="sub">صيانة دورية شهرية</div>
+          </div>
+          <div><div>الطابق ٢ → السطح</div><div class="sub">الجناح الشرقي</div></div>
+          <div class="assignee"><div class="av">ج‬م">ج‬م</div><div><div>جمال المتروك</div><div class="sub">مجدولة الخميس</div></div></div>
+          <div><span class="mod-tag info"><span class="d"></span>عادية</span></div>
+          <div>⋯</div>
+        </div>
+      </div>
+
+      <div class="mod-section-head" style="padding-inline: 0; margin-top: 22px;">
+        <div>
+          <div class="ttl">قطع تحت حد الطلب — يجب التوريد</div>
+          <div class="sub">Items below reorder threshold — order now</div>
+        </div>
+      </div>
+
+      <div class="wh-parts-ribbon" data-m-rise-stagger>
+        <div class="body">
+          <div class="part">
+            <div class="row1">
+              <div class="ic">💡</div>
+              <div><div class="nm">لمبات LED — ١٠ واط</div><div class="sku">SKU · LT-1012</div></div>
+            </div>
+            <div class="qty-row"><span class="qty low">١٤</span><span class="par">/١٠٠ par</span></div>
+          </div>
+          <div class="part">
+            <div class="row1">
+              <div class="ic">🔌</div>
+              <div><div class="nm">أسلاك كهرباء — ٢٫٥ مم</div><div class="sku">SKU · WR-2531</div></div>
+            </div>
+            <div class="qty-row"><span class="qty low">٢٢ <span style="font-size:12px;color:var(--fg-3)">م</span></span><span class="par">/٢٠٠ م par</span></div>
+          </div>
+          <div class="part">
+            <div class="row1">
+              <div class="ic">🎨</div>
+              <div><div class="nm">صبغ جدران — أبيض ٢٠ كغ</div><div class="sku">SKU · PT-W201</div></div>
+            </div>
+            <div class="qty-row"><span class="qty low">٣ <span style="font-size:12px;color:var(--fg-3)">دلو</span></span><span class="par">/١٢ par</span></div>
+          </div>
+          <div class="part">
+            <div class="row1">
+              <div class="ic">⚙</div>
+              <div><div class="nm">مفاتيح إنارة — رمادي</div><div class="sku">SKU · SW-G801</div></div>
+            </div>
+            <div class="qty-row"><span class="qty low">٨</span><span class="par">/٥٠ par</span></div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="../../shared/sidebar.js"></script>
+<script>StaticSidebar.mount({ activeId: "05-warehouse", placeholder: "بحث في التذاكر والقطع..." });</script>
+<script src="../../assets/animations.js"></script>
+</body>
+</html>

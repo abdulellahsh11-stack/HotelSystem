@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-screen-label="01 Users & Roles">
+<head>
+<meta charset="utf-8"/>
+<title>ضيوف · المستخدمون والصلاحيات</title>
+<meta name="viewport" content="width=1440, initial-scale=1"/>
+<link rel="stylesheet" href="../../colors_and_type.css"/>
+<link rel="stylesheet" href="../../assets/animations.css"/>
+<link rel="stylesheet" href="../../shared/chrome.css"/>
+<link rel="stylesheet" href="../../shared/module.css"/>
+<link rel="stylesheet" href="users.css"/>
+</head>
+<body>
+<div class="nz-app">
+  <div id="sidebar-slot"></div>
+  <div>
+    <div id="topbar-slot"></div>
+    <main class="nz-main">
+
+      <div class="mod-head" data-m-rise>
+        <div class="left">
+          <div class="num-row">
+            <span class="num">01 · ADMIN</span>
+            <span class="en-tag">Users · Roles · Permissions</span>
+          </div>
+          <h1>المستخدمون والصلاحيات</h1>
+          <p class="sub">يمكن لمدير المنشأة فتح حسابات للموظفين وتخصيص صلاحيات كل دور — استقبال، تدبير، صيانة، أو محاسبة.</p>
+        </div>
+        <div class="actions">
+          <button style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">⚙ تعديل الأدوار</button>
+          <button style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--brand-700);color:var(--paper);border:none;cursor:pointer">+ موظف جديد</button>
+        </div>
+      </div>
+
+      <div class="us-banner" data-m-rise>
+        <div class="ic">🔑</div>
+        <div>
+          <div class="ar">صلاحية المدير — يمكنك فتح حسابات وتعيين المهام</div>
+          <div class="en">Manager privilege — create accounts &amp; assign tasks</div>
+          <div class="meta">١٢ حساب نشط · ٣ أدوار مخصّصة · آخر تعديل قبل ساعتين</div>
+        </div>
+        <button>سجلّ الصلاحيات</button>
+      </div>
+
+      <!-- New Employee Account form (manager-only) -->
+      <div class="us-new" data-m-rise>
+        <div class="us-new-head">
+          <div class="us-new-tag">صلاحية حصرية للمدير</div>
+          <div class="us-new-ttl">إنشاء حساب موظف جديد في ضيوف</div>
+          <div class="us-new-en">Create new staff account · choose role, scope permissions per program, send credentials via SMS/email</div>
+        </div>
+
+        <div class="us-new-body">
+          <!-- Step rail -->
+          <div class="us-steps">
+            <div class="step is-on"><span class="n">١</span><span class="t">بيانات الموظف</span></div>
+            <div class="step is-on"><span class="n">٢</span><span class="t">الدور والصلاحيات</span></div>
+            <div class="step is-on"><span class="n">٣</span><span class="t">الإرسال والتفعيل</span></div>
+          </div>
+
+          <!-- Identity block -->
+          <div class="us-new-sec">
+            <div class="sec-h">١ — بيانات الموظف</div>
+            <div class="us-grid c3">
+              <div class="us-field"><label>الاسم الكامل <span class="req">*</span></label><input value="نوف الزهراني"/></div>
+              <div class="us-field"><label>البريد الإلكتروني للحساب <span class="req">*</span></label><input class="is-mono" value="nouf@hotel.sa" dir="ltr"/><span class="hint">يُستخدم لتسجيل الدخول</span></div>
+              <div class="us-field"><label>رقم الجوال <span class="req">*</span></label><input class="is-mono" value="+966 55 412 9087" dir="ltr"/><span class="hint">يستلم رابط التفعيل + رمز التحقّق</span></div>
+              <div class="us-field"><label>القسم</label><select><option>الاستقبال</option><option>التدبير</option><option>الصيانة</option><option>المحاسبة</option><option>المطبخ</option><option>السبا</option><option>الإدارة</option></select></div>
+              <div class="us-field"><label>الوردية</label><select><option>صباحية ٧:٠٠ — ١٥:٠٠</option><option>مسائية ١٥:٠٠ — ٢٣:٠٠</option><option>ليلية ٢٣:٠٠ — ٧:٠٠</option><option>مرنة</option></select></div>
+              <div class="us-field"><label>الموقع</label><select><option>فندق الواحة الذهبية — الرياض</option><option>متعدد المواقع</option></select></div>
+            </div>
+          </div>
+
+          <!-- Role + permissions block -->
+          <div class="us-new-sec">
+            <div class="sec-h">٢ — الدور والصلاحيات</div>
+            <div class="us-role-pick">
+              <label class="rp"><input type="radio" name="rl"/><div class="rp-ic">👑</div><div class="rp-n">مدير</div><div class="rp-m">صلاحية كاملة لكل البرامج</div></label>
+              <label class="rp is-on"><input type="radio" name="rl" checked/><div class="rp-ic">🛎</div><div class="rp-n">استقبال</div><div class="rp-m">تسجيل ضيوف، فواتير، خروج</div></label>
+              <label class="rp"><input type="radio" name="rl"/><div class="rp-ic">🧹</div><div class="rp-n">تدبير</div><div class="rp-m">حالة الغرف، طلب مخزون</div></label>
+              <label class="rp"><input type="radio" name="rl"/><div class="rp-ic">🔧</div><div class="rp-n">صيانة</div><div class="rp-m">تذاكر المستودع وقطع الغيار</div></label>
+              <label class="rp"><input type="radio" name="rl"/><div class="rp-ic">💼</div><div class="rp-n">محاسبة</div><div class="rp-m">دفتر اليومية وتقارير VAT</div></label>
+              <label class="rp custom"><input type="radio" name="rl"/><div class="rp-ic">＋</div><div class="rp-n">دور مخصّص</div><div class="rp-m">ابنِ صلاحيات حسب الحاجة</div></label>
+            </div>
+
+            <div class="us-perm-head">
+              <div>صلاحيات لكل برنامج — متوارثة من دور «استقبال» <button class="reset-link">إعادة تعيين</button></div>
+              <div class="legend">
+                <span><i class="d view"></i>عرض</span>
+                <span><i class="d edit"></i>تحرير</span>
+                <span><i class="d admin"></i>إدارة</span>
+                <span><i class="d none"></i>ممنوع</span>
+              </div>
+            </div>
+
+            <div class="us-perms">
+              <div class="up-row"><div class="up-nm"><span class="n">01</span>الضيوف</div><div class="up-pick"><label class="po"><input type="radio" name="p01"/>ممنوع</label><label class="po"><input type="radio" name="p01"/>عرض</label><label class="po is-on"><input type="radio" name="p01" checked/>تحرير</label><label class="po"><input type="radio" name="p01"/>إدارة</label></div></div>
+              <div class="up-row"><div class="up-nm"><span class="n">02</span>شموس · MOI</div><div class="up-pick"><label class="po"><input type="radio" name="p02"/>ممنوع</label><label class="po is-on"><input type="radio" name="p02" checked/>عرض</label><label class="po"><input type="radio" name="p02"/>تحرير</label><label class="po"><input type="radio" name="p02"/>إدارة</label></div></div>
+              <div class="up-row"><div class="up-nm"><span class="n">03</span>المستندات الحكومية</div><div class="up-pick"><label class="po is-on"><input type="radio" name="p03" checked/>ممنوع</label><label class="po"><input type="radio" name="p03"/>عرض</label><label class="po"><input type="radio" name="p03"/>تحرير</label><label class="po"><input type="radio" name="p03"/>إدارة</label></div></div>
+              <div class="up-row"><div class="up-nm"><span class="n">06</span>المحاسبة</div><div class="up-pick"><label class="po"><input type="radio" name="p06"/>ممنوع</label><label class="po is-on"><input type="radio" name="p06" checked/>عرض</label><label class="po"><input type="radio" name="p06"/>تحرير</label><label class="po"><input type="radio" name="p06"/>إدارة</label></div></div>
+              <div class="up-row"><div class="up-nm"><span class="n">07</span>نقاط البيع</div><div class="up-pick"><label class="po is-on"><input type="radio" name="p07" checked/>ممنوع</label><label class="po"><input type="radio" name="p07"/>عرض</label><label class="po"><input type="radio" name="p07"/>تحرير</label><label class="po"><input type="radio" name="p07"/>إدارة</label></div></div>
+              <div class="up-row"><div class="up-nm"><span class="n">08</span>المفتاح الذكي</div><div class="up-pick"><label class="po"><input type="radio" name="p08"/>ممنوع</label><label class="po"><input type="radio" name="p08"/>عرض</label><label class="po is-on"><input type="radio" name="p08" checked/>تحرير</label><label class="po"><input type="radio" name="p08"/>إدارة</label></div></div>
+            </div>
+
+            <div class="us-extras">
+              <label class="xt"><input type="checkbox" checked/><div><div class="ar">يستطيع إصدار فواتير</div><div class="en">Can issue invoices</div></div></label>
+              <label class="xt"><input type="checkbox" checked/><div><div class="ar">يستطيع قبول الدفع نقداً</div><div class="en">Can accept cash payments</div></div></label>
+              <label class="xt"><input type="checkbox"/><div><div class="ar">يستطيع الخصم (حتى ١٠٪)</div><div class="en">Discount authority up to 10%</div></div></label>
+              <label class="xt"><input type="checkbox"/><div><div class="ar">تسجيل خروج VIP</div><div class="en">VIP checkout authorization</div></div></label>
+            </div>
+          </div>
+
+          <!-- Send & activate -->
+          <div class="us-new-sec">
+            <div class="sec-h">٣ — الإرسال والتفعيل</div>
+            <div class="us-send">
+              <label class="ch-card"><input type="checkbox" checked/><div class="ic">📱</div><div><div class="ar">SMS مع رابط تفعيل</div><div class="en">SMS with activation link · OTP-protected</div></div></label>
+              <label class="ch-card"><input type="checkbox" checked/><div class="ic">📧</div><div><div class="ar">بريد إلكتروني مع كلمة المرور المؤقّتة</div><div class="en">Email with temporary password</div></div></label>
+              <label class="ch-card"><input type="checkbox"/><div class="ic">🖨</div><div><div class="ar">طباعة بطاقة الموظف</div><div class="en">Print physical access card</div></div></label>
+            </div>
+
+            <div class="us-policy">
+              <div class="pl-row">
+                <span class="pk">سياسة كلمة المرور</span>
+                <span class="pv">٨+ حروف · رقم · رمز · يجب تغييرها عند الدخول الأول</span>
+              </div>
+              <div class="pl-row">
+                <span class="pk">المصادقة الثنائية (2FA)</span>
+                <span class="pv">إجبارية — SMS OTP لكل دخول</span>
+              </div>
+              <div class="pl-row">
+                <span class="pk">صلاحية الحساب</span>
+                <span class="pv">سارٍ حتى تاريخ انتهاء الإقامة + ٣٠ يوم · يُعطَّل تلقائياً</span>
+              </div>
+              <div class="pl-row">
+                <span class="pk">الإطار الزمني للجلسات</span>
+                <span class="pv">٨ ساعات (الوردية) · تسجيل خروج تلقائي خارجها</span>
+              </div>
+            </div>
+
+            <!-- Live preview -->
+            <div class="us-preview">
+              <div class="pv-head"><div class="ar">معاينة الحساب الجديد</div><div class="en">Account preview · before sending</div></div>
+              <div class="pv-row">
+                <div class="pv-av">ن‬ز</div>
+                <div class="pv-info">
+                  <div class="pv-nm">نوف الزهراني</div>
+                  <div class="pv-mt">🛎 استقبال · الاستقبال · صباحية · ٦ برامج مفعّلة</div>
+                </div>
+                <span class="pv-tag">مسوّدة</span>
+              </div>
+            </div>
+
+            <div class="us-actions">
+              <button class="us-btn sec">حفظ كمسوّدة</button>
+              <button class="us-btn pr">⚡ إنشاء الحساب وإرسال البيانات</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mod-section-head" style="padding-inline: 0">
+        <div>
+          <div class="ttl">الأدوار والصلاحيات</div>
+          <div class="sub">Roles &amp; permissions templates</div>
+        </div>
+      </div>
+
+      <div class="us-roles" data-m-rise-stagger>
+        <div class="us-role is-on">
+          <div class="head"><div class="ic">👑</div><div class="ct">٢</div></div>
+          <div class="nm">المدير</div>
+          <div class="sub">صلاحية كاملة — كل البرامج، فتح حسابات، تخصيص.</div>
+        </div>
+        <div class="us-role">
+          <div class="head"><div class="ic">🛎</div><div class="ct">٤</div></div>
+          <div class="nm">استقبال</div>
+          <div class="sub">تسجيل ضيوف، حجوزات، خروج، إصدار فواتير.</div>
+        </div>
+        <div class="us-role">
+          <div class="head"><div class="ic">🧹</div><div class="ct">٤</div></div>
+          <div class="nm">تدبير</div>
+          <div class="sub">عرض الغرف، تحديث حالة التنظيف، طلب مخزون.</div>
+        </div>
+        <div class="us-role">
+          <div class="head"><div class="ic">🔧</div><div class="ct">٢</div></div>
+          <div class="nm">صيانة</div>
+          <div class="sub">تذاكر المستودع، إغلاق التذاكر، طلب قطع.</div>
+        </div>
+      </div>
+
+      <div class="mod-section-head" style="padding-inline: 0">
+        <div>
+          <div class="ttl">الموظفون المسجَّلون</div>
+          <div class="sub">All registered staff with permissions per program</div>
+        </div>
+      </div>
+
+      <div class="us-tbl" data-m-rise>
+        <div class="us-tr is-head">
+          <span>الموظف</span>
+          <span>الدور</span>
+          <span>الصلاحيات (البرامج)</span>
+          <span>المهام النشطة</span>
+          <span>آخر دخول</span>
+          <span></span>
+        </div>
+        <div class="us-tr">
+          <div class="who"><div class="av is-mgr">س‬أ</div><div><div class="nm">سارة أحمد المالكي</div><div class="sub">manager@hotel.sa</div></div></div>
+          <div>👑 المدير</div>
+          <div class="perms">
+            <span class="ch act">01</span><span class="ch act">02</span><span class="ch act">03</span><span class="ch act">04</span><span class="ch act">05</span><span class="ch act">06</span><span class="ch act">07</span><span class="ch act">08</span><span class="ch act">09</span><span class="ch act">10</span><span class="ch act">11</span><span class="ch act">12</span>
+          </div>
+          <div>—</div>
+          <div class="last">قبل ٤ د</div>
+          <div class="acts"><button>تعديل</button></div>
+        </div>
+        <div class="us-tr">
+          <div class="who"><div class="av">ر‬ك</div><div><div class="nm">Rajesh Kumar</div><div class="sub">rajesh@hotel.sa</div></div></div>
+          <div>🛎 استقبال</div>
+          <div class="perms">
+            <span class="ch act">01</span><span class="ch">02</span><span class="ch act">06</span><span class="ch">07</span><span class="ch act">08</span>
+          </div>
+          <div>٣ مهام</div>
+          <div class="last">قبل ٢٢ د</div>
+          <div class="acts"><button>تعديل</button></div>
+        </div>
+        <div class="us-tr">
+          <div class="who"><div class="av">ب‬ع</div><div><div class="nm">بشير العامري</div><div class="sub">basheer@hotel.sa</div></div></div>
+          <div>🛎 استقبال</div>
+          <div class="perms">
+            <span class="ch act">01</span><span class="ch">02</span><span class="ch act">06</span><span class="ch act">08</span>
+          </div>
+          <div>٢ مهام</div>
+          <div class="last">قبل ١ س</div>
+          <div class="acts"><button>تعديل</button></div>
+        </div>
+        <div class="us-tr">
+          <div class="who"><div class="av">M‬a</div><div><div class="nm">Maria Santos</div><div class="sub">maria@hotel.sa</div></div></div>
+          <div>🧹 تدبير</div>
+          <div class="perms">
+            <span class="ch act">01</span><span class="ch act">04</span>
+          </div>
+          <div>١٢ غرفة</div>
+          <div class="last">قبل ١٥ د</div>
+          <div class="acts"><button>تعديل</button></div>
+        </div>
+        <div class="us-tr">
+          <div class="who"><div class="av">م‬ع</div><div><div class="nm">محمد العتيبي</div><div class="sub">m.otaibi@hotel.sa</div></div></div>
+          <div>🔧 صيانة</div>
+          <div class="perms">
+            <span class="ch act">04</span><span class="ch act">05</span>
+          </div>
+          <div>٤ تذاكر</div>
+          <div class="last">قبل ٣٢ د</div>
+          <div class="acts"><button>تعديل</button></div>
+        </div>
+        <div class="us-tr">
+          <div class="who"><div class="av">ف‬س</div><div><div class="nm">فاطمة السعيدي</div><div class="sub">accountant@hotel.sa</div></div></div>
+          <div>💼 محاسبة</div>
+          <div class="perms">
+            <span class="ch act">06</span><span class="ch act">07</span><span class="ch act">11</span>
+          </div>
+          <div>—</div>
+          <div class="last">قبل ٢ س</div>
+          <div class="acts"><button>تعديل</button></div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="../../shared/sidebar.js"></script>
+<script>StaticSidebar.mount({ activeId: "01-guests", placeholder: "بحث عن موظف أو دور..." });</script>
+<script src="../../assets/animations.js"></script>
+</body>
+</html>

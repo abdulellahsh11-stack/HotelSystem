@@ -1,0 +1,63 @@
+/* =========================================================================
+   HR module — kit-specific
+   ========================================================================= */
+
+.hr-kpi { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 16px; }
+.hr-kpi .card { background: var(--white); border: 1px solid var(--hairline); border-radius: 10px; padding: 14px 16px; }
+.hr-kpi .card .lbl { font-size: 12px; color: var(--fg-2); }
+.hr-kpi .card .v { font-family: var(--font-en); font-variant-numeric: tabular-nums; font-size: 26px; font-weight: 600; color: var(--ink-900); line-height: 1.05; margin-top: 4px; }
+.hr-kpi .card .sub { font-size: 11px; color: var(--fg-3); margin-top: 4px; }
+
+/* ── Tabs ──────────────────────────────────────────────────────────────── */
+.hr-tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--ink-100); padding: 0 4px; margin-bottom: -1px; }
+.hr-tab { background: transparent; border: none; padding: 12px 16px; color: var(--fg-2); font-family: var(--font-ar); font-size: 13px; font-weight: 500; cursor: pointer; position: relative; transition: color var(--dur-fast); }
+.hr-tab:hover { color: var(--ink-800); }
+.hr-tab.is-on { color: var(--brand-800); }
+.hr-tab.is-on::after { content: ""; position: absolute; bottom: -1px; left: 12px; right: 12px; height: 2px; background: var(--gold-500); border-radius: 2px; }
+.hr-tab .ct { display: inline-block; background: var(--sand); color: var(--fg-2); border-radius: 999px; font-size: 10px; padding: 1px 7px; margin-inline-start: 6px; font-family: var(--font-mono); }
+.hr-tab.is-on .ct { background: var(--gold-100); color: var(--gold-800); }
+
+/* ── Table ─────────────────────────────────────────────────────────────── */
+.hr-card { background: var(--white); border: 1px solid var(--hairline); border-radius: 12px; overflow: hidden; }
+.hr-tbl { display: flex; flex-direction: column; }
+.hr-tr {
+  display: grid;
+  grid-template-columns: 2.2fr 1fr 1.3fr 1.4fr 1fr 1fr 36px;
+  gap: 14px;
+  align-items: center;
+  padding: 13px 20px;
+  border-top: 1px solid var(--hairline);
+  font-size: 13px;
+}
+.hr-tr.hr-th { background: var(--surface-2); font-size: 11px; color: var(--fg-3); font-weight: 500; border-top: none; }
+
+.hr-emp { display: flex; align-items: center; gap: 11px; }
+.hr-emp .av { width: 38px; height: 38px; border-radius: 999px; background: var(--brand-200); color: var(--brand-800); display: grid; place-items: center; font-family: var(--font-ar); font-size: 12px; font-weight: 600; }
+.hr-emp .av.is-sa { background: var(--gold-200); color: var(--gold-800); }
+.hr-emp .nm { font-weight: 500; color: var(--ink-900); }
+.hr-emp .sub { font-size: 11px; color: var(--fg-3); margin-top: 1px; }
+
+.nat .flag { font-size: 18px; line-height: 1; }
+.nat .sub { font-size: 11px; color: var(--fg-3); margin-top: 2px; }
+.iqd { font-family: var(--font-mono); }
+.iqd .sub { font-family: var(--font-ar); font-size: 11px; color: var(--fg-3); margin-top: 1px; }
+
+/* Iqama timeline */
+.hr-iq { display: flex; flex-direction: column; gap: 4px; }
+.hr-iq .bar { height: 6px; background: var(--sand); border-radius: 999px; overflow: hidden; }
+.hr-iq .fill { height: 100%; background: var(--brand-500); }
+.hr-iq.ok .fill { background: var(--brand-500); }
+.hr-iq.warn .fill { background: var(--gold-500); }
+.hr-iq.err .fill { background: var(--danger-500); }
+.hr-iq .lbl { display: inline-flex; gap: 4px; font-size: 11px; font-family: var(--font-en); font-variant-numeric: tabular-nums; }
+.hr-iq .dt { color: var(--ink-700); font-weight: 500; }
+.hr-iq .sep { color: var(--ink-200); }
+.hr-iq .dl { font-family: var(--font-ar); }
+.hr-iq.ok .dl { color: var(--success-700); }
+.hr-iq.warn .dl { color: var(--warning-700); font-weight: 600; }
+.hr-iq.err .dl { color: var(--danger-700); font-weight: 600; }
+
+.sal .v { font-family: var(--font-en); font-variant-numeric: tabular-nums; font-weight: 600; color: var(--ink-900); font-size: 14px; }
+.sal .cur { font-size: 10px; color: var(--fg-3); }
+
+.qiwa .nz-pill { font-size: 10.5px; }

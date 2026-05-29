@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-screen-label="Reports Center">
+<head>
+<meta charset="utf-8"/>
+<title>ضيوف - مركز التقارير</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="stylesheet" href="colors_and_type.css"/>
+<link rel="stylesheet" href="assets/animations.css"/>
+<style>
+  html, body { margin: 0; padding: 0; }
+  body { background: var(--paper); color: var(--ink-900); font-family: var(--font-ar); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+  * { box-sizing: border-box; }
+  a { text-decoration: none; color: inherit; }
+  button { font: inherit; cursor: pointer; }
+
+  .top { display: flex; align-items: center; justify-content: space-between; padding: 18px 32px; border-bottom: 1px solid var(--hairline); }
+  .top .brand { display: inline-flex; align-items: center; gap: 12px; }
+  .top .brand img { width: 36px; height: 36px; }
+  .top .brand .ar { font-family: var(--font-ar-display); font-weight: 600; font-size: 20px; }
+  .top .back { font-size: 13px; color: var(--fg-2); }
+
+  .hero { text-align: center; max-width: 720px; margin: 60px auto 50px; padding: 0 32px; }
+  .hero .eyebrow { font-family: var(--font-en); font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold-700); font-weight: 600; }
+  .hero h1 { font-family: var(--font-ar-display); font-weight: 600; font-size: 48px; color: var(--ink-900); margin: 12px 0; }
+  .hero p { font-size: 16px; color: var(--fg-1); line-height: 1.6; }
+
+  .grid { max-width: 1240px; margin: 0 auto 90px; padding: 0 32px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+
+  .rep {
+    background: var(--white);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 22px 22px 20px;
+    display: flex; flex-direction: column;
+    transition: transform 180ms, box-shadow 180ms;
+  }
+  .rep:hover { transform: translateY(-2px); box-shadow: var(--shadow-2); border-color: var(--gold-300); }
+
+  .rep .row1 { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .rep .num { font-family: var(--font-mono); font-size: 11px; color: var(--gold-700); font-weight: 600; letter-spacing: 0.14em; }
+  .rep .ic { font-size: 22px; }
+  .rep .nm { font-family: var(--font-ar-display); font-weight: 600; font-size: 17px; color: var(--ink-900); }
+  .rep .en { font-family: var(--font-en); font-size: 12px; color: var(--gold-700); font-style: italic; margin-top: 2px; }
+
+  .rep ul { list-style: none; padding: 0; margin: 14px 0 0; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+  .rep li { display: flex; gap: 8px; font-size: 12px; color: var(--ink-700); align-items: flex-start; line-height: 1.45; }
+  .rep li::before { content: "—"; color: var(--gold-700); font-weight: 600; flex-shrink: 0; }
+
+  .rep .foot { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--hairline); font-size: 12px; }
+  .rep .links { color: var(--brand-700); font-weight: 500; }
+  .rep .freq { font-family: var(--font-mono); color: var(--fg-3); font-size: 11px; }
+
+  .links-banner {
+    max-width: 1240px;
+    margin: 0 auto 50px;
+    padding: 24px 32px;
+    background: linear-gradient(135deg, var(--brand-50), var(--paper-tint));
+    border: 1px solid var(--brand-200);
+    border-radius: 14px;
+    display: grid; grid-template-columns: auto 1fr auto; gap: 22px; align-items: center;
+  }
+  .links-banner .ic { width: 48px; height: 48px; background: var(--brand-700); color: var(--paper); border-radius: 12px; display: grid; place-items: center; font-size: 22px; }
+  .links-banner .ttl { font-family: var(--font-ar-display); font-weight: 600; font-size: 17px; color: var(--ink-900); }
+  .links-banner .sub { font-size: 13px; color: var(--fg-2); margin-top: 4px; line-height: 1.5; }
+  .links-banner button { background: var(--brand-700); color: var(--paper); border: none; padding: 11px 20px; border-radius: 8px; font-family: var(--font-ar); font-weight: 500; font-size: 13px; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <a class="brand" href="index.html"><img src="assets/logo-mark.svg" alt=""/><span class="ar">ضيوف</span></a>
+  <a class="back" href="index.html">العودة للواجهة الرئيسية</a>
+</header>
+
+<section class="hero" data-m-rise>
+  <span class="eyebrow">REPORTS CENTER</span>
+  <h1>تقارير كل برنامج</h1>
+  <p>كل برنامج يصدر تقارير خاصة به - يومية وأسبوعية وشهرية. ويمكن ربط أي تقريرين معاً للحصول على رؤى أعمق.</p>
+</section>
+
+<div class="links-banner" data-m-rise>
+  <div class="ic">↔</div>
+  <div>
+    <div class="ttl">اربط تقارير من برنامجين معاً</div>
+    <div class="sub">مثال: تقرير الإشغال (الضيوف) مع تقرير الإيرادات (المحاسبة) - يعطيك RevPAR دقيق. أو تقرير المخزون مع تقرير الحجوزات - يحسب الاستهلاك المتوقع.</div>
+  </div>
+  <button>أنشئ تقرير مدمج</button>
+</div>
+
+<div class="grid" data-m-rise-stagger>
+
+  <a class="rep" href="modules/01-guests/index.html">
+    <div class="row1"><span class="num">01</span><span class="ic">🛏</span></div>
+    <div class="nm">تقارير الضيوف</div>
+    <div class="en">Guest reports</div>
+    <ul>
+      <li>قائمة النزلاء اليومية</li>
+      <li>الإشغال - يومي / شهري</li>
+      <li>متوسط مدة الإقامة</li>
+      <li>أعلى ١٠ نزلاء</li>
+    </ul>
+    <div class="foot"><span class="links">يربط مع: 06، 11</span><span class="freq">يومي</span></div>
+  </a>
+
+  <a class="rep" href="modules/02-shumus/index.html">
+    <div class="row1"><span class="num">02</span><span class="ic">🛡</span></div>
+    <div class="nm">تقارير شموس</div>
+    <div class="en">MOI verification log</div>
+    <ul>
+      <li>سجل التعرف على الضيوف</li>
+      <li>عدد الحالات التي تحتاج مراجعة</li>
+      <li>زمن التحقق من أبشر</li>
+    </ul>
+    <div class="foot"><span class="links">يربط مع: 01، 08</span><span class="freq">يومي</span></div>
+  </a>
+
+  <a class="rep" href="modules/03-tourism/index.html">
+    <div class="row1"><span class="num">03</span><span class="ic">📋</span></div>
+    <div class="nm">تقارير المستندات</div>
+    <div class="en">Government docs</div>
+    <ul>
+      <li>المستندات القريبة الانتهاء</li>
+      <li>سجل التجديدات</li>
+      <li>إشعارات للمدير</li>
+    </ul>
+    <div class="foot"><span class="links">يربط مع: 06، 09</span><span class="freq">أسبوعي</span></div>
+  </a>
+
+  <a class="rep" href="modules/04-inventory/index.html">
+    <div class="row1"><span class="num">04</span><span class="ic">📦</span></div>
+    <div class="nm">تقارير المخزون</div>
+    <div class="en">Inventory reports</div>
+    <ul>
+      <li>الأصناف تحت حد الطلب</li>
+      <li>استهلاك يومي للأصناف</li>
+      <li>قيمة المخزون الحالية</li>
+    </ul>
+    <div class="foot"><span class="links">يربط مع: 01، 06</span><span class="freq">يومي</span></div>
+  </a>
+
+  <a class="rep" href="modules/05-warehouse/index.html">
+    <div class="row1"><span class="num">05</span><span class="ic">🔧</span></div>
+    <div class="nm">تقارير المستودع</div>
+    <div class="en">Warehouse reports</div>
+    <ul>
+      <li>تذاكر الصيانة المفتوحة</li>
+      <li>متوسط زمن الإغلاق</li>
+      <li>قطع الغيار المستهلكة</li>
+    </ul>
+    <div class="foot"><span class="links">يربط مع: 06، 09</span><span class="freq">أسبوعي</span></div>
+  </a>
+
+  <a class="rep" href="modules/06-accounting/index.html">
+    <div class="row1"><span class="num">06</span><span class="ic">💳</span></div>
+    <div class="nm">تقارير المحاسبة</div>
+    <div class="en">Financial reports</div>
+    <ul>
+      <li>P&amp;L يومي / شهري</li>
+      <li>تقرير VAT ربع سنوي</li>
+      <li>دفتر اليومية الكامل</li>
+      <li>ZATCA Phase 2</li>
+    </ul>
+    <div class="foot"><span class="links">يربط مع: 07، 11</span><span class="freq">يومي</span></div>
+  </a>
+
+  <a class="rep" href="modules/07-pos/index.html">
+    <div class="row1"><span class="num">07</span><span class="ic">🏧</span></div>
+    <div class="nm">تقارير نقاط البيع</div>
+    <div class="en">POS reports</div>
+    <ul>
+      <li>End-of-Day لكل جهاز</li>
+      <li>طرق الدفع (MADA / كاش)</li>
+      <li>المبيعات حسب الموقع</li>
+    </ul>
+    <div class="foot"><span class="links">يربط مع: 06، 11</span><span class="freq">يومي</span></div>
+  </a>
+
+  <a class="rep" href="modules/08-smart-key/index.html">
+    <div class="row1"><span class="num">08</span><span class="ic">🔐</span></div>
+    <div class="nm">تقارير المفتاح الذكي</div>
+    <div class="en">Security alarms</div>
+    <ul>
+      <li>سجل الإنذارات</li>
+      <li>الحالات المعالجة</li>
+      <li>محاولات الاحتيال المكتشفة</li>
+    </ul>
+    <div class="foot"><span class="links">يربط مع: 01، 06، 07</span><span class="freq">مباشر</span></div>
+  </a>
+
+  <a class="rep" href="modules/09-hr/index.html">
+    <div class="row1"><span class="num">09</span><span class="ic">👥</span></div>
+    <div class="nm">تقارير الموارد البشرية</div>
+    <div class="en">HR reports</div>
+    <ul>
+      <li>كشف الرواتب الشهري</li>
+      <li>الإقامات القريبة الانتهاء</li>
+      <li>التأمينات الاجتماعية</li>
+    </ul>
+    <div class="foot"><span class="links">يربط مع: 06، 03</span><span class="freq">شهري</span></div>
+  </a>
+
+  <a class="rep" href="modules/10-channel-marketing/index.html">
+    <div class="row1"><span class="num">10</span><span class="ic">🌐</span></div>
+    <div class="nm">تقارير القنوات</div>
+    <div class="en">Channel reports</div>
+    <ul>
+      <li>أداء كل قناة حجز</li>
+      <li>العمولات المدفوعة</li>
+      <li>تطابق الأسعار</li>
+    </ul>
+    <div class="foot"><span class="links">يربط مع: 01، 06</span><span class="freq">أسبوعي</span></div>
+  </a>
+
+  <a class="rep" href="modules/11-kpis/index.html">
+    <div class="row1"><span class="num">11</span><span class="ic">📈</span></div>
+    <div class="nm">مؤشرات الأداء</div>
+    <div class="en">KPI dashboards</div>
+    <ul>
+      <li>RevPAR / ADR / OCC</li>
+      <li>GOPPAR / ALOS</li>
+      <li>اتجاهات شهرية</li>
+    </ul>
+    <div class="foot"><span class="links">يقرأ من كل البرامج</span><span class="freq">مباشر</span></div>
+  </a>
+
+  <a class="rep" href="modules/12-analytics/index.html">
+    <div class="row1"><span class="num">12</span><span class="ic">🧠</span></div>
+    <div class="nm">تحليل البيانات</div>
+    <div class="en">Smart insights</div>
+    <ul>
+      <li>تحليل SWOT تلقائي</li>
+      <li>تنبؤ ٩٠ يوم</li>
+      <li>توصيات شهرية</li>
+    </ul>
+    <div class="foot"><span class="links">يقرأ من كل البرامج</span><span class="freq">شهري</span></div>
+  </a>
+
+</div>
+
+<script src="assets/animations.js"></script>
+</body>
+</html>

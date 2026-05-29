@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-screen-label="HR">
+<head>
+<meta charset="utf-8"/>
+<title>ضيوف · الموارد البشرية</title>
+<meta name="viewport" content="width=1440, initial-scale=1"/>
+<link rel="stylesheet" href="../../colors_and_type.css"/>
+<link rel="stylesheet" href="../../shared/chrome.css"/>
+<link rel="stylesheet" href="hr.css"/>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="../../shared/chrome.jsx"></script>
+<script type="text/babel" src="Staff.jsx"></script>
+
+<script type="text/babel">
+const { useState } = React;
+
+const STAFF = [
+  { id: 1, initials: "س‬أ", name: "سارة أحمد المالكي",     role: "مدير المنشأة",      dept: "إدارة",        flag: "🇸🇦", nat: "السعودية", nationality: "SA", iqama: "1098273461", iqamaSub: "هوية وطنية", expires: "2027-04-12", daysLeft: 730, salary: 18500, qiwa: true  },
+  { id: 2, initials: "ر‬ك", name: "Rajesh Kumar",          role: "رئيس الاستقبال",     dept: "الاستقبال",    flag: "🇮🇳", nat: "الهند",    nationality: "IN", iqama: "2354281903", iqamaSub: "إقامة",       expires: "2025-06-14", daysLeft: 63,  salary: 6800,  qiwa: true  },
+  { id: 3, initials: "م‬ع", name: "محمد العتيبي",          role: "رئيس الأمن",         dept: "الأمن",         flag: "🇸🇦", nat: "السعودية", nationality: "SA", iqama: "1067392841", iqamaSub: "هوية وطنية", expires: "2028-01-22", daysLeft: 1018, salary: 9200,  qiwa: true  },
+  { id: 4, initials: "Ng", name: "Maria Santos",          role: "مشرفة الإسكان",      dept: "التدبير",       flag: "🇵🇭", nat: "الفلبين", nationality: "PH", iqama: "2841029384", iqamaSub: "إقامة",       expires: "2025-04-28", daysLeft: 16,  salary: 4200,  qiwa: false },
+  { id: 5, initials: "أ‬ح", name: "أحمد حسن إبراهيم",      role: "شيف تنفيذي",         dept: "المطبخ",        flag: "🇪🇬", nat: "مصر",      nationality: "EG", iqama: "2738492810", iqamaSub: "إقامة",       expires: "2026-09-08", daysLeft: 514, salary: 11800, qiwa: true  },
+  { id: 6, initials: "B‬T", name: "Boris Petrov",          role: "مدير المطعم",        dept: "الأغذية",       flag: "🇷🇺", nat: "روسيا",   nationality: "RU", iqama: "2920381746", iqamaSub: "إقامة",       expires: "2025-07-30", daysLeft: 109, salary: 9600,  qiwa: true  },
+  { id: 7, initials: "K‬n", name: "Kanya Sripa",           role: "معالجة سبا",         dept: "السبا",         flag: "🇹🇭", nat: "تايلاند",  nationality: "TH", iqama: "2918374650", iqamaSub: "إقامة",       expires: "2025-12-04", daysLeft: 236, salary: 5400,  qiwa: true  },
+  { id: 8, initials: "ف‬س", name: "فاطمة السعيدي",         role: "محاسبة",             dept: "المالية",       flag: "🇸🇦", nat: "السعودية", nationality: "SA", iqama: "1089467238", iqamaSub: "هوية وطنية", expires: "2029-03-15", daysLeft: 1437, salary: 14000, qiwa: true  },
+];
+
+function App() {
+  const [active, setActive] = useState("hr");
+  const [tab, setTab] = useState("staff");
+
+  return (
+    <div className="nz-app">
+      <NzSidebar active={active} onChange={setActive}/>
+      <div>
+        <NzTopBar placeholder="بحث عن موظف، رقم إقامة، قسم..."/>
+        <main className="nz-main">
+          <NzPageHead
+            eyebrow="الموارد البشرية · ٨٤ موظف نشط"
+            title="الموظفون والإقامات"
+            sub="مزامنة قوى آخر مرة قبل ٧ دقائق · GOSI متصل"
+            actions={<>
+              <button className="nz-btn is-secondary"><NzIcon.download/>كشف رواتب</button>
+              <button className="nz-btn is-secondary"><NzIcon.globe/>مزامنة قوى</button>
+              <button className="nz-btn is-primary"><NzIcon.plus/>توظيف جديد</button>
+            </>}
+          />
+
+          <div className="hr-kpi">
+            <div className="card"><div className="lbl">إجمالي الموظفين</div><div className="v">٨٤</div><div className="sub">٤٢ سعودي · ٥٠٪ توطين</div></div>
+            <div className="card"><div className="lbl">رواتب أبريل</div><div className="v">٤٨٦٬٢٠٠ <span style={{fontSize:13,color:"var(--fg-3)"}}>ر.س</span></div><div className="sub">سُلِّمت ٢٥ أبريل</div></div>
+            <div className="card"><div className="lbl">إقامات تنتهي ≤ ٣٠ يوم</div><div className="v" style={{color: "var(--danger-700)"}}>٣</div><div className="sub">تتطلب تجديد</div></div>
+            <div className="card"><div className="lbl">إقامات تنتهي ≤ ٩٠ يوم</div><div className="v" style={{color: "var(--warning-700)"}}>٧</div><div className="sub">تنبيه مبكر</div></div>
+            <div className="card"><div className="lbl">سُلَف نشطة</div><div className="v">٥</div><div className="sub">١٢٬٤٠٠ ر.س قائمة</div></div>
+          </div>
+
+          <div className="hr-tabs">
+            <button className={"hr-tab " + (tab === "staff" ? "is-on" : "")}    onClick={() => setTab("staff")}>الموظفون<span className="ct">٨٤</span></button>
+            <button className={"hr-tab " + (tab === "payroll" ? "is-on" : "")}  onClick={() => setTab("payroll")}>الرواتب</button>
+            <button className={"hr-tab " + (tab === "iqama" ? "is-on" : "")}    onClick={() => setTab("iqama")}>الإقامات ورخص العمل<span className="ct">١٠</span></button>
+            <button className={"hr-tab " + (tab === "housing" ? "is-on" : "")}  onClick={() => setTab("housing")}>السكن والمعيشة</button>
+            <button className={"hr-tab " + (tab === "tickets" ? "is-on" : "")}  onClick={() => setTab("tickets")}>تذاكر السفر</button>
+            <button className={"hr-tab " + (tab === "insurance" ? "is-on" : "")}onClick={() => setTab("insurance")}>التأمين الطبي</button>
+            <button className={"hr-tab " + (tab === "gosi" ? "is-on" : "")}     onClick={() => setTab("gosi")}>التأمينات (GOSI)</button>
+            <button className={"hr-tab " + (tab === "contracts" ? "is-on" : "")}onClick={() => setTab("contracts")}>العقود</button>
+          </div>
+
+          <div className="hr-card">
+            <div className="nz-card-head">
+              <div>
+                <div className="ttl">قائمة الموظفين</div>
+                <div className="sub">Active staff · sorted by Iqama expiry</div>
+              </div>
+              <div className="nz-card-actions">
+                <button className="nz-chip is-on">الكل</button>
+                <button className="nz-chip">قريب الانتهاء</button>
+                <button className="nz-chip">سعوديون</button>
+                <button className="nz-icon-btn"><NzIcon.filter/></button>
+              </div>
+            </div>
+            <StaffTable staff={STAFF}/>
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+
+</body>
+</html>

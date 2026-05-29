@@ -1,0 +1,181 @@
+/* =========================================================================
+   Dheuof motion toolkit — CSS animations + scroll-triggered classes
+   Showcase-grade. Subtle for ops surfaces, expressive for marketing/slides.
+   ========================================================================= */
+
+/* ── Tokens ─────────────────────────────────────────────────────────────── */
+:root {
+  --m-fast:   220ms;
+  --m-med:    480ms;
+  --m-slow:   820ms;
+  --m-xslow: 1200ms;
+  --m-out:    cubic-bezier(0.22, 1, 0.36, 1);     /* decel — for arrivals */
+  --m-ease:   cubic-bezier(0.65, 0, 0.35, 1);     /* symmetric */
+  --m-spring: cubic-bezier(0.34, 1.56, 0.64, 1);  /* gentle overshoot */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* =========================================================================
+   1) Floating — gentle perpetual bob
+   Apply as: <div class="m-float">. Variants control phase + range.
+   ========================================================================= */
+@keyframes m-float {
+  0%, 100% { transform: translateY(0) rotate(var(--m-rot, 0deg)); }
+  50%      { transform: translateY(calc(-1 * var(--m-range, 12px))) rotate(var(--m-rot, 0deg)); }
+}
+.m-float    { animation: m-float 6s ease-in-out infinite; will-change: transform; }
+.m-float-1  { animation: m-float 5s ease-in-out -1.2s infinite; }
+.m-float-2  { animation: m-float 7s ease-in-out -2.8s infinite; }
+.m-float-3  { animation: m-float 8s ease-in-out -4.1s infinite; }
+
+/* Use --m-range and --m-rot to vary per-element */
+
+/* =========================================================================
+   2) Fade-up on scroll
+   Drop `.m-rise` on any element + add `[data-m-rise]` so the IO observes it.
+   Active when `.is-in` is added.
+   ========================================================================= */
+[data-m-rise] {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity var(--m-med) var(--m-out), transform var(--m-med) var(--m-out);
+  will-change: opacity, transform;
+}
+[data-m-rise].is-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Stagger children — add data-m-rise-stagger to the parent.
+   Children get an incremental --i set by JS. */
+[data-m-rise-stagger] > * {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity var(--m-med) var(--m-out), transform var(--m-med) var(--m-out);
+  transition-delay: calc(var(--i, 0) * 80ms);
+  will-change: opacity, transform;
+}
+[data-m-rise-stagger].is-in > * {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* =========================================================================
+   3) Word-by-word reveal
+   Wrap text with: <h1 data-m-words>…</h1>. JS splits to <span class="m-word">.
+   ========================================================================= */
+.m-words .m-word {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(0.6em) rotateX(-30deg);
+  transform-origin: 50% 100%;
+  transition: opacity var(--m-slow) var(--m-out), transform var(--m-slow) var(--m-out);
+  transition-delay: calc(var(--w-i, 0) * 80ms);
+  will-change: opacity, transform;
+}
+.m-words.is-in .m-word {
+  opacity: 1;
+  transform: translateY(0) rotateX(0);
+}
+
+/* =========================================================================
+   4) Hover shimmer — gold glint sliding across a button / card
+   Apply: <button class="m-shimmer">. Requires position: relative; overflow: hidden.
+   ========================================================================= */
+.m-shimmer {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.m-shimmer::after {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0;
+  inset-inline-start: -120%;
+  width: 60%;
+  background: linear-gradient(120deg,
+    transparent 0%,
+    rgba(255,255,255,0.0) 25%,
+    rgba(255,235,180,0.45) 50%,
+    rgba(255,255,255,0.0) 75%,
+    transparent 100%);
+  transform: skewX(-22deg);
+  transition: inset-inline-start var(--m-slow) var(--m-out);
+  pointer-events: none;
+  z-index: 1;
+}
+.m-shimmer:hover::after { inset-inline-start: 120%; }
+
+/* Continuous shimmer for hero cards */
+@keyframes m-shimmer-loop {
+  0%   { inset-inline-start: -120%; }
+  60%  { inset-inline-start: 120%;  }
+  100% { inset-inline-start: 120%;  }
+}
+.m-shimmer-loop::after {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0;
+  inset-inline-start: -120%;
+  width: 40%;
+  background: linear-gradient(120deg,
+    transparent, rgba(255,235,180,0.35), transparent);
+  transform: skewX(-22deg);
+  animation: m-shimmer-loop 4.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* =========================================================================
+   5) Number count-up
+   <span data-m-count="22" data-m-suffix="٪">٢٢٪</span>
+   JS animates from 0 to target when in view.
+   ========================================================================= */
+[data-m-count] { font-variant-numeric: tabular-nums; }
+
+/* =========================================================================
+   6) Parallax — JS sets --m-park on the element (negative px); css consumes
+   ========================================================================= */
+.m-parallax { transform: translateY(var(--m-park, 0px)); will-change: transform; }
+
+/* =========================================================================
+   7) Hover lift — universal "buttoned" feel for cards
+   ========================================================================= */
+.m-lift { transition: transform var(--m-fast) var(--m-out), box-shadow var(--m-fast) var(--m-out); }
+.m-lift:hover { transform: translateY(-2px); }
+
+/* =========================================================================
+   8) Glow pulse — for live/recording indicators
+   ========================================================================= */
+@keyframes m-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(201,168,95,0.45); }
+  50%      { box-shadow: 0 0 0 10px rgba(201,168,95,0); }
+}
+.m-glow { animation: m-glow 1.8s var(--m-ease) infinite; }
+
+/* =========================================================================
+   9) Slide enter (deck) — used by the pitch deck on slide change
+   ========================================================================= */
+.m-enter > * {
+  opacity: 0;
+  transform: translateY(32px);
+  animation: m-enter-in var(--m-slow) var(--m-out) forwards;
+  animation-delay: calc(var(--i, 0) * 110ms);
+}
+@keyframes m-enter-in {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* =========================================================================
+   10) Marquee — for trust strip / endless logo bar
+   ========================================================================= */
+@keyframes m-marquee { 0% { transform: translateX(0); } 100% { transform: translateX(50%); } }
+.m-marquee { display: flex; animation: m-marquee 30s linear infinite; }
+[dir="rtl"] .m-marquee { animation-direction: reverse; }

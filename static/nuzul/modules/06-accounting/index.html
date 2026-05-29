@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-screen-label="06 Accounting">
+<head>
+<meta charset="utf-8"/>
+<title>ضيوف · المحاسبة</title>
+<meta name="viewport" content="width=1440, initial-scale=1"/>
+<link rel="stylesheet" href="../../colors_and_type.css"/>
+<link rel="stylesheet" href="../../assets/animations.css"/>
+<link rel="stylesheet" href="../../shared/chrome.css"/>
+<link rel="stylesheet" href="../../shared/module.css"/>
+<style>
+  body { background: var(--paper-tint); }
+
+  /* P&L mini panel */
+  .ac-pl { background: var(--white); border: 1px solid var(--hairline); border-radius: 12px; overflow: hidden; }
+  .ac-pl-row {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr 1.2fr 1fr;
+    gap: 14px;
+    align-items: center;
+    padding: 12px 22px;
+    font-size: 13px;
+    border-top: 1px solid var(--hairline);
+  }
+  .ac-pl-row.is-head { background: var(--surface-2); font-size: 11px; color: var(--fg-3); font-weight: 500; border-top: none; }
+  .ac-pl-row.is-section { background: var(--paper-tint); font-family: var(--font-ar-display); font-weight: 600; color: var(--ink-900); font-size: 14px; }
+  .ac-pl-row.is-total   { background: var(--brand-50); font-weight: 600; color: var(--brand-900); }
+  .ac-pl-row .nm { color: var(--ink-800); }
+  .ac-pl-row .v {
+    font-family: var(--font-en); font-variant-numeric: tabular-nums;
+    font-weight: 600; color: var(--ink-900);
+    text-align: end;
+  }
+  .ac-pl-row .v.is-good { color: var(--success-700); }
+  .ac-pl-row .v.is-bad  { color: var(--danger-700); }
+  .ac-pl-row .v .cur { font-size: 10px; color: var(--fg-3); font-family: var(--font-ar); margin-inline-start: 4px; font-weight: 400; }
+  .ac-pl-row .delta { font-family: var(--font-en); font-variant-numeric: tabular-nums; font-size: 12px; text-align: end; }
+  .ac-pl-row .delta.up { color: var(--success-700); }
+  .ac-pl-row .delta.dn { color: var(--danger-700); }
+
+  /* Journal */
+  .ac-journal { background: var(--white); border: 1px solid var(--hairline); border-radius: 12px; overflow: hidden; }
+  .ac-jr-row {
+    display: grid;
+    grid-template-columns: 70px 1.8fr 1.2fr 1fr 1fr 0.8fr;
+    gap: 14px;
+    align-items: center;
+    padding: 12px 20px;
+    border-top: 1px solid var(--hairline);
+    font-size: 13px;
+  }
+  .ac-jr-row.is-head { background: var(--surface-2); font-size: 11px; color: var(--fg-3); font-weight: 500; border-top: none; }
+  .ac-jr-row .id { font-family: var(--font-mono); font-size: 11px; color: var(--fg-3); }
+  .ac-jr-row .source { display: flex; align-items: center; gap: 8px; }
+  .ac-jr-row .source .ic { width: 26px; height: 26px; border-radius: 6px; display: grid; place-items: center; font-size: 13px; background: var(--paper-tint); border: 1px solid var(--hairline); }
+  .ac-jr-row .ar { font-weight: 500; color: var(--ink-900); }
+  .ac-jr-row .sub { font-size: 11px; color: var(--fg-3); margin-top: 2px; }
+  .ac-jr-row .v {
+    font-family: var(--font-en); font-variant-numeric: tabular-nums;
+    font-weight: 600; color: var(--ink-900);
+    text-align: end;
+  }
+  .ac-jr-row .v.is-good { color: var(--success-700); }
+  .ac-jr-row .v.is-bad  { color: var(--danger-700); }
+  .ac-jr-row .v .cur { font-size: 10px; color: var(--fg-3); font-family: var(--font-ar); margin-inline-start: 3px; font-weight: 400; }
+
+  /* ZATCA compliance card */
+  .ac-zatca {
+    background: linear-gradient(135deg, var(--brand-800), var(--brand-900));
+    color: var(--paper);
+    border-radius: 12px;
+    padding: 22px 24px;
+    display: flex; align-items: center; gap: 22px;
+    position: relative; overflow: hidden;
+  }
+  .ac-zatca::before { content:""; position:absolute; inset-block-start: -50px; inset-inline-end: -50px; width: 200px; height: 200px; border-radius: 999px; background: radial-gradient(circle, rgba(201,168,95,0.25), transparent 60%); }
+  .ac-zatca > * { position: relative; }
+  .ac-zatca .ic { width: 56px; height: 56px; background: var(--gold-500); color: var(--brand-900); border-radius: 12px; display: grid; place-items: center; font-size: 28px; font-weight: 700; }
+  .ac-zatca .body { flex: 1; }
+  .ac-zatca .ar { font-family: var(--font-ar-display); font-size: 18px; font-weight: 600; }
+  .ac-zatca .en { font-family: var(--font-en); font-style: italic; font-size: 12px; color: var(--gold-300); margin-top: 2px; }
+  .ac-zatca .stat { font-family: var(--font-en); font-size: 12px; color: var(--gold-200); margin-top: 10px; display: flex; align-items: center; gap: 8px; }
+  .ac-zatca .stat .dot { width: 6px; height: 6px; background: var(--success-500); border-radius: 999px; }
+  .ac-zatca button {
+    background: var(--gold-500); color: var(--brand-900); border: none;
+    padding: 10px 20px; border-radius: 6px;
+    font-family: var(--font-ar); font-weight: 600; font-size: 13px;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<div class="nz-app">
+  <div id="sidebar-slot"></div>
+  <div>
+    <div id="topbar-slot"></div>
+    <main class="nz-main">
+
+      <div class="mod-head" data-m-rise>
+        <div class="left">
+          <div class="num-row">
+            <span class="num">06 · ACCOUNTING</span>
+            <span class="en-tag">Ledger · VAT · ZATCA</span>
+          </div>
+          <h1>المحاسبة العامة</h1>
+          <p class="sub">دفتر اليومية، حساب الأرباح والخسائر، ربط مباشر مع POS وفواتير الضيوف، تقارير VAT و ZATCA Phase 2 جاهزة.</p>
+        </div>
+        <div class="actions">
+          <button style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">📥 إقفال يدوي</button>
+          <button style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--brand-700);color:var(--paper);border:none;cursor:pointer">+ إدخال يدوي</button>
+        </div>
+      </div>
+
+      <div class="mod-stats" style="--cols: 4">
+        <div class="mod-stat"><div class="lbl">إيرادات اليوم</div><div class="v is-good">٢٤٬٨٦٠ <span class="cur">ر.س</span></div><div class="meta up">+١٨٪ عن المتوقع</div></div>
+        <div class="mod-stat"><div class="lbl">مصاريف اليوم</div><div class="v">٨٬٤٢٠ <span class="cur">ر.س</span></div><div class="meta">٣٤٪ من الإيرادات</div></div>
+        <div class="mod-stat"><div class="lbl">الربح الصافي (اليوم)</div><div class="v is-good">١٦٬٤٤٠ <span class="cur">ر.س</span></div><div class="meta up">+٢٢٪</div></div>
+        <div class="mod-stat"><div class="lbl">ضريبة VAT المستحقّة</div><div class="v">٣٬٧٢٩ <span class="cur">ر.س</span></div><div class="meta">١٥٪ — يونيو</div></div>
+      </div>
+
+      <div class="ac-zatca" data-m-rise>
+        <div class="ic">✓</div>
+        <div class="body">
+          <div class="ar">متّصل بـ ZATCA — Phase 2 جاهز</div>
+          <div class="en">Fatoora platform · Live e-invoicing — last batch at 14:00</div>
+          <div class="stat"><span class="dot"></span>٢٤٨ فاتورة مرسلة اليوم · صفر فشل</div>
+        </div>
+        <button>عرض اللوحة الكاملة</button>
+      </div>
+
+      <div class="mod-2col-wide" style="margin-top: 22px;">
+        <div data-m-rise>
+          <div class="mod-section-head" style="padding-inline: 0">
+            <div>
+              <div class="ttl">دفتر اليومية — أحدث الحركات</div>
+              <div class="sub">Today's journal entries · auto + manual</div>
+            </div>
+          </div>
+          <div class="ac-journal">
+            <div class="ac-jr-row is-head">
+              <span>#</span>
+              <span>الحركة</span>
+              <span>الحساب</span>
+              <span>المصدر</span>
+              <span style="text-align:end">المبلغ</span>
+              <span>الوقت</span>
+            </div>
+            <div class="ac-jr-row">
+              <span class="id">JE-0142</span>
+              <div><div class="ar">حجز جناح ٤٠٢ — ٣ ليالٍ</div><div class="sub">أحمد الفهد</div></div>
+              <div>إيراد الغرف</div>
+              <div class="source"><div class="ic">🛏</div><span>الضيوف</span></div>
+              <div class="v is-good">+٢٬٤٠٠<span class="cur">ر.س</span></div>
+              <div class="sub" style="font-family:var(--font-mono)">14:32</div>
+            </div>
+            <div class="ac-jr-row">
+              <span class="id">JE-0141</span>
+              <div><div class="ar">عشاء مطعم الواحة — ٨ ضيوف</div><div class="sub">بطاقة MADA</div></div>
+              <div>إيراد <abbr class="nz-abbr" data-ar="الأطعمة والمشروبات" data-en="Food &amp; Beverage" data-meaning="إيرادات المطاعم والمقهى والبار وخدمة الغرف">F&amp;B</abbr></div>
+              <div class="source"><div class="ic">💳</div><span>POS</span></div>
+              <div class="v is-good">+١٬٢٤٠<span class="cur">ر.س</span></div>
+              <div class="sub" style="font-family:var(--font-mono)">14:18</div>
+            </div>
+            <div class="ac-jr-row">
+              <span class="id">JE-0140</span>
+              <div><div class="ar">صرف رواتب — رواتب الجزئية</div><div class="sub">٤ موظفين تشغيل</div></div>
+              <div>الرواتب</div>
+              <div class="source"><div class="ic">👥</div><span>HR</span></div>
+              <div class="v is-bad">−٤٬٨٠٠<span class="cur">ر.س</span></div>
+              <div class="sub" style="font-family:var(--font-mono)">14:00</div>
+            </div>
+            <div class="ac-jr-row">
+              <span class="id">JE-0139</span>
+              <div><div class="ar">جولة الدرعية — ٤ ضيوف</div><div class="sub">حجز Layla Karam</div></div>
+              <div>إيراد الجولات</div>
+              <div class="source"><div class="ic">🧭</div><span>السياحة</span></div>
+              <div class="v is-good">+١٬٦٨٠<span class="cur">ر.س</span></div>
+              <div class="sub" style="font-family:var(--font-mono)">13:45</div>
+            </div>
+            <div class="ac-jr-row">
+              <span class="id">JE-0138</span>
+              <div><div class="ar">جلسة سبا — حمام مغربي</div><div class="sub">غرفة ٢١٨</div></div>
+              <div>إيراد السبا</div>
+              <div class="source"><div class="ic">🧖</div><span>نقاط البيع</span></div>
+              <div class="v is-good">+٤٢٠<span class="cur">ر.س</span></div>
+              <div class="sub" style="font-family:var(--font-mono)">13:30</div>
+            </div>
+            <div class="ac-jr-row">
+              <span class="id">JE-0137</span>
+              <div><div class="ar">شراء قطع غيار صيانة</div><div class="sub">لمبات LED ٤٠ وحدة</div></div>
+              <div>مصاريف صيانة</div>
+              <div class="source"><div class="ic">🔧</div><span>المستودع</span></div>
+              <div class="v is-bad">−٨٤٠<span class="cur">ر.س</span></div>
+              <div class="sub" style="font-family:var(--font-mono)">13:00</div>
+            </div>
+          </div>
+        </div>
+
+        <div data-m-rise>
+          <div class="mod-section-head" style="padding-inline: 0">
+            <div>
+              <div class="ttl">P&L — اليوم</div>
+              <div class="sub">Today's mini income statement</div>
+            </div>
+          </div>
+          <div class="ac-pl">
+            <div class="ac-pl-row is-head">
+              <span>البند</span>
+              <span style="text-align:end">المبلغ</span>
+              <span style="text-align:end">المتوقع</span>
+              <span style="text-align:end">الفرق</span>
+            </div>
+            <div class="ac-pl-row is-section"><span class="nm">الإيرادات</span><span></span><span></span><span></span></div>
+            <div class="ac-pl-row"><span class="nm">إيراد الغرف</span><span class="v is-good">١٦٬٤٢٠<span class="cur">ر.س</span></span><span class="v">١٥٬٠٠٠</span><span class="delta up">+٩٫٥٪</span></div>
+            <div class="ac-pl-row"><span class="nm">إيراد <abbr class="nz-abbr" data-ar="الأطعمة والمشروبات" data-en="Food &amp; Beverage" data-meaning="إيرادات المطاعم والمقهى والبار">F&amp;B</abbr></span><span class="v is-good">٤٬٨٤٠</span><span class="v">٤٬٠٠٠</span><span class="delta up">+٢١٪</span></div>
+            <div class="ac-pl-row"><span class="nm">إيراد السبا</span><span class="v is-good">٢٬٢٠٠</span><span class="v">١٬٨٠٠</span><span class="delta up">+٢٢٪</span></div>
+            <div class="ac-pl-row"><span class="nm">إيراد الجولات</span><span class="v is-good">١٬٤٠٠</span><span class="v">١٬٠٠٠</span><span class="delta up">+٤٠٪</span></div>
+            <div class="ac-pl-row is-total"><span class="nm">إجمالي الإيرادات</span><span class="v">٢٤٬٨٦٠</span><span class="v">٢١٬٨٠٠</span><span class="delta up">+١٤٪</span></div>
+            <div class="ac-pl-row is-section"><span class="nm">المصاريف</span><span></span><span></span><span></span></div>
+            <div class="ac-pl-row"><span class="nm">الرواتب</span><span class="v is-bad">٤٬٨٠٠</span><span class="v">٤٬٨٠٠</span><span class="delta">٠</span></div>
+            <div class="ac-pl-row"><span class="nm"><abbr class="nz-abbr" data-ar="الأطعمة والمشروبات" data-en="Food &amp; Beverage" data-meaning="تكلفة المواد الخام والموردين للمطاعم">F&amp;B</abbr> (تكلفة)</span><span class="v is-bad">١٬٩٤٠</span><span class="v">١٬٦٠٠</span><span class="delta dn">+٢١٪</span></div>
+            <div class="ac-pl-row"><span class="nm">صيانة</span><span class="v is-bad">٨٤٠</span><span class="v">٦٠٠</span><span class="delta dn">+٤٠٪</span></div>
+            <div class="ac-pl-row"><span class="nm">مرافق</span><span class="v is-bad">٨٤٠</span><span class="v">٨٠٠</span><span class="delta dn">+٥٪</span></div>
+            <div class="ac-pl-row is-total"><span class="nm">إجمالي المصاريف</span><span class="v">٨٬٤٢٠</span><span class="v">٧٬٨٠٠</span><span class="delta dn">+٨٪</span></div>
+            <div class="ac-pl-row is-total" style="background: var(--gold-100); color: var(--gold-900)"><span class="nm" style="color: var(--gold-900)">الربح الصافي</span><span class="v" style="color: var(--gold-900)">١٦٬٤٤٠</span><span class="v" style="color: var(--gold-700)">١٤٬٠٠٠</span><span class="delta up" style="color: var(--success-700)">+١٧٪</span></div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="../../shared/sidebar.js"></script>
+<script>StaticSidebar.mount({ activeId: "06-accounting", placeholder: "بحث في الحركات والحسابات..." });</script>
+<script src="../../assets/animations.js"></script>
+</body>
+</html>

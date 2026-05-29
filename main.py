@@ -1050,9 +1050,20 @@ loadHome();
 # ──────────────────────────────────────────────────────────────
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
-    dashboard_path = os.path.join("static", "dashboard.html")
-    if os.path.exists(dashboard_path):
-        with open(dashboard_path, encoding="utf-8") as f:
+    # Landing page (marketing website)
+    landing = os.path.join("static", "nuzul", "website", "index.html")
+    if os.path.exists(landing):
+        with open(landing, encoding="utf-8") as f:
+            return HTMLResponse(f.read())
+    return HTMLResponse(_login_page())
+
+
+@app.get("/app", response_class=HTMLResponse)
+async def nuzul_app(request: Request):
+    # Nuzul launcher dashboard
+    launcher = os.path.join("static", "nuzul", "index.html")
+    if os.path.exists(launcher):
+        with open(launcher, encoding="utf-8") as f:
             return HTMLResponse(f.read())
     return HTMLResponse(_login_page())
 

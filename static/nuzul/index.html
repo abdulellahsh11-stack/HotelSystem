@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-screen-label="Home · Launcher">
+<head>
+<meta charset="utf-8"/>
+<title>ضيوف · لوحة البرامج</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="stylesheet" href="/static/nuzul/colors_and_type.css"/>
+<link rel="stylesheet" href="/static/nuzul/assets/animations.css"/>
+<style>
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--paper);
+    color: var(--ink-900);
+    font-family: var(--font-ar);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+  * { box-sizing: border-box; }
+  a { text-decoration: none; color: inherit; cursor: pointer; }
+  button { font: inherit; cursor: pointer; }
+
+  /* ───── Top header ──────────────────────────────────────────────── */
+  .top {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 22px 48px;
+    border-bottom: 1px solid var(--hairline);
+    background: var(--paper);
+    position: sticky; top: 0; z-index: 50;
+  }
+  .top .brand { display: inline-flex; align-items: center; gap: 14px; }
+  .top .brand img { width: 40px; height: 40px; }
+  .top .brand .ar { font-family: var(--font-ar-display); font-weight: 600; font-size: 22px; color: var(--ink-900); }
+  .top .brand .en { font-family: var(--font-en-display); font-style: italic; font-size: 14px; color: var(--gold-700); margin-inline-start: 4px; }
+  .top .links { display: flex; gap: 4px; }
+  .top .links a { padding: 8px 14px; border-radius: 999px; font-size: 13px; color: var(--ink-700); transition: background 120ms; }
+  .top .links a:hover { background: var(--surface-2); color: var(--ink-900); }
+  .top .actions { display: flex; align-items: center; gap: 10px; }
+  .top .lang { padding: 6px 10px; font-size: 12px; font-family: var(--font-en); border-radius: 4px; color: var(--fg-2); }
+  .top .lang:hover { background: var(--surface-2); }
+  .top .cta { padding: 9px 18px; font-size: 13px; font-weight: 500; background: var(--brand-700); color: var(--paper); border-radius: 999px; transition: background 120ms; }
+  .top .cta:hover { background: var(--brand-800); }
+
+  /* ───── Hero ────────────────────────────────────────────────────── */
+  .hero {
+    max-width: 1280px;
+    margin: 60px auto 56px;
+    padding: 0 48px;
+    text-align: center;
+  }
+  .hero .eyebrow {
+    display: inline-block;
+    font-family: var(--font-en); font-size: 12px; letter-spacing: 0.24em; text-transform: uppercase;
+    color: var(--gold-700); font-weight: 500;
+  }
+  .hero h1 {
+    font-family: var(--font-ar-display); font-weight: 600;
+    font-size: clamp(48px, 6vw, 84px); line-height: 1.04;
+    color: var(--ink-900); margin: 18px 0 22px;
+    letter-spacing: -0.02em;
+  }
+  .hero h1 .accent { color: var(--gold-700); }
+  .hero .lead {
+    font-size: 19px; color: var(--fg-1);
+    max-width: 640px; margin: 0 auto;
+    line-height: 1.6;
+  }
+  .hero .meta {
+    display: inline-flex; gap: 32px; align-items: center;
+    margin-top: 28px;
+    font-size: 13px; color: var(--fg-3);
+  }
+  .hero .meta .pill {
+    background: var(--brand-50); color: var(--brand-800);
+    padding: 6px 14px; border-radius: 999px;
+    display: inline-flex; align-items: center; gap: 6px;
+    font-weight: 500;
+  }
+  .hero .meta .pill .d { width: 6px; height: 6px; background: var(--brand-700); border-radius: 999px; }
+
+  /* ───── 12-program grid ─────────────────────────────────────────── */
+  .grid-wrap { max-width: 1280px; margin: 0 auto 100px; padding: 0 48px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  .tile {
+    background: var(--white);
+    border: 1px solid var(--hairline);
+    border-radius: 16px;
+    padding: 26px 26px 24px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1),
+                border-color 220ms;
+    isolation: isolate;
+    min-height: 220px;
+    display: flex; flex-direction: column;
+  }
+  .tile:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 48px rgba(20,17,14,0.10), 0 6px 16px rgba(20,17,14,0.06);
+    border-color: var(--gold-300);
+  }
+  /* Gold sheen on hover */
+  .tile::after {
+    content: "";
+    position: absolute;
+    inset-block-start: 0; inset-inline-start: -100%;
+    width: 50%; height: 100%;
+    background: linear-gradient(120deg, transparent, rgba(255,225,150,0.35), transparent);
+    transform: skewX(-22deg);
+    transition: inset-inline-start 700ms cubic-bezier(0.22, 1, 0.36, 1);
+    z-index: 1;
+    pointer-events: none;
+  }
+  .tile:hover::after { inset-inline-start: 100%; }
+  .tile > * { position: relative; z-index: 2; }
+
+  .tile .num {
+    position: absolute;
+    top: 16px; inset-inline-end: 18px;
+    font-family: var(--font-mono);
+    font-size: 11px; letter-spacing: 0.16em;
+    color: var(--fg-3);
+    font-weight: 500;
+  }
+  .tile .ic {
+    width: 60px; height: 60px;
+    background: linear-gradient(135deg, var(--paper-tint), var(--sand));
+    border: 1px solid var(--hairline);
+    border-radius: 14px;
+    display: grid; place-items: center;
+    font-size: 28px;
+    margin-bottom: 18px;
+    transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .tile:hover .ic {
+    transform: scale(1.08) rotate(-4deg);
+    background: linear-gradient(135deg, var(--gold-200), var(--gold-100));
+    border-color: var(--gold-300);
+  }
+  .tile .ar-name {
+    font-family: var(--font-ar-display);
+    font-size: 21px; font-weight: 600;
+    color: var(--ink-900);
+    line-height: 1.2;
+  }
+  .tile .en-name {
+    font-family: var(--font-en);
+    font-size: 12px; color: var(--gold-700);
+    margin-top: 3px;
+    font-style: italic;
+    letter-spacing: 0.01em;
+  }
+  .tile .desc {
+    font-size: 13px;
+    color: var(--fg-1);
+    line-height: 1.55;
+    margin: 14px 0 0;
+    flex: 1;
+  }
+  .tile .foot {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid var(--hairline);
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12px;
+  }
+  .tile .foot .stat {
+    color: var(--fg-3);
+    font-family: var(--font-ar);
+  }
+  .tile .foot .stat .v {
+    font-family: var(--font-en);
+    font-variant-numeric: tabular-nums;
+    font-weight: 600; color: var(--ink-900);
+    margin-inline-start: 3px;
+  }
+  .tile .foot .arrow {
+    width: 28px; height: 28px;
+    background: var(--paper-tint);
+    border-radius: 999px;
+    display: grid; place-items: center;
+    color: var(--ink-700);
+    font-size: 14px;
+    transition: all 180ms;
+  }
+  .tile:hover .foot .arrow {
+    background: var(--gold-500);
+    color: var(--brand-900);
+    transform: translateX(4px);
+  }
+  [dir="rtl"] .tile .foot .arrow { transform: rotate(180deg); }
+  [dir="rtl"] .tile:hover .foot .arrow { transform: rotate(180deg) translateX(4px); }
+
+  /* Highlight VIP card */
+  .tile.featured {
+    background: linear-gradient(160deg, var(--brand-800) 0%, var(--brand-900) 100%);
+    border-color: transparent;
+    color: var(--paper);
+  }
+  .tile.featured .num { color: var(--gold-400); }
+  .tile.featured .ic {
+    background: var(--gold-500);
+    border-color: var(--gold-600);
+    color: var(--brand-900);
+  }
+  .tile.featured:hover .ic {
+    background: var(--gold-400);
+    border-color: var(--gold-500);
+  }
+  .tile.featured .ar-name { color: var(--paper); }
+  .tile.featured .en-name { color: var(--gold-400); }
+  .tile.featured .desc { color: var(--gold-200); }
+  .tile.featured .foot { border-top-color: rgba(201,168,95,0.2); }
+  .tile.featured .foot .stat { color: var(--gold-300); }
+  .tile.featured .foot .stat .v { color: var(--paper); }
+  .tile.featured .foot .arrow { background: rgba(255,255,255,0.1); color: var(--gold-300); }
+
+  /* ───── Companion sections (bottom) ─────────────────────────────── */
+  .extras {
+    background: var(--paper-tint);
+    border-top: 1px solid var(--hairline);
+    padding: 80px 48px;
+  }
+  .extras .inner { max-width: 1280px; margin: 0 auto; }
+  .extras h2 {
+    font-family: var(--font-ar-display);
+    font-size: 32px; font-weight: 600;
+    color: var(--ink-900); margin: 0 0 28px;
+    letter-spacing: -0.01em;
+  }
+  .extras h2 .accent { color: var(--gold-700); }
+  .extras .row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .extras .ex-card {
+    background: var(--white);
+    border: 1px solid var(--hairline);
+    border-radius: 14px;
+    padding: 22px 24px 26px;
+    transition: transform 180ms, box-shadow 180ms;
+  }
+  .extras .ex-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-2); }
+  .extras .ex-card .ic { width: 44px; height: 44px; background: var(--paper-tint); border: 1px solid var(--hairline); border-radius: 10px; display: grid; place-items: center; font-size: 22px; margin-bottom: 14px; }
+  .extras .ex-card .ttl { font-family: var(--font-ar-display); font-weight: 600; font-size: 17px; color: var(--ink-900); }
+  .extras .ex-card .en-sub { font-family: var(--font-en); font-style: italic; font-size: 12px; color: var(--gold-700); margin-top: 2px; }
+  .extras .ex-card .desc { font-size: 13px; color: var(--fg-1); margin: 10px 0 14px; line-height: 1.55; }
+  .extras .ex-card .open { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--brand-700); font-weight: 600; }
+  .extras .ex-card .open .a { text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--gold-500); text-decoration-thickness: 1px; }
+
+  /* ───── Footer ──────────────────────────────────────────────────── */
+  footer {
+    background: var(--brand-900);
+    color: var(--gold-100);
+    padding: 40px 48px;
+    text-align: center;
+    font-size: 13px;
+  }
+  footer .brand-line { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  footer .brand-line .ar { font-family: var(--font-ar-display); font-size: 18px; color: var(--paper); font-weight: 600; }
+  footer .cop { color: var(--gold-400); margin-top: 8px; font-family: var(--font-en); }
+</style>
+</head>
+<body style="font-family: &quot;Times New Roman&quot;">
+
+<template id="__bundler_thumbnail" data-bg-color="#0E2A22">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#0E2A22"/>
+    <g transform="translate(600,360)">
+      <circle r="150" fill="none" stroke="#C9A85F" stroke-width="6"/>
+      <path d="M -64 40 L 0 -78 L 64 40 Z" fill="none" stroke="#C9A85F" stroke-width="8" stroke-linejoin="round"/>
+      <circle cx="0" cy="58" r="11" fill="#C9A85F"/>
+    </g>
+    <text x="600" y="600" text-anchor="middle" font-family="serif" font-size="92" font-weight="600" fill="#F1E6C8">ضيوف</text>
+    <text x="600" y="668" text-anchor="middle" font-family="serif" font-style="italic" font-size="34" fill="#C9A85F">Dheuof</text>
+  </svg>
+</template>
+
+<header class="top" data-m-rise>
+  <a class="brand" href="/app">
+    <img src="/static/nuzul/assets/logo-mark.svg" alt=""/>
+    <div>
+      <span class="ar">ضيوف</span>
+      <span class="en">Dheuof</span>
+    </div>
+  </a>
+  <nav class="links">
+    <a href="/static/nuzul/modules/01-guests/index.html">البرامج</a>
+    <a href="/">الموقع التسويقي</a>
+    <a href="/static/nuzul/slides/index.html">العرض التعريفي</a>
+  </nav>
+  <div class="actions">
+    <a class="lang">EN</a>
+    <a class="cta">احجز عرضاً تجريبياً</a>
+  </div>
+</header>
+
+<section class="hero">
+  <span class="eyebrow" data-m-rise>منصة إدارة الضيافة الكاملة</span>
+  <h1 data-en="All your hotel runs in one place.">كل ما يديره فندقك في مكان واحد.</h1>
+  <p class="lead" data-m-rise>ضيوف برنامج متكامل PMS يجمع الحجوزات، والمحاسبة، والمخزون، والصيانة، والمفتاح الذكي لكشف الاحتيال، والموارد البشرية، Booking وقنوات أخرى تحت لوحة تحكم واحدة مصممة للسوق السعودي والخليجي — وقريباً سوف تتصل ZATCA.</p>
+  <div class="meta" data-m-rise style="margin-top: 18px;">
+    <span style="font-size: 14px; color: var(--brand-700); font-weight: 600;">ضيف</span>
+    <span style="color: var(--gold-500);">•</span>
+    <span style="font-size: 14px; color: var(--brand-700); font-weight: 600;">سياحة</span>
+    <span style="color: var(--gold-500);">•</span>
+    <span style="font-size: 14px; color: var(--brand-700); font-weight: 600;">شموس</span>
+    <span style="color: var(--gold-500);">•</span>
+    <span style="font-size: 14px; color: var(--brand-700); font-weight: 600;">مستندات حكومية</span>
+  </div>
+  <div class="meta" data-m-rise>
+    <span class="pill"><span class="d"></span>١٢ برنامج جاهز للتجربة</span>
+    <span>· عربي أولاً · ZATCA Phase 2 · متكامل مع قوى</span>
+  </div>
+</section>
+
+<div class="grid-wrap">
+  <div class="grid" data-m-rise-stagger>
+
+    <a class="tile featured" href="/static/nuzul/modules/01-guests/checkin.html">
+      <span class="num">01</span>
+      <div class="ic">🛏</div>
+      <div class="ar-name">الضيوف</div>
+      <div class="en-name">ضيوف بمناجمنت</div>
+      <p class="desc">تسجيل دخول سريع (امسح الهوية أو الإقامة)، الحجوزات، التسعير الديناميكي، KPIs.</p>
+      <div class="foot">
+        <span class="stat">إشغال الليلة <span class="v">٨٧٪</span></span>
+        <span class="arrow">→</span>
+      </div>
+    </a>
+
+    <a class="tile" href="/static/nuzul/modules/02-shumus/index.html">
+      <span class="num">02</span>
+      <div class="ic">🛡</div>
+      <div class="ar-name">شموس</div>
+      <div class="en-name">Identify · MOI add-on</div>
+      <p class="desc">إضافة بسيطة أمام الضيف — تتعرّف عليه فوراً بالربط مع وزارة الداخلية.</p>
+      <div class="foot">
+        <span class="stat">تعرّفات اليوم <span class="v">٢٤٨</span></span>
+        <span class="arrow">→</span>
+      </div>
+    </a>
+
+    <a class="tile" href="/static/nuzul/modules/03-tourism/index.html">
+      <span class="num">03</span>
+      <div class="ic">📋</div>
+      <div class="ar-name">المستندات والاشتراكات</div>
+      <div class="en-name">Government Docs · Renewals</div>
+      <p class="desc">رفع المستندات الحكومية + تخصيص تنبيهات انتهاء الاشتراكات للمدير.</p>
+      <div class="foot">
+        <span class="stat">تنتهي ≤ ٣٠ يوم <span class="v">٣</span></span>
+        <span class="arrow">→</span>
+      </div>
+    </a>
+
+    <a class="tile" href="/static/nuzul/modules/04-inventory/index.html">
+      <span class="num">04</span>
+      <div class="ic">🛏</div>
+      <div class="ar-name">مخزون الضيافة</div>
+      <div class="en-name">Hospitality Inventory · Standalone subscription</div>
+      <p class="desc">تجهيز الغرف: لُحف، فوط، عطور، صابون، أموينيتيز ومستلزمات <abbr class="nz-abbr" data-ar="الأطعمة والمشروبات" data-en="Food &amp; Beverage" data-meaning="موردي المطاعم والمقهى والبار">F&amp;B</abbr> — برنامج مستقل قابل للاشتراك بمفرده.</p>
+      <div class="foot">
+        <span class="stat">أصناف <span class="v">١٬٢٤٦</span></span>
+        <span class="arrow">→</span>
+      </div>
+    </a>
+
+    <a class="tile" href="/static/nuzul/modules/05-warehouse/index.html">
+      <span class="num">05</span>
+      <div class="ic">🔧</div>
+      <div class="ar-name">مستودع الصيانة</div>
+      <div class="en-name">Maintenance Warehouse · Standalone subscription</div>
+      <p class="desc">قطع الغيار، أدوات الصيانة، الأسلاك، الإنارة، الأصباغ، السلالم — برنامج مستقل قابل للاشتراك بمفرده.</p>
+      <div class="foot">
+        <span class="stat">تذاكر مفتوحة <span class="v">٧</span></span>
+        <span class="arrow">→</span>
+      </div>
+    </a>
+
+    <a class="tile" href="/static/nuzul/modules/06-accounting/index.html">
+      <span class="num">06</span>
+      <div class="ic">💳</div>
+      <div class="ar-name">المحاسبة</div>
+      <div class="en-name">Accounting · + Custom accounts</div>
+      <p class="desc">دفتر اليومية، P&amp;L، VAT، مع تخصيص حسابات جديدة حسب الحاجة.</p>
+      <div class="foot">
+        <span class="stat">ربح اليوم <span class="v">١٦٬٤٤٠</span></span>
+        <span class="arrow">→</span>
+      </div>
+    </a>
+
+    <a class="tile" href="/static/nuzul/modules/07-pos/index.html">
+      <span class="num">07</span>
+      <div class="ic">🏧</div>
+      <div class="ar-name">نقاط البيع</div>
+      <div class="en-name">POS Sync</div>
+      <p class="desc">٦ أجهزة متصلة، إقفال يومي تلقائي، MADA + Apple Pay.</p>
+      <div class="foot">
+        <span class="stat">حركات اليوم <span class="v">٢٤٨</span></span>
+        <span class="arrow">→</span>
+      </div>
+    </a>
+
+    <a class="tile" href="/static/nuzul/modules/08-smart-key/index.html">
+      <span class="num">08</span>
+      <div class="ic">🔐</div>
+      <div class="ar-name">المفتاح الذكي</div>
+      <div class="en-name">Smart Key · All-in-one Guard</div>
+      <p class="desc">يراقب جميع البرامج دفعة واحدة ويصدر إنذارات فورية — بسعر منخفض.</p>
+      <div class="foot">
+        <span class="stat">إنذارات نشطة <span class="v">٤</span></span>
+        <span class="arrow">→</span>
+      </div>
+    </a>
+
+    <a class="tile" href="/static/nuzul/modules/09-hr/index.html">
+      <span class="num">09</span>
+      <div class="ic">👥</div>
+      <div class="ar-name">الموارد البشرية</div>
+      <div class="en-name">HR &amp; Payroll</div>
+      <p class="desc">رواتب، إقامات، قوى، GOSI، عقود، تأمين طبي.</p>
+      <div class="foot">
+        <span class="stat">موظفين نشطين <span class="v">٨٤</span></span>
+        <span class="arrow">→</span>
+      </div>
+    </a>
+
+    <a class="tile" href="/static/nuzul/modules/10-channel-marketing/index.html">
+      <span class="num">10</span>
+      <div class="ic">🌐</div>
+      <div class="ar-name">تسويق القنوات</div>
+      <div class="en-name">Channel Marketing</div>
+      <p class="desc">Booking، Agoda، Expedia، Almosafer — ٤٢ قناة في لوحة واحدة.</p>
+      <div class="foot">
+        <span class="stat">حجوزات الشهر <span class="v">٢٢٤</span></span>
+        <span class="arrow">→</span>
+      </div>
+    </a>
+
+    <a class="tile" href="/static/nuzul/modules/11-kpis/index.html">
+      <span class="num">11</span>
+      <div class="ic">📈</div>
+      <div class="ar-name">مؤشرات الأداء</div>
+      <div class="en-name">KPIs</div>
+      <p class="desc"><abbr class="nz-abbr" data-ar="الإيراد لكل غرفة متاحة" data-en="Revenue Per Available Room" data-meaning="إجمالي إيراد الغرف ÷ الغرف المتاحة">RevPAR</abbr>، <abbr class="nz-abbr" data-ar="متوسط سعر الغرفة" data-en="Average Daily Rate" data-meaning="إيراد الغرف ÷ الغرف المبيعة">ADR</abbr>، <abbr class="nz-abbr" data-ar="نسبة الإشغال" data-en="Occupancy Rate" data-meaning="الغرف المبيعة ÷ إجمالي الغرف">OCC</abbr>، <abbr class="nz-abbr" data-ar="الربح التشغيلي لكل غرفة متاحة" data-en="Gross Operating Profit Per Available Room" data-meaning="صافي الربح ÷ الغرف المتاحة">GOPPAR</abbr> — مع رسوم بيانية وتحليل اتجاهات.</p>
+      <div class="foot">
+        <span class="stat">RevPAR <span class="v">٦٢٦</span></span>
+        <span class="arrow">→</span>
+      </div>
+    </a>
+
+    <a class="tile" href="/static/nuzul/modules/12-analytics/index.html">
+      <span class="num">12</span>
+      <div class="ic">🧠</div>
+      <div class="ar-name">تحليل البيانات</div>
+      <div class="en-name">Insights &amp; Analysis</div>
+      <p class="desc">SWOT تلقائي، تنبؤ ٩٠ يوم، توصيات شهرية بقيمة محسوبة.</p>
+      <div class="foot">
+        <span class="stat">رؤى نشطة <span class="v">١٤</span></span>
+        <span class="arrow">→</span>
+      </div>
+    </a>
+
+    <a class="tile" href="/static/nuzul/modules/13-staff-tracker/index.html">
+      <span class="num">13</span>
+      <div class="ic">⏰</div>
+      <div class="ar-name">أداء الموظفين</div>
+      <div class="en-name">Staff Performance · Custom subscription</div>
+      <p class="desc">الحضور هو الأداء — تسجيل دخول وتأخير، حوافز أسبوعية تربط الانضباط بالمكافأة، تنبيه يوم الراحة قبلها بيومين.</p>
+      <div class="foot">
+        <span class="stat">حاضرون <span class="v">١٨/٢٠</span></span>
+        <span class="arrow">→</span>
+      </div>
+    </a>
+
+    <a class="tile" href="/static/nuzul/modules/14-manager-goals/index.html">
+      <span class="num">14</span>
+      <div class="ic">🎯</div>
+      <div class="ar-name">أهداف المدير</div>
+      <div class="en-name">Manager Goals · Custom subscription</div>
+      <p class="desc">أهداف شهرية وفصلية مع تتبع مباشر، تنبيهات، معلومات إضافية لكل هدف.</p>
+      <div class="foot">
+        <span class="stat">الإنجاز الكلي <span class="v">٧٨٪</span></span>
+        <span class="arrow">→</span>
+      </div>
+    </a>
+
+  </div>
+</div>
+
+<section class="extras">
+  <div class="inner">
+    <h2 data-m-rise>أدوات <span class="accent">إضافية</span></h2>
+    <div class="row" data-m-rise-stagger>
+      <a class="ex-card" href="/static/nuzul/onboarding.html">
+        <div class="ic">📝</div>
+        <div class="ttl">تسجيل منشأة جديدة</div>
+        <div class="en-sub">Onboarding · Manager sign-up</div>
+        <p class="desc">سجّل بيانات مدير المنشأة، واحصل على رقم وصول مكوّن من ٥ خانات وكلمة سر فور التفعيل.</p>
+        <span class="open"><span class="a">ابدأ التسجيل →</span></span>
+      </a>
+      <a class="ex-card" href="/static/nuzul/reports.html">
+        <div class="ic">📊</div>
+        <div class="ttl">مركز التقارير</div>
+        <div class="en-sub">Reports center · cross-link any 2 programs</div>
+        <p class="desc">كل برنامج له تقاريره الخاصة. واربط تقريرين معاً للحصول على رؤى مدمجة بنقرة واحدة.</p>
+        <span class="open"><span class="a">افتح المركز ←</span></span>
+      </a>
+      <a class="ex-card" href="/static/nuzul/packages.html">
+        <div class="ic">💎</div>
+        <div class="ttl">الباقات والأسعار</div>
+        <div class="en-sub">Packages · Pricing tiers</div>
+        <p class="desc">باقة الضيافة الكاملة، باقة الإدارة، باقة المطاعم — مخصّصة حسب حاجة المنشأة.</p>
+        <span class="open"><span class="a">عرض الباقات →</span></span>
+      </a>
+    </div>
+    <div class="row" data-m-rise-stagger style="margin-top: 14px;">
+      <a class="ex-card" href="/static/nuzul/reports.html">
+        <div class="ic">📊</div>
+        <div class="ttl">مركز التقارير</div>
+        <div class="en-sub">Reports center · cross-link any 2 programs</div>
+        <p class="desc">كل برنامج له تقاريره الخاصة. واربط تقريرين معاً للحصول على رؤى مدمجة بنقرة واحدة.</p>
+        <span class="open"><span class="a">افتح المركز ←</span></span>
+      </a>
+      <a class="ex-card" href="/">
+        <div class="ic">🌐</div>
+        <div class="ttl">الموقع التسويقي</div>
+        <div class="en-sub">Public marketing site</div>
+        <p class="desc">صفحة الهبوط الرئيسية لضيوف — تقدّم النظام للعملاء المحتملين بأسلوب فخم وأنيق.</p>
+        <span class="open"><span class="a">افتح →</span></span>
+      </a>
+      <a class="ex-card" href="/static/nuzul/staff-mobile/index.html">
+        <div class="ic">📱</div>
+        <div class="ttl">تطبيق الموظفين</div>
+        <div class="en-sub">Staff mobile app</div>
+        <p class="desc">واجهة iOS للتدبير والصيانة — قائمة المهام، تتبع التقدم، تفاصيل الغرفة.</p>
+        <span class="open"><span class="a">افتح →</span></span>
+      </a>
+      <a class="ex-card" href="/static/nuzul/slides/index.html">
+        <div class="ic">🎤</div>
+        <div class="ttl">العرض التعريفي</div>
+        <div class="en-sub">Pitch deck — 7 slides</div>
+        <p class="desc">عرض ٧ شرائح لتقديم ضيوف لمستثمرين أو شركاء جدد — يستخدم تقنية الكشف التدريجي.</p>
+        <span class="open"><span class="a">افتح →</span></span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="brand-line">
+    <img src="/static/nuzul/assets/logo-mark.svg" alt="" style="width: 26px; height: 26px;"/>
+    <span class="ar">ضيوف</span>
+  </div>
+  <div>منصة إدارة الضيافة الكاملة للسوق السعودي والخليجي</div>
+  <div class="cop">© 2026 DHEUOF · صُمّم وطُوّر في السعودية 🇸🇦</div>
+</footer>
+
+<script src="/static/nuzul/assets/animations.js"></script>
+</body>
+</html>

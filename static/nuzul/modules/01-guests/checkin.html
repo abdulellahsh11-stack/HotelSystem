@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-screen-label="01 Quick Check-in">
+<head>
+<meta charset="utf-8"/>
+<title>ضيوف · تسجيل دخول سريع</title>
+<meta name="viewport" content="width=1440, initial-scale=1"/>
+<link rel="stylesheet" href="../../colors_and_type.css"/>
+<link rel="stylesheet" href="../../assets/animations.css"/>
+<link rel="stylesheet" href="../../shared/chrome.css"/>
+<link rel="stylesheet" href="../../shared/module.css"/>
+<link rel="stylesheet" href="frontdesk.css"/>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="../../shared/chrome.jsx"></script>
+<script type="text/babel" src="ArrivalDepart.jsx"></script>
+<script type="text/babel" src="CheckInPanel.jsx"></script>
+
+<script type="text/babel">
+const { useState } = React;
+
+function App() {
+  const [active, setActive] = useState("01-guests");
+  return (
+    <div className="nz-app">
+      <NzSidebar active={active} onChange={setActive}/>
+      <div>
+        <NzTopBar/>
+        <main className="nz-main">
+          <NzPageHead
+            eyebrow="٢٨ مايو ٢٠٢٥ — برنامج الضيوف"
+            title="تسجيل دخول سريع"
+            sub="امسح الهوية أو الإقامة — ٢٤ وصول متوقع · ١٨ مغادرة"
+            actions={<>
+              <button className="nz-btn is-secondary"><NzIcon.search/>بحث عن حجز</button>
+              <a href="registration.html" style={{textDecoration:"none"}}><button className="nz-btn is-primary"><NzIcon.plus/>تسجيل يدوي</button></a>
+            </>}
+          />
+
+          <div className="fd-stats">
+            <div className="fd-stat"><div className="lbl">وصول متوقع</div><div className="v">٢٤<span className="sx">ضيف</span></div></div>
+            <div className="fd-stat"><div className="lbl">تم تسجيلهم</div><div className="v" style={{color: "var(--success-700)"}}>٩<span className="sx">من ٢٤</span></div></div>
+            <div className="fd-stat"><div className="lbl">مغادرة اليوم</div><div className="v">١٨<span className="sx">ضيف</span></div></div>
+            <div className="fd-stat"><div className="lbl">غرف جاهزة</div><div className="v">٤٧<span className="sx">من ٥٢</span></div></div>
+          </div>
+
+          <div className="fd-grid">
+            <div className="nz-card">
+              <div className="nz-card-head">
+                <div>
+                  <div className="ttl">الوصول المتوقع</div>
+                  <div className="sub">Today's arrivals · sorted by ETA</div>
+                </div>
+                <button className="nz-chip">عرض الكل ←</button>
+              </div>
+              <div className="fd-list">
+                <ArrivalCard
+                  guest={{ name: "أحمد بن سليمان الفهد", initials: "أس", id: "1028456789" }}
+                  room={{ no: "٤٠٢", type: "جناح ملكي" }}
+                  eta="١٤:٠٠"
+                  channel="مباشر"
+                  vip
+                  note="✦ يفضل وسائد إضافية وفطور في الجناح"/>
+                <ArrivalCard
+                  guest={{ name: "نورة المنصور", initials: "نم", id: "+966 55 919 7321" }}
+                  room={{ no: "٢١٨", type: "ديلوكس" }}
+                  eta="١٥:٣٠"
+                  channel="Booking.com"/>
+                <ArrivalCard
+                  guest={{ name: "Layla Karam", initials: "LK", id: "Passport LB-K829142" }}
+                  room={{ no: "٣٠٧", type: "ديلوكس" }}
+                  eta="١٦:٠٠"
+                  channel="Agoda"/>
+                <ArrivalCard
+                  guest={{ name: "فاطمة الزهراني", initials: "فز", id: "1099283746" }}
+                  room={{ no: "٤١٠", type: "جناح" }}
+                  eta="١٧:٤٥"
+                  channel="مباشر"
+                  vip
+                  note="✦ حفل ميلاد — تحضيرات خاصة في الغرفة"/>
+                <ArrivalCard
+                  guest={{ name: "خالد العتيبي", initials: "خع", id: "1056729183" }}
+                  room={{ no: "١٠٤", type: "ستاندرد" }}
+                  eta="١٩:٢٠"
+                  channel="مباشر"/>
+              </div>
+            </div>
+
+            <CheckInPanel/>
+          </div>
+
+          <div className="nz-card">
+            <div className="nz-card-head">
+              <div>
+                <div className="ttl">مغادرات اليوم</div>
+                <div className="sub">Today's departures</div>
+              </div>
+              <button className="nz-chip">عرض الكل ←</button>
+            </div>
+            <div className="fd-list">
+              <DepartureRow
+                guest={{ name: "Marcus Chen", initials: "MC" }}
+                room="جناح ٣٠١"
+                time="١٢:٠٠"
+                balance={0}/>
+              <DepartureRow
+                guest={{ name: "نورة العنزي", initials: "نع" }}
+                room="غرفة ٢١٢ — ديلوكس"
+                time="١١:٠٠"
+                balance={840}/>
+              <DepartureRow
+                guest={{ name: "Ali Hassan", initials: "AH" }}
+                room="غرفة ١٠٨ — ستاندرد"
+                time="١٢:٣٠"
+                balance={0}
+                vip/>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+
+</body>
+</html>
