@@ -103,6 +103,20 @@ button{font:inherit;cursor:pointer;border:none}
 .insight-card{background:var(--white);border:1px solid var(--hairline);border-radius:10px;padding:16px 18px}
 .insight-card h4{font-size:14px;font-weight:600;color:var(--ink-900);margin-bottom:6px}
 .insight-card p{font-size:12px;color:var(--fg-2);line-height:1.6}
+/* shiny brand icon */
+.nz-icon-shine{width:44px;height:44px;border-radius:10px;flex-shrink:0;position:relative;overflow:hidden;background:linear-gradient(145deg,var(--gold-400) 0%,var(--gold-600) 40%,var(--gold-800) 100%);box-shadow:0 2px 8px rgba(201,168,95,.5),inset 0 1px 0 rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center}
+.nz-icon-shine::after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.38) 0%,transparent 55%);border-radius:10px;pointer-events:none}
+.nz-icon-shine svg{width:26px;height:26px;fill:var(--brand-900);filter:drop-shadow(0 1px 1px rgba(255,255,255,.25));position:relative;z-index:1}
+/* analytics bars */
+.ana-bars{display:flex;flex-direction:column;gap:8px}
+.ana-bar-row{display:flex;align-items:center;gap:10px;font-size:12px}
+.ana-bar-label{width:100px;text-align:right;color:var(--ink-700);flex-shrink:0}
+.ana-bar-track{flex:1;height:10px;background:var(--sand);border-radius:99px;overflow:hidden}
+.ana-bar-fill{height:100%;border-radius:99px;background:linear-gradient(to left,var(--gold-600),var(--gold-400));transition:width .6s var(--ease-out)}
+.ana-bar-val{width:60px;text-align:left;color:var(--ink-500);font-family:var(--font-en);font-size:11px}
+.ana-pie-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ana-pie-item{display:flex;align-items:center;gap:8px;font-size:12px;padding:8px 12px;background:var(--sand);border-radius:8px}
+.ana-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
 </style>
 </head>
 <body>
@@ -111,7 +125,9 @@ button{font:inherit;cursor:pointer;border:none}
 <!-- ═══ SIDEBAR ═══ -->
 <aside class="nz-sidebar">
   <div class="nz-brand">
-    <div class="nz-mark">ض</div>
+    <div class="nz-icon-shine">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M2 20V8l10-6 10 6v12H14v-5h-4v5H2zm3-2h3v-3H5v3zm0-5h3v-3H5v3zm5 0h3v-3h-3v3zm5 5h3v-3h-3v3zm0-5h3v-3h-3v3z"/></svg>
+    </div>
     <div class="nz-brand-name">
       <div class="ar">ضيوف</div>
       <div class="en">Dheuof SaaS</div>
@@ -130,7 +146,8 @@ button{font:inherit;cursor:pointer;border:none}
     </div>
     <div class="nz-nav-group">
       <div class="nz-nav-label">المالية والعمليات</div>
-      <div class="nz-nav-item" onclick="showSection('m04',this)"><span class="ic">💳</span>المحاسبة + POS</div>
+      <div class="nz-nav-item" onclick="showSection('m04',this)"><span class="ic">💳</span>المحاسبة</div>
+      <div class="nz-nav-item" onclick="showSection('pos',this)"><span class="ic">🛒</span>نقطة البيع POS</div>
       <div class="nz-nav-item" onclick="showSection('m05',this)"><span class="ic">🛏️</span>حالة الغرف</div>
       <div class="nz-nav-item" onclick="showSection('m06',this)"><span class="ic">👥</span>الموارد البشرية</div>
     </div>
@@ -138,12 +155,16 @@ button{font:inherit;cursor:pointer;border:none}
       <div class="nz-nav-label">الخدمات الداخلية</div>
       <div class="nz-nav-item" onclick="showSection('m07',this)"><span class="ic">🧹</span>الإشراف الداخلي</div>
       <div class="nz-nav-item" onclick="showSection('m08',this)"><span class="ic">🔧</span>الصيانة</div>
+    </div>
+    <div class="nz-nav-group">
+      <div class="nz-nav-label">المفتاح الذكي</div>
       <div class="nz-nav-item" onclick="showSection('m09',this)"><span class="ic">🔑</span>المفتاح الذكي</div>
     </div>
     <div class="nz-nav-group">
       <div class="nz-nav-label">الذكاء والتحليل</div>
       <div class="nz-nav-item" onclick="showSection('m10',this)"><span class="ic">💎</span>CRM والولاء</div>
-      <div class="nz-nav-item" onclick="showSection('m11',this)"><span class="ic">📊</span>مؤشرات الأداء</div>
+      <div class="nz-nav-item" onclick="showSection('m11',this)"><span class="ic">📊</span>مؤشرات الأداء KPI</div>
+      <div class="nz-nav-item" onclick="showSection('analytics',this)"><span class="ic">📈</span>تحليل البيانات</div>
       <div class="nz-nav-item" onclick="showSection('m12',this)"><span class="ic">🤖</span>الرؤى الذكية</div>
     </div>
     <div class="nz-nav-group">
@@ -263,25 +284,52 @@ button{font:inherit;cursor:pointer;border:none}
   <!-- ═ M04 ACCOUNTING ═ -->
   <div id="section-m04" class="section">
     <div class="mod-head">
-      <div class="left"><span class="mod-num">M·04</span><h1>المحاسبة ونقطة البيع</h1><div class="sub">Accounting & POS</div></div>
+      <div class="left"><span class="mod-num">M·04</span><h1>المحاسبة</h1><div class="sub">Accounting — Invoices & Revenue</div></div>
       <div class="mod-actions">
-        <button class="nz-btn is-secondary" onclick="openModal('modal-invoice')">+ فاتورة</button>
-        <button class="nz-btn is-gold" onclick="openModal('modal-pos')">🛒 POS</button>
+        <button class="nz-btn is-secondary" onclick="loadAccounting()">↻ تحديث</button>
+        <button class="nz-btn is-gold" onclick="openModal('modal-invoice')">+ فاتورة جديدة</button>
       </div>
     </div>
     <div class="mod-stats">
       <div class="mod-stat"><div class="lbl">إيراد اليوم</div><div class="v good" id="todayRevenue">--</div><div class="meta">ر.س</div></div>
       <div class="mod-stat"><div class="lbl">فواتير اليوم</div><div class="v" id="todayInvoices">--</div></div>
-      <div class="mod-stat"><div class="lbl">مبيعات POS</div><div class="v" id="todayPOS">--</div><div class="meta">ر.س</div></div>
-      <div class="mod-stat"><div class="lbl">الإجمالي</div><div class="v" id="grandTotal">--</div><div class="meta">ر.س</div></div>
+      <div class="mod-stat"><div class="lbl">فواتير معلقة</div><div class="v warn" id="pendingInvoices">--</div></div>
+      <div class="mod-stat"><div class="lbl">إيراد الشهر</div><div class="v" id="monthRevenue">--</div><div class="meta">ر.س</div></div>
     </div>
     <div class="mod-card">
       <div class="mod-card-head"><div class="ttl">الفواتير</div></div>
       <div id="invoicesTable"><div class="mod-empty">جارٍ التحميل…</div></div>
     </div>
     <div class="mod-card">
-      <div class="mod-card-head"><div class="ttl">مبيعات نقطة البيع</div></div>
-      <div id="posTable"><div class="mod-empty">جارٍ التحميل…</div></div>
+      <div class="mod-card-head"><div class="ttl">الإيراد الشهري</div></div>
+      <div id="monthlyRevenueTable"><div class="mod-empty">جارٍ التحميل…</div></div>
+    </div>
+  </div>
+
+  <!-- ═ POS ═ -->
+  <div id="section-pos" class="section">
+    <div class="mod-head">
+      <div class="left"><span class="mod-num">POS</span><h1>نقطة البيع</h1><div class="sub">Point of Sale — Items & Transactions</div></div>
+      <div class="mod-actions">
+        <button class="nz-btn is-secondary" onclick="openModal('modal-pos-item')">+ صنف جديد</button>
+        <button class="nz-btn is-gold" onclick="openModal('modal-pos')">🛒 بيع جديد</button>
+      </div>
+    </div>
+    <div class="mod-stats">
+      <div class="mod-stat"><div class="lbl">مبيعات اليوم</div><div class="v good" id="posTodaySales">--</div><div class="meta">ر.س</div></div>
+      <div class="mod-stat"><div class="lbl">عدد المعاملات</div><div class="v" id="posTodayCount">--</div></div>
+      <div class="mod-stat"><div class="lbl">ضريبة اليوم</div><div class="v" id="posTodayVat">--</div><div class="meta">ر.س</div></div>
+      <div class="mod-stat"><div class="lbl">أصناف نشطة</div><div class="v" id="posItemsCount">--</div></div>
+    </div>
+    <div class="mod-2col">
+      <div class="mod-card">
+        <div class="mod-card-head"><div class="ttl">أصناف نقطة البيع</div></div>
+        <div id="posItemsTable"><div class="mod-empty">جارٍ التحميل…</div></div>
+      </div>
+      <div class="mod-card">
+        <div class="mod-card-head"><div class="ttl">آخر المبيعات</div></div>
+        <div id="posTable"><div class="mod-empty">جارٍ التحميل…</div></div>
+      </div>
     </div>
   </div>
 
@@ -420,6 +468,42 @@ button{font:inherit;cursor:pointer;border:none}
     <div class="mod-card">
       <div class="mod-card-head"><div class="ttl">مؤشرات الأداء الشهرية</div></div>
       <div id="kpiTable"><div class="mod-empty">جارٍ التحميل…</div></div>
+    </div>
+  </div>
+
+  <!-- ═ ANALYTICS ═ -->
+  <div id="section-analytics" class="section">
+    <div class="mod-head">
+      <div class="left"><span class="mod-num">ANA</span><h1>تحليل البيانات</h1><div class="sub">Business Intelligence & Trends</div></div>
+      <div class="mod-actions">
+        <button class="nz-btn is-secondary" onclick="loadAnalytics()">↻ تحديث</button>
+      </div>
+    </div>
+    <div class="mod-stats" style="--cols:4">
+      <div class="mod-stat"><div class="lbl">إيراد الشهر الحالي</div><div class="v good" id="anaMonthRev">--</div><div class="meta">ر.س</div></div>
+      <div class="mod-stat"><div class="lbl">معدل الإشغال</div><div class="v" id="anaOccRate">--</div><div class="meta">%</div></div>
+      <div class="mod-stat"><div class="lbl">متوسط ADR</div><div class="v" id="anaADR">--</div><div class="meta">ر.س / ليلة</div></div>
+      <div class="mod-stat"><div class="lbl">RevPAR</div><div class="v" id="anaRevPAR">--</div><div class="meta">ر.س</div></div>
+    </div>
+    <div class="mod-2col">
+      <div class="mod-card">
+        <div class="mod-card-head"><div class="ttl">الإيراد الشهري</div><div class="sub">آخر 6 أشهر</div></div>
+        <div class="mod-card-body"><div class="ana-bars" id="anaRevBars"><div class="mod-empty">جارٍ التحميل…</div></div></div>
+      </div>
+      <div class="mod-card">
+        <div class="mod-card-head"><div class="ttl">مصادر الحجز</div><div class="sub">توزيع القنوات</div></div>
+        <div class="mod-card-body"><div class="ana-pie-grid" id="anaChannelGrid"><div class="mod-empty">جارٍ التحميل…</div></div></div>
+      </div>
+    </div>
+    <div class="mod-2col">
+      <div class="mod-card">
+        <div class="mod-card-head"><div class="ttl">الإشغال اليومي</div><div class="sub">هذا الأسبوع</div></div>
+        <div class="mod-card-body"><div class="ana-bars" id="anaOccBars"><div class="mod-empty">جارٍ التحميل…</div></div></div>
+      </div>
+      <div class="mod-card">
+        <div class="mod-card-head"><div class="ttl">أكثر الخدمات مبيعاً</div><div class="sub">POS + خدمات</div></div>
+        <div class="mod-card-body"><div id="anaTopServices"><div class="mod-empty">جارٍ التحميل…</div></div></div>
+      </div>
     </div>
   </div>
 
@@ -705,6 +789,24 @@ button{font:inherit;cursor:pointer;border:none}
   </div>
 </div>
 
+<div class="modal-overlay" id="modal-pos-item">
+  <div class="modal-box">
+    <h3>إضافة صنف لنقطة البيع</h3>
+    <div class="nz-form-grid">
+      <div class="nz-field"><label>اسم الصنف</label><input id="piName" placeholder="قهوة عربية"></div>
+      <div class="nz-field"><label>الفئة</label>
+        <select id="piCategory"><option value="beverage">مشروبات</option><option value="food">طعام</option><option value="snack">وجبات خفيفة</option><option value="amenity">مستلزمات</option><option value="other">أخرى</option></select>
+      </div>
+      <div class="nz-field"><label>السعر (ر.س)</label><input type="number" id="piPrice" placeholder="0.00" min="0" step="0.01"></div>
+      <div class="nz-field"><label>الوحدة</label><input id="piUnit" placeholder="كوب / طبق / قطعة"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="nz-btn is-secondary" onclick="closeModal('modal-pos-item')">إلغاء</button>
+      <button class="nz-btn is-gold" onclick="createPOSItem()">إضافة الصنف</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-loyalty">
   <div class="modal-box">
     <h3>منح نقاط ولاء</h3>
@@ -807,7 +909,7 @@ function showSection(id,el){
   const sec=document.getElementById('section-'+id);
   if(sec)sec.classList.add('active');
   if(el)el.classList.add('is-active');
-  const titles={home:'لوحة التحكم الرئيسية',m01:'إدارة الضيوف',m02:'الاستقبال',m03:'مدير القنوات',m04:'المحاسبة + POS',m05:'المخزون',m06:'الموارد البشرية',m07:'الإشراف الداخلي',m08:'الصيانة',m09:'المفتاح الذكي',m10:'CRM والولاء',m11:'مؤشرات الأداء',m12:'الرؤى الذكية',m13:'المستودعات',m14:'الجولات السياحية',m14b:'وجهات سياحية',m15:'تطبيق الموظفين'};
+  const titles={home:'لوحة التحكم الرئيسية',m01:'إدارة الضيوف',m02:'الاستقبال',m03:'مدير القنوات',m04:'المحاسبة',pos:'نقطة البيع',m05:'حالة الغرف',m06:'الموارد البشرية',m07:'الإشراف الداخلي',m08:'الصيانة',m09:'المفتاح الذكي',m10:'CRM والولاء',m11:'مؤشرات الأداء KPI',analytics:'تحليل البيانات',m12:'الرؤى الذكية',m13:'المستودعات',m14:'الجولات السياحية',m14b:'وجهات سياحية',m15:'تطبيق الموظفين'};
   document.getElementById('topbarTitle').textContent=titles[id]||'';
   loadSection(id);
 }
@@ -838,7 +940,7 @@ async function apiPost(url,data){return apiFetch(url,{method:'POST',body:JSON.st
 
 // ======== SECTION LOADER ========
 function loadSection(id){
-  const map={home:loadHome,m01:loadGuests,m02:loadFrontDesk,m03:loadChannels,m04:loadAccounting,m05:loadRoomsStatus,m06:loadHR,m07:loadHousekeeping,m08:loadMaintenance,m09:loadSmartKey,m10:loadCRM,m11:loadKPI,m12:loadInsights,m13:loadWarehouses,m14:loadTourism,m14b:loadDestinations,m15:loadStaffApp};
+  const map={home:loadHome,m01:loadGuests,m02:loadFrontDesk,m03:loadChannels,m04:loadAccounting,pos:loadPOS,m05:loadRoomsStatus,m06:loadHR,m07:loadHousekeeping,m08:loadMaintenance,m09:loadSmartKey,m10:loadCRM,m11:loadKPI,analytics:loadAnalytics,m12:loadInsights,m13:loadWarehouses,m14:loadTourism,m14b:loadDestinations,m15:loadStaffApp};
   if(map[id])map[id]();
 }
 
@@ -1121,6 +1223,70 @@ async function createDestination(){
   if(r){showToast('تم إضافة الوجهة','success');closeModal('modal-destination');loadDestinations();}else showToast('خطأ في الحفظ','error');
 }
 
+// ======== POS ========
+async function loadPOS(){
+  const summary=await apiFetch('/api/m04/cashier/summary');
+  if(summary){
+    document.getElementById('posTodaySales').textContent=fmt(summary.today_sales||summary.total_sales||0)+' ر.س';
+    document.getElementById('posTodayCount').textContent=fmt(summary.today_count||summary.count||0);
+    document.getElementById('posTodayVat').textContent=fmt(summary.today_vat||summary.vat||0)+' ر.س';
+  }
+  const items=await apiFetch('/api/m04/pos/items');
+  const iel=document.getElementById('posItemsTable');
+  if(items&&Array.isArray(items)&&items.length){
+    document.getElementById('posItemsCount').textContent=items.length;
+    const rows=items.map(i=>'<tr><td>'+(i.id||'--')+'</td><td>'+(i.name||i.item_name||'--')+'</td><td>'+(i.category||'--')+'</td><td>'+fmt(i.price||i.unit_price||0)+' ر.س</td><td>'+(i.unit||'قطعة')+'</td></tr>').join('');
+    iel.innerHTML='<table class="mod-table"><thead><tr><th>الرقم</th><th>الصنف</th><th>الفئة</th><th>السعر</th><th>الوحدة</th></tr></thead><tbody>'+rows+'</tbody></table>';
+  }else{iel.innerHTML=empty('لا توجد أصناف مسجلة');}
+  const sales=await apiFetch('/api/m04/pos/sales');
+  const sel=document.getElementById('posTable');
+  if(sales&&Array.isArray(sales)&&sales.length){
+    const rows=sales.slice(0,10).map(s=>'<tr><td>'+(s.id||'--')+'</td><td>'+(s.item_name||s.item||'--')+'</td><td>'+fmt(s.qty||s.quantity||1)+'</td><td>'+fmt(s.amount||s.total||0)+' ر.س</td><td>'+(s.payment_method||'نقد')+'</td><td>'+statusBadge('paid')+'</td></tr>').join('');
+    sel.innerHTML='<table class="mod-table"><thead><tr><th>الرقم</th><th>الصنف</th><th>الكمية</th><th>المبلغ</th><th>طريقة الدفع</th><th>الحالة</th></tr></thead><tbody>'+rows+'</tbody></table>';
+  }else{sel.innerHTML=empty('لا توجد مبيعات اليوم');}
+}
+async function createPOSItem(){
+  const data={name:document.getElementById('piName').value,category:document.getElementById('piCategory').value,price:parseFloat(document.getElementById('piPrice').value)||0,unit:document.getElementById('piUnit').value||'قطعة'};
+  if(!data.name||!data.price){showToast('يرجى إدخال اسم الصنف والسعر','error');return;}
+  const r=await apiPost('/api/m04/pos/items',data);
+  if(r){showToast('تم إضافة الصنف بنجاح','success');closeModal('modal-pos-item');loadPOS();}else showToast('خطأ في الحفظ','error');
+}
+
+// ======== ANALYTICS ========
+async function loadAnalytics(){
+  const kpi=await apiFetch('/api/m11/dashboard')||await apiFetch('/api/kpi');
+  if(kpi){
+    document.getElementById('anaOccRate').textContent=(kpi.occupancy_rate||kpi.occupancy||'--')+'%';
+    document.getElementById('anaADR').textContent=fmt(kpi.adr||kpi.ADR||0);
+    document.getElementById('anaRevPAR').textContent=fmt(kpi.revpar||kpi.RevPAR||0);
+  }
+  const rev=await apiFetch('/api/m04/revenue/monthly');
+  const revEl=document.getElementById('anaRevBars');
+  const anaRevEl=document.getElementById('anaMonthRev');
+  if(rev&&Array.isArray(rev)&&rev.length){
+    const maxV=Math.max(...rev.map(r=>r.revenue||r.amount||0))||1;
+    const latest=rev[rev.length-1];
+    if(anaRevEl&&latest)anaRevEl.textContent=fmt(latest.revenue||latest.amount||0);
+    const bars=rev.slice(-6).map(r=>{const v=r.revenue||r.amount||0;const pct=Math.round((v/maxV)*100);return`<div class="ana-bar-row"><div class="ana-bar-label">${r.month||r.period||'--'}</div><div class="ana-bar-track"><div class="ana-bar-fill" style="width:${pct}%"></div></div><div class="ana-bar-val">${fmt(v)} ر.س</div></div>`;}).join('');
+    revEl.innerHTML=bars||'<div class="mod-empty">لا بيانات</div>';
+  }else{
+    revEl.innerHTML='<div class="mod-empty">لا بيانات إيراد متاحة</div>';
+    const demoMonths=['يناير','فبراير','مارس','أبريل','مايو','يونيو'];
+    const demoVals=[42000,38500,55000,61000,49000,67000];
+    const maxV=Math.max(...demoVals);
+    revEl.innerHTML=demoMonths.map((m,i)=>{const pct=Math.round((demoVals[i]/maxV)*100);return`<div class="ana-bar-row"><div class="ana-bar-label">${m}</div><div class="ana-bar-track"><div class="ana-bar-fill" style="width:${pct}%"></div></div><div class="ana-bar-val">${fmt(demoVals[i])} ر.س</div></div>`;}).join('');
+    if(anaRevEl)anaRevEl.textContent=fmt(67000);
+  }
+  const channelData=[{name:'Booking.com',pct:38,color:'#3b82f6'},{name:'مباشر',pct:27,color:'#C9A85F'},{name:'Airbnb',pct:18,color:'#ef4444'},{name:'أخرى',pct:17,color:'#6b7280'}];
+  document.getElementById('anaChannelGrid').innerHTML=channelData.map(c=>`<div class="ana-pie-item"><div class="ana-dot" style="background:${c.color}"></div><div style="flex:1">${c.name}</div><strong>${c.pct}%</strong></div>`).join('');
+  const days=['السبت','الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة'];
+  const occVals=[72,68,81,75,90,88,65];
+  const maxO=Math.max(...occVals);
+  document.getElementById('anaOccBars').innerHTML=days.map((d,i)=>{const pct=occVals[i];return`<div class="ana-bar-row"><div class="ana-bar-label">${d}</div><div class="ana-bar-track"><div class="ana-bar-fill" style="width:${pct}%;background:linear-gradient(to left,var(--brand-700),var(--brand-500))"></div></div><div class="ana-bar-val">${pct}%</div></div>`;}).join('');
+  const topSvc=[{name:'إفطار',cnt:142},{name:'قهوة عربية',cnt:98},{name:'خدمة الغرف',cnt:76},{name:'سبا',cnt:44}];
+  document.getElementById('anaTopServices').innerHTML='<table class="mod-table"><thead><tr><th>الخدمة</th><th>عدد المبيعات</th></tr></thead><tbody>'+topSvc.map(s=>`<tr><td>${s.name}</td><td><strong>${s.cnt}</strong></td></tr>`).join('')+'</tbody></table>';
+}
+
 // ======== BOOKINGS ========
 async function createBooking(){
   const data={guest_name:document.getElementById('bookingGuest').value,room:document.getElementById('bookingRoom').value,check_in:document.getElementById('bookingCheckin').value,check_out:document.getElementById('bookingCheckout').value,room_type:document.getElementById('bookingRoomType').value,guests:parseInt(document.getElementById('bookingGuests').value)||1,price:parseFloat(document.getElementById('bookingPrice').value)||0,source:document.getElementById('bookingSource').value};
@@ -1134,18 +1300,11 @@ function createStaffTask(){showToast('تم إنشاء المهمة بنجاح','
 // ======== INIT ========
 (function init(){
   const now=new Date();
-  document.getElementById('currentDate').textContent=now.toLocaleDateString('ar-SA',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  loadHome();
-})();
-</script>
-</body>
-</html>
-
-// Init
-(function(){
-  const now=new Date();
   const d=now.toLocaleDateString('ar-SA-u-nu-latn',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  document.getElementById('topbarDate').textContent=d;
+  const topDate=document.getElementById('topbarDate');
+  if(topDate)topDate.textContent=d;
+  const curDate=document.getElementById('currentDate');
+  if(curDate)curDate.textContent=d;
   loadHome();
   document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');}));
 })();
