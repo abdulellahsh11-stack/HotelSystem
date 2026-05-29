@@ -478,6 +478,23 @@ CREATE INDEX IF NOT EXISTS idx_rev_dest ON destination_reviews(destination_id);
 -- ──────────────────────────────────────────────────────────────
 -- نظام الإشعارات — Notifications
 -- ──────────────────────────────────────────────────────────────
+-- م04 بنود نقطة البيع
+-- ──────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS pos_items (
+    id              SERIAL PRIMARY KEY,
+    client_id       VARCHAR(50) REFERENCES clients(id) ON DELETE CASCADE,
+    name_ar         VARCHAR(200) NOT NULL,
+    name_en         VARCHAR(200),
+    category        VARCHAR(100) DEFAULT 'misc',
+    price           DECIMAL(10,2) NOT NULL DEFAULT 0,
+    vat_included    BOOLEAN DEFAULT TRUE,
+    unit            VARCHAR(50) DEFAULT 'وحدة',
+    is_active       BOOLEAN DEFAULT TRUE,
+    created_at      TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_pos_items_client ON pos_items(client_id, is_active);
+
+-- ──────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS notifications (
     id              SERIAL PRIMARY KEY,
     client_id       VARCHAR(50) REFERENCES clients(id) ON DELETE CASCADE,
