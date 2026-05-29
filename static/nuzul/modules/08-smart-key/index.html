@@ -114,5 +114,13 @@
 <script src="/static/nuzul/shared/sidebar.js"></script>
 <script>StaticSidebar.mount({ activeId: "08-smart-key", placeholder: "بحث في الإنذارات والسجل..." });</script>
 <script src="/static/nuzul/assets/animations.js"></script>
+<script>
+// Ensure content is always visible — fallback if IntersectionObserver threshold not met
+setTimeout(function(){
+  document.querySelectorAll('[data-m-rise],[data-m-rise-stagger]').forEach(function(el){
+    el.classList.add('is-in');
+  });
+}, 80);
+</script>
 </body>
 </html>

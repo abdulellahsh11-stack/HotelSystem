@@ -85,5 +85,13 @@ ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
   setTimeout(() => window.DheuofMotion && window.DheuofMotion.init(), 100);
 </script>
 
+<script>
+// Ensure content is always visible — fallback if IntersectionObserver threshold not met
+setTimeout(function(){
+  document.querySelectorAll('[data-m-rise],[data-m-rise-stagger]').forEach(function(el){
+    el.classList.add('is-in');
+  });
+}, 80);
+</script>
 </body>
 </html>

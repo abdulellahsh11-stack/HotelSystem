@@ -74,7 +74,7 @@
             <span class="en-tag">Maintenance · Spare parts · Tools</span>
           </div>
           <h1>مستودع الصيانة وقطع الغيار</h1>
-          <p class="sub">أدوات الفنيين، قطع الغيار، الإنارة، الأسلاك، الأصباغ، والسلالم. مستقل تماماً عن مخزون الضيافة — متكامل مع تطبيق الفنيين وتذاكر الاستقبال.</p></p>
+          <p class="sub">أدوات الفنيين، قطع الغيار، الإنارة، الأسلاك، الأصباغ، والسلالم. مستقل تماماً عن مخزون الضيافة — متكامل مع تطبيق الفنيين وتذاكر الاستقبال.</p>
         </div>
         <div class="actions">
           <button style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">طلب توريد</button>
@@ -128,7 +128,7 @@
             <div class="sub">منذ ٢٦ دقيقة · أبلغت عنها التدبير</div>
           </div>
           <div><div>جناح ٤٠٢</div><div class="sub">VIP — أحمد الفهد</div></div>
-          <div class="assignee"><div class="av">م‬ع">م‬ع</div><div><div>محمد العتيبي</div><div class="sub">في الموقع</div></div></div>
+          <div class="assignee"><div class="av">م‬ع</div><div><div>محمد العتيبي</div><div class="sub">في الموقع</div></div></div>
           <div><span class="mod-tag err"><span class="d"></span>عاجلة</span></div>
           <div>⋯</div>
         </div>
@@ -140,7 +140,7 @@
             <div class="sub">منذ ٢ ساعة</div>
           </div>
           <div><div>الردهة الرئيسية</div><div class="sub">الطابق الأرضي</div></div>
-          <div class="assignee"><div class="av">س‬ح">س‬ح</div><div><div>سعيد الحارثي</div><div class="sub">قيد التنفيذ</div></div></div>
+          <div class="assignee"><div class="av">س‬ح</div><div><div>سعيد الحارثي</div><div class="sub">قيد التنفيذ</div></div></div>
           <div><span class="mod-tag warn"><span class="d"></span>عالية</span></div>
           <div>⋯</div>
         </div>
@@ -152,7 +152,7 @@
             <div class="sub">منذ ٥ ساعات</div>
           </div>
           <div><div>غرفة ١٠٤</div><div class="sub">الطابق الأرضي</div></div>
-          <div class="assignee"><div class="av">ج‬م">ج‬م</div><div><div>جمال المتروك</div><div class="sub">مجدولة لغد</div></div></div>
+          <div class="assignee"><div class="av">ج‬م</div><div><div>جمال المتروك</div><div class="sub">مجدولة لغد</div></div></div>
           <div><span class="mod-tag info"><span class="d"></span>عادية</span></div>
           <div>⋯</div>
         </div>
@@ -164,7 +164,7 @@
             <div class="sub">أمس · جدولة عادية</div>
           </div>
           <div><div>غرفة ٣٠٧</div><div class="sub">الطابق الثالث</div></div>
-          <div class="assignee"><div class="av">ر‬ك">ر‬ك</div><div><div>Rajesh K.</div><div class="sub">مجدولة</div></div></div>
+          <div class="assignee"><div class="av">ر‬ك</div><div><div>Rajesh K.</div><div class="sub">مجدولة</div></div></div>
           <div><span class="mod-tag info"><span class="d"></span>عادية</span></div>
           <div>⋯</div>
         </div>
@@ -176,7 +176,7 @@
             <div class="sub">صيانة دورية شهرية</div>
           </div>
           <div><div>الطابق ٢ → السطح</div><div class="sub">الجناح الشرقي</div></div>
-          <div class="assignee"><div class="av">ج‬م">ج‬م</div><div><div>جمال المتروك</div><div class="sub">مجدولة الخميس</div></div></div>
+          <div class="assignee"><div class="av">ج‬م</div><div><div>جمال المتروك</div><div class="sub">مجدولة الخميس</div></div></div>
           <div><span class="mod-tag info"><span class="d"></span>عادية</span></div>
           <div>⋯</div>
         </div>
@@ -229,5 +229,13 @@
 <script src="/static/nuzul/shared/sidebar.js"></script>
 <script>StaticSidebar.mount({ activeId: "05-warehouse", placeholder: "بحث في التذاكر والقطع..." });</script>
 <script src="/static/nuzul/assets/animations.js"></script>
+<script>
+// Ensure content is always visible — fallback if IntersectionObserver threshold not met
+setTimeout(function(){
+  document.querySelectorAll('[data-m-rise],[data-m-rise-stagger]').forEach(function(el){
+    el.classList.add('is-in');
+  });
+}, 80);
+</script>
 </body>
 </html>
