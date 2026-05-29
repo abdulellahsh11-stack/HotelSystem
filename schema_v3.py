@@ -322,31 +322,6 @@ CREATE INDEX IF NOT EXISTS idx_kpi_client_date ON daily_kpis(client_id, kpi_date
 -- ──────────────────────────────────────────────────────────────
 -- M13: المستودعات والمشتريات — Warehouses & Procurement
 -- ──────────────────────────────────────────────────────────────
-
-CREATE TABLE IF NOT EXISTS warehouse_items (
-    id              SERIAL PRIMARY KEY,
-    client_id       VARCHAR(50) REFERENCES clients(id) ON DELETE CASCADE,
-    warehouse_type  VARCHAR(30) DEFAULT 'general',
-    name            VARCHAR(200) NOT NULL,
-    unit            VARCHAR(20) DEFAULT 'قطعة',
-    quantity        DECIMAL(10,2) DEFAULT 0,
-    reorder_level   DECIMAL(10,2) DEFAULT 0,
-    price_per_unit  DECIMAL(10,2) DEFAULT 0,
-    created_at      TIMESTAMPTZ DEFAULT NOW()
-);
-CREATE INDEX IF NOT EXISTS idx_wi_client ON warehouse_items(client_id);
-
-CREATE TABLE IF NOT EXISTS warehouse_movements (
-    id              SERIAL PRIMARY KEY,
-    item_id         INTEGER REFERENCES warehouse_items(id) ON DELETE CASCADE,
-    client_id       VARCHAR(50) REFERENCES clients(id) ON DELETE CASCADE,
-    movement_type   VARCHAR(10) DEFAULT 'in',
-    quantity        DECIMAL(10,2) NOT NULL,
-    notes           TEXT,
-    created_by      VARCHAR(100),
-    created_at      TIMESTAMPTZ DEFAULT NOW()
-);
-
 CREATE TABLE IF NOT EXISTS suppliers (
     id              SERIAL PRIMARY KEY,
     client_id       VARCHAR(50) REFERENCES clients(id) ON DELETE CASCADE,
