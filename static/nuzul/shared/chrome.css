@@ -33,7 +33,7 @@ button { font: inherit; cursor: pointer; }
   position: sticky; top: 0; height: 100vh;
 }
 .nz-brand { display: flex; align-items: center; gap: 12px; padding: 6px 8px 18px; border-bottom: 1px solid rgba(201,168,95,0.18); margin-bottom: 14px; }
-.nz-mark { width: 36px; height: 36px; border-radius: 8px; background: var(--gold-500); color: var(--brand-900); display: grid; place-items: center; font-family: var(--font-ar-display); font-weight: 700; font-size: 20px; flex-shrink: 0; }
+.nz-mark { width: 36px; height: 36px; border-radius: 8px; background: transparent; display: block; flex-shrink: 0; object-fit: cover; }
 .nz-brand-name .ar { font-family: var(--font-ar-display); font-weight: 600; color: var(--paper); font-size: 20px; line-height: 1; }
 .nz-brand-name .en { font-family: var(--font-en-display); font-style: italic; font-size: 12px; color: var(--gold-400); margin-top: 2px; letter-spacing: 0.04em; }
 
