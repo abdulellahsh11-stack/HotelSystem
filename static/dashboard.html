@@ -2,698 +2,811 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ضيوف Dheuof - لوحة التحكم</title>
+<meta name="viewport" content="width=1440,initial-scale=1">
+<title>ضيوف · Dheuof</title>
+<link href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Cormorant:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:#F4F6F9;color:#1a1a2e;direction:rtl}
-:root{--sidebar:#0E2A22;--gold:#C9A85F;--gold-light:#E8C97A;--white:#fff;--bg:#F4F6F9;--text:#1a1a2e;--text-light:#6b7280;--green:#22c55e;--yellow:#f59e0b;--red:#ef4444;--blue:#3b82f6;--shadow:0 2px 12px rgba(0,0,0,.08)}
-.layout{display:flex;min-height:100vh}
-.sidebar{width:260px;background:var(--sidebar);color:#fff;display:flex;flex-direction:column;position:fixed;top:0;right:0;height:100vh;overflow-y:auto;z-index:100}
-.sidebar-logo{padding:24px 20px;border-bottom:1px solid rgba(201,168,95,.2);text-align:center}
-.sidebar-logo h1{font-size:22px;color:var(--gold);font-weight:700;letter-spacing:1px}
-.sidebar-logo p{font-size:11px;color:rgba(255,255,255,.5);margin-top:4px}
-.sidebar-nav{padding:12px 0;flex:1}
-.nav-item{display:flex;align-items:center;gap:10px;padding:11px 20px;cursor:pointer;transition:.2s;border-right:3px solid transparent;font-size:13.5px;color:rgba(255,255,255,.75)}
-.nav-item:hover{background:rgba(201,168,95,.1);color:#fff}
-.nav-item.active{background:rgba(201,168,95,.15);border-right-color:var(--gold);color:var(--gold)}
-.nav-item .icon{font-size:16px;min-width:20px;text-align:center}
-.sidebar-footer{padding:16px 20px;border-top:1px solid rgba(201,168,95,.2);font-size:12px;color:rgba(255,255,255,.4);text-align:center}
-.main{margin-right:260px;flex:1;display:flex;flex-direction:column;min-height:100vh}
-.topbar{background:var(--white);padding:0 28px;height:64px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 4px rgba(0,0,0,.06);position:sticky;top:0;z-index:50}
-.topbar-title{font-size:18px;font-weight:700;color:var(--text)}
-.topbar-right{display:flex;align-items:center;gap:16px}
-.topbar-right .date{font-size:12px;color:var(--text-light)}
-.avatar{width:36px;height:36px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#0E2A22;font-size:14px;cursor:pointer}
-.content{padding:28px;flex:1}
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px;margin-bottom:24px}
-.stat-card{background:var(--white);border-radius:12px;padding:20px;box-shadow:var(--shadow);border-top:3px solid var(--gold)}
-.stat-card .label{font-size:12px;color:var(--text-light);margin-bottom:8px}
-.stat-card .value{font-size:28px;font-weight:700;color:var(--text)}
-.stat-card .sub{font-size:12px;color:var(--green);margin-top:4px}
-.card{background:var(--white);border-radius:12px;box-shadow:var(--shadow);margin-bottom:24px;overflow:hidden}
-.card-header{padding:18px 20px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between}
-.card-header h3{font-size:15px;font-weight:700;color:var(--text)}
-.btn{padding:8px 18px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:600;transition:.2s;font-family:inherit}
-.btn-gold{background:var(--gold);color:#0E2A22}.btn-gold:hover{background:var(--gold-light)}
-.btn-outline{background:transparent;border:1px solid var(--gold);color:var(--gold)}.btn-outline:hover{background:rgba(201,168,95,.1)}
-.btn-sm{padding:5px 12px;font-size:12px}
-.btn-green{background:#22c55e;color:#fff}.btn-red{background:#ef4444;color:#fff}.btn-blue{background:#3b82f6;color:#fff}
-table{width:100%;border-collapse:collapse}
-thead th{background:#f8f9fb;padding:11px 16px;text-align:right;font-size:12px;color:var(--text-light);font-weight:600;border-bottom:1px solid #eee}
-tbody td{padding:12px 16px;font-size:13px;border-bottom:1px solid #f5f5f5;color:var(--text)}
-tbody tr:hover{background:#fafafa}
-tbody tr:last-child td{border-bottom:none}
-.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
-.badge-green{background:#dcfce7;color:#166534}.badge-yellow{background:#fef9c3;color:#854d0e}
-.badge-red{background:#fee2e2;color:#991b1b}.badge-blue{background:#dbeafe;color:#1e40af}
-.badge-gold{background:rgba(201,168,95,.15);color:#92660a}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:none;align-items:center;justify-content:center}
+:root{
+  --brand-900:#0E2A22;--brand-800:#143A2E;--brand-700:#1B4D3D;--brand-500:#3B8772;--brand-100:#E4F0EB;--brand-50:#F2F8F5;
+  --gold-900:#5C4419;--gold-800:#7A5A22;--gold-700:#9A7430;--gold-600:#B68F40;--gold-500:#C9A85F;--gold-400:#DBC084;--gold-300:#E8D5A8;--gold-200:#F1E6C8;--gold-100:#F8F1DF;
+  --ink-900:#14110E;--ink-800:#1F1A15;--ink-700:#322B23;--ink-500:#6B6052;--ink-400:#8B8175;--ink-300:#AEA597;--ink-200:#CFC8BB;--ink-100:#E6DFD1;
+  --paper:#FAF7F2;--paper-tint:#F5F0E6;--sand:#F2EDE3;--white:#fff;--hairline:#ECE5D6;
+  --surface-2:var(--sand);--surface-3:var(--paper-tint);
+  --fg:var(--ink-900);--fg-2:var(--ink-500);--fg-3:var(--ink-400);
+  --success-700:#2F6E54;--warning-700:#9A6D14;--danger-700:#8B3A2A;--info-700:#2A4F7A;
+  --shadow-3:0 6px 16px rgba(20,17,14,.08),0 12px 32px rgba(20,17,14,.06);
+  --font-ar-display:"Reem Kufi","IBM Plex Sans Arabic",sans-serif;
+  --font-ar:"IBM Plex Sans Arabic","Reem Kufi",sans-serif;
+  --font-en:"IBM Plex Sans",sans-serif;
+  --font-en-display:"Cormorant",Georgia,serif;
+  --font-mono:"IBM Plex Mono",monospace;
+  --dur-fast:120ms;--ease-out:cubic-bezier(.22,.61,.36,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}html,body{height:100%}
+body{background:var(--paper);color:var(--ink-900);font-family:var(--font-ar);font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased;direction:rtl}
+button{font:inherit;cursor:pointer;border:none}
+.nz-app{display:grid;grid-template-columns:264px 1fr;min-height:100vh;background:var(--paper-tint)}
+.nz-sidebar{background:var(--brand-900);color:var(--gold-100);display:flex;flex-direction:column;padding:18px 14px;position:sticky;top:0;height:100vh;overflow-y:auto}
+.nz-brand{display:flex;align-items:center;gap:12px;padding:6px 8px 18px;border-bottom:1px solid rgba(201,168,95,.18);margin-bottom:14px}
+.nz-mark{width:36px;height:36px;border-radius:8px;background:var(--gold-500);color:var(--brand-900);display:grid;place-items:center;font-family:var(--font-ar-display);font-weight:700;font-size:20px;flex-shrink:0}
+.nz-brand-name .ar{font-family:var(--font-ar-display);font-weight:600;color:var(--paper);font-size:20px;line-height:1}
+.nz-brand-name .en{font-family:var(--font-en-display);font-style:italic;font-size:12px;color:var(--gold-400);margin-top:2px}
+.nz-nav{flex:1;display:flex;flex-direction:column;gap:14px;overflow-y:auto}
+.nz-nav-group{display:flex;flex-direction:column;gap:2px}
+.nz-nav-label{font-family:var(--font-ar);font-size:11px;color:var(--gold-400);padding:8px 10px 4px;font-weight:500}
+.nz-nav-item{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:6px;color:var(--gold-100);font-size:13.5px;cursor:pointer;transition:background var(--dur-fast);position:relative}
+.nz-nav-item .ic{font-size:15px;width:18px;text-align:center;opacity:.78;flex-shrink:0}
+.nz-nav-item:hover{background:rgba(255,255,255,.05)}
+.nz-nav-item.is-active{background:linear-gradient(to left,var(--brand-700),var(--brand-800));color:var(--paper);box-shadow:inset 0 0 0 1px rgba(201,168,95,.15)}
+.nz-nav-item.is-active::before{content:"";position:absolute;inset-inline-end:0;top:8px;bottom:8px;width:3px;background:var(--gold-500);border-radius:2px}
+.nz-side-foot{margin-top:auto;padding:14px 10px 4px;border-top:1px solid rgba(201,168,95,.18);font-size:12px;color:var(--gold-400);text-align:center}
+.nz-topbar{display:flex;align-items:center;gap:16px;padding:0 28px;height:60px;background:var(--paper);border-bottom:1px solid var(--ink-100);position:sticky;top:0;z-index:50}
+.nz-topbar-title{font-family:var(--font-ar-display);font-size:18px;font-weight:600;color:var(--ink-900);flex:1}
+.nz-user{display:flex;align-items:center;gap:10px;padding-inline-start:14px;border-inline-start:1px solid var(--ink-100)}
+.nz-av{width:34px;height:34px;background:var(--brand-700);color:var(--paper);border-radius:999px;display:grid;place-items:center;font-size:12px;font-weight:600;border:1.5px solid var(--gold-400)}
+.nz-main{padding:24px 28px 64px;display:flex;flex-direction:column;gap:20px}
+.section{display:none}.section.active{display:flex;flex-direction:column;gap:20px}
+.mod-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px}
+.mod-head .left{display:flex;flex-direction:column;gap:6px}
+.mod-num{font-family:var(--font-mono);font-size:11px;letter-spacing:.2em;color:var(--gold-700);background:var(--gold-100);padding:3px 9px;border-radius:4px;font-weight:600;display:inline-block}
+.mod-head h1{font-family:var(--font-ar-display);font-size:28px;font-weight:600;color:var(--ink-900);line-height:1.1}
+.mod-head .sub{color:var(--fg-2);font-size:13px}
+.mod-actions{display:flex;gap:8px}
+.mod-stats{display:grid;grid-template-columns:repeat(var(--cols,4),1fr);gap:12px}
+.mod-stat{background:var(--white);border:1px solid var(--hairline);border-radius:10px;padding:15px 18px}
+.mod-stat .lbl{font-size:12px;color:var(--fg-2)}
+.mod-stat .v{font-family:var(--font-en);font-variant-numeric:tabular-nums;font-size:26px;font-weight:600;color:var(--ink-900);line-height:1.1;margin-top:4px}
+.mod-stat .v.good{color:var(--success-700)}.mod-stat .v.warn{color:var(--warning-700)}.mod-stat .v.bad{color:var(--danger-700)}
+.mod-stat .meta{font-size:11px;color:var(--fg-3);margin-top:4px}
+.mod-stat .cur{font-size:12px;font-family:var(--font-ar);font-weight:400;margin-inline-start:3px;color:var(--fg-3)}
+.mod-card{background:var(--white);border:1px solid var(--hairline);border-radius:12px;overflow:hidden}
+.mod-card-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 20px 12px;border-bottom:1px solid var(--hairline)}
+.mod-card-head .ttl{font-family:var(--font-ar-display);font-size:16px;font-weight:600;color:var(--ink-900)}
+.mod-card-head .sub{font-size:11px;color:var(--fg-3);margin-top:2px}
+.mod-card-body{padding:16px 20px}
+.mod-2col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.mod-2col-wide{display:grid;grid-template-columns:1.5fr 1fr;gap:16px}
+.mod-table{width:100%;border-collapse:collapse;font-size:13px}
+.mod-table th{background:var(--surface-2);padding:10px 14px;text-align:right;font-size:11px;color:var(--fg-3);font-weight:500;border-bottom:1px solid var(--hairline)}
+.mod-table td{padding:11px 14px;border-bottom:1px solid var(--hairline);color:var(--ink-700);vertical-align:middle}
+.mod-table tr:last-child td{border-bottom:none}
+.mod-table tr:hover td{background:var(--surface-3)}
+.mod-table button{font-size:11px;padding:4px 10px;border-radius:4px;background:var(--surface-2);border:1px solid var(--ink-100);color:var(--ink-700);cursor:pointer}
+.nz-btn{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-ar);font-size:13px;font-weight:500;padding:9px 16px;border-radius:6px;border:1px solid transparent;transition:all var(--dur-fast);line-height:1;white-space:nowrap;cursor:pointer}
+.nz-btn.is-primary{background:var(--brand-700);color:var(--paper)}.nz-btn.is-primary:hover{background:var(--brand-800)}
+.nz-btn.is-gold{background:var(--gold-700);color:var(--paper)}.nz-btn.is-gold:hover{background:var(--gold-800)}
+.nz-btn.is-secondary{background:var(--white);color:var(--ink-900);border-color:var(--ink-100)}.nz-btn.is-secondary:hover{background:var(--surface-2)}
+.nz-btn.sm{font-size:12px;padding:6px 12px}
+.mod-tag{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:500}
+.mod-tag::before{content:"";width:5px;height:5px;border-radius:999px;background:currentColor;flex-shrink:0}
+.mod-tag.ok{background:#DCEEE6;color:var(--success-700)}.mod-tag.warn{background:#F6E7C2;color:var(--warning-700)}
+.mod-tag.err{background:#F1D8CF;color:var(--danger-700)}.mod-tag.info{background:#D6E1F0;color:var(--info-700)}
+.mod-tag.gold{background:var(--gold-100);color:var(--gold-800)}.mod-tag.neu{background:var(--sand);color:var(--fg-2)}
+.nz-field{display:flex;flex-direction:column;gap:5px}
+.nz-field label{font-size:12px;color:var(--ink-700);font-weight:500}
+.nz-field input,.nz-field select,.nz-field textarea{font-family:var(--font-ar);font-size:13px;padding:9px 12px;border-radius:6px;border:1px solid var(--ink-100);background:var(--white);color:var(--ink-900);outline:none;transition:border-color 160ms,box-shadow 160ms;width:100%}
+.nz-field input:focus,.nz-field select:focus,.nz-field textarea:focus{border-color:var(--brand-700);box-shadow:0 0 0 3px rgba(201,168,95,.2)}
+.nz-field textarea{min-height:80px;resize:vertical}
+.nz-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.nz-form-grid.g3{grid-template-columns:1fr 1fr 1fr}.nz-form-grid.g1{grid-template-columns:1fr}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(20,17,14,.45);z-index:800;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
 .modal-overlay.open{display:flex}
-.modal{background:var(--white);border-radius:16px;width:90%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)}
-.modal-header{padding:20px 24px;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between}
-.modal-header h3{font-size:16px;font-weight:700}
-.modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-light);line-height:1}
-.modal-body{padding:24px}
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
-.form-group{margin-bottom:14px}
-.form-group label{display:block;font-size:12px;font-weight:600;color:var(--text-light);margin-bottom:6px}
-.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:inherit;outline:none;transition:.2s;direction:rtl}
-.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,95,.15)}
-.modal-footer{padding:16px 24px;border-top:1px solid #eee;display:flex;gap:10px;justify-content:flex-start}
-.toast-container{position:fixed;top:20px;left:20px;z-index:9999;display:flex;flex-direction:column;gap:10px}
-.toast{background:#1a1a2e;color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;min-width:220px;box-shadow:0 4px 20px rgba(0,0,0,.3);animation:slideIn .3s ease;display:flex;align-items:center;gap:10px}
-.toast.success{border-right:4px solid var(--green)}.toast.error{border-right:4px solid var(--red)}.toast.info{border-right:4px solid var(--gold)}
-@keyframes slideIn{from{transform:translateX(-100%);opacity:0}to{transform:translateX(0);opacity:1}}
-.quick-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin-bottom:24px}
-.qa-btn{background:var(--white);border:1px solid #e5e7eb;border-radius:12px;padding:16px;text-align:center;cursor:pointer;transition:.2s;box-shadow:var(--shadow)}
-.qa-btn:hover{border-color:var(--gold);background:rgba(201,168,95,.05)}
-.qa-btn .icon{font-size:24px;margin-bottom:8px}
-.qa-btn .text{font-size:12px;font-weight:600;color:var(--text)}
-.section{display:none}.section.active{display:block}
-.loading{text-align:center;padding:40px;color:var(--text-light)}
-.spinner{width:32px;height:32px;border:3px solid #e5e7eb;border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
-@keyframes spin{to{transform:rotate(360deg)}}
-.section-title{font-size:22px;font-weight:700;color:var(--text);margin-bottom:6px}
-.section-sub{font-size:13px;color:var(--text-light);margin-bottom:24px}
-.module-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px;margin-bottom:24px}
-.module-card{background:var(--white);border-radius:12px;padding:20px;box-shadow:var(--shadow);border-right:3px solid var(--gold)}
-.module-card h4{font-size:14px;font-weight:700;margin-bottom:12px;color:var(--text)}
-.two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:24px}
-@media(max-width:900px){.two-col{grid-template-columns:1fr}.sidebar{width:220px}.main{margin-right:220px}}
+.modal-box{background:var(--white);border-radius:16px;padding:28px;min-width:460px;max-width:660px;width:90%;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(20,17,14,.18)}
+.modal-box h3{font-family:var(--font-ar-display);font-size:20px;font-weight:600;color:var(--ink-900);margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--hairline)}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--hairline)}
+#toastContainer{position:fixed;bottom:24px;inset-inline-start:24px;z-index:900;display:flex;flex-direction:column;gap:8px}
+.toast{display:flex;align-items:center;gap:10px;padding:12px 18px;border-radius:8px;background:var(--ink-900);color:var(--paper);font-size:13px;box-shadow:var(--shadow-3);animation:slideIn .25s var(--ease-out)}
+.toast.success{background:var(--success-700)}.toast.error{background:var(--danger-700)}.toast.info{background:var(--info-700)}
+@keyframes slideIn{from{transform:translateY(12px);opacity:0}to{transform:none;opacity:1}}
+.mod-empty{text-align:center;padding:40px 20px;color:var(--fg-3);font-size:13px}
+.insights-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.insight-card{background:var(--white);border:1px solid var(--hairline);border-radius:10px;padding:16px 18px}
+.insight-card h4{font-size:14px;font-weight:600;color:var(--ink-900);margin-bottom:6px}
+.insight-card p{font-size:12px;color:var(--fg-2);line-height:1.6}
 </style>
 </head>
 <body>
-<div class="layout">
-<aside class="sidebar">
-  <div class="sidebar-logo">
-    <h1>ضيوف</h1>
-    <p>Dheuof Hotel SaaS Platform</p>
+<div class="nz-app">
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="nz-sidebar">
+  <div class="nz-brand">
+    <div class="nz-mark">ض</div>
+    <div class="nz-brand-name">
+      <div class="ar">ضيوف</div>
+      <div class="en">Dheuof SaaS</div>
+    </div>
   </div>
-  <nav class="sidebar-nav">
-    <div class="nav-item active" data-section="home" onclick="showSection('home',this)"><span class="icon">🏠</span><span>الرئيسية</span></div>
-    <div class="nav-item" data-section="m01" onclick="showSection('m01',this)"><span class="icon">👥</span><span>م01 إدارة الضيوف</span></div>
-    <div class="nav-item" data-section="m02" onclick="showSection('m02',this)"><span class="icon">🏨</span><span>م02 الاستقبال</span></div>
-    <div class="nav-item" data-section="m03" onclick="showSection('m03',this)"><span class="icon">🌐</span><span>م03 مدير القنوات</span></div>
-    <div class="nav-item" data-section="m04" onclick="showSection('m04',this)"><span class="icon">💰</span><span>م04 المحاسبة + POS</span></div>
-    <div class="nav-item" data-section="m05" onclick="showSection('m05',this)"><span class="icon">📦</span><span>م05 المخزون</span></div>
-    <div class="nav-item" data-section="m06" onclick="showSection('m06',this)"><span class="icon">👷</span><span>م06 الموارد البشرية</span></div>
-    <div class="nav-item" data-section="m07" onclick="showSection('m07',this)"><span class="icon">🧹</span><span>م07 الإشراف الداخلي</span></div>
-    <div class="nav-item" data-section="m08" onclick="showSection('m08',this)"><span class="icon">🔧</span><span>م08 الصيانة</span></div>
-    <div class="nav-item" data-section="m09" onclick="showSection('m09',this)"><span class="icon">🔑</span><span>م09 المفتاح الذكي</span></div>
-    <div class="nav-item" data-section="m10" onclick="showSection('m10',this)"><span class="icon">❤️</span><span>م10 CRM والولاء</span></div>
-    <div class="nav-item" data-section="m11" onclick="showSection('m11',this)"><span class="icon">📊</span><span>م11 مؤشرات الأداء</span></div>
-    <div class="nav-item" data-section="m12" onclick="showSection('m12',this)"><span class="icon">🧠</span><span>م12 الرؤى الذكية</span></div>
-    <div class="nav-item" data-section="m13" onclick="showSection('m13',this)"><span class="icon">🏭</span><span>م13 المستودعات</span></div>
-    <div class="nav-item" data-section="m14" onclick="showSection('m14',this)"><span class="icon">🗺️</span><span>م14 الجولات السياحية</span></div>
-    <div class="nav-item" data-section="m14b" onclick="showSection('m14b',this)"><span class="icon">📍</span><span>م14ب وجهات سياحية</span></div>
-    <div class="nav-item" data-section="m15" onclick="showSection('m15',this)"><span class="icon">📱</span><span>م15 تطبيق الموظفين</span></div>
+  <nav class="nz-nav">
+    <div class="nz-nav-group">
+      <div class="nz-nav-label">الرئيسية</div>
+      <div class="nz-nav-item is-active" onclick="showSection('home',this)"><span class="ic">🏠</span>لوحة التحكم</div>
+    </div>
+    <div class="nz-nav-group">
+      <div class="nz-nav-label">إدارة الضيوف والحجوزات</div>
+      <div class="nz-nav-item" onclick="showSection('m01',this)"><span class="ic">👤</span>إدارة الضيوف</div>
+      <div class="nz-nav-item" onclick="showSection('m02',this)"><span class="ic">🏨</span>الاستقبال</div>
+      <div class="nz-nav-item" onclick="showSection('m03',this)"><span class="ic">📡</span>مدير القنوات</div>
+    </div>
+    <div class="nz-nav-group">
+      <div class="nz-nav-label">المالية والعمليات</div>
+      <div class="nz-nav-item" onclick="showSection('m04',this)"><span class="ic">💳</span>المحاسبة + POS</div>
+      <div class="nz-nav-item" onclick="showSection('m05',this)"><span class="ic">🛏️</span>حالة الغرف</div>
+      <div class="nz-nav-item" onclick="showSection('m06',this)"><span class="ic">👥</span>الموارد البشرية</div>
+    </div>
+    <div class="nz-nav-group">
+      <div class="nz-nav-label">الخدمات الداخلية</div>
+      <div class="nz-nav-item" onclick="showSection('m07',this)"><span class="ic">🧹</span>الإشراف الداخلي</div>
+      <div class="nz-nav-item" onclick="showSection('m08',this)"><span class="ic">🔧</span>الصيانة</div>
+      <div class="nz-nav-item" onclick="showSection('m09',this)"><span class="ic">🔑</span>المفتاح الذكي</div>
+    </div>
+    <div class="nz-nav-group">
+      <div class="nz-nav-label">الذكاء والتحليل</div>
+      <div class="nz-nav-item" onclick="showSection('m10',this)"><span class="ic">💎</span>CRM والولاء</div>
+      <div class="nz-nav-item" onclick="showSection('m11',this)"><span class="ic">📊</span>مؤشرات الأداء</div>
+      <div class="nz-nav-item" onclick="showSection('m12',this)"><span class="ic">🤖</span>الرؤى الذكية</div>
+    </div>
+    <div class="nz-nav-group">
+      <div class="nz-nav-label">المخزون والسياحة</div>
+      <div class="nz-nav-item" onclick="showSection('m13',this)"><span class="ic">📦</span>المستودعات</div>
+      <div class="nz-nav-item" onclick="showSection('m14',this)"><span class="ic">🗺️</span>الجولات السياحية</div>
+      <div class="nz-nav-item" onclick="showSection('m14b',this)"><span class="ic">🏛️</span>وجهات سياحية</div>
+      <div class="nz-nav-item" onclick="showSection('m15',this)"><span class="ic">📱</span>تطبيق الموظفين</div>
+    </div>
   </nav>
-  <div class="sidebar-footer"><div>الإصدار 2.1.0</div><div>© 2026 ضيوف Dheuof</div></div>
+  <div class="nz-side-foot">ضيوف v3.0 · جميع الوحدات الـ 16</div>
 </aside>
 
-<div class="main">
-  <header class="topbar">
-    <div class="topbar-title" id="topbarTitle">لوحة التحكم الرئيسية</div>
-    <div class="topbar-right">
-      <span class="date" id="currentDate"></span>
-      <div class="avatar">م</div>
+<!-- ═══ MAIN COLUMN ═══ -->
+<div>
+  <header class="nz-topbar">
+    <div id="topbarTitle" class="nz-topbar-title">لوحة التحكم الرئيسية</div>
+    <div style="font-size:12px;color:var(--fg-3)" id="topbarDate"></div>
+    <div class="nz-user">
+      <div class="nz-av">م</div>
+      <div>
+        <div class="nz-user-name">مدير الفندق</div>
+        <div class="nz-user-role">Hotel Manager</div>
+      </div>
     </div>
   </header>
-  <div class="content">
 
-    <!-- HOME -->
-    <div class="section active" id="section-home">
-      <div class="section-title">مرحباً بك في ضيوف</div>
-      <div class="section-sub">نظرة عامة على أداء الفندق اليوم</div>
-      <div class="stats-grid">
-        <div class="stat-card"><div class="label">نسبة الإشغال</div><div class="value" id="kpiOcc">--</div><div class="sub" id="kpiOccSub">جاري التحميل...</div></div>
-        <div class="stat-card"><div class="label">متوسط سعر الغرفة (ADR)</div><div class="value" id="kpiADR">--</div><div class="sub">ريال سعودي</div></div>
-        <div class="stat-card"><div class="label">RevPAR</div><div class="value" id="kpiRevPAR">--</div><div class="sub">ريال سعودي</div></div>
-        <div class="stat-card"><div class="label">إيرادات الشهر</div><div class="value" id="kpiRevenue">--</div><div class="sub">ريال سعودي</div></div>
-        <div class="stat-card"><div class="label">وصول اليوم</div><div class="value" id="kpiArrivals">--</div><div class="sub">ضيف</div></div>
-        <div class="stat-card"><div class="label">مغادرة اليوم</div><div class="value" id="kpiDepartures">--</div><div class="sub">ضيف</div></div>
+  <main class="nz-main">
+
+  <!-- ═ HOME ═ -->
+  <div id="section-home" class="section active">
+    <div class="mod-head">
+      <div class="left">
+        <span class="mod-num">DASHBOARD</span>
+        <h1>لوحة التحكم</h1>
+        <div class="sub">نظرة عامة على أداء الفندق اليوم</div>
       </div>
-      <div class="quick-actions">
-        <div class="qa-btn" onclick="showSection('m01',document.querySelector('[data-section=m01]'))"><div class="icon">👥</div><div class="text">إضافة ضيف</div></div>
-        <div class="qa-btn" onclick="showSection('m02',document.querySelector('[data-section=m02]'))"><div class="icon">🏨</div><div class="text">تسجيل وصول</div></div>
-        <div class="qa-btn" onclick="openModal('modal-booking')"><div class="icon">📅</div><div class="text">حجز جديد</div></div>
-        <div class="qa-btn" onclick="showSection('m04',document.querySelector('[data-section=m04]'))"><div class="icon">💰</div><div class="text">فاتورة جديدة</div></div>
-        <div class="qa-btn" onclick="showSection('m07',document.querySelector('[data-section=m07]'))"><div class="icon">🧹</div><div class="text">مهمة تنظيف</div></div>
-        <div class="qa-btn" onclick="showSection('m11',document.querySelector('[data-section=m11]'))"><div class="icon">📊</div><div class="text">التقارير</div></div>
-      </div>
-      <div class="card">
-        <div class="card-header"><h3>آخر الحجوزات</h3><button class="btn btn-gold btn-sm" onclick="openModal('modal-booking')">+ حجز جديد</button></div>
-        <div id="latestBookingsTable"><div class="loading"><div class="spinner"></div>جاري التحميل...</div></div>
+      <div class="mod-actions">
+        <button class="nz-btn is-secondary" onclick="loadHome()">↻ تحديث</button>
+        <button class="nz-btn is-gold" onclick="openModal('modal-booking')">+ حجز جديد</button>
       </div>
     </div>
-
-    <!-- M01 GUESTS -->
-    <div class="section" id="section-m01">
-      <div class="section-title">👥 إدارة الضيوف</div>
-      <div class="section-sub">سجل الضيوف وبياناتهم الكاملة</div>
-      <div class="stats-grid">
-        <div class="stat-card"><div class="label">إجمالي الضيوف</div><div class="value" id="totalGuests">--</div></div>
-        <div class="stat-card"><div class="label">ضيوف نشطون</div><div class="value" id="activeGuests">--</div></div>
-        <div class="stat-card"><div class="label">ضيوف VIP</div><div class="value" id="vipGuests">--</div></div>
-      </div>
-      <div class="card">
-        <div class="card-header"><h3>قائمة الضيوف</h3><button class="btn btn-gold btn-sm" onclick="openModal('modal-guest')">+ إضافة ضيف</button></div>
-        <div id="guestsTable"><div class="loading"><div class="spinner"></div>جاري التحميل...</div></div>
-      </div>
+    <div class="mod-stats" style="--cols:6">
+      <div class="mod-stat"><div class="lbl">الإشغال</div><div class="v" id="kpiOcc">--<span class="cur">%</span></div></div>
+      <div class="mod-stat"><div class="lbl">ADR متوسط السعر</div><div class="v" id="kpiADR">--</div><div class="meta">ر.س / ليلة</div></div>
+      <div class="mod-stat"><div class="lbl">RevPAR</div><div class="v" id="kpiRevPAR">--</div><div class="meta">إيراد لكل غرفة</div></div>
+      <div class="mod-stat"><div class="lbl">الإيراد الشهري</div><div class="v" id="kpiRevenue">--</div><div class="meta">ر.س</div></div>
+      <div class="mod-stat"><div class="lbl">الوصول اليوم</div><div class="v good" id="kpiArrivals">--</div></div>
+      <div class="mod-stat"><div class="lbl">المغادرة اليوم</div><div class="v warn" id="kpiDepartures">--</div></div>
     </div>
-
-    <!-- M02 FRONT DESK -->
-    <div class="section" id="section-m02">
-      <div class="section-title">🏨 الاستقبال</div>
-      <div class="section-sub">تسجيل الوصول والمغادرة وإدارة الاستقبال</div>
-      <div class="two-col">
-        <div class="card">
-          <div class="card-header"><h3>🟢 الوصول اليوم</h3></div>
-          <div id="arrivalsTable"><div class="loading"><div class="spinner"></div>جاري التحميل...</div></div>
-        </div>
-        <div class="card">
-          <div class="card-header"><h3>🔴 المغادرة اليوم</h3></div>
-          <div id="departuresTable"><div class="loading"><div class="spinner"></div>جاري التحميل...</div></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- M03 CHANNELS -->
-    <div class="section" id="section-m03">
-      <div class="section-title">🌐 مدير القنوات</div>
-      <div class="section-sub">إدارة قنوات الحجز الإلكترونية</div>
-      <div class="card">
-        <div class="card-header"><h3>حالة القنوات</h3><button class="btn btn-outline btn-sm" onclick="loadChannels()">🔄 تحديث</button></div>
-        <div id="channelsTable"><div class="loading"><div class="spinner"></div>جاري التحميل...</div></div>
-      </div>
-    </div>
-
-    <!-- M04 ACCOUNTING -->
-    <div class="section" id="section-m04">
-      <div class="section-title">💰 المحاسبة + POS</div>
-      <div class="section-sub">الفواتير والمدفوعات ونقاط البيع</div>
-      <div class="stats-grid">
-        <div class="stat-card"><div class="label">إجمالي الفواتير</div><div class="value" id="totalInvoices">--</div></div>
-        <div class="stat-card"><div class="label">المدفوع</div><div class="value" id="paidInvoices">--</div></div>
-        <div class="stat-card"><div class="label">المعلق</div><div class="value" id="pendingInvoices">--</div></div>
-      </div>
-      <div class="card">
-        <div class="card-header"><h3>الفواتير</h3><button class="btn btn-gold btn-sm" onclick="openModal('modal-invoice')">+ فاتورة جديدة</button></div>
-        <div id="invoicesTable"><div class="loading"><div class="spinner"></div>جاري التحميل...</div></div>
-      </div>
-      <div class="card">
-        <div class="card-header"><h3>نقطة البيع - آخر المعاملات</h3><button class="btn btn-gold btn-sm" onclick="openModal('modal-pos')">+ معاملة جديدة</button></div>
-        <div id="posTable"><div class="loading"><div class="spinner"></div>جاري التحميل...</div></div>
-      </div>
-    </div>
-
-    <!-- M05 INVENTORY -->
-    <div class="section" id="section-m05">
-      <div class="section-title">📦 المخزون</div>
-      <div class="section-sub">حالة الغرف ومتابعة المخزون</div>
-      <div class="card">
-        <div class="card-header"><h3>حالة الغرف</h3><button class="btn btn-outline btn-sm" onclick="loadRoomsStatus()">🔄 تحديث</button></div>
-        <div id="roomsStatusTable"><div class="loading"><div class="spinner"></div>جاري التحميل...</div></div>
-      </div>
-    </div>
-
-    <!-- M06 HR -->
-    <div class="section" id="section-m06">
-      <div class="section-title">👷 الموارد البشرية</div>
-      <div class="section-sub">إدارة الموظفين والحضور والرواتب</div>
-      <div class="stats-grid">
-        <div class="stat-card"><div class="label">إجمالي الموظفين</div><div class="value" id="totalEmployees">--</div></div>
-        <div class="stat-card"><div class="label">حضور اليوم</div><div class="value" id="todayAttendance">--</div></div>
-        <div class="stat-card"><div class="label">كشوف الرواتب</div><div class="value" id="payrollCount">--</div></div>
-      </div>
-      <div class="card">
-        <div class="card-header"><h3>الموظفون</h3><button class="btn btn-gold btn-sm" onclick="openModal('modal-employee')">+ موظف جديد</button></div>
-        <div id="employeesTable"><div class="loading"><div class="spinner"></div>جاري التحميل...</div></div>
-      </div>
-    </div>
-
-    <!-- M07 HOUSEKEEPING -->
-    <div class="section" id="section-m07">
-      <div class="section-title">🧹 الإشراف الداخلي</div>
-      <div class="section-sub">مهام التنظيف وحالة الغرف</div>
-      <div class="card">
-        <div class="card-header"><h3>مهام التنظيف</h3><button class="btn btn-gold btn-sm" onclick="openModal('modal-hk-task')">+ مهمة جديدة</button></div>
-        <div id="hkTasksTable"><div class="loading"><div class="spinner"></div>جاري التحميل...</div></div>
-      </div>
-    </div>
-
-    <!-- M08 MAINTENANCE -->
-    <div class="section" id="section-m08">
-      <div class="section-title">🔧 الصيانة</div>
-      <div class="section-sub">أوامر الصيانة وإدارة الأصول</div>
-      <div class="card">
-        <div class="card-header"><h3>أوامر الصيانة</h3><button class="btn btn-gold btn-sm" onclick="openModal('modal-maintenance')">+ أمر صيانة</button></div>
-        <div id="maintenanceTable"><div class="loading"><div class="spinner"></div>جاري التحميل...</div></div>
-      </div>
-      <div class="card">
-        <div class="card-header"><h3>الأصول</h3><button class="btn btn-gold btn-sm" onclick="openModal('modal-asset')">+ أصل جديد</button></div>
-        <div id="assetsTable"><div class="loading"><div class="spinner"></div>جاري التحميل...</div></div>
-      </div>
-    </div>
-
-    <!-- M09 SMART KEY -->
-    <div class="section" id="section-m09">
-      <div class="section-title">🔑 المفتاح الذكي</div>
-      <div class="section-sub">إدارة المفاتيح الرقمية والوصول الذكي</div>
-      <div class="module-grid">
-        <div class="module-card"><h4>🟢 الغرف المفعّلة</h4><div style="font-size:32px;font-weight:700;color:var(--green)">87</div><div style="font-size:12px;color:var(--text-light)">من أصل 120 غرفة</div></div>
-        <div class="module-card"><h4>🔴 مفاتيح منتهية الصلاحية</h4><div style="font-size:32px;font-weight:700;color:var(--red)">3</div><div style="font-size:12px;color:var(--text-light)">تحتاج إعادة تفعيل</div></div>
-        <div class="module-card"><h4>📲 طلبات المفتاح الرقمي</h4><div style="font-size:32px;font-weight:700;color:var(--blue)">12</div><div style="font-size:12px;color:var(--text-light)">طلب اليوم</div></div>
-        <div class="module-card"><h4>⚡ مفاتيح الطوارئ</h4><div style="font-size:32px;font-weight:700;color:var(--yellow)">5</div><div style="font-size:12px;color:var(--text-light)">تم إصدارها اليوم</div></div>
-      </div>
-      <div class="card">
-        <div class="card-header"><h3>سجل الوصول</h3></div>
-        <table><thead><tr><th>الغرفة</th><th>الضيف</th><th>النوع</th><th>الوقت</th><th>الحالة</th></tr></thead>
-        <tbody>
-          <tr><td>101</td><td>أحمد محمد</td><td>مفتاح رقمي</td><td>09:32 ص</td><td><span class="badge badge-green">مفتوح</span></td></tr>
-          <tr><td>205</td><td>سارة خالد</td><td>بطاقة فيزيائية</td><td>10:15 ص</td><td><span class="badge badge-green">مفتوح</span></td></tr>
-          <tr><td>312</td><td>--</td><td>مفتاح طوارئ</td><td>11:00 ص</td><td><span class="badge badge-yellow">قيد المراجعة</span></td></tr>
-        </tbody></table>
-      </div>
-    </div>
-
-    <!-- M10 CRM -->
-    <div class="section" id="section-m10">
-      <div class="section-title">❤️ CRM والولاء</div>
-      <div class="section-sub">إدارة علاقات الضيوف وبرامج الولاء</div>
-      <div class="stats-grid">
-        <div class="stat-card"><div class="label">إجمالي العملاء</div><div class="value" id="crmTotal">--</div></div>
-        <div class="stat-card"><div class="label">أعضاء الولاء</div><div class="value" id="crmLoyalty">--</div></div>
-        <div class="stat-card"><div class="label">نقاط ممنوحة اليوم</div><div class="value" id="crmPoints">--</div></div>
-      </div>
-      <div class="card">
-        <div class="card-header"><h3>جهات الاتصال</h3><button class="btn btn-gold btn-sm" onclick="openModal('modal-loyalty')">+ منح نقاط</button></div>
-        <div id="crmTable"><div class="loading"><div class="spinner"></div>جاري التحميل...</div></div>
-      </div>
-    </div>
-
-    <!-- M11 KPI -->
-    <div class="section" id="section-m11">
-      <div class="section-title">📊 مؤشرات الأداء</div>
-      <div class="section-sub">تحليل الأداء والمؤشرات التشغيلية</div>
-      <div class="stats-grid">
-        <div class="stat-card"><div class="label">نسبة الإشغال</div><div class="value" id="kpi2Occ">--</div></div>
-        <div class="stat-card"><div class="label">ADR</div><div class="value" id="kpi2ADR">--</div></div>
-        <div class="stat-card"><div class="label">RevPAR</div><div class="value" id="kpi2RevPAR">--</div></div>
-        <div class="stat-card"><div class="label">رضا الضيوف</div><div class="value" id="kpi2Sat">--</div></div>
-        <div class="stat-card"><div class="label">متوسط مدة الإقامة</div><div class="value" id="kpi2Los">--</div></div>
-        <div class="stat-card"><div class="label">معدل الإلغاء</div><div class="value" id="kpi2Cancel">--</div></div>
-      </div>
-      <div class="card">
-        <div class="card-header"><h3>بيانات الأداء التفصيلية</h3><button class="btn btn-outline btn-sm" onclick="loadKPI()">🔄 تحديث</button></div>
-        <div id="kpiTable"><div class="loading"><div class="spinner"></div>جاري التحميل...</div></div>
-      </div>
-    </div>
-
-    <!-- M12 INSIGHTS -->
-    <div class="section" id="section-m12">
-      <div class="section-title">🧠 الرؤى الذكية</div>
-      <div class="section-sub">تحليلات الذكاء الاصطناعي والتوصيات</div>
-      <div class="module-grid">
-        <div class="module-card"><h4>💡 توصية تسعير</h4><p style="font-size:13px;color:var(--text-light);line-height:1.6">يُنصح برفع أسعار الغرف العائلية بنسبة 12% خلال نهاية الأسبوع القادم بسبب ارتفاع الطلب المتوقع.</p></div>
-        <div class="module-card"><h4>📈 توقع الإشغال</h4><p style="font-size:13px;color:var(--text-light);line-height:1.6">من المتوقع أن يصل الإشغال إلى 94% خلال الأسبوع القادم بناءً على نماذج التعلم الآلي.</p></div>
-        <div class="module-card"><h4>⚠️ تنبيه مخزون</h4><p style="font-size:13px;color:var(--text-light);line-height:1.6">مستوى مناشف الحمام وصل إلى الحد الأدنى، يُنصح بطلب 200 وحدة إضافية.</p></div>
-        <div class="module-card"><h4>🎯 عميل مميز</h4><p style="font-size:13px;color:var(--text-light);line-height:1.6">الضيف أحمد محمد زار الفندق 8 مرات هذا العام. يُنصح بتقديم عرض خاص لتحفيز الولاء.</p></div>
-        <div class="module-card"><h4>🔧 صيانة وقائية</h4><p style="font-size:13px;color:var(--text-light);line-height:1.6">الغرف 201-210 تحتاج فحصاً دورياً لأجهزة التكييف خلال الأسبوعين القادمين.</p></div>
-        <div class="module-card"><h4>💬 تحليل المراجعات</h4><p style="font-size:13px;color:var(--text-light);line-height:1.6">معدل الرضا هذا الشهر 4.7/5 بزيادة 0.3 عن الشهر الماضي. أبرز تحسن في النظافة.</p></div>
-      </div>
-    </div>
-
-    <!-- M13 WAREHOUSES -->
-    <div class="section" id="section-m13">
-      <div class="section-title">🏭 المستودعات</div>
-      <div class="section-sub">إدارة المخازن والموردين والمواد</div>
-      <div class="card">
-        <div class="card-header"><h3>عناصر المستودع</h3><button class="btn btn-gold btn-sm" onclick="openModal('modal-warehouse-item')">+ إضافة عنصر</button></div>
-        <div id="warehouseTable"><div class="loading"><div class="spinner"></div>جاري التحميل...</div></div>
-      </div>
-      <div class="card">
-        <div class="card-header"><h3>⚠️ مخزون منخفض</h3></div>
-        <div id="lowStockTable"><div class="loading"><div class="spinner"></div>جاري التحميل...</div></div>
-      </div>
-    </div>
-
-    <!-- M14 TOURISM -->
-    <div class="section" id="section-m14">
-      <div class="section-title">🗺️ الجولات السياحية</div>
-      <div class="section-sub">إدارة الجولات وحجوزات السياحة</div>
-      <div class="stats-grid">
-        <div class="stat-card"><div class="label">إجمالي الجولات</div><div class="value" id="totalTours">--</div></div>
-        <div class="stat-card"><div class="label">حجوزات اليوم</div><div class="value" id="tourBookings">--</div></div>
-        <div class="stat-card"><div class="label">إيرادات الجولات</div><div class="value" id="tourRevenue">--</div></div>
-      </div>
-      <div class="card">
-        <div class="card-header"><h3>الجولات المتاحة</h3><button class="btn btn-gold btn-sm" onclick="openModal('modal-tour')">+ جولة جديدة</button></div>
-        <div id="toursTable"><div class="loading"><div class="spinner"></div>جاري التحميل...</div></div>
-      </div>
-    </div>
-
-    <!-- M14B TOURIST DESTINATIONS -->
-    <div class="section" id="section-m14b">
-      <div class="section-title">📍 وجهات سياحية</div>
-      <div class="section-sub">إدارة الوجهات السياحية وحجوزاتها وتقييماتها</div>
-      <div class="stats-grid">
-        <div class="stat-card"><div class="label">وجهات نشطة</div><div class="value" id="totalDestinations">--</div></div>
-        <div class="stat-card"><div class="label">إجمالي الحجوزات</div><div class="value" id="destBookingsCount">--</div></div>
-        <div class="stat-card"><div class="label">إيرادات الوجهات</div><div class="value" id="destRevenue">--</div></div>
-      </div>
-      <div class="card">
-        <div class="card-header"><h3>الوجهات السياحية</h3><button class="btn btn-gold btn-sm" onclick="openModal('modal-destination')">+ وجهة جديدة</button></div>
-        <div id="destinationsTable"><div class="loading"><div class="spinner"></div>جاري التحميل...</div></div>
-      </div>
-      <div class="card">
-        <div class="card-header"><h3>حجوزات الوجهات</h3></div>
-        <div id="destBookingsTable"><div class="loading"><div class="spinner"></div>جاري التحميل...</div></div>
-      </div>
-    </div>
-
-    <!-- M15 STAFF APP -->
-    <div class="section" id="section-m15">
-      <div class="section-title">📱 تطبيق الموظفين</div>
-      <div class="section-sub">بوابة الموظفين والمهام والإشعارات</div>
-      <div class="module-grid">
-        <div class="module-card"><h4>📬 إشعارات اليوم</h4><div style="font-size:32px;font-weight:700;color:var(--blue)">14</div><div style="font-size:12px;color:var(--text-light)">إشعار غير مقروء</div></div>
-        <div class="module-card"><h4>✅ مهام مكتملة</h4><div style="font-size:32px;font-weight:700;color:var(--green)">28</div><div style="font-size:12px;color:var(--text-light)">مهمة اليوم</div></div>
-        <div class="module-card"><h4>⏳ مهام قيد التنفيذ</h4><div style="font-size:32px;font-weight:700;color:var(--yellow)">7</div><div style="font-size:12px;color:var(--text-light)">مهمة نشطة</div></div>
-        <div class="module-card"><h4>🚨 طلبات عاجلة</h4><div style="font-size:32px;font-weight:700;color:var(--red)">2</div><div style="font-size:12px;color:var(--text-light)">تحتاج تدخلاً فورياً</div></div>
-      </div>
-      <div class="card">
-        <div class="card-header"><h3>قائمة المهام النشطة</h3><button class="btn btn-gold btn-sm" onclick="openModal('modal-staff-task')">+ مهمة جديدة</button></div>
-        <table><thead><tr><th>المهمة</th><th>الموظف</th><th>القسم</th><th>الأولوية</th><th>الحالة</th></tr></thead>
-        <tbody>
-          <tr><td>تنظيف الغرفة 205</td><td>فاطمة علي</td><td>التدبير المنزلي</td><td><span class="badge badge-red">عاجل</span></td><td><span class="badge badge-yellow">جارٍ</span></td></tr>
-          <tr><td>إصلاح تكييف 312</td><td>خالد السعيد</td><td>الصيانة</td><td><span class="badge badge-yellow">متوسط</span></td><td><span class="badge badge-blue">جديد</span></td></tr>
-          <tr><td>تجهيز قاعة المؤتمرات</td><td>محمد أحمد</td><td>الخدمات</td><td><span class="badge badge-green">عادي</span></td><td><span class="badge badge-green">مكتمل</span></td></tr>
-        </tbody></table>
-      </div>
-    </div>
-
-  </div>
-</div>
-</div>
-
-<!-- TOAST -->
-<div class="toast-container" id="toastContainer"></div>
-
-<!-- MODALS -->
-<div class="modal-overlay" id="modal-guest">
-  <div class="modal">
-    <div class="modal-header"><h3>إضافة ضيف جديد</h3><button class="modal-close" onclick="closeModal('modal-guest')">×</button></div>
-    <div class="modal-body">
-      <div class="form-row">
-        <div class="form-group"><label>الاسم الأول</label><input type="text" id="guestFirstName" placeholder="أحمد"></div>
-        <div class="form-group"><label>اسم العائلة</label><input type="text" id="guestLastName" placeholder="محمد"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>رقم الجوال</label><input type="tel" id="guestPhone" placeholder="+966500000000"></div>
-        <div class="form-group"><label>البريد الإلكتروني</label><input type="email" id="guestEmail" placeholder="email@example.com"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>الجنسية</label><input type="text" id="guestNationality" placeholder="سعودي"></div>
-        <div class="form-group"><label>رقم الهوية/الجواز</label><input type="text" id="guestId" placeholder="1234567890"></div>
-      </div>
-      <div class="form-group"><label>ملاحظات</label><textarea id="guestNotes" rows="3" placeholder="ملاحظات خاصة بالضيف..."></textarea></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-gold" onclick="createGuest()">حفظ الضيف</button>
-      <button class="btn btn-outline" onclick="closeModal('modal-guest')">إلغاء</button>
+    <div class="mod-card">
+      <div class="mod-card-head"><div class="ttl">آخر الحجوزات</div><button class="nz-btn is-ghost sm" onclick="openModal('modal-booking')">+ جديد</button></div>
+      <div id="latestBookingsTable"><div class="mod-empty">جارٍ التحميل…</div></div>
     </div>
   </div>
-</div>
 
+  <!-- ═ M01 GUESTS ═ -->
+  <div id="section-m01" class="section">
+    <div class="mod-head">
+      <div class="left"><span class="mod-num">M·01</span><h1>إدارة الضيوف</h1><div class="sub">Guest Management</div></div>
+      <div class="mod-actions"><button class="nz-btn is-gold" onclick="openModal('modal-guest')">+ إضافة ضيف</button></div>
+    </div>
+    <div class="mod-stats">
+      <div class="mod-stat"><div class="lbl">إجمالي الضيوف</div><div class="v" id="totalGuests">--</div></div>
+      <div class="mod-stat"><div class="lbl">جدد هذا الشهر</div><div class="v good" id="newGuestsMonth">--</div></div>
+      <div class="mod-stat"><div class="lbl">ضيوف VIP</div><div class="v gold" id="vipGuests">--</div></div>
+      <div class="mod-stat"><div class="lbl">أعلى جنسية</div><div class="v" id="topNationality" style="font-size:16px">--</div></div>
+    </div>
+    <div class="mod-card">
+      <div class="mod-card-head"><div class="ttl">قائمة الضيوف</div></div>
+      <div id="guestsTable"><div class="mod-empty">جارٍ التحميل…</div></div>
+    </div>
+  </div>
+
+  <!-- ═ M02 FRONT DESK ═ -->
+  <div id="section-m02" class="section">
+    <div class="mod-head">
+      <div class="left"><span class="mod-num">M·02</span><h1>الاستقبال</h1><div class="sub">Front Desk</div></div>
+    </div>
+    <div class="mod-2col">
+      <div class="mod-card">
+        <div class="mod-card-head"><div class="ttl">الوصول اليوم</div></div>
+        <div id="arrivalsTable"><div class="mod-empty">جارٍ التحميل…</div></div>
+      </div>
+      <div class="mod-card">
+        <div class="mod-card-head"><div class="ttl">المغادرة اليوم</div></div>
+        <div id="departuresTable"><div class="mod-empty">جارٍ التحميل…</div></div>
+      </div>
+    </div>
+    <div class="mod-card">
+      <div class="mod-card-head"><div class="ttl">الحجوزات النشطة</div></div>
+      <div id="activeBookingsTable"><div class="mod-empty">جارٍ التحميل…</div></div>
+    </div>
+  </div>
+
+  <!-- ═ M03 CHANNELS ═ -->
+  <div id="section-m03" class="section">
+    <div class="mod-head">
+      <div class="left"><span class="mod-num">M·03</span><h1>مدير القنوات</h1><div class="sub">Channel Manager</div></div>
+    </div>
+    <div class="mod-stats">
+      <div class="mod-stat"><div class="lbl">قنوات نشطة</div><div class="v good" id="activeChannels">--</div></div>
+      <div class="mod-stat"><div class="lbl">إجمالي الحجوزات</div><div class="v" id="channelBookings">--</div></div>
+      <div class="mod-stat"><div class="lbl">الإيراد من القنوات</div><div class="v" id="channelRevenue">--</div><div class="meta">ر.س</div></div>
+      <div class="mod-stat"><div class="lbl">معدل الإشغال</div><div class="v" id="channelOcc">--</div></div>
+    </div>
+    <div class="mod-card">
+      <div class="mod-card-head"><div class="ttl">القنوات</div></div>
+      <div id="channelsTable"><div class="mod-empty">جارٍ التحميل…</div></div>
+    </div>
+    <div class="mod-card">
+      <div class="mod-card-head"><div class="ttl">آخر المزامنات</div></div>
+      <div id="syncTable"><div class="mod-empty">جارٍ التحميل…</div></div>
+    </div>
+  </div>
+
+  <!-- ═ M04 ACCOUNTING ═ -->
+  <div id="section-m04" class="section">
+    <div class="mod-head">
+      <div class="left"><span class="mod-num">M·04</span><h1>المحاسبة ونقطة البيع</h1><div class="sub">Accounting & POS</div></div>
+      <div class="mod-actions">
+        <button class="nz-btn is-secondary" onclick="openModal('modal-invoice')">+ فاتورة</button>
+        <button class="nz-btn is-gold" onclick="openModal('modal-pos')">🛒 POS</button>
+      </div>
+    </div>
+    <div class="mod-stats">
+      <div class="mod-stat"><div class="lbl">إيراد اليوم</div><div class="v good" id="todayRevenue">--</div><div class="meta">ر.س</div></div>
+      <div class="mod-stat"><div class="lbl">فواتير اليوم</div><div class="v" id="todayInvoices">--</div></div>
+      <div class="mod-stat"><div class="lbl">مبيعات POS</div><div class="v" id="todayPOS">--</div><div class="meta">ر.س</div></div>
+      <div class="mod-stat"><div class="lbl">الإجمالي</div><div class="v" id="grandTotal">--</div><div class="meta">ر.س</div></div>
+    </div>
+    <div class="mod-card">
+      <div class="mod-card-head"><div class="ttl">الفواتير</div></div>
+      <div id="invoicesTable"><div class="mod-empty">جارٍ التحميل…</div></div>
+    </div>
+    <div class="mod-card">
+      <div class="mod-card-head"><div class="ttl">مبيعات نقطة البيع</div></div>
+      <div id="posTable"><div class="mod-empty">جارٍ التحميل…</div></div>
+    </div>
+  </div>
+
+  <!-- ═ M05 ROOMS ═ -->
+  <div id="section-m05" class="section">
+    <div class="mod-head">
+      <div class="left"><span class="mod-num">M·05</span><h1>حالة الغرف</h1><div class="sub">Rooms Status</div></div>
+      <div class="mod-actions"><button class="nz-btn is-secondary" onclick="loadRoomsStatus()">↻ تحديث</button></div>
+    </div>
+    <div class="mod-stats">
+      <div class="mod-stat"><div class="lbl">إجمالي الغرف</div><div class="v" id="totalRooms">--</div></div>
+      <div class="mod-stat"><div class="lbl">مشغولة</div><div class="v bad" id="occupiedRooms">--</div></div>
+      <div class="mod-stat"><div class="lbl">متاحة</div><div class="v good" id="availableRooms">--</div></div>
+      <div class="mod-stat"><div class="lbl">تحتاج تنظيف</div><div class="v warn" id="dirtyRooms">--</div></div>
+    </div>
+    <div class="mod-card">
+      <div class="mod-card-head"><div class="ttl">جدول الغرف</div></div>
+      <div id="roomsTable"><div class="mod-empty">جارٍ التحميل…</div></div>
+    </div>
+  </div>
+
+  <!-- ═ M06 HR ═ -->
+  <div id="section-m06" class="section">
+    <div class="mod-head">
+      <div class="left"><span class="mod-num">M·06</span><h1>الموارد البشرية</h1><div class="sub">HR & Payroll</div></div>
+      <div class="mod-actions"><button class="nz-btn is-gold" onclick="openModal('modal-employee')">+ موظف جديد</button></div>
+    </div>
+    <div class="mod-stats">
+      <div class="mod-stat"><div class="lbl">إجمالي الموظفين</div><div class="v" id="totalEmployees">--</div></div>
+      <div class="mod-stat"><div class="lbl">الرواتب الشهرية</div><div class="v" id="totalSalaries">--</div><div class="meta">ر.س</div></div>
+      <div class="mod-stat"><div class="lbl">حاضر اليوم</div><div class="v good" id="presentToday">--</div></div>
+      <div class="mod-stat"><div class="lbl">طلبات معلقة</div><div class="v warn" id="pendingPayroll">--</div></div>
+    </div>
+    <div class="mod-card">
+      <div class="mod-card-head"><div class="ttl">قائمة الموظفين</div></div>
+      <div id="employeesTable"><div class="mod-empty">جارٍ التحميل…</div></div>
+    </div>
+  </div>
+
+  <!-- ═ M07 HOUSEKEEPING ═ -->
+  <div id="section-m07" class="section">
+    <div class="mod-head">
+      <div class="left"><span class="mod-num">M·07</span><h1>الإشراف الداخلي</h1><div class="sub">Housekeeping</div></div>
+      <div class="mod-actions"><button class="nz-btn is-gold" onclick="openModal('modal-hk-task')">+ مهمة جديدة</button></div>
+    </div>
+    <div class="mod-stats">
+      <div class="mod-stat"><div class="lbl">مهام معلقة</div><div class="v warn" id="hkPending">--</div></div>
+      <div class="mod-stat"><div class="lbl">قيد التنفيذ</div><div class="v info" id="hkInProgress">--</div></div>
+      <div class="mod-stat"><div class="lbl">مكتملة اليوم</div><div class="v good" id="hkCompleted">--</div></div>
+      <div class="mod-stat"><div class="lbl">غرف تحتاج تنظيف</div><div class="v bad" id="hkDirty">--</div></div>
+    </div>
+    <div class="mod-card">
+      <div class="mod-card-head"><div class="ttl">مهام التنظيف</div></div>
+      <div id="hkTable"><div class="mod-empty">جارٍ التحميل…</div></div>
+    </div>
+  </div>
+
+  <!-- ═ M08 MAINTENANCE ═ -->
+  <div id="section-m08" class="section">
+    <div class="mod-head">
+      <div class="left"><span class="mod-num">M·08</span><h1>الصيانة</h1><div class="sub">Maintenance</div></div>
+      <div class="mod-actions">
+        <button class="nz-btn is-secondary" onclick="openModal('modal-asset')">+ أصل</button>
+        <button class="nz-btn is-gold" onclick="openModal('modal-maintenance')">+ أمر صيانة</button>
+      </div>
+    </div>
+    <div class="mod-stats">
+      <div class="mod-stat"><div class="lbl">أوامر مفتوحة</div><div class="v bad" id="openOrders">--</div></div>
+      <div class="mod-stat"><div class="lbl">قيد التنفيذ</div><div class="v warn" id="inProgressOrders">--</div></div>
+      <div class="mod-stat"><div class="lbl">مكتملة الشهر</div><div class="v good" id="completedOrders">--</div></div>
+      <div class="mod-stat"><div class="lbl">إجمالي الأصول</div><div class="v" id="totalAssets">--</div></div>
+    </div>
+    <div class="mod-card">
+      <div class="mod-card-head"><div class="ttl">أوامر الصيانة</div></div>
+      <div id="maintenanceTable"><div class="mod-empty">جارٍ التحميل…</div></div>
+    </div>
+    <div class="mod-card">
+      <div class="mod-card-head"><div class="ttl">الأصول</div></div>
+      <div id="assetsTable"><div class="mod-empty">جارٍ التحميل…</div></div>
+    </div>
+  </div>
+
+  <!-- ═ M09 SMART KEY ═ -->
+  <div id="section-m09" class="section">
+    <div class="mod-head">
+      <div class="left"><span class="mod-num">M·09</span><h1>المفتاح الذكي</h1><div class="sub">Smart Key System</div></div>
+      <div class="mod-actions"><button class="nz-btn is-secondary" onclick="loadSmartKey()">↻ تحديث</button></div>
+    </div>
+    <div class="mod-stats">
+      <div class="mod-stat"><div class="lbl">إجمالي الغرف</div><div class="v" id="smartKeyActive">--</div></div>
+      <div class="mod-stat"><div class="lbl">مشغولة</div><div class="v bad" id="smartKeyOccupied">--</div></div>
+      <div class="mod-stat"><div class="lbl">تحتاج تنظيف</div><div class="v warn" id="smartKeyDirty">--</div></div>
+      <div class="mod-stat"><div class="lbl">متاحة</div><div class="v good" id="smartKeyAvail">--</div></div>
+    </div>
+    <div class="mod-card">
+      <div class="mod-card-head"><div class="ttl">حالة المفاتيح</div><div id="smartKeyTotal" class="sub"></div></div>
+      <div id="smartKeyTable"><div class="mod-empty">جارٍ التحميل…</div></div>
+    </div>
+  </div>
+
+  <!-- ═ M10 CRM ═ -->
+  <div id="section-m10" class="section">
+    <div class="mod-head">
+      <div class="left"><span class="mod-num">M·10</span><h1>CRM والولاء</h1><div class="sub">CRM & Loyalty</div></div>
+      <div class="mod-actions"><button class="nz-btn is-gold" onclick="openModal('modal-loyalty')">+ نقاط ولاء</button></div>
+    </div>
+    <div class="mod-stats">
+      <div class="mod-stat"><div class="lbl">إجمالي العملاء</div><div class="v" id="totalContacts">--</div></div>
+      <div class="mod-stat"><div class="lbl">ضيوف VIP</div><div class="v gold" id="crmVIP">--</div></div>
+      <div class="mod-stat"><div class="lbl">متوسط القيمة</div><div class="v" id="avgLifetime">--</div><div class="meta">ر.س</div></div>
+      <div class="mod-stat"><div class="lbl">نقاط ممنوحة</div><div class="v" id="totalPoints">--</div></div>
+    </div>
+    <div class="mod-card">
+      <div class="mod-card-head"><div class="ttl">العملاء</div></div>
+      <div id="crmTable"><div class="mod-empty">جارٍ التحميل…</div></div>
+    </div>
+    <div class="mod-card">
+      <div class="mod-card-head"><div class="ttl">الحملات التسويقية</div></div>
+      <div id="campaignsTable"><div class="mod-empty">جارٍ التحميل…</div></div>
+    </div>
+  </div>
+
+  <!-- ═ M11 KPI ═ -->
+  <div id="section-m11" class="section">
+    <div class="mod-head">
+      <div class="left"><span class="mod-num">M·11</span><h1>مؤشرات الأداء</h1><div class="sub">KPI Analytics</div></div>
+      <div class="mod-actions"><button class="nz-btn is-secondary" onclick="loadKPI()">↻ تحديث</button></div>
+    </div>
+    <div class="mod-stats" style="--cols:5">
+      <div class="mod-stat"><div class="lbl">الإشغال</div><div class="v" id="kpiDashOcc">--</div><div class="meta">%</div></div>
+      <div class="mod-stat"><div class="lbl">ADR</div><div class="v" id="kpiDashADR">--</div><div class="meta">ر.س</div></div>
+      <div class="mod-stat"><div class="lbl">RevPAR</div><div class="v" id="kpiDashRevPAR">--</div><div class="meta">ر.س</div></div>
+      <div class="mod-stat"><div class="lbl">الإيراد الكلي</div><div class="v" id="kpiDashRevenue">--</div><div class="meta">ر.س</div></div>
+      <div class="mod-stat"><div class="lbl">تقييم NPS</div><div class="v" id="kpiDashNPS">--</div></div>
+    </div>
+    <div class="mod-card">
+      <div class="mod-card-head"><div class="ttl">مؤشرات الأداء الشهرية</div></div>
+      <div id="kpiTable"><div class="mod-empty">جارٍ التحميل…</div></div>
+    </div>
+  </div>
+
+  <!-- ═ M12 INSIGHTS ═ -->
+  <div id="section-m12" class="section">
+    <div class="mod-head">
+      <div class="left"><span class="mod-num">M·12</span><h1>الرؤى الذكية</h1><div class="sub">AI Data Insights</div></div>
+      <div class="mod-actions"><button class="nz-btn is-secondary" onclick="loadInsights()">↻ تحديث</button></div>
+    </div>
+    <div class="mod-stats">
+      <div class="mod-stat"><div class="lbl">صحة النظام</div><div class="v good" id="insightHealth">--</div><div class="meta" id="insightHealthSub">--</div></div>
+      <div class="mod-stat"><div class="lbl">صيانة مفتوحة</div><div class="v warn" id="insightMaintOpen">--</div></div>
+      <div class="mod-stat"><div class="lbl">مخزون منخفض</div><div class="v bad" id="insightLowStock">--</div></div>
+      <div class="mod-stat"><div class="lbl">ضيوف VIP</div><div class="v gold" id="insightVIP">--</div></div>
+    </div>
+    <div class="mod-card">
+      <div class="mod-card-head"><div class="ttl">التوصيات والرؤى</div></div>
+      <div class="mod-card-body"><div class="insights-grid" id="insightsGrid"><div class="mod-empty">جارٍ التحميل…</div></div></div>
+    </div>
+  </div>
+
+  <!-- ═ M13 WAREHOUSES ═ -->
+  <div id="section-m13" class="section">
+    <div class="mod-head">
+      <div class="left"><span class="mod-num">M·13</span><h1>المستودعات والمشتريات</h1><div class="sub">Warehouses & Procurement</div></div>
+      <div class="mod-actions">
+        <button class="nz-btn is-secondary" onclick="openModal('modal-po')">+ أمر شراء</button>
+        <button class="nz-btn is-gold" onclick="openModal('modal-warehouse-item')">+ صنف</button>
+      </div>
+    </div>
+    <div class="mod-stats">
+      <div class="mod-stat"><div class="lbl">إجمالي الأصناف</div><div class="v" id="totalItems">--</div></div>
+      <div class="mod-stat"><div class="lbl">منخفض المخزون</div><div class="v bad" id="lowStockCount">--</div></div>
+      <div class="mod-stat"><div class="lbl">قيمة المخزون</div><div class="v" id="stockValue">--</div><div class="meta">ر.س</div></div>
+      <div class="mod-stat"><div class="lbl">أوامر شراء معلقة</div><div class="v warn" id="pendingPO">--</div></div>
+    </div>
+    <div class="mod-2col">
+      <div class="mod-card">
+        <div class="mod-card-head"><div class="ttl">الأصناف</div></div>
+        <div id="warehouseTable"><div class="mod-empty">جارٍ التحميل…</div></div>
+      </div>
+      <div class="mod-card">
+        <div class="mod-card-head"><div class="ttl">المخزون المنخفض</div></div>
+        <div id="lowStockTable"><div class="mod-empty">جارٍ التحميل…</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═ M14 TOURISM ═ -->
+  <div id="section-m14" class="section">
+    <div class="mod-head">
+      <div class="left"><span class="mod-num">M·14</span><h1>الجولات السياحية</h1><div class="sub">Tourism Tours</div></div>
+      <div class="mod-actions"><button class="nz-btn is-gold" onclick="openModal('modal-tour')">+ جولة جديدة</button></div>
+    </div>
+    <div class="mod-stats">
+      <div class="mod-stat"><div class="lbl">إجمالي الجولات</div><div class="v" id="totalTours">--</div></div>
+      <div class="mod-stat"><div class="lbl">حجوزات الجولات</div><div class="v" id="tourBookingsCount">--</div></div>
+      <div class="mod-stat"><div class="lbl">الإيراد السياحي</div><div class="v" id="tourRevenue">--</div><div class="meta">ر.س</div></div>
+      <div class="mod-stat"><div class="lbl">متوسط التقييم</div><div class="v gold" id="tourRating">--</div></div>
+    </div>
+    <div class="mod-card">
+      <div class="mod-card-head"><div class="ttl">كتالوج الجولات</div></div>
+      <div id="toursTable"><div class="mod-empty">جارٍ التحميل…</div></div>
+    </div>
+    <div class="mod-card">
+      <div class="mod-card-head"><div class="ttl">حجوزات الجولات</div></div>
+      <div id="tourBookingsTable"><div class="mod-empty">جارٍ التحميل…</div></div>
+    </div>
+  </div>
+
+  <!-- ═ M14B DESTINATIONS ═ -->
+  <div id="section-m14b" class="section">
+    <div class="mod-head">
+      <div class="left"><span class="mod-num">M·14b</span><h1>وجهات سياحية</h1><div class="sub">Tourist Destinations</div></div>
+      <div class="mod-actions"><button class="nz-btn is-gold" onclick="openModal('modal-destination')">+ وجهة جديدة</button></div>
+    </div>
+    <div class="mod-stats">
+      <div class="mod-stat"><div class="lbl">الوجهات النشطة</div><div class="v good" id="totalDestinations">--</div></div>
+      <div class="mod-stat"><div class="lbl">الحجوزات</div><div class="v" id="destBookingsCount">--</div></div>
+      <div class="mod-stat"><div class="lbl">الإيراد</div><div class="v" id="destRevenue">--</div><div class="meta">ر.س</div></div>
+      <div class="mod-stat"><div class="lbl">متوسط التقييم</div><div class="v gold">4.5</div></div>
+    </div>
+    <div class="mod-card">
+      <div class="mod-card-head"><div class="ttl">الوجهات السياحية</div></div>
+      <div id="destinationsTable"><div class="mod-empty">جارٍ التحميل…</div></div>
+    </div>
+    <div class="mod-card">
+      <div class="mod-card-head"><div class="ttl">حجوزات الوجهات</div></div>
+      <div id="destBookingsTable"><div class="mod-empty">جارٍ التحميل…</div></div>
+    </div>
+  </div>
+
+  <!-- ═ M15 STAFF APP ═ -->
+  <div id="section-m15" class="section">
+    <div class="mod-head">
+      <div class="left"><span class="mod-num">M·15</span><h1>تطبيق الموظفين</h1><div class="sub">Staff Mobile App</div></div>
+      <div class="mod-actions"><button class="nz-btn is-secondary" onclick="loadStaffApp()">↻ تحديث</button></div>
+    </div>
+    <div class="mod-stats">
+      <div class="mod-stat"><div class="lbl">تنظيف معلق</div><div class="v warn" id="staffHKPending">--</div></div>
+      <div class="mod-stat"><div class="lbl">تنظيف مكتمل</div><div class="v good" id="staffHKDone">--</div></div>
+      <div class="mod-stat"><div class="lbl">صيانة مفتوحة</div><div class="v bad" id="staffMaintOpen">--</div></div>
+      <div class="mod-stat"><div class="lbl">عاجل / أولوية</div><div class="v bad" id="staffUrgent">--</div></div>
+    </div>
+    <div class="mod-2col">
+      <div class="mod-card">
+        <div class="mod-card-head"><div class="ttl">مهام التنظيف</div></div>
+        <div id="staffHKTable"><div class="mod-empty">جارٍ التحميل…</div></div>
+      </div>
+      <div class="mod-card">
+        <div class="mod-card-head"><div class="ttl">أوامر الصيانة</div></div>
+        <div id="staffMaintTable"><div class="mod-empty">جارٍ التحميل…</div></div>
+      </div>
+    </div>
+  </div>
+
+  </main>
+</div><!-- end main column -->
+</div><!-- end nz-app -->
+
+<!-- ═══ MODALS ═══ -->
 <div class="modal-overlay" id="modal-booking">
-  <div class="modal">
-    <div class="modal-header"><h3>حجز جديد</h3><button class="modal-close" onclick="closeModal('modal-booking')">×</button></div>
-    <div class="modal-body">
-      <div class="form-row">
-        <div class="form-group"><label>اسم الضيف</label><input type="text" id="bookingGuest" placeholder="اسم الضيف"></div>
-        <div class="form-group"><label>رقم الغرفة</label><input type="text" id="bookingRoom" placeholder="101"></div>
+  <div class="modal-box">
+    <h3>حجز جديد</h3>
+    <div class="nz-form-grid">
+      <div class="nz-field"><label>اسم الضيف</label><input id="bookingGuest" placeholder="الاسم الكامل"></div>
+      <div class="nz-field"><label>رقم الغرفة</label><input id="bookingRoom" placeholder="101"></div>
+      <div class="nz-field"><label>تاريخ الوصول</label><input type="date" id="bookingCheckin"></div>
+      <div class="nz-field"><label>تاريخ المغادرة</label><input type="date" id="bookingCheckout"></div>
+      <div class="nz-field"><label>نوع الغرفة</label>
+        <select id="bookingRoomType"><option>standard</option><option>deluxe</option><option>suite</option></select>
       </div>
-      <div class="form-row">
-        <div class="form-group"><label>تاريخ الوصول</label><input type="date" id="bookingCheckin"></div>
-        <div class="form-group"><label>تاريخ المغادرة</label><input type="date" id="bookingCheckout"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>نوع الغرفة</label><select id="bookingRoomType"><option>غرفة مفردة</option><option>غرفة مزدوجة</option><option>جناح</option><option>جناح رئاسي</option></select></div>
-        <div class="form-group"><label>عدد الأشخاص</label><input type="number" id="bookingGuests" placeholder="1" min="1"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>السعر الليلي (ر.س)</label><input type="number" id="bookingPrice" placeholder="500"></div>
-        <div class="form-group"><label>مصدر الحجز</label><select id="bookingSource"><option>مباشر</option><option>Booking.com</option><option>Airbnb</option><option>Expedia</option><option>هاتف</option></select></div>
+      <div class="nz-field"><label>عدد الضيوف</label><input type="number" id="bookingGuests" value="1" min="1"></div>
+      <div class="nz-field"><label>السعر الإجمالي (ر.س)</label><input type="number" id="bookingPrice" placeholder="0.00"></div>
+      <div class="nz-field"><label>المصدر</label>
+        <select id="bookingSource"><option value="direct">مباشر</option><option value="booking">Booking.com</option><option value="airbnb">Airbnb</option><option value="phone">هاتف</option></select>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-gold" onclick="createBooking()">تأكيد الحجز</button>
-      <button class="btn btn-outline" onclick="closeModal('modal-booking')">إلغاء</button>
+    <div class="modal-actions">
+      <button class="nz-btn is-secondary" onclick="closeModal('modal-booking')">إلغاء</button>
+      <button class="nz-btn is-gold" onclick="createBooking()">تأكيد الحجز</button>
     </div>
   </div>
 </div>
 
-<div class="modal-overlay" id="modal-invoice">
-  <div class="modal">
-    <div class="modal-header"><h3>فاتورة جديدة</h3><button class="modal-close" onclick="closeModal('modal-invoice')">×</button></div>
-    <div class="modal-body">
-      <div class="form-row">
-        <div class="form-group"><label>اسم الضيف</label><input type="text" id="invoiceGuest" placeholder="اسم الضيف"></div>
-        <div class="form-group"><label>رقم الحجز</label><input type="text" id="invoiceBooking" placeholder="BK-001"></div>
+<div class="modal-overlay" id="modal-guest">
+  <div class="modal-box">
+    <h3>إضافة ضيف جديد</h3>
+    <div class="nz-form-grid">
+      <div class="nz-field"><label>الاسم الكامل</label><input id="guestFullName" placeholder="الاسم الكامل"></div>
+      <div class="nz-field"><label>رقم الهاتف (أبشر)</label><input id="guestPhone" placeholder="05xxxxxxxx"></div>
+      <div class="nz-field"><label>نوع الهوية</label>
+        <select id="guestIdType"><option value="national_id">هوية وطنية</option><option value="passport">جواز سفر</option><option value="iqama">إقامة</option></select>
       </div>
-      <div class="form-row">
-        <div class="form-group"><label>المبلغ (ر.س)</label><input type="number" id="invoiceAmount" placeholder="0.00"></div>
-        <div class="form-group"><label>طريقة الدفع</label><select id="invoicePayment"><option>نقد</option><option>بطاقة ائتمان</option><option>تحويل بنكي</option><option>مدى</option></select></div>
-      </div>
-      <div class="form-group"><label>البنود</label><textarea id="invoiceItems" rows="3" placeholder="إقامة - 3 ليالٍ..."></textarea></div>
+      <div class="nz-field"><label>رقم الهوية</label><input id="guestIdNumber" placeholder="1xxxxxxxxx"></div>
+      <div class="nz-field"><label>الجنسية</label><input id="guestNationality" value="سعودي"></div>
+      <div class="nz-field"><label>تاريخ الميلاد</label><input type="date" id="guestBirth"></div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-gold" onclick="createInvoice()">إصدار الفاتورة</button>
-      <button class="btn btn-outline" onclick="closeModal('modal-invoice')">إلغاء</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="modal-pos">
-  <div class="modal">
-    <div class="modal-header"><h3>معاملة POS جديدة</h3><button class="modal-close" onclick="closeModal('modal-pos')">×</button></div>
-    <div class="modal-body">
-      <div class="form-row">
-        <div class="form-group"><label>النوع</label><select id="posType"><option>مطعم</option><option>ميني بار</option><option>خدمات إضافية</option><option>متجر</option></select></div>
-        <div class="form-group"><label>المبلغ (ر.س)</label><input type="number" id="posAmount" placeholder="0.00"></div>
-      </div>
-      <div class="form-group"><label>وصف المنتج/الخدمة</label><input type="text" id="posDescription" placeholder="وصف تفصيلي..."></div>
-      <div class="form-group"><label>رقم الغرفة</label><input type="text" id="posRoom" placeholder="101"></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-gold" onclick="createPOS()">تسجيل المعاملة</button>
-      <button class="btn btn-outline" onclick="closeModal('modal-pos')">إلغاء</button>
+    <div class="modal-actions">
+      <button class="nz-btn is-secondary" onclick="closeModal('modal-guest')">إلغاء</button>
+      <button class="nz-btn is-gold" onclick="createGuest()">حفظ الضيف</button>
     </div>
   </div>
 </div>
 
 <div class="modal-overlay" id="modal-employee">
-  <div class="modal">
-    <div class="modal-header"><h3>إضافة موظف جديد</h3><button class="modal-close" onclick="closeModal('modal-employee')">×</button></div>
-    <div class="modal-body">
-      <div class="form-row">
-        <div class="form-group"><label>الاسم الكامل</label><input type="text" id="empName" placeholder="محمد أحمد"></div>
-        <div class="form-group"><label>القسم</label><select id="empDept"><option>الاستقبال</option><option>التدبير المنزلي</option><option>الصيانة</option><option>المطبخ</option><option>الأمن</option><option>الإدارة</option></select></div>
+  <div class="modal-box">
+    <h3>إضافة موظف جديد</h3>
+    <div class="nz-form-grid">
+      <div class="nz-field"><label>الاسم الكامل (عربي)</label><input id="empName" placeholder="محمد عبدالله"></div>
+      <div class="nz-field"><label>القسم</label>
+        <select id="empDept"><option value="front_desk">الاستقبال</option><option value="housekeeping">الإشراف</option><option value="maintenance">الصيانة</option><option value="accounting">المحاسبة</option><option value="management">الإدارة</option></select>
       </div>
-      <div class="form-row">
-        <div class="form-group"><label>رقم الجوال</label><input type="tel" id="empPhone" placeholder="+966500000000"></div>
-        <div class="form-group"><label>الراتب الأساسي (ر.س)</label><input type="number" id="empSalary" placeholder="3000"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>تاريخ التعيين</label><input type="date" id="empHireDate"></div>
-        <div class="form-group"><label>المسمى الوظيفي</label><input type="text" id="empTitle" placeholder="موظف استقبال"></div>
-      </div>
+      <div class="nz-field"><label>المسمى الوظيفي</label><input id="empTitle" placeholder="موظف استقبال"></div>
+      <div class="nz-field"><label>الهاتف</label><input id="empPhone" placeholder="05xxxxxxxx"></div>
+      <div class="nz-field"><label>الراتب الأساسي (ر.س)</label><input type="number" id="empSalary" placeholder="3000"></div>
+      <div class="nz-field"><label>تاريخ التعيين</label><input type="date" id="empHireDate"></div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-gold" onclick="createEmployee()">حفظ الموظف</button>
-      <button class="btn btn-outline" onclick="closeModal('modal-employee')">إلغاء</button>
+    <div class="modal-actions">
+      <button class="nz-btn is-secondary" onclick="closeModal('modal-employee')">إلغاء</button>
+      <button class="nz-btn is-gold" onclick="createEmployee()">حفظ الموظف</button>
     </div>
   </div>
 </div>
 
 <div class="modal-overlay" id="modal-hk-task">
-  <div class="modal">
-    <div class="modal-header"><h3>مهمة تنظيف جديدة</h3><button class="modal-close" onclick="closeModal('modal-hk-task')">×</button></div>
-    <div class="modal-body">
-      <div class="form-row">
-        <div class="form-group"><label>رقم الغرفة</label><input type="text" id="hkRoom" placeholder="101"></div>
-        <div class="form-group"><label>نوع المهمة</label><select id="hkType"><option>تنظيف كامل</option><option>تنظيف سريع</option><option>تغيير أغطية</option><option>تعقيم</option></select></div>
+  <div class="modal-box">
+    <h3>مهمة إشراف جديدة</h3>
+    <div class="nz-form-grid">
+      <div class="nz-field"><label>رقم الغرفة</label><input id="hkRoom" placeholder="101"></div>
+      <div class="nz-field"><label>نوع المهمة</label>
+        <select id="hkType"><option value="cleaning">تنظيف</option><option value="turndown">إعداد السرير</option><option value="inspection">فحص</option><option value="deep_clean">تنظيف عميق</option></select>
       </div>
-      <div class="form-row">
-        <div class="form-group"><label>الموظف المسؤول</label><input type="text" id="hkWorker" placeholder="اسم الموظف"></div>
-        <div class="form-group"><label>الأولوية</label><select id="hkPriority"><option>عالية</option><option>متوسطة</option><option>منخفضة</option></select></div>
+      <div class="nz-field"><label>الأولوية</label>
+        <select id="hkPriority"><option value="normal">عادي</option><option value="urgent">عاجل</option><option value="high">مرتفع</option></select>
       </div>
-      <div class="form-group"><label>ملاحظات</label><textarea id="hkNotes" rows="2" placeholder="ملاحظات المهمة..."></textarea></div>
+      <div class="nz-field"><label>المكلف بها</label><input id="hkAssigned" placeholder="اسم الموظف"></div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-gold" onclick="createHKTask()">إنشاء المهمة</button>
-      <button class="btn btn-outline" onclick="closeModal('modal-hk-task')">إلغاء</button>
+    <div class="nz-form-grid g1"><div class="nz-field"><label>ملاحظات</label><textarea id="hkNotes" placeholder="تفاصيل إضافية"></textarea></div></div>
+    <div class="modal-actions">
+      <button class="nz-btn is-secondary" onclick="closeModal('modal-hk-task')">إلغاء</button>
+      <button class="nz-btn is-gold" onclick="createHKTask()">إنشاء المهمة</button>
     </div>
   </div>
 </div>
 
 <div class="modal-overlay" id="modal-maintenance">
-  <div class="modal">
-    <div class="modal-header"><h3>أمر صيانة جديد</h3><button class="modal-close" onclick="closeModal('modal-maintenance')">×</button></div>
-    <div class="modal-body">
-      <div class="form-row">
-        <div class="form-group"><label>الموقع/الغرفة</label><input type="text" id="maintLocation" placeholder="غرفة 201"></div>
-        <div class="form-group"><label>الفئة</label><select id="maintCategory"><option>كهرباء</option><option>سباكة</option><option>تكييف</option><option>أثاث</option><option>أخرى</option></select></div>
+  <div class="modal-box">
+    <h3>أمر صيانة جديد</h3>
+    <div class="nz-form-grid">
+      <div class="nz-field"><label>رقم الغرفة</label><input id="maintRoom" placeholder="101"></div>
+      <div class="nz-field"><label>نوع العطل</label>
+        <select id="maintType"><option value="electrical">كهرباء</option><option value="plumbing">سباكة</option><option value="ac">تكييف</option><option value="furniture">أثاث</option><option value="other">أخرى</option></select>
       </div>
-      <div class="form-group"><label>وصف المشكلة</label><textarea id="maintDesc" rows="3" placeholder="وصف تفصيلي للمشكلة..."></textarea></div>
-      <div class="form-row">
-        <div class="form-group"><label>الأولوية</label><select id="maintPriority"><option>عاجل</option><option>عالي</option><option>متوسط</option><option>منخفض</option></select></div>
-        <div class="form-group"><label>الفني المعيّن</label><input type="text" id="maintTech" placeholder="اسم الفني"></div>
+      <div class="nz-field"><label>الأولوية</label>
+        <select id="maintPriority"><option value="normal">عادي</option><option value="urgent">عاجل</option><option value="high">مرتفع</option></select>
       </div>
+      <div class="nz-field"><label>المكلف بها</label><input id="maintAssigned" placeholder="اسم الفني"></div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-gold" onclick="createMaintenance()">إنشاء الأمر</button>
-      <button class="btn btn-outline" onclick="closeModal('modal-maintenance')">إلغاء</button>
+    <div class="nz-form-grid g1"><div class="nz-field"><label>وصف العطل</label><textarea id="maintDesc" placeholder="اوصف المشكلة بالتفصيل"></textarea></div></div>
+    <div class="modal-actions">
+      <button class="nz-btn is-secondary" onclick="closeModal('modal-maintenance')">إلغاء</button>
+      <button class="nz-btn is-gold" onclick="createMaintenance()">إنشاء الأمر</button>
     </div>
   </div>
 </div>
 
 <div class="modal-overlay" id="modal-asset">
-  <div class="modal">
-    <div class="modal-header"><h3>إضافة أصل جديد</h3><button class="modal-close" onclick="closeModal('modal-asset')">×</button></div>
-    <div class="modal-body">
-      <div class="form-row">
-        <div class="form-group"><label>اسم الأصل</label><input type="text" id="assetName" placeholder="مكيف سبليت"></div>
-        <div class="form-group"><label>الموقع</label><input type="text" id="assetLocation" placeholder="غرفة 101"></div>
+  <div class="modal-box">
+    <h3>إضافة أصل جديد</h3>
+    <div class="nz-form-grid">
+      <div class="nz-field"><label>اسم الأصل</label><input id="assetName" placeholder="مكيف غرفة 101"></div>
+      <div class="nz-field"><label>رمز الأصل</label><input id="assetCode" placeholder="AC-101"></div>
+      <div class="nz-field"><label>الفئة</label>
+        <select id="assetCategory"><option value="hvac">تكييف</option><option value="electrical">كهربائي</option><option value="furniture">أثاث</option><option value="equipment">معدات</option></select>
       </div>
-      <div class="form-row">
-        <div class="form-group"><label>الرقم التسلسلي</label><input type="text" id="assetSerial" placeholder="SN-001234"></div>
-        <div class="form-group"><label>قيمة الشراء (ر.س)</label><input type="number" id="assetValue" placeholder="5000"></div>
+      <div class="nz-field"><label>الموقع</label><input id="assetLocation" placeholder="الطابق الأول"></div>
+      <div class="nz-field"><label>تكلفة الشراء (ر.س)</label><input type="number" id="assetCost" placeholder="0"></div>
+      <div class="nz-field"><label>تاريخ الشراء</label><input type="date" id="assetDate"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="nz-btn is-secondary" onclick="closeModal('modal-asset')">إلغاء</button>
+      <button class="nz-btn is-gold" onclick="createAsset()">حفظ الأصل</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-invoice">
+  <div class="modal-box">
+    <h3>فاتورة جديدة</h3>
+    <div class="nz-form-grid">
+      <div class="nz-field"><label>رقم الحجز</label><input id="invBooking" placeholder="BK-001"></div>
+      <div class="nz-field"><label>المبلغ الإجمالي (ر.س)</label><input type="number" id="invAmount" placeholder="0.00"></div>
+      <div class="nz-field"><label>طريقة الدفع</label>
+        <select id="invMethod"><option value="cash">نقد</option><option value="card">بطاقة</option><option value="transfer">تحويل</option></select>
+      </div>
+      <div class="nz-field"><label>حالة الدفع</label>
+        <select id="invStatus"><option value="paid">مدفوع</option><option value="pending">معلق</option></select>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-gold" onclick="createAsset()">حفظ الأصل</button>
-      <button class="btn btn-outline" onclick="closeModal('modal-asset')">إلغاء</button>
+    <div class="modal-actions">
+      <button class="nz-btn is-secondary" onclick="closeModal('modal-invoice')">إلغاء</button>
+      <button class="nz-btn is-gold" onclick="createInvoice()">إنشاء الفاتورة</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-pos">
+  <div class="modal-box">
+    <h3>نقطة البيع — POS</h3>
+    <div class="nz-form-grid">
+      <div class="nz-field"><label>الصنف</label><input id="posItem" placeholder="اسم الصنف"></div>
+      <div class="nz-field"><label>الكمية</label><input type="number" id="posQty" value="1" min="1"></div>
+      <div class="nz-field"><label>السعر (ر.س)</label><input type="number" id="posPrice" placeholder="0.00"></div>
+      <div class="nz-field"><label>طريقة الدفع</label>
+        <select id="posMethod"><option value="cash">نقد</option><option value="card">بطاقة</option></select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="nz-btn is-secondary" onclick="closeModal('modal-pos')">إلغاء</button>
+      <button class="nz-btn is-gold" onclick="createPOS()">تسجيل البيع</button>
     </div>
   </div>
 </div>
 
 <div class="modal-overlay" id="modal-loyalty">
-  <div class="modal">
-    <div class="modal-header"><h3>منح نقاط ولاء</h3><button class="modal-close" onclick="closeModal('modal-loyalty')">×</button></div>
-    <div class="modal-body">
-      <div class="form-row">
-        <div class="form-group"><label>معرّف الضيف</label><input type="text" id="loyaltyGuest" placeholder="G-001"></div>
-        <div class="form-group"><label>عدد النقاط</label><input type="number" id="loyaltyPoints" placeholder="100"></div>
-      </div>
-      <div class="form-group"><label>سبب المنح</label><input type="text" id="loyaltyReason" placeholder="إقامة متكررة - مكافأة"></div>
+  <div class="modal-box">
+    <h3>منح نقاط ولاء</h3>
+    <div class="nz-form-grid">
+      <div class="nz-field"><label>رقم الضيف</label><input type="number" id="loyaltyGuest" placeholder="ID"></div>
+      <div class="nz-field"><label>النقاط</label><input type="number" id="loyaltyPoints" placeholder="100"></div>
+      <div class="nz-field g1"><label>السبب</label><input id="loyaltyDesc" placeholder="إقامة ممتازة"></div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-gold" onclick="awardLoyalty()">منح النقاط</button>
-      <button class="btn btn-outline" onclick="closeModal('modal-loyalty')">إلغاء</button>
+    <div class="modal-actions">
+      <button class="nz-btn is-secondary" onclick="closeModal('modal-loyalty')">إلغاء</button>
+      <button class="nz-btn is-gold" onclick="awardLoyalty()">منح النقاط</button>
     </div>
   </div>
 </div>
 
 <div class="modal-overlay" id="modal-warehouse-item">
-  <div class="modal">
-    <div class="modal-header"><h3>إضافة عنصر مستودع</h3><button class="modal-close" onclick="closeModal('modal-warehouse-item')">×</button></div>
-    <div class="modal-body">
-      <div class="form-row">
-        <div class="form-group"><label>اسم العنصر</label><input type="text" id="whItem" placeholder="مناشف"></div>
-        <div class="form-group"><label>الفئة</label><select id="whCategory"><option>بياضات</option><option>مواد تنظيف</option><option>أدوات مطبخ</option><option>أثاث</option><option>أخرى</option></select></div>
+  <div class="modal-box">
+    <h3>إضافة صنف للمستودع</h3>
+    <div class="nz-form-grid">
+      <div class="nz-field"><label>اسم الصنف (عربي)</label><input id="itemNameAr" placeholder="مناشف"></div>
+      <div class="nz-field"><label>اسم الصنف (إنجليزي)</label><input id="itemNameEn" placeholder="Towels"></div>
+      <div class="nz-field"><label>الفئة</label>
+        <select id="itemCategory"><option value="linens">مفروشات</option><option value="amenities">وسائل راحة</option><option value="cleaning">تنظيف</option><option value="food">أغذية</option><option value="equipment">معدات</option></select>
       </div>
-      <div class="form-row">
-        <div class="form-group"><label>الكمية</label><input type="number" id="whQty" placeholder="100"></div>
-        <div class="form-group"><label>الحد الأدنى</label><input type="number" id="whMinQty" placeholder="20"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>سعر الوحدة (ر.س)</label><input type="number" id="whPrice" placeholder="25"></div>
-        <div class="form-group"><label>المورّد</label><input type="text" id="whSupplier" placeholder="شركة المورد"></div>
-      </div>
+      <div class="nz-field"><label>الوحدة</label><input id="itemUnit" placeholder="قطعة" value="قطعة"></div>
+      <div class="nz-field"><label>الكمية الحالية</label><input type="number" id="itemQty" placeholder="0"></div>
+      <div class="nz-field"><label>الحد الأدنى</label><input type="number" id="itemMin" placeholder="10"></div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-gold" onclick="createWarehouseItem()">حفظ العنصر</button>
-      <button class="btn btn-outline" onclick="closeModal('modal-warehouse-item')">إلغاء</button>
+    <div class="modal-actions">
+      <button class="nz-btn is-secondary" onclick="closeModal('modal-warehouse-item')">إلغاء</button>
+      <button class="nz-btn is-gold" onclick="createWarehouseItem()">حفظ الصنف</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-po">
+  <div class="modal-box">
+    <h3>أمر شراء جديد</h3>
+    <div class="nz-form-grid">
+      <div class="nz-field"><label>اسم المورد</label><input id="poSupplier" placeholder="اسم المورد"></div>
+      <div class="nz-field"><label>تاريخ التوقع</label><input type="date" id="poDate"></div>
+      <div class="nz-field"><label>المبلغ الإجمالي</label><input type="number" id="poAmount" placeholder="0.00"></div>
+      <div class="nz-field"><label>الملاحظات</label><input id="poNotes" placeholder="تفاصيل..."></div>
+    </div>
+    <div class="modal-actions">
+      <button class="nz-btn is-secondary" onclick="closeModal('modal-po')">إلغاء</button>
+      <button class="nz-btn is-gold" onclick="showToast('تم إرسال أمر الشراء','success');closeModal('modal-po')">إرسال الأمر</button>
     </div>
   </div>
 </div>
 
 <div class="modal-overlay" id="modal-tour">
-  <div class="modal">
-    <div class="modal-header"><h3>إضافة جولة سياحية</h3><button class="modal-close" onclick="closeModal('modal-tour')">×</button></div>
-    <div class="modal-body">
-      <div class="form-group"><label>اسم الجولة</label><input type="text" id="tourName" placeholder="جولة المدينة التاريخية"></div>
-      <div class="form-row">
-        <div class="form-group"><label>المدة (ساعات)</label><input type="number" id="tourDuration" placeholder="4"></div>
-        <div class="form-group"><label>السعر (ر.س)</label><input type="number" id="tourPrice" placeholder="150"></div>
+  <div class="modal-box">
+    <h3>جولة سياحية جديدة</h3>
+    <div class="nz-form-grid">
+      <div class="nz-field"><label>اسم الجولة</label><input id="tourName" placeholder="جولة المدينة التاريخية"></div>
+      <div class="nz-field"><label>المدة (ساعات)</label><input type="number" id="tourDuration" placeholder="3"></div>
+      <div class="nz-field"><label>السعر (ر.س)</label><input type="number" id="tourPrice" placeholder="0.00"></div>
+      <div class="nz-field"><label>الطاقة الاستيعابية</label><input type="number" id="tourCapacity" placeholder="10"></div>
+      <div class="nz-field"><label>الفئة</label>
+        <select id="tourCategory"><option value="city">مدينة</option><option value="heritage">تراث</option><option value="nature">طبيعة</option><option value="adventure">مغامرة</option></select>
       </div>
-      <div class="form-row">
-        <div class="form-group"><label>أقصى عدد مشاركين</label><input type="number" id="tourCapacity" placeholder="20"></div>
-        <div class="form-group"><label>الفئة</label><select id="tourCategory"><option>تاريخية</option><option>طبيعية</option><option>ترفيهية</option><option>تسوق</option></select></div>
-      </div>
-      <div class="form-group"><label>الوصف</label><textarea id="tourDesc" rows="2" placeholder="وصف الجولة السياحية..."></textarea></div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-gold" onclick="createTour()">إضافة الجولة</button>
-      <button class="btn btn-outline" onclick="closeModal('modal-tour')">إلغاء</button>
+    <div class="nz-form-grid g1"><div class="nz-field"><label>الوصف</label><textarea id="tourDesc" placeholder="وصف الجولة"></textarea></div></div>
+    <div class="modal-actions">
+      <button class="nz-btn is-secondary" onclick="closeModal('modal-tour')">إلغاء</button>
+      <button class="nz-btn is-gold" onclick="createTour()">إضافة الجولة</button>
     </div>
   </div>
 </div>
 
 <div class="modal-overlay" id="modal-destination">
-  <div class="modal">
-    <div class="modal-header"><h3>إضافة وجهة سياحية</h3><button class="modal-close" onclick="closeModal('modal-destination')">×</button></div>
-    <div class="modal-body">
-      <div class="form-row">
-        <div class="form-group"><label>اسم الوجهة</label><input type="text" id="destName" placeholder="متحف الحضارة"></div>
-        <div class="form-group"><label>المدينة</label><input type="text" id="destCity" placeholder="الرياض"></div>
+  <div class="modal-box">
+    <h3>وجهة سياحية جديدة</h3>
+    <div class="nz-form-grid">
+      <div class="nz-field"><label>اسم الوجهة</label><input id="destName" placeholder="قصر الحمراء"></div>
+      <div class="nz-field"><label>المدينة</label><input id="destCity" placeholder="الرياض"></div>
+      <div class="nz-field"><label>الفئة</label>
+        <select id="destCategory"><option value="heritage">تراث</option><option value="nature">طبيعة</option><option value="museum">متحف</option><option value="park">حديقة</option></select>
       </div>
-      <div class="form-row">
-        <div class="form-group"><label>الفئة</label><select id="destCategory"><option value="heritage">تراث</option><option value="nature">طبيعة</option><option value="museum">متحف</option><option value="park">حديقة</option><option value="beach">شاطئ</option></select></div>
-        <div class="form-group"><label>رسوم البالغ (ر.س)</label><input type="number" id="destFeeAdult" placeholder="50"></div>
-      </div>
-      <div class="form-group"><label>أوقات العمل</label><input type="text" id="destHours" placeholder="9:00 ص - 10:00 م"></div>
+      <div class="nz-field"><label>رسوم البالغ (ر.س)</label><input type="number" id="destFeeAdult" placeholder="0"></div>
+      <div class="nz-field"><label>ساعات العمل</label><input id="destHours" placeholder="9:00 - 22:00"></div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-gold" onclick="createDestination()">إضافة الوجهة</button>
-      <button class="btn btn-outline" onclick="closeModal('modal-destination')">إلغاء</button>
+    <div class="modal-actions">
+      <button class="nz-btn is-secondary" onclick="closeModal('modal-destination')">إلغاء</button>
+      <button class="nz-btn is-gold" onclick="createDestination()">إضافة الوجهة</button>
     </div>
   </div>
 </div>
 
-<div class="modal-overlay" id="modal-staff-task">
-  <div class="modal">
-    <div class="modal-header"><h3>مهمة موظف جديدة</h3><button class="modal-close" onclick="closeModal('modal-staff-task')">×</button></div>
-    <div class="modal-body">
-      <div class="form-group"><label>عنوان المهمة</label><input type="text" id="staffTaskTitle" placeholder="عنوان المهمة"></div>
-      <div class="form-row">
-        <div class="form-group"><label>الموظف</label><input type="text" id="staffTaskEmp" placeholder="اسم الموظف"></div>
-        <div class="form-group"><label>القسم</label><select id="staffTaskDept"><option>الاستقبال</option><option>التدبير المنزلي</option><option>الصيانة</option><option>المطبخ</option></select></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>الأولوية</label><select id="staffTaskPriority"><option>عاجل</option><option>عالي</option><option>متوسط</option><option>منخفض</option></select></div>
-        <div class="form-group"><label>الموعد النهائي</label><input type="datetime-local" id="staffTaskDue"></div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-gold" onclick="createStaffTask()">إنشاء المهمة</button>
-      <button class="btn btn-outline" onclick="closeModal('modal-staff-task')">إلغاء</button>
-    </div>
-  </div>
-</div>
+<!-- Toast container -->
+<div id="toastContainer"></div>
 
 <script>
 // ======== UTILITIES ========
 const API='';
 function showSection(id,el){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelectorAll('.nz-nav-item').forEach(n=>n.classList.remove('is-active'));
   const sec=document.getElementById('section-'+id);
   if(sec)sec.classList.add('active');
-  if(el)el.classList.add('active');
+  if(el)el.classList.add('is-active');
   const titles={home:'لوحة التحكم الرئيسية',m01:'إدارة الضيوف',m02:'الاستقبال',m03:'مدير القنوات',m04:'المحاسبة + POS',m05:'المخزون',m06:'الموارد البشرية',m07:'الإشراف الداخلي',m08:'الصيانة',m09:'المفتاح الذكي',m10:'CRM والولاء',m11:'مؤشرات الأداء',m12:'الرؤى الذكية',m13:'المستودعات',m14:'الجولات السياحية',m14b:'وجهات سياحية',m15:'تطبيق الموظفين'};
   document.getElementById('topbarTitle').textContent=titles[id]||'';
   loadSection(id);
@@ -712,12 +825,12 @@ function showToast(msg,type='info'){
 }
 function fmt(n){if(n===undefined||n===null||n==='--')return '--';return Number(n).toLocaleString('ar-SA');}
 function statusBadge(s){
-  const m={confirmed:'badge-green',active:'badge-green',paid:'badge-green',completed:'badge-green',available:'badge-green',clean:'badge-green',pending:'badge-yellow',trial:'badge-yellow',processing:'badge-yellow',cancelled:'badge-red',overdue:'badge-red',dirty:'badge-red','out-of-order':'badge-red','checked-in':'badge-blue','in-house':'badge-blue','in progress':'badge-blue'};
+  const m={confirmed:'ok',active:'ok',paid:'ok',completed:'ok',available:'ok',clean:'ok',pending:'warn',trial:'warn',processing:'warn',cancelled:'err',overdue:'err',dirty:'err','out-of-order':'err','checked-in':'info','in-house':'info','in progress':'info'};
   const l={confirmed:'مؤكد',active:'نشط',paid:'مدفوع',completed:'مكتمل',available:'متاح',clean:'نظيف',pending:'معلق',trial:'تجريبي',processing:'قيد المعالجة',cancelled:'ملغي',overdue:'متأخر',dirty:'يحتاج تنظيف','out-of-order':'خارج الخدمة','checked-in':'تم الوصول','in-house':'داخل الفندق','in progress':'قيد التنفيذ'};
   const k=(s||'').toLowerCase();
-  return '<span class="badge '+(m[k]||'badge-gold')+'">'+(l[k]||s||'--')+'</span>';
+  return '<span class="mod-tag '+(m[k]||'gold')+'">'+(l[k]||s||'--')+'</span>';
 }
-function empty(msg){return '<div style="text-align:center;padding:32px;color:var(--text-light);font-size:14px">'+msg+'</div>';}
+function empty(msg){return '<div class="mod-empty">'+msg+'</div>';}
 async function apiFetch(url,opts={}){
   try{const r=await fetch(API+url,{headers:{'Content-Type':'application/json','Accept':'application/json'},...opts});if(!r.ok)throw new Error();return await r.json();}catch(e){return null;}
 }
@@ -725,7 +838,7 @@ async function apiPost(url,data){return apiFetch(url,{method:'POST',body:JSON.st
 
 // ======== SECTION LOADER ========
 function loadSection(id){
-  const map={home:loadHome,m01:loadGuests,m02:loadFrontDesk,m03:loadChannels,m04:loadAccounting,m05:loadRoomsStatus,m06:loadHR,m07:loadHousekeeping,m08:loadMaintenance,m10:loadCRM,m11:loadKPI,m13:loadWarehouses,m14:loadTourism,m14b:loadDestinations};
+  const map={home:loadHome,m01:loadGuests,m02:loadFrontDesk,m03:loadChannels,m04:loadAccounting,m05:loadRoomsStatus,m06:loadHR,m07:loadHousekeeping,m08:loadMaintenance,m09:loadSmartKey,m10:loadCRM,m11:loadKPI,m12:loadInsights,m13:loadWarehouses,m14:loadTourism,m14b:loadDestinations,m15:loadStaffApp};
   if(map[id])map[id]();
 }
 
@@ -747,7 +860,7 @@ async function loadHome(){
   const el=document.getElementById('latestBookingsTable');
   if(bk&&Array.isArray(bk)&&bk.length){
     const rows=bk.slice(0,5).map(b=>'<tr><td>'+(b.id||b._id||'--')+'</td><td>'+(b.guest_name||b.guestName||b.guest||'--')+'</td><td>'+(b.room||b.room_number||'--')+'</td><td>'+(b.check_in||b.checkin||'--')+'</td><td>'+(b.check_out||b.checkout||'--')+'</td><td>'+statusBadge(b.status)+'</td><td>'+fmt(b.total_price||b.price||b.amount)+' ر.س</td></tr>').join('');
-    el.innerHTML='<table><thead><tr><th>رقم الحجز</th><th>الضيف</th><th>الغرفة</th><th>الوصول</th><th>المغادرة</th><th>الحالة</th><th>المبلغ</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    el.innerHTML='<table class="mod-table"><thead><tr><th>رقم الحجز</th><th>الضيف</th><th>الغرفة</th><th>الوصول</th><th>المغادرة</th><th>الحالة</th><th>المبلغ</th></tr></thead><tbody>'+rows+'</tbody></table>';
   }else{el.innerHTML=empty('لا توجد حجوزات حتى الآن');}
 }
 
@@ -760,7 +873,7 @@ async function loadGuests(){
     document.getElementById('activeGuests').textContent=data.filter(g=>g.status==='active'||!g.status).length;
     document.getElementById('vipGuests').textContent=data.filter(g=>g.vip||g.tier==='vip').length;
     const rows=data.map(g=>'<tr><td>'+(g.id||g._id||'--')+'</td><td>'+(g.first_name||g.firstName||'')+' '+(g.last_name||g.lastName||'')+'</td><td>'+(g.phone||g.mobile||'--')+'</td><td>'+(g.email||'--')+'</td><td>'+(g.nationality||'--')+'</td><td>'+statusBadge(g.status||'active')+'</td><td><button class="btn btn-sm btn-outline" onclick="showToast(\'عرض الضيف\',\'info\')">عرض</button></td></tr>').join('');
-    el.innerHTML='<table><thead><tr><th>الرقم</th><th>الاسم</th><th>الجوال</th><th>البريد</th><th>الجنسية</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    el.innerHTML='<table class="mod-table"><thead><tr><th>الرقم</th><th>الاسم</th><th>الجوال</th><th>البريد</th><th>الجنسية</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody>'+rows+'</tbody></table>';
   }else{el.innerHTML=empty('لا يوجد ضيوف مسجلون');}
 }
 async function createGuest(){
@@ -778,7 +891,7 @@ async function loadFrontDesk(){
   function tbl(items,type){
     if(!items||!Array.isArray(items)||!items.length)return empty('لا توجد بيانات');
     const rows=items.map(r=>'<tr><td>'+(r.guest_name||r.guestName||r.name||'--')+'</td><td>'+(r.room||r.room_number||'--')+'</td><td>'+(r.check_in||r.checkin||r.expected_arrival||'--')+'</td><td><button class="btn btn-sm '+(type==='arr'?'btn-green':'btn-red')+'" onclick="'+(type==='arr'?'doCheckin':'doCheckout')+'(\''+(r.id||r._id||'')+'\')">'+(type==='arr'?'تسجيل وصول':'تسجيل مغادرة')+'</button></td></tr>').join('');
-    return '<table><thead><tr><th>الضيف</th><th>الغرفة</th><th>الوقت</th><th>إجراء</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    return '<table class="mod-table"><thead><tr><th>الضيف</th><th>الغرفة</th><th>الوقت</th><th>إجراء</th></tr></thead><tbody>'+rows+'</tbody></table>';
   }
   document.getElementById('arrivalsTable').innerHTML=tbl(arr,'arr');
   document.getElementById('departuresTable').innerHTML=tbl(dep,'dep');
@@ -792,10 +905,10 @@ async function loadChannels(){
   const el=document.getElementById('channelsTable');
   if(data&&Array.isArray(data)&&data.length){
     const rows=data.map(ch=>'<tr><td>'+(ch.channel||ch.name||'--')+'</td><td>'+statusBadge(ch.status)+'</td><td>'+fmt(ch.bookings_today||ch.today_bookings||0)+'</td><td>'+fmt(ch.revenue||0)+' ر.س</td><td>'+(ch.last_sync||ch.lastSync||'--')+'</td></tr>').join('');
-    el.innerHTML='<table><thead><tr><th>القناة</th><th>الحالة</th><th>حجوزات اليوم</th><th>الإيرادات</th><th>آخر مزامنة</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    el.innerHTML='<table class="mod-table"><thead><tr><th>القناة</th><th>الحالة</th><th>حجوزات اليوم</th><th>الإيرادات</th><th>آخر مزامنة</th></tr></thead><tbody>'+rows+'</tbody></table>';
   }else if(data&&typeof data==='object'&&!Array.isArray(data)){
     const rows=Object.entries(data).map(([k,v])=>'<tr><td>'+k+'</td><td>'+statusBadge(v.status||v)+'</td><td>'+fmt(v.bookings||0)+'</td><td>'+fmt(v.revenue||0)+' ر.س</td><td>'+(v.last_sync||'--')+'</td></tr>').join('');
-    el.innerHTML='<table><thead><tr><th>القناة</th><th>الحالة</th><th>حجوزات اليوم</th><th>الإيرادات</th><th>آخر مزامنة</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    el.innerHTML='<table class="mod-table"><thead><tr><th>القناة</th><th>الحالة</th><th>حجوزات اليوم</th><th>الإيرادات</th><th>آخر مزامنة</th></tr></thead><tbody>'+rows+'</tbody></table>';
   }else{el.innerHTML=empty('لا توجد بيانات قنوات');}
 }
 
@@ -807,12 +920,12 @@ async function loadAccounting(){
     document.getElementById('paidInvoices').textContent=inv.filter(i=>i.status==='paid').length;
     document.getElementById('pendingInvoices').textContent=inv.filter(i=>i.status==='pending'||!i.status).length;
     const rows=inv.slice(0,10).map(i=>'<tr><td>'+(i.id||i._id||i.invoice_number||'--')+'</td><td>'+(i.guest_name||i.guestName||i.guest||'--')+'</td><td>'+fmt(i.amount||i.total)+' ر.س</td><td>'+(i.date||i.created_at||'--')+'</td><td>'+statusBadge(i.status||'pending')+'</td><td>'+(i.status!=='paid'?'<button class="btn btn-sm btn-green" onclick="payInvoice(\''+(i.id||i._id||'')+'\')\">دفع</button>':'--')+'</td></tr>').join('');
-    document.getElementById('invoicesTable').innerHTML='<table><thead><tr><th>رقم الفاتورة</th><th>الضيف</th><th>المبلغ</th><th>التاريخ</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    document.getElementById('invoicesTable').innerHTML='<table class="mod-table"><thead><tr><th>رقم الفاتورة</th><th>الضيف</th><th>المبلغ</th><th>التاريخ</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody>'+rows+'</tbody></table>';
   }else{document.getElementById('invoicesTable').innerHTML=empty('لا توجد فواتير');}
   const pos=await apiFetch('/api/pos');
   if(pos&&Array.isArray(pos)){
     const rows=pos.slice(0,8).map(p=>'<tr><td>'+(p.id||p._id||'--')+'</td><td>'+(p.type||p.category||'--')+'</td><td>'+(p.description||p.item||'--')+'</td><td>'+(p.room||'--')+'</td><td>'+fmt(p.amount||p.total)+' ر.س</td><td>'+(p.date||p.created_at||'--')+'</td></tr>').join('');
-    document.getElementById('posTable').innerHTML='<table><thead><tr><th>الرقم</th><th>النوع</th><th>الوصف</th><th>الغرفة</th><th>المبلغ</th><th>التاريخ</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    document.getElementById('posTable').innerHTML='<table class="mod-table"><thead><tr><th>الرقم</th><th>النوع</th><th>الوصف</th><th>الغرفة</th><th>المبلغ</th><th>التاريخ</th></tr></thead><tbody>'+rows+'</tbody></table>';
   }else{document.getElementById('posTable').innerHTML=empty('لا توجد معاملات POS');}
 }
 async function payInvoice(id){const r=await apiFetch('/api/invoices/'+id+'/pay',{method:'POST'});if(r){showToast('تم الدفع بنجاح','success');loadAccounting();}else showToast('خطأ في تسجيل الدفع','error');}
@@ -834,7 +947,7 @@ async function loadRoomsStatus(){
   const el=document.getElementById('roomsStatusTable');
   if(el&&rooms&&Array.isArray(rooms)){
     const rows=rooms.map(r=>'<tr><td>'+(r.room||r.room_number||r.number||'--')+'</td><td>'+(r.type||r.room_type||'--')+'</td><td>'+statusBadge(r.status)+'</td><td>'+(r.guest||r.guest_name||'--')+'</td><td>'+(r.floor||'--')+'</td></tr>').join('');
-    el.innerHTML='<table><thead><tr><th>الغرفة</th><th>النوع</th><th>الحالة</th><th>الضيف</th><th>الطابق</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    el.innerHTML='<table class="mod-table"><thead><tr><th>الغرفة</th><th>النوع</th><th>الحالة</th><th>الضيف</th><th>الطابق</th></tr></thead><tbody>'+rows+'</tbody></table>';
   }else if(el){el.innerHTML=empty('لا توجد بيانات غرف');}
 }
 
@@ -845,7 +958,7 @@ async function loadHR(){
   if(emp&&Array.isArray(emp)){
     document.getElementById('totalEmployees').textContent=emp.length;
     const rows=emp.map(e=>'<tr><td>'+(e.id||e._id||'--')+'</td><td>'+(e.name||e.full_name||e.fullName||'--')+'</td><td>'+(e.department||e.dept||'--')+'</td><td>'+(e.title||e.position||'--')+'</td><td>'+(e.phone||'--')+'</td><td>'+statusBadge(e.status||'active')+'</td><td>'+fmt(e.salary||e.basic_salary)+' ر.س</td></tr>').join('');
-    document.getElementById('employeesTable').innerHTML='<table><thead><tr><th>الرقم</th><th>الاسم</th><th>القسم</th><th>المسمى</th><th>الجوال</th><th>الحالة</th><th>الراتب</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    document.getElementById('employeesTable').innerHTML='<table class="mod-table"><thead><tr><th>الرقم</th><th>الاسم</th><th>القسم</th><th>المسمى</th><th>الجوال</th><th>الحالة</th><th>الراتب</th></tr></thead><tbody>'+rows+'</tbody></table>';
   }else{document.getElementById('employeesTable').innerHTML=empty('لا يوجد موظفون');}
   if(att&&Array.isArray(att)){document.getElementById('todayAttendance').textContent=att.length;}
   document.getElementById('payrollCount').textContent='--';
@@ -863,7 +976,7 @@ async function loadHousekeeping(){
   const el=document.getElementById('hkTasksTable');
   if(tasks&&Array.isArray(tasks)){
     const rows=tasks.map(t=>'<tr><td>'+(t.id||t._id||'--')+'</td><td>'+(t.room||t.room_number||'--')+'</td><td>'+(t.type||t.task_type||'--')+'</td><td>'+(t.worker||t.assigned_to||t.employee||'--')+'</td><td>'+statusBadge(t.status||'pending')+'</td><td>'+(t.priority||'--')+'</td></tr>').join('');
-    el.innerHTML='<table><thead><tr><th>الرقم</th><th>الغرفة</th><th>النوع</th><th>الموظف</th><th>الحالة</th><th>الأولوية</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    el.innerHTML='<table class="mod-table"><thead><tr><th>الرقم</th><th>الغرفة</th><th>النوع</th><th>الموظف</th><th>الحالة</th><th>الأولوية</th></tr></thead><tbody>'+rows+'</tbody></table>';
   }else{el.innerHTML=empty('لا توجد مهام تنظيف');}
 }
 async function createHKTask(){
@@ -879,11 +992,11 @@ async function loadMaintenance(){
   const assets=await apiFetch('/api/m08/assets');
   if(orders&&Array.isArray(orders)){
     const rows=orders.map(o=>'<tr><td>'+(o.id||o._id||'--')+'</td><td>'+(o.location||o.room||'--')+'</td><td>'+(o.category||o.type||'--')+'</td><td>'+((o.description||o.desc||'--').substring(0,40))+'</td><td>'+statusBadge(o.status||'pending')+'</td><td>'+(o.technician||o.tech||o.assigned_to||'--')+'</td></tr>').join('');
-    document.getElementById('maintenanceTable').innerHTML='<table><thead><tr><th>الرقم</th><th>الموقع</th><th>الفئة</th><th>الوصف</th><th>الحالة</th><th>الفني</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    document.getElementById('maintenanceTable').innerHTML='<table class="mod-table"><thead><tr><th>الرقم</th><th>الموقع</th><th>الفئة</th><th>الوصف</th><th>الحالة</th><th>الفني</th></tr></thead><tbody>'+rows+'</tbody></table>';
   }else{document.getElementById('maintenanceTable').innerHTML=empty('لا توجد أوامر صيانة');}
   if(assets&&Array.isArray(assets)){
     const rows=assets.map(a=>'<tr><td>'+(a.id||a._id||'--')+'</td><td>'+(a.name||a.asset_name||'--')+'</td><td>'+(a.location||'--')+'</td><td>'+(a.serial||a.serial_number||'--')+'</td><td>'+statusBadge(a.status||'active')+'</td><td>'+fmt(a.value||a.purchase_value)+' ر.س</td></tr>').join('');
-    document.getElementById('assetsTable').innerHTML='<table><thead><tr><th>الرقم</th><th>الاسم</th><th>الموقع</th><th>السيريال</th><th>الحالة</th><th>القيمة</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    document.getElementById('assetsTable').innerHTML='<table class="mod-table"><thead><tr><th>الرقم</th><th>الاسم</th><th>الموقع</th><th>السيريال</th><th>الحالة</th><th>القيمة</th></tr></thead><tbody>'+rows+'</tbody></table>';
   }else{document.getElementById('assetsTable').innerHTML=empty('لا توجد أصول مسجلة');}
 }
 async function createMaintenance(){
@@ -911,7 +1024,7 @@ async function loadCRM(){
   const el=document.getElementById('crmTable');
   if(contacts&&Array.isArray(contacts)){
     const rows=contacts.map(c=>'<tr><td>'+(c.id||c._id||'--')+'</td><td>'+(c.name||c.full_name||'--')+'</td><td>'+(c.phone||c.mobile||'--')+'</td><td>'+(c.email||'--')+'</td><td>'+(c.loyalty_points||c.points||0)+'</td><td>'+(c.tier||c.level||'عادي')+'</td><td>'+statusBadge(c.status||'active')+'</td></tr>').join('');
-    el.innerHTML='<table><thead><tr><th>الرقم</th><th>الاسم</th><th>الجوال</th><th>البريد</th><th>النقاط</th><th>المستوى</th><th>الحالة</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    el.innerHTML='<table class="mod-table"><thead><tr><th>الرقم</th><th>الاسم</th><th>الجوال</th><th>البريد</th><th>النقاط</th><th>المستوى</th><th>الحالة</th></tr></thead><tbody>'+rows+'</tbody></table>';
   }else{el.innerHTML=empty('لا توجد جهات اتصال');}
 }
 async function awardLoyalty(){
@@ -934,7 +1047,7 @@ async function loadKPI(){
     document.getElementById('kpi2Cancel').textContent=(kpi.cancellation_rate||kpi.cancel_rate||'--')+'%';
     const entries=Object.entries(kpi).filter(([k])=>!['_id','id'].includes(k));
     const rows=entries.map(([k,v])=>'<tr><td style="font-weight:600">'+k+'</td><td>'+v+'</td></tr>').join('');
-    document.getElementById('kpiTable').innerHTML='<table><thead><tr><th>المؤشر</th><th>القيمة</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    document.getElementById('kpiTable').innerHTML='<table class="mod-table"><thead><tr><th>المؤشر</th><th>القيمة</th></tr></thead><tbody>'+rows+'</tbody></table>';
   }else{document.getElementById('kpiTable').innerHTML=empty('لا توجد بيانات KPI');}
 }
 
@@ -944,11 +1057,11 @@ async function loadWarehouses(){
   const low=await apiFetch('/api/m13/low-stock');
   if(items&&Array.isArray(items)){
     const rows=items.map(i=>'<tr><td>'+(i.id||i._id||'--')+'</td><td>'+(i.name||i.item_name||'--')+'</td><td>'+(i.category||'--')+'</td><td>'+fmt(i.quantity||i.qty||0)+'</td><td>'+fmt(i.min_quantity||i.min_qty||0)+'</td><td>'+fmt(i.unit_price||i.price||0)+' ر.س</td><td>'+(i.supplier||'--')+'</td></tr>').join('');
-    document.getElementById('warehouseTable').innerHTML='<table><thead><tr><th>الرقم</th><th>الاسم</th><th>الفئة</th><th>الكمية</th><th>الحد الأدنى</th><th>السعر</th><th>المورد</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    document.getElementById('warehouseTable').innerHTML='<table class="mod-table"><thead><tr><th>الرقم</th><th>الاسم</th><th>الفئة</th><th>الكمية</th><th>الحد الأدنى</th><th>السعر</th><th>المورد</th></tr></thead><tbody>'+rows+'</tbody></table>';
   }else{document.getElementById('warehouseTable').innerHTML=empty('لا توجد عناصر مخزون');}
   if(low&&Array.isArray(low)&&low.length){
     const rows=low.map(i=>'<tr><td>'+(i.name||i.item_name||'--')+'</td><td style="color:var(--red);font-weight:700">'+fmt(i.quantity||i.qty||0)+'</td><td>'+fmt(i.min_quantity||i.min_qty||0)+'</td><td><span class="badge badge-red">مخزون منخفض</span></td></tr>').join('');
-    document.getElementById('lowStockTable').innerHTML='<table><thead><tr><th>العنصر</th><th>الكمية الحالية</th><th>الحد الأدنى</th><th>الحالة</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    document.getElementById('lowStockTable').innerHTML='<table class="mod-table"><thead><tr><th>العنصر</th><th>الكمية الحالية</th><th>الحد الأدنى</th><th>الحالة</th></tr></thead><tbody>'+rows+'</tbody></table>';
   }else{document.getElementById('lowStockTable').innerHTML=empty('المخزون بمستويات جيدة ✅');}
 }
 async function createWarehouseItem(){
@@ -970,7 +1083,7 @@ async function loadTourism(){
   const el=document.getElementById('toursTable');
   if(tours&&Array.isArray(tours)){
     const rows=tours.map(t=>'<tr><td>'+(t.id||t._id||'--')+'</td><td>'+(t.name||t.tour_name||'--')+'</td><td>'+(t.category||'--')+'</td><td>'+(t.duration||'--')+' ساعة</td><td>'+fmt(t.price)+' ر.س</td><td>'+(t.capacity||'--')+'</td><td>'+statusBadge(t.status||'active')+'</td><td><button class="btn btn-sm btn-gold" onclick="showToast(\'تم إنشاء الحجز\',\'success\')">احجز</button></td></tr>').join('');
-    el.innerHTML='<table><thead><tr><th>الرقم</th><th>الاسم</th><th>الفئة</th><th>المدة</th><th>السعر</th><th>الطاقة</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    el.innerHTML='<table class="mod-table"><thead><tr><th>الرقم</th><th>الاسم</th><th>الفئة</th><th>المدة</th><th>السعر</th><th>الطاقة</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody>'+rows+'</tbody></table>';
   }else{el.innerHTML=empty('لا توجد جولات مسجلة');}
 }
 async function createTour(){
@@ -992,13 +1105,13 @@ async function loadDestinations(){
   const el=document.getElementById('destinationsTable');
   if(dests&&dests.data&&Array.isArray(dests.data)&&dests.data.length){
     const rows=dests.data.map(d=>'<tr><td>'+(d.name_ar||'--')+'</td><td>'+(d.city||'--')+'</td><td>'+(d.category||'--')+'</td><td>'+fmt(d.entry_fee_adult)+' ر.س</td><td>'+(d.avg_rating||0)+'/5</td><td>'+statusBadge(d.status||'active')+'</td></tr>').join('');
-    el.innerHTML='<table><thead><tr><th>الاسم</th><th>المدينة</th><th>الفئة</th><th>رسوم البالغ</th><th>التقييم</th><th>الحالة</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    el.innerHTML='<table class="mod-table"><thead><tr><th>الاسم</th><th>المدينة</th><th>الفئة</th><th>رسوم البالغ</th><th>التقييم</th><th>الحالة</th></tr></thead><tbody>'+rows+'</tbody></table>';
   }else{el.innerHTML=empty('لا توجد وجهات مسجلة');}
   const bks=await apiFetch('/api/m14b/dest-bookings');
   const el2=document.getElementById('destBookingsTable');
   if(bks&&bks.data&&Array.isArray(bks.data)&&bks.data.length){
     const rows=bks.data.map(b=>'<tr><td>'+(b.destination_name||'--')+'</td><td>'+(b.guest_name||'--')+'</td><td>'+(b.visit_date||'--')+'</td><td>'+(b.adults_count||0)+' بالغ</td><td>'+fmt(b.total_price)+' ر.س</td><td>'+statusBadge(b.status||'confirmed')+'</td></tr>').join('');
-    el2.innerHTML='<table><thead><tr><th>الوجهة</th><th>الضيف</th><th>تاريخ الزيارة</th><th>العدد</th><th>المبلغ</th><th>الحالة</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    el2.innerHTML='<table class="mod-table"><thead><tr><th>الوجهة</th><th>الضيف</th><th>تاريخ الزيارة</th><th>العدد</th><th>المبلغ</th><th>الحالة</th></tr></thead><tbody>'+rows+'</tbody></table>';
   }else{el2.innerHTML=empty('لا توجد حجوزات وجهات');}
 }
 async function createDestination(){
@@ -1023,6 +1136,18 @@ function createStaffTask(){showToast('تم إنشاء المهمة بنجاح','
   const now=new Date();
   document.getElementById('currentDate').textContent=now.toLocaleDateString('ar-SA',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   loadHome();
+})();
+</script>
+</body>
+</html>
+
+// Init
+(function(){
+  const now=new Date();
+  const d=now.toLocaleDateString('ar-SA-u-nu-latn',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('topbarDate').textContent=d;
+  loadHome();
+  document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');}));
 })();
 </script>
 </body>
