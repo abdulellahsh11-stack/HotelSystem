@@ -7,7 +7,7 @@
     { id: "01-guests",            ar: "الضيوف",            num: "01" },
     { id: "02-shumus",            ar: "شموس",             num: "02" },
     { id: "03-tourism",           ar: "المستندات الحكومية", num: "03" },
-    { id: "04-inventory",         ar: "مخزون الضيافة",   num: "04" },
+    { id: "04-inventory",         ar: "المخزون والضيافة", num: "04" },
     { id: "05-warehouse",         ar: "مستودع الصيانة",  num: "05" },
     { id: "06-accounting",        ar: "المحاسبة",         num: "06" },
     { id: "07-pos",               ar: "نقاط البيع",       num: "07" },

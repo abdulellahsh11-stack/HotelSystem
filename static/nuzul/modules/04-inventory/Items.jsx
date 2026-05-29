@@ -14,13 +14,16 @@ function CategoryRail({ active, onChange }) {
       { id: "soap",      ar: "صابون ونظافة",    ic: "🧼", count: 3600 },
       { id: "perfumes",  ar: "عطور",             ic: "✨", count:  280 },
     ]},
-    { label: "المستودع · MEP & maintenance", cats: [
-      { id: "screens",   ar: "شاشات",            ic: "📺", count: 48  },
-      { id: "wires",     ar: "أسلاك",            ic: "🔌", count: 230 },
-      { id: "paint",     ar: "أصباغ",            ic: "🎨", count: 86  },
-      { id: "ladders",   ar: "سلالم وسقالات",   ic: "🪜", count: 12  },
-      { id: "lights",    ar: "إنارة",            ic: "💡", count: 540 },
-      { id: "switches",  ar: "مفاتيح",           ic: "⚙️", count: 320 },
+    { label: "المواد الغذائية · F&B supplies", cats: [
+      { id: "fnb-dry",   ar: "مواد جافة",        ic: "🥫", count: 860  },
+      { id: "fnb-cold",  ar: "مبردات",           ic: "🧊", count: 220  },
+      { id: "fnb-bev",   ar: "مشروبات",          ic: "🥤", count: 540  },
+      { id: "minibar",   ar: "ميني بار",          ic: "🍾", count: 380  },
+    ]},
+    { label: "متفرقات الغرف · Room supplies", cats: [
+      { id: "stationery", ar: "قرطاسية",         ic: "📝", count: 2400 },
+      { id: "hangers",    ar: "علاقات الملابس",  ic: "🪝", count: 1650 },
+      { id: "slippers",   ar: "نعال",             ic: "🩴", count: 920  },
     ]},
   ];
   return (

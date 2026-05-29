@@ -132,7 +132,7 @@
     <ul>
       <li>كل ما في الإدارة الأساسية</li>
       <li>المحاسبة الكاملة + ZATCA Phase 2</li>
-      <li>مخزون الضيافة (لُحف، عطور، صابون + تخصيص)</li>
+      <li>المخزون والضيافة (لُحف، عطور، صابون + تخصيص)</li>
       <li>مستودع الصيانة (قطع غيار + أدوات الفنيين)</li>
       <li>المفتاح الذكي — حارس البيانات</li>
       <li>الموارد البشرية (قوى + GOSI)</li>
@@ -166,5 +166,13 @@
 </div>
 
 <script src="/static/nuzul/assets/animations.js"></script>
+<script>
+// Ensure content is always visible — fallback if IntersectionObserver threshold not met
+setTimeout(function(){
+  document.querySelectorAll('[data-m-rise],[data-m-rise-stagger]').forEach(function(el){
+    el.classList.add('is-in');
+  });
+}, 80);
+</script>
 </body>
 </html>

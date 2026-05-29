@@ -45,7 +45,7 @@
         <div class="an-src-grid">
           <div class="an-src is-on"><div class="num">01</div><div class="nm">الضيوف</div><div class="rec">١٢٤٬٠٠٠ سجل</div></div>
           <div class="an-src is-on"><div class="num">02</div><div class="nm">شموس · MOI</div><div class="rec">١٬٢٤٠ تحقّق</div></div>
-          <div class="an-src is-on"><div class="num">04</div><div class="nm">مخزون الضيافة</div><div class="rec">١٬٢٤٦ صنف</div></div>
+          <div class="an-src is-on"><div class="num">04</div><div class="nm">المخزون والضيافة</div><div class="rec">١٬٢٤٦ صنف</div></div>
           <div class="an-src is-on"><div class="num">05</div><div class="nm">مستودع الصيانة</div><div class="rec">٤٢٠ صنف</div></div>
           <div class="an-src is-on"><div class="num">06</div><div class="nm">المحاسبة</div><div class="rec">٤٬٨٤٢ قيد</div></div>
           <div class="an-src is-on"><div class="num">07</div><div class="nm">نقاط البيع</div><div class="rec">١٦٢ حركة/يوم</div></div>
@@ -518,6 +518,14 @@
       grid.appendChild(c);
     });
   })();
+</script>
+<script>
+// Ensure content is always visible — fallback if IntersectionObserver threshold not met
+setTimeout(function(){
+  document.querySelectorAll('[data-m-rise],[data-m-rise-stagger]').forEach(function(el){
+    el.classList.add('is-in');
+  });
+}, 80);
 </script>
 </body>
 </html>

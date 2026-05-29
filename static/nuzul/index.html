@@ -359,7 +359,7 @@
     <a class="tile" href="/static/nuzul/modules/04-inventory/index.html">
       <span class="num">04</span>
       <div class="ic">🛏</div>
-      <div class="ar-name">مخزون الضيافة</div>
+      <div class="ar-name">المخزون والضيافة</div>
       <div class="en-name">Hospitality Inventory · Standalone subscription</div>
       <p class="desc">تجهيز الغرف: لُحف، فوط، عطور، صابون، أموينيتيز ومستلزمات <abbr class="nz-abbr" data-ar="الأطعمة والمشروبات" data-en="Food &amp; Beverage" data-meaning="موردي المطاعم والمقهى والبار">F&amp;B</abbr> — برنامج مستقل قابل للاشتراك بمفرده.</p>
       <div class="foot">
@@ -560,5 +560,13 @@
 </footer>
 
 <script src="/static/nuzul/assets/animations.js"></script>
+<script>
+// Ensure content is always visible — fallback if IntersectionObserver threshold not met
+setTimeout(function(){
+  document.querySelectorAll('[data-m-rise],[data-m-rise-stagger]').forEach(function(el){
+    el.classList.add('is-in');
+  });
+}, 80);
+</script>
 </body>
 </html>
