@@ -1050,16 +1050,19 @@ loadHome();
 # ──────────────────────────────────────────────────────────────
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
-    session = get_client_session(request)
-    if session:
-        store: "DataStore" = request.app.state.store
-        client = store.get_client(session["client_id"]) or {"id": session["client_id"]}
-        return HTMLResponse(_client_dashboard(client))
+    dashboard_path = os.path.join("static", "dashboard.html")
+    if os.path.exists(dashboard_path):
+        with open(dashboard_path, encoding="utf-8") as f:
+            return HTMLResponse(f.read())
     return HTMLResponse(_login_page())
 
 
 @app.get("/login", response_class=HTMLResponse)
 async def login_page():
+    dashboard_path = os.path.join("static", "dashboard.html")
+    if os.path.exists(dashboard_path):
+        with open(dashboard_path, encoding="utf-8") as f:
+            return HTMLResponse(f.read())
     return HTMLResponse(_login_page())
 
 
