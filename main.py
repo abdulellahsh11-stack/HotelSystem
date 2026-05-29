@@ -1050,20 +1050,30 @@ loadHome();
 # ──────────────────────────────────────────────────────────────
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
-    # Landing page (marketing website)
-    landing = os.path.join("static", "nuzul", "website", "index.html")
-    if os.path.exists(landing):
-        with open(landing, encoding="utf-8") as f:
+    # App launcher — all 14 modules visible immediately
+    launcher = os.path.join("static", "nuzul", "index.html")
+    if os.path.exists(launcher):
+        with open(launcher, encoding="utf-8") as f:
             return HTMLResponse(f.read())
     return HTMLResponse(_login_page())
 
 
 @app.get("/app", response_class=HTMLResponse)
 async def nuzul_app(request: Request):
-    # Nuzul launcher dashboard
+    # Same launcher (kept for backwards compatibility)
     launcher = os.path.join("static", "nuzul", "index.html")
     if os.path.exists(launcher):
         with open(launcher, encoding="utf-8") as f:
+            return HTMLResponse(f.read())
+    return HTMLResponse(_login_page())
+
+
+@app.get("/marketing", response_class=HTMLResponse)
+async def marketing_page(request: Request):
+    # Marketing landing page
+    landing = os.path.join("static", "nuzul", "website", "index.html")
+    if os.path.exists(landing):
+        with open(landing, encoding="utf-8") as f:
             return HTMLResponse(f.read())
     return HTMLResponse(_login_page())
 

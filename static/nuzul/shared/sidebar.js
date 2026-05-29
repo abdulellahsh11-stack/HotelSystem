@@ -27,7 +27,7 @@
     return `
 <aside class="nz-sidebar">
   <a class="nz-brand" href="${home}" style="text-decoration:none; cursor:pointer">
-    <span class="nz-mark">ض</span>
+    <img class="nz-mark" src="/static/nuzul/assets/logo-mark.svg" alt="ضيوف"/>
     <div class="nz-brand-name">
       <div class="ar">ضيوف</div>
       <div class="en">Dheuof</div>

@@ -64,7 +64,7 @@ function NzSidebar({ active = "dashboard", onChange, hotel = { ar: "فندق ا�
   return (
     <aside className="nz-sidebar">
       <div className="nz-brand">
-        <span className="nz-mark">ض</span>
+        <img className="nz-mark" src="/static/nuzul/assets/logo-mark.svg" alt="ضيوف"/>
         <div className="nz-brand-name"><div className="ar">ضيوف</div><div className="en">Dheuof</div></div>
       </div>
       <nav className="nz-nav">
