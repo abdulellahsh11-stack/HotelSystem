@@ -2,13 +2,272 @@
 <html lang="ar" dir="rtl" data-screen-label="08 Smart Key · Fraud Guard">
 <head>
 <meta charset="utf-8"/>
-<title>ضيوف · المفتاح الذكي</title>
+<title>المفتاح الذكي — حارس البيانات</title>
 <meta name="viewport" content="width=1440, initial-scale=1"/>
 <link rel="stylesheet" href="/static/nuzul/colors_and_type.css"/>
 <link rel="stylesheet" href="/static/nuzul/assets/animations.css"/>
 <link rel="stylesheet" href="/static/nuzul/shared/chrome.css"/>
 <link rel="stylesheet" href="/static/nuzul/shared/module.css"/>
-<link rel="stylesheet" href="/static/nuzul/modules/08-smart-key/alarms.css"/>
+<style>
+body { background: var(--paper-tint); }
+
+/* ── Banner ── */
+.sk-banner {
+  background: linear-gradient(135deg, #7C2D12 0%, #991B1B 50%, #7C2D12 100%);
+  color: var(--paper); border-radius: 14px; padding: 22px 26px;
+  margin-bottom: 20px; display: flex; align-items: center; gap: 20px;
+  position: relative; overflow: hidden;
+}
+.sk-banner::after {
+  content:""; position:absolute; inset-block-start:-40px; inset-inline-end:-40px;
+  width:200px; height:200px; border-radius:999px;
+  background:radial-gradient(circle,rgba(255,180,150,.2),transparent 60%);
+}
+.sk-banner > * { position:relative; }
+.sk-banner .ic {
+  width:54px; height:54px; background:rgba(255,255,255,.15); border-radius:12px;
+  display:grid; place-items:center; font-size:26px; flex-shrink:0;
+  border:1px solid rgba(255,255,255,.2);
+}
+.sk-banner .body { flex:1; }
+.sk-banner .ar { font-family:var(--font-ar-display); font-weight:600; font-size:19px; }
+.sk-banner .en { font-family:var(--font-en); font-style:italic; font-size:11px; color:rgba(255,255,255,.65); margin-top:2px; }
+.sk-banner .meta { font-size:12px; color:rgba(255,255,255,.8); margin-top:8px; display:flex; gap:14px; flex-wrap:wrap; }
+.sk-banner .meta span { display:inline-flex; align-items:center; gap:5px; }
+.sk-banner .rdot { width:7px; height:7px; background:#F87171; border-radius:999px; animation:blink 1s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+.sk-stat { text-align:center; padding: 0 16px; border-inline-start:1px solid rgba(255,255,255,.15); }
+.sk-stat .sv { font-family:var(--font-en); font-size:44px; font-weight:700; color:var(--paper); line-height:1; }
+.sk-stat .sv.ok { color:#86EFAC; }
+.sk-stat .sl { font-size:10px; color:rgba(255,255,255,.6); margin-top:3px; letter-spacing:.04em; font-family:var(--font-en); }
+.sk-banner button {
+  background:rgba(255,255,255,.12); color:var(--paper); border:1px solid rgba(255,255,255,.25);
+  padding:9px 18px; border-radius:7px; font-family:var(--font-ar); font-weight:500; font-size:12px;
+  cursor:pointer; transition:all 160ms; white-space:nowrap;
+}
+.sk-banner button:hover { background:rgba(255,255,255,.22); }
+
+/* ── Watch Grid ── */
+.sk-watch {
+  display:grid; grid-template-columns:repeat(6,1fr); gap:10px; margin-bottom:20px;
+}
+.sk-watch-card {
+  background:var(--white); border:1px solid var(--hairline); border-radius:10px;
+  padding:14px 16px; cursor:pointer; transition:all 160ms; position:relative;
+}
+.sk-watch-card:hover { border-color:var(--brand-400); }
+.sk-watch-card.has-alarm { border-color:#EF4444; background:#FFF5F5; }
+.sk-watch-card .row1 { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.sk-watch-card .wic { width:32px; height:32px; background:var(--paper-tint); border-radius:8px; display:grid; place-items:center; font-size:16px; border:1px solid var(--hairline); }
+.sk-watch-card .wlive { width:8px; height:8px; background:var(--success-500); border-radius:999px; animation:sk-dot 1.5s infinite; }
+.sk-watch-card.has-alarm .wlive { background:#EF4444; }
+@keyframes sk-dot { 0%{box-shadow:0 0 0 0 rgba(74,148,118,.5)} 100%{box-shadow:0 0 0 6px rgba(74,148,118,0)} }
+.sk-watch-card .wnm { font-size:12px; color:var(--ink-800); font-weight:500; }
+.sk-watch-card .wevt { font-family:var(--font-mono); font-size:10px; color:var(--fg-3); margin-top:3px; }
+.sk-watch-card .wbadge {
+  position:absolute; top:-5px; inset-inline-end:-5px;
+  width:18px; height:18px; background:#EF4444; color:#fff;
+  border-radius:999px; font-size:9px; font-weight:700; font-family:var(--font-en);
+  display:none; place-items:center; border:2px solid var(--white);
+}
+.sk-watch-card.has-alarm .wbadge { display:grid; }
+
+/* ── Tabs ── */
+.sk-tabs {
+  display:flex; gap:4px; background:var(--white); border:1px solid var(--hairline);
+  border-radius:10px; padding:5px; margin-bottom:20px;
+}
+.sk-tab {
+  flex:1; padding:9px 14px; border:none; border-radius:7px; background:transparent;
+  cursor:pointer; font-family:var(--font-ar); font-size:13px; font-weight:500;
+  color:var(--fg-2); transition:all 140ms; display:flex; align-items:center; justify-content:center; gap:7px;
+}
+.sk-tab:hover { background:var(--paper-tint); color:var(--ink-900); }
+.sk-tab.active { background:#7C2D12; color:var(--paper); box-shadow:0 2px 8px rgba(124,45,18,.25); }
+.sk-tab .tbadge {
+  background:rgba(255,255,255,.25); color:var(--paper); font-size:10px; font-weight:700;
+  font-family:var(--font-en); padding:1px 6px; border-radius:999px; min-width:18px; text-align:center;
+}
+.sk-tab:not(.active) .tbadge { background:#EF4444; color:#fff; }
+.sk-pane { display:none; }
+.sk-pane.active { display:block; }
+
+/* ── Alarms list ── */
+.sk-list { background:var(--white); border:1px solid var(--hairline); border-radius:12px; overflow:hidden; }
+.sk-alarm {
+  display:grid; grid-template-columns:48px 1fr auto auto;
+  gap:16px; align-items:center; padding:16px 22px;
+  border-top:1px solid var(--hairline); transition:background 120ms;
+}
+.sk-alarm:first-child { border-top:none; }
+.sk-alarm:hover { background:var(--paper-tint); }
+.sk-alarm.high { background:#FDF4F0; }
+.sk-alarm.high:hover { background:#FBE8E0; }
+.sk-alarm.resolved { opacity:.55; }
+.sk-alarm.snoozed { opacity:.7; background:#FFFFF0; }
+.sk-sev {
+  width:44px; height:44px; border-radius:10px;
+  display:grid; place-items:center; font-size:20px; flex-shrink:0;
+}
+.high .sk-sev { background:#FEE2E2; color:#DC2626; }
+.med .sk-sev { background:#FEF3C7; color:#D97706; animation:sk-pulse 2s ease-in-out infinite; }
+.low .sk-sev { background:#FEF9C3; color:#A16207; }
+.info .sk-sev { background:#EFF6FF; color:#2563EB; }
+@keyframes sk-pulse { 0%,100%{opacity:1} 50%{opacity:.6} }
+.sk-alarm .body .ttl { font-weight:600; color:var(--ink-900); font-size:14px; }
+.sk-alarm .body .sub { font-size:12px; color:var(--fg-2); margin-top:3px; line-height:1.5; }
+.sk-alarm .body .chips { display:flex; align-items:center; gap:6px; margin-top:7px; flex-wrap:wrap; }
+.sk-chip {
+  font-family:var(--font-mono); font-size:10px; color:var(--fg-3);
+  background:var(--paper-tint); padding:2px 8px; border-radius:4px;
+  border:1px solid var(--hairline);
+}
+.sk-alarm .when { text-align:end; white-space:nowrap; }
+.sk-alarm .when .wt { font-family:var(--font-en); font-variant-numeric:tabular-nums; font-weight:600; font-size:13px; color:var(--ink-800); }
+.sk-alarm .when .ago { font-size:11px; color:var(--fg-3); margin-top:2px; }
+.sk-alarm .acts { display:flex; gap:6px; }
+.sk-btn {
+  background:var(--white); border:1px solid var(--ink-100); color:var(--ink-700);
+  font-family:var(--font-ar); font-size:11px; padding:6px 12px; border-radius:6px;
+  cursor:pointer; transition:all 140ms; white-space:nowrap;
+}
+.sk-btn:hover { background:var(--surface-2); }
+.sk-btn.pr { background:#7C2D12; color:var(--paper); border-color:#7C2D12; }
+.sk-btn.pr:hover { background:#6B2410; }
+.sk-btn.ok { background:var(--success-600); color:var(--paper); border-color:var(--success-600); }
+.sk-btn.ok:hover { background:var(--success-700); }
+.sk-empty {
+  padding:40px; text-align:center; color:var(--fg-3); font-size:14px;
+}
+.sk-empty .eic { font-size:36px; margin-bottom:8px; }
+
+/* ── Rules ── */
+.sk-rules-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.sk-rule-card {
+  background:var(--white); border:1px solid var(--hairline); border-radius:12px;
+  padding:18px 20px; transition:border-color 160ms;
+}
+.sk-rule-card.active { border-color:var(--success-400); }
+.sk-rule-card.inactive { opacity:.7; }
+.sk-rule-hd {
+  display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:10px;
+}
+.sk-rule-hd .rt { flex:1; }
+.sk-rule-hd .rt .rname { font-weight:600; color:var(--ink-900); font-size:14px; display:flex; align-items:center; gap:7px; }
+.sk-rule-hd .rt .rsub { font-size:12px; color:var(--fg-3); margin-top:3px; line-height:1.5; }
+.sk-rule-hd .ric { font-size:20px; }
+.sk-rule-opts { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; padding-top:10px; border-top:1px solid var(--hairline); }
+.sk-rule-opt {
+  display:flex; align-items:center; gap:6px; font-size:12px; color:var(--ink-700);
+  background:var(--paper-tint); padding:5px 10px; border-radius:6px; border:1px solid var(--hairline);
+}
+.sk-rule-opt input[type=number] {
+  width:48px; font-family:var(--font-en); font-size:12px; text-align:center;
+  border:1px solid var(--ink-100); border-radius:4px; padding:2px 4px; outline:none;
+  background:var(--white);
+}
+.sk-rule-opt input[type=number]:focus { border-color:var(--brand-500); }
+.sk-rule-opt .unit { font-size:11px; color:var(--fg-3); }
+
+/* Toggle switch */
+.toggle-sw { position:relative; width:42px; height:23px; flex-shrink:0; }
+.toggle-sw input { opacity:0; width:0; height:0; }
+.toggle-sw .slider {
+  position:absolute; inset:0; background:var(--ink-200);
+  border-radius:999px; cursor:pointer; transition:background 200ms;
+}
+.toggle-sw .slider::after {
+  content:""; position:absolute; top:3px; inset-inline-start:3px;
+  width:17px; height:17px; background:var(--white); border-radius:999px; transition:transform 200ms;
+}
+.toggle-sw input:checked ~ .slider { background:var(--success-600); }
+.toggle-sw input:checked ~ .slider::after { transform:translateX(-19px); }
+
+/* ── Duration Settings ── */
+.sk-dur-form {
+  display:grid; grid-template-columns:1fr 1fr; gap:16px;
+}
+.sk-dur-card {
+  background:var(--white); border:1px solid var(--hairline); border-radius:12px; padding:20px 22px;
+}
+.sk-dur-card h4 {
+  font-family:var(--font-ar-display); font-size:14px; font-weight:600;
+  color:var(--ink-900); margin-bottom:14px; display:flex; align-items:center; gap:8px;
+}
+.dur-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.dur-row .dr-info .dr-label { font-size:13px; font-weight:500; color:var(--ink-800); }
+.dur-row .dr-info .dr-hint { font-size:11px; color:var(--fg-3); margin-top:2px; }
+.dur-row .dr-ctrl { display:flex; align-items:center; gap:6px; }
+.dur-row .dr-ctrl input[type=number] {
+  width:64px; font-family:var(--font-en); font-size:14px; font-weight:600; text-align:center;
+  border:1.5px solid var(--ink-100); border-radius:8px; padding:6px 4px; outline:none;
+  background:var(--paper-tint); color:var(--ink-900);
+}
+.dur-row .dr-ctrl input:focus { border-color:var(--brand-500); background:var(--white); }
+.dur-row .dr-ctrl .du-unit {
+  font-size:11px; color:var(--fg-3); font-family:var(--font-ar); white-space:nowrap;
+}
+.dur-row:last-child { margin-bottom:0; }
+.dur-divider { border:none; border-top:1px solid var(--hairline); margin:14px 0; }
+.dur-actions { display:flex; gap:10px; margin-top:18px; }
+.dur-btn {
+  font-family:var(--font-ar); font-size:13px; font-weight:500; padding:10px 22px;
+  border-radius:8px; border:none; cursor:pointer; transition:all 140ms;
+}
+.dur-btn.save { background:#7C2D12; color:var(--paper); }
+.dur-btn.save:hover { background:#6B2410; }
+.dur-btn.reset { background:var(--paper-tint); color:var(--ink-800); border:1px solid var(--ink-100); }
+.dur-btn.reset:hover { border-color:var(--ink-200); }
+.dur-toast {
+  display:none; align-items:center; gap:8px; font-size:12px; color:var(--success-700);
+  font-weight:500; padding:8px 14px; background:#F0FDF4; border-radius:7px;
+  border:1px solid rgba(34,197,94,.3);
+}
+.dur-toast.show { display:flex; }
+
+/* ── Log ── */
+.sk-log { background:var(--white); border:1px solid var(--hairline); border-radius:12px; overflow:hidden; }
+.sk-log-row {
+  display:grid; grid-template-columns:90px 1.6fr 1fr 0.8fr 0.8fr;
+  gap:14px; align-items:center; padding:12px 20px;
+  border-top:1px solid var(--hairline); font-size:13px;
+}
+.sk-log-row.lhd {
+  background:var(--paper-tint); border-top:none; font-size:11px;
+  color:var(--fg-3); font-weight:500;
+}
+.log-sev {
+  display:inline-flex; align-items:center; gap:5px; font-size:11px;
+  font-family:var(--font-ar); padding:3px 9px; border-radius:6px; font-weight:500;
+}
+.log-sev.high { background:#FEE2E2; color:#DC2626; }
+.log-sev.med { background:#FEF3C7; color:#D97706; }
+.log-sev.low { background:#FEF9C3; color:#A16207; }
+.log-sev.info { background:#EFF6FF; color:#2563EB; }
+.log-status {
+  display:inline-flex; align-items:center; gap:5px; font-size:11px;
+  font-family:var(--font-ar); padding:3px 9px; border-radius:6px;
+}
+.log-status.active { background:#FEE2E2; color:#DC2626; }
+.log-status.resolved { background:#F0FDF4; color:#16A34A; }
+.log-status.snoozed { background:#FEFCE8; color:#A16207; }
+.log-nm { font-weight:500; color:var(--ink-900); }
+.log-sub { font-size:11px; color:var(--fg-3); margin-top:2px; }
+.log-time { font-family:var(--font-mono); font-size:12px; color:var(--fg-3); }
+
+/* ── Toast ── */
+#sk-toast {
+  position:fixed; bottom:28px; inset-inline-end:28px; z-index:9999;
+  display:flex; align-items:center; gap:10px; font-size:13px; font-weight:500;
+  padding:12px 18px; border-radius:10px; background:var(--ink-900); color:var(--paper);
+  box-shadow:0 4px 20px rgba(0,0,0,.25);
+  transform:translateY(20px); opacity:0; pointer-events:none;
+  transition:all 300ms cubic-bezier(.4,0,.2,1); font-family:var(--font-ar);
+}
+#sk-toast.show { transform:translateY(0); opacity:1; pointer-events:auto; }
+#sk-toast.success { background:#14532D; }
+#sk-toast.warn { background:#92400E; }
+</style>
 </head>
 <body>
 <div class="nz-app">
@@ -17,110 +276,566 @@
     <div id="topbar-slot"></div>
     <main class="nz-main">
 
+      <!-- Header -->
       <div class="mod-head" data-m-rise>
         <div class="left">
           <div class="num-row">
             <span class="num">08 · SMART KEY</span>
-            <span class="en-tag">Cross-program fraud guardian</span>
+            <span class="en-tag">Data Guardian · Fraud Detection · Notifications</span>
           </div>
           <h1>المفتاح الذكي — حارس البيانات</h1>
-          <p class="sub">يراقب جميع البرامج (الضيوف، المحاسبة، نقاط البيع، شموس، الموارد البشرية، القنوات) ويُصدر إنذاراً للمسؤول عند اكتشاف نزيل غير مسجَّل أو ثغرة بيانات.</p>
+          <p class="sub">يراقب جميع البرامج ويُصدر إنذاراً فورياً عند اكتشاف ثغرة بيانات، نزيل غير مسجّل، أو انتهاء مدة إقامة — مع تخصيص كامل لقواعد التبليغ والمدد.</p>
         </div>
         <div class="actions">
-          <button style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">⚙ قواعد الإنذار</button>
-          <button style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--brand-700);color:var(--paper);border:none;cursor:pointer">📥 سجلّ كامل</button>
+          <button onclick="exportLog()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">📥 تصدير السجل</button>
+          <button onclick="runScan()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:#7C2D12;color:var(--paper);border:none;cursor:pointer">🔍 فحص فوري</button>
         </div>
       </div>
 
+      <!-- Banner -->
       <div class="sk-banner" data-m-rise>
         <div class="ic">🛡</div>
-        <div>
+        <div class="body">
           <div class="ar">المفتاح الذكي يراقب جميع البرامج</div>
-          <div class="en">Cross-program guardian · listens to programs 01–12</div>
-          <div class="meta">آخر فحص قبل ٢٢ ثانية · ٤ حالات تحتاج تدخّل</div>
+          <div class="en">Cross-program guardian · programs 01–14 · real-time</div>
+          <div class="meta">
+            <span><span class="rdot"></span>آخر فحص: <span id="lastScanLabel">الآن</span></span>
+            <span>•</span>
+            <span id="bannerAlarmMeta">٤ إنذارات نشطة · تحتاج تدخّل</span>
+          </div>
         </div>
-        <div style="text-align: center">
-          <div class="v">٤</div>
-          <div class="v-lbl">إنذارات نشطة</div>
+        <div class="sk-stat">
+          <div class="sv" id="statActive">4</div>
+          <div class="sl">ACTIVE</div>
         </div>
-        <button>عرض السجلّ الكامل</button>
+        <div class="sk-stat">
+          <div class="sv ok" id="statResolved">11</div>
+          <div class="sl">RESOLVED</div>
+        </div>
+        <div class="sk-stat">
+          <div class="sv" id="statSnoozed" style="font-size:36px;color:#FCD34D">1</div>
+          <div class="sl">SNOOZED</div>
+        </div>
+        <button onclick="showTab('log', document.querySelectorAll(\'.sk-tab\')[3])">عرض السجل الكامل</button>
       </div>
 
-      <div class="sk-watch" data-m-rise-stagger>
-        <div class="card"><div class="row1"><div class="ic">🛏</div><div class="live"></div></div><div class="nm">الضيوف</div><div class="events">٢٤ حدث · مباشر</div></div>
-        <div class="card"><div class="row1"><div class="ic">💳</div><div class="live"></div></div><div class="nm">المحاسبة</div><div class="events">٤٢ حدث · مباشر</div></div>
-        <div class="card"><div class="row1"><div class="ic">🏧</div><div class="live"></div></div><div class="nm">نقاط البيع</div><div class="events">٢٤٨ حدث · مباشر</div></div>
-        <div class="card"><div class="row1"><div class="ic">🛡</div><div class="live"></div></div><div class="nm">شموس</div><div class="events">٢٤٨ حدث · مباشر</div></div>
-        <div class="card"><div class="row1"><div class="ic">🌐</div><div class="live"></div></div><div class="nm">القنوات</div><div class="events">٢٢٤ حدث · مباشر</div></div>
-      </div>
-
-      <div class="mod-section-head" style="padding-inline: 0; margin-top: 22px;">
-        <div>
-          <div class="ttl">إنذارات نشطة — تحتاج إجراء</div>
-          <div class="sub">Active alarms · escalated to property manager</div>
+      <!-- Watch Grid -->
+      <div class="sk-watch" data-m-rise-stagger id="watchGrid">
+        <div class="sk-watch-card" id="wc-01">
+          <div class="wbadge">2</div>
+          <div class="row1"><div class="wic">🛎️</div><div class="wlive"></div></div>
+          <div class="wnm">الضيوف</div>
+          <div class="wevt">٢٤ حدث · مباشر</div>
+        </div>
+        <div class="sk-watch-card" id="wc-06">
+          <div class="wbadge">0</div>
+          <div class="row1"><div class="wic">📒</div><div class="wlive"></div></div>
+          <div class="wnm">المحاسبة</div>
+          <div class="wevt">٤٢ حدث · مباشر</div>
+        </div>
+        <div class="sk-watch-card" id="wc-07">
+          <div class="wbadge">1</div>
+          <div class="row1"><div class="wic">💳</div><div class="wlive"></div></div>
+          <div class="wnm">نقاط البيع</div>
+          <div class="wevt">٢٤٨ حدث · مباشر</div>
+        </div>
+        <div class="sk-watch-card" id="wc-02">
+          <div class="wbadge">0</div>
+          <div class="row1"><div class="wic">🏨</div><div class="wlive"></div></div>
+          <div class="wnm">شموس</div>
+          <div class="wevt">١٢ حدث · مباشر</div>
+        </div>
+        <div class="sk-watch-card" id="wc-09">
+          <div class="wbadge">1</div>
+          <div class="row1"><div class="wic">👔</div><div class="wlive"></div></div>
+          <div class="wnm">الموارد البشرية</div>
+          <div class="wevt">٣٦ حدث · مباشر</div>
+        </div>
+        <div class="sk-watch-card" id="wc-10">
+          <div class="wbadge">0</div>
+          <div class="row1"><div class="wic">🌐</div><div class="wlive"></div></div>
+          <div class="wnm">القنوات</div>
+          <div class="wevt">٢٢٤ حدث · مباشر</div>
         </div>
       </div>
 
-      <div class="sk-alarms" data-m-rise>
-        <div class="sk-alarm sev-high">
-          <div class="sev">⚠</div>
-          <div class="body">
-            <div class="ttl">نزيل غير مسجّل — دفع POS بدون رقم غرفة</div>
-            <div class="sub">دفع ١٬٢٤٠ ر.س في مطعم الواحة قبل ١٤ دقيقة، لكن لا يوجد نزيل مسجّل في الغرفة المرتبطة (٢١٨).</div>
-            <div class="src"><span class="chip">المصدر: نقاط البيع</span> ← <span class="chip">الضيوف · لا تطابق</span></div>
-          </div>
-          <div class="when"><div class="t">14:32</div><div class="ago">قبل ١٤ دقيقة</div></div>
-          <div class="acts"><button>تجاهل</button><button class="pr">سجّل النزيل الآن</button></div>
-        </div>
+      <!-- Tabs -->
+      <div class="sk-tabs" data-m-rise>
+        <button class="sk-tab active" onclick="showTab('alarms',this)">🚨 الإنذارات <span class="tbadge" id="tabAlarmBadge">4</span></button>
+        <button class="sk-tab" onclick="showTab('rules',this)">⚙ قواعد التبليغ</button>
+        <button class="sk-tab" onclick="showTab('durations',this)">⏱ المدد والتوقيت</button>
+        <button class="sk-tab" onclick="showTab('log',this)">📋 السجل الكامل</button>
+      </div>
 
-        <div class="sk-alarm sev-high">
-          <div class="sev">⚠</div>
-          <div class="body">
-            <div class="ttl">دخول جناح ٤١٠ — بدون تسجيل بيانات</div>
-            <div class="sub">المفتاح الذكي فُتح قبل ٣٢ دقيقة بهوية لم تمرّ بمكتب الاستقبال. لم تُسجَّل بيانات النزيل في برنامج الضيوف.</div>
-            <div class="src"><span class="chip">المصدر: المفتاح الذكي</span> ← <span class="chip">الضيوف · مفقود</span></div>
-          </div>
-          <div class="when"><div class="t">14:14</div><div class="ago">قبل ٣٢ دقيقة</div></div>
-          <div class="acts"><button>تجاهل</button><button class="pr">سجّل الآن</button></div>
+      <!-- ═══ TAB 1: Alarms ═══ -->
+      <div class="sk-pane active" id="pane-alarms">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+          <select id="alarmFilter" onchange="renderAlarms()" style="font-family:var(--font-ar);font-size:12px;padding:7px 12px;border:1px solid var(--ink-100);border-radius:7px;background:var(--white);color:var(--ink-900);outline:none;cursor:pointer">
+            <option value="active">الإنذارات النشطة</option>
+            <option value="snoozed">المؤجّلة</option>
+            <option value="resolved">المحلولة</option>
+            <option value="all">جميع الإنذارات</option>
+          </select>
+          <select id="sevFilter" onchange="renderAlarms()" style="font-family:var(--font-ar);font-size:12px;padding:7px 12px;border:1px solid var(--ink-100);border-radius:7px;background:var(--white);color:var(--ink-900);outline:none;cursor:pointer">
+            <option value="">جميع الأولويات</option>
+            <option value="high">عالية</option>
+            <option value="med">متوسطة</option>
+            <option value="low">منخفضة</option>
+            <option value="info">معلوماتي</option>
+          </select>
+          <span style="font-size:12px;color:var(--fg-3)" id="alarmFilterCount"></span>
+          <div style="flex:1"></div>
+          <button onclick="resolveAll()" style="font-family:var(--font-ar);font-size:12px;padding:7px 14px;border-radius:7px;background:var(--success-600);color:var(--paper);border:none;cursor:pointer">✓ حلّ الكل</button>
         </div>
+        <div class="sk-list" id="alarmsList"></div>
+      </div>
 
-        <div class="sk-alarm sev-med">
-          <div class="sev">!</div>
-          <div class="body">
-            <div class="ttl">مرافق بدون بيانات كاملة — غرفة ٣٠٧</div>
-            <div class="sub">النزيل Layla Karam سجّلت مرافقاً (طفل ١٢ سنة) بدون رقم جوال. نقص في البيانات الإلزامية.</div>
-            <div class="src"><span class="chip">المصدر: الضيوف</span> ← <span class="chip">المرافقون · نقص</span></div>
-          </div>
-          <div class="when"><div class="t">13:48</div><div class="ago">قبل ٥٨ دقيقة</div></div>
-          <div class="acts"><button>تجاهل</button><button class="pr">استكمل البيانات</button></div>
+      <!-- ═══ TAB 2: Rules ═══ -->
+      <div class="sk-pane" id="pane-rules">
+        <div style="margin-bottom:14px">
+          <p style="font-size:13px;color:var(--fg-2);line-height:1.7">فعّل أو أوقف أي قاعدة، وخصّص عتبة التحذير لكل منها. التغييرات تُطبَّق فوراً على الفحص التالي.</p>
         </div>
+        <div class="sk-rules-grid" id="rulesGrid"></div>
+        <div style="margin-top:16px;display:flex;gap:10px">
+          <button onclick="saveRules()" style="font-family:var(--font-ar);font-size:13px;font-weight:500;padding:10px 22px;border-radius:8px;background:#7C2D12;color:var(--paper);border:none;cursor:pointer">💾 حفظ القواعد</button>
+          <span class="dur-toast" id="rulestoast">✓ تم حفظ القواعد</span>
+        </div>
+      </div>
 
-        <div class="sk-alarm sev-low">
-          <div class="sev">i</div>
-          <div class="body">
-            <div class="ttl">إقامة قاربت على الانتهاء — تجديد مطلوب</div>
-            <div class="sub">Rajesh Kumar — إقامة تنتهي بعد ٦٣ يوماً. يُنصح ببدء طلب التجديد عبر قوى.</div>
-            <div class="src"><span class="chip">المصدر: الموارد البشرية</span> ← <span class="chip">إقامة · تنبيه مبكر</span></div>
-          </div>
-          <div class="when"><div class="t">10:20</div><div class="ago">قبل ٤ ساعات</div></div>
-          <div class="acts"><button>تأجيل</button><button class="pr">افتح في قوى</button></div>
+      <!-- ═══ TAB 3: Durations ═══ -->
+      <div class="sk-pane" id="pane-durations">
+        <div style="margin-bottom:14px">
+          <p style="font-size:13px;color:var(--fg-2);line-height:1.7">حدّد المدد الزمنية التي تُشغّل التنبيهات. كل قيمة مرتبطة بقاعدة تبليغ معيّنة.</p>
         </div>
+        <div class="sk-dur-form" id="durationsForm"></div>
+        <div class="dur-actions">
+          <button class="dur-btn save" onclick="saveDurations()">💾 حفظ المدد</button>
+          <button class="dur-btn reset" onclick="resetDurations()">إعادة الضبط</button>
+          <span class="dur-toast" id="durtoast">✓ تم حفظ المدد</span>
+        </div>
+      </div>
+
+      <!-- ═══ TAB 4: Log ═══ -->
+      <div class="sk-pane" id="pane-log">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+          <span style="font-size:13px;color:var(--fg-2)" id="logCount"></span>
+          <button onclick="exportLog()" style="font-family:var(--font-ar);font-size:12px;padding:7px 14px;border-radius:7px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">📥 تصدير CSV</button>
+        </div>
+        <div class="sk-log" id="logTable"></div>
       </div>
 
     </main>
   </div>
 </div>
 
+<div id="sk-toast"></div>
+
 <script src="/static/nuzul/shared/sidebar.js"></script>
-<script>StaticSidebar.mount({ activeId: "08-smart-key", placeholder: "بحث في الإنذارات والسجل..." });</script>
+<script>StaticSidebar.mount({ activeId: "08-smart-key", placeholder: "بحث في الإنذارات..." });</script>
 <script src="/static/nuzul/assets/animations.js"></script>
 <script>
-// Ensure content is always visible — fallback if IntersectionObserver threshold not met
-setTimeout(function(){
-  document.querySelectorAll('[data-m-rise],[data-m-rise-stagger]').forEach(function(el){
-    el.classList.add('is-in');
+(function(){
+'use strict';
+
+/* ════════════════════════════════
+   STATE
+════════════════════════════════ */
+var nextId = 20;
+
+var ALARMS = [
+  {id:1,  sev:'high', status:'active',   title:'نزيل غير مسجّل — دفع POS بدون رقم غرفة',    desc:'دفع ١٬٢٤٠ ر.س في مطعم الواحة ولا يوجد نزيل مسجّل في الغرفة المرتبطة (٢١٨).',    src:'نقاط البيع',  target:'الضيوف · لا تطابق',  program:'07', time:'14:32', minsAgo:14,  rule:'pos_no_room'},
+  {id:2,  sev:'high', status:'active',   title:'دخول جناح ٤١٠ — بدون تسجيل بيانات',         desc:'المفتاح فُتح بهوية لم تمرّ بمكتب الاستقبال. بيانات النزيل مفقودة في برنامج الضيوف.', src:'المفتاح الذكي',target:'الضيوف · مفقود',      program:'01', time:'14:14', minsAgo:32,  rule:'key_no_reg'},
+  {id:3,  sev:'med',  status:'active',   title:'مرافق بدون بيانات كاملة — غرفة ٣٠٧',        desc:'النزيل Layla Karam سجّلت مرافقاً (طفل ١٢ سنة) بدون رقم جوال. نقص في البيانات الإلزامية.', src:'الضيوف', target:'المرافقون · نقص',    program:'01', time:'13:48', minsAgo:58,  rule:'missing_data'},
+  {id:4,  sev:'low',  status:'active',   title:'إقامة قاربت على الانتهاء — تجديد مطلوب',     desc:'Rajesh Kumar — إقامة تنتهي بعد ٦٣ يوماً. يُنصح ببدء إجراءات التجديد عبر قوى.',    src:'الموارد البشرية',target:'إقامة · تنبيه مبكر', program:'09', time:'10:20', minsAgo:240, rule:'residency_expiry'},
+  {id:5,  sev:'med',  status:'snoozed',  title:'فارق سعر الغرفة — مقارنة القنوات',           desc:'سعر غرفة ٣٠١ في Booking.com أعلى بـ ١٢٪ عن سعر النظام الداخلي.',                src:'القنوات',     target:'المحاسبة · فارق سعر', program:'10', time:'09:10', minsAgo:320, rule:'price_gap'},
+  {id:6,  sev:'high', status:'resolved', title:'دفع مكرّر — TX-0199 و TX-0198',             desc:'رصد دفعتان متطابقتان (٤٨٠ ر.س) لنفس النزيل خلال دقيقة واحدة.',                   src:'نقاط البيع',  target:'المحاسبة · تكرار',    program:'07', time:'08:45', minsAgo:390, rule:'duplicate_payment'},
+  {id:7,  sev:'info', status:'resolved', title:'تغيير سعر الوحدة — مطعم الواحة',            desc:'تم تعديل سعر طبق الرئيسي من ٨٥ إلى ٩٥ ر.س خارج ساعات العمل الرسمية.',         src:'نقاط البيع',  target:'التدقيق · تغيير سعر', program:'07', time:'08:00', minsAgo:500, rule:'price_change'},
+  {id:8,  sev:'low',  status:'resolved', title:'تقرير EOD — فارق بسيط في الصندوق',           desc:'صندوق النقدي يُظهر فارق ١٥ ر.س عن تقرير نقاط البيع في نهاية اليوم.',            src:'المحاسبة',   target:'نقاط البيع · صندوق', program:'06', time:'07:30', minsAgo:570, rule:'eod_gap'},
+];
+
+var RULES_DEF = [
+  {key:'pos_no_room',       icon:'💳', name:'دفع POS بلا غرفة مسجّلة',       sub:'يُنذر عند وجود دفعة POS مرتبطة بغرفة ليس فيها نزيل نشط.', enabled:true,  opts:[{label:'انتظار',field:'delay_min',  val:5,  unit:'دقيقة'}]},
+  {key:'key_no_reg',        icon:'🗝', name:'فتح مفتاح بلا تسجيل',           sub:'يُنذر عند دخول يُرصد عبر المفتاح الذكي دون وجود نزيل مسجّل.', enabled:true,  opts:[{label:'سماح',  field:'delay_min',  val:10, unit:'دقيقة'}]},
+  {key:'missing_data',      icon:'📋', name:'بيانات نزيل ناقصة',             sub:'يُنذر عند تسجيل نزيل مع حقول إلزامية فارغة (جواز، جوال).', enabled:true,  opts:[{label:'مهلة',  field:'grace_min',  val:30, unit:'دقيقة'}]},
+  {key:'residency_expiry',  icon:'📅', name:'إقامة توشك على الانتهاء',        sub:'تنبيه مبكر لإقامة موظف قاربت على الانتهاء.', enabled:true,  opts:[{label:'قبل',  field:'days_before', val:60, unit:'يوم'}]},
+  {key:'duplicate_payment', icon:'🔁', name:'دفعة مكرّرة',                   sub:'يُنذر عند رصد دفعتين متطابقتين في نفس الوقت لنفس النزيل.', enabled:true,  opts:[{label:'نافذة', field:'window_min',  val:2,  unit:'دقيقة'}]},
+  {key:'price_gap',         icon:'📊', name:'فارق سعر القنوات',               sub:'يُنذر عند اختلاف سعر الغرفة بين النظام والقنوات الخارجية.', enabled:true,  opts:[{label:'نسبة',  field:'pct_gap',     val:10, unit:'٪'}]},
+  {key:'price_change',      icon:'✏️', name:'تغيير سعر خارج ساعات العمل',    sub:'يُنذر عند تعديل الأسعار بعد ساعات الدوام الرسمي.', enabled:false, opts:[]},
+  {key:'eod_gap',           icon:'🧾', name:'فارق تقرير EOD',                 sub:'يُنذر عند وجود فارق بين الصندوق النقدي ونقاط البيع عند الإغلاق.', enabled:true,  opts:[{label:'حد',   field:'amt_gap',     val:50, unit:'ر.س'}]},
+  {key:'escalate',          icon:'🚀', name:'تصعيد الإنذار غير المحلول',      sub:'يُصعّد الإنذار تلقائياً إذا بقي دون حلّ لفترة محددة.', enabled:false, opts:[{label:'بعد',  field:'escalate_hrs',val:4,  unit:'ساعة'}]},
+  {key:'checkout_pending',  icon:'🛏', name:'تسجيل مغادرة متأخر',            sub:'يُنذر عند تأخر تسجيل المغادرة عن الموعد المحدد.', enabled:true,  opts:[{label:'تأخر',  field:'delay_min',  val:60, unit:'دقيقة'}]},
+];
+
+var DURATIONS_DEF = [
+  {group:'البرنامج العام', items:[
+    {key:'scan_interval',   label:'فترة الفحص التلقائي',  hint:'كل كم دقيقة يُجري النظام فحصاً تلقائياً',   val:5,   unit:'دقيقة', min:1, max:60},
+    {key:'alert_cooldown',  label:'تهدئة الإنذار',         hint:'الحد الأدنى بين إنذارَين من نفس النوع',      val:15,  unit:'دقيقة', min:5, max:120},
+  ]},
+  {group:'الضيوف والمفتاح', items:[
+    {key:'key_grace',       label:'مهلة فتح المفتاح',      hint:'وقت السماح بعد الفتح قبل إطلاق الإنذار',    val:10,  unit:'دقيقة', min:1, max:60},
+    {key:'checkin_late',    label:'تأخر تسجيل الوصول',     hint:'ساعات بعد الحجز قبل إنذار عدم الحضور',      val:2,   unit:'ساعة',  min:1, max:12},
+    {key:'checkout_late',   label:'تأخر المغادرة',          hint:'دقائق بعد موعد المغادرة قبل التنبيه',       val:60,  unit:'دقيقة', min:15,max:240},
+    {key:'data_grace',      label:'مهلة استكمال البيانات',  hint:'وقت السماح لاستكمال بيانات النزيل',          val:30,  unit:'دقيقة', min:5, max:120},
+  ]},
+  {group:'المالي ونقاط البيع', items:[
+    {key:'pos_match',       label:'نافذة مطابقة POS',       hint:'دقائق قبل إنذار الدفع بلا غرفة',            val:5,   unit:'دقيقة', min:1, max:30},
+    {key:'dup_window',      label:'نافذة الدفعة المكررة',   hint:'ثواني لرصد الدفعات المتطابقة',               val:90,  unit:'ثانية', min:30,max:300},
+    {key:'eod_tolerance',   label:'سماح فارق EOD',          hint:'أعلى فارق نقدي مقبول عند الإغلاق',           val:50,  unit:'ر.س',   min:0, max:500},
+  ]},
+  {group:'الموارد البشرية', items:[
+    {key:'residency_warn',  label:'تحذير مبكر إقامة',       hint:'عدد الأيام قبل انتهاء الإقامة للتنبيه',     val:60,  unit:'يوم',   min:7, max:180},
+    {key:'escalate_hrs',    label:'تصعيد الإنذار',          hint:'ساعات قبل التصعيد التلقائي للإنذار',        val:4,   unit:'ساعة',  min:1, max:24},
+  ]},
+];
+
+/* load from localStorage */
+var RULES = {};
+var DURATIONS = {};
+try {
+  var sr = JSON.parse(localStorage.getItem('sk_rules') || '{}');
+  var sd = JSON.parse(localStorage.getItem('sk_durations') || '{}');
+  RULES_DEF.forEach(function(r){ RULES[r.key] = Object.assign({}, r, sr[r.key] || {}); });
+  DURATIONS_DEF.forEach(function(g){ g.items.forEach(function(it){ DURATIONS[it.key] = sd[it.key] !== undefined ? sd[it.key] : it.val; }); });
+} catch(e) {
+  RULES_DEF.forEach(function(r){ RULES[r.key] = Object.assign({}, r); });
+  DURATIONS_DEF.forEach(function(g){ g.items.forEach(function(it){ DURATIONS[it.key] = it.val; }); });
+}
+
+/* ════════════════════════════════
+   TOAST
+════════════════════════════════ */
+function toast(msg, type) {
+  var el = document.getElementById('sk-toast');
+  el.textContent = msg; el.className = (type||'') + ' show';
+  setTimeout(function(){ el.className = el.className.replace(' show',''); }, 3000);
+}
+
+/* ════════════════════════════════
+   TABS
+════════════════════════════════ */
+window.showTab = function(name, btn) {
+  document.querySelectorAll('.sk-pane').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.sk-tab').forEach(function(b){ b.classList.remove('active'); });
+  document.getElementById('pane-'+name).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (name === 'log') renderLog();
+};
+
+/* ════════════════════════════════
+   WATCH GRID — mark cards with alarms
+════════════════════════════════ */
+function updateWatchGrid() {
+  var alarmsByProg = {};
+  ALARMS.forEach(function(a) {
+    if (a.status === 'active') alarmsByProg[a.program] = (alarmsByProg[a.program]||0) + 1;
   });
+  ['01','02','06','07','09','10'].forEach(function(prog) {
+    var card = document.getElementById('wc-'+prog);
+    if (!card) return;
+    var n = alarmsByProg[prog] || 0;
+    var badge = card.querySelector('.wbadge');
+    if (n > 0) {
+      card.classList.add('has-alarm');
+      if (badge) badge.textContent = n;
+    } else {
+      card.classList.remove('has-alarm');
+      if (badge) badge.textContent = '0';
+    }
+  });
+}
+
+/* ════════════════════════════════
+   STATS
+════════════════════════════════ */
+function updateStats() {
+  var active   = ALARMS.filter(function(a){ return a.status==='active'; }).length;
+  var resolved = ALARMS.filter(function(a){ return a.status==='resolved'; }).length;
+  var snoozed  = ALARMS.filter(function(a){ return a.status==='snoozed'; }).length;
+  var el = document.getElementById('statActive');    if(el) el.textContent = active;
+  var el2= document.getElementById('statResolved');  if(el2) el2.textContent = resolved;
+  var el3= document.getElementById('statSnoozed');   if(el3) el3.textContent = snoozed;
+  var tb = document.getElementById('tabAlarmBadge'); if(tb) tb.textContent = active;
+  var bm = document.getElementById('bannerAlarmMeta');
+  if(bm) bm.textContent = active + ' إنذار' + (active===1?'':' نشط') + ' · ' + (active>0?'تحتاج تدخّل':'كل شيء طبيعي ✓');
+  updateWatchGrid();
+}
+
+/* ════════════════════════════════
+   RENDER ALARMS
+════════════════════════════════ */
+window.renderAlarms = function() {
+  var filterStatus = (document.getElementById('alarmFilter')||{value:'active'}).value;
+  var filterSev    = (document.getElementById('sevFilter')||{value:''}).value;
+
+  var list = ALARMS.filter(function(a){
+    if (filterStatus !== 'all' && a.status !== filterStatus) return false;
+    if (filterSev && a.sev !== filterSev) return false;
+    return true;
+  });
+
+  var el = document.getElementById('alarmFilterCount');
+  if (el) el.textContent = list.length + ' إنذار مطابق';
+
+  var html = '';
+  if (!list.length) {
+    html = '<div class="sk-empty"><div class="eic">' + (filterStatus==='resolved'?'✅':'🔕') + '</div>' +
+      (filterStatus==='active' ? 'لا توجد إنذارات نشطة — كل شيء طبيعي' :
+       filterStatus==='resolved' ? 'لا توجد إنذارات محلولة بعد' : 'لا توجد سجلات') + '</div>';
+  }
+  list.forEach(function(a) {
+    var sevIcon = {high:'⚠',med:'!',low:'⏰',info:'ℹ'}[a.sev]||'·';
+    var ago = a.minsAgo < 60
+      ? 'قبل ' + a.minsAgo + ' دقيقة'
+      : 'قبل ' + Math.floor(a.minsAgo/60) + ' ساعة';
+    var acts = '';
+    if (a.status === 'active') {
+      acts = '<button class="sk-btn" onclick="snoozeAlarm('+a.id+')">⏱ تأجيل</button>'
+           + '<button class="sk-btn ok" onclick="resolveAlarm('+a.id+')">✓ تم الحل</button>';
+    } else if (a.status === 'snoozed') {
+      acts = '<button class="sk-btn" onclick="activateAlarm('+a.id+')">إعادة تفعيل</button>'
+           + '<button class="sk-btn ok" onclick="resolveAlarm('+a.id+')">✓ تم الحل</button>';
+    } else {
+      acts = '<button class="sk-btn" onclick="activateAlarm('+a.id+')">إعادة فتح</button>';
+    }
+    html += '<div class="sk-alarm '+a.sev+(a.status!=='active'?' '+a.status:'')+'">'
+      + '<div class="sk-sev">'+sevIcon+'</div>'
+      + '<div class="body"><div class="ttl">'+a.title+'</div>'
+      + '<div class="sub">'+a.desc+'</div>'
+      + '<div class="chips"><span class="sk-chip">'+a.src+'</span><span style="color:var(--fg-3)">→</span><span class="sk-chip">'+a.target+'</span>'
+      + (a.status==='snoozed'?'<span class="sk-chip" style="background:#FEFCE8;color:#A16207">مؤجّل</span>':'')
+      + (a.status==='resolved'?'<span class="sk-chip" style="background:#F0FDF4;color:#16A34A">محلول ✓</span>':'')
+      + '</div></div>'
+      + '<div class="when"><div class="wt">'+a.time+'</div><div class="ago">'+ago+'</div></div>'
+      + '<div class="acts">'+acts+'</div>'
+      + '</div>';
+  });
+  var container = document.getElementById('alarmsList');
+  if (container) container.innerHTML = html;
+};
+
+/* ── Alarm actions ── */
+window.snoozeAlarm = function(id) {
+  var a = ALARMS.find(function(x){ return x.id===id; });
+  if (!a) return;
+  a.status = 'snoozed';
+  renderAlarms(); updateStats();
+  toast('تم تأجيل الإنذار لمدة ' + DURATIONS['alert_cooldown'] + ' دقيقة');
+};
+window.resolveAlarm = function(id) {
+  var a = ALARMS.find(function(x){ return x.id===id; });
+  if (!a) return;
+  a.status = 'resolved';
+  renderAlarms(); updateStats();
+  toast('✓ تم تسجيل الحل للإنذار', 'success');
+};
+window.activateAlarm = function(id) {
+  var a = ALARMS.find(function(x){ return x.id===id; });
+  if (!a) return;
+  a.status = 'active';
+  renderAlarms(); updateStats();
+  toast('تم إعادة تفعيل الإنذار');
+};
+window.resolveAll = function() {
+  var active = ALARMS.filter(function(a){ return a.status==='active'; });
+  active.forEach(function(a){ a.status='resolved'; });
+  renderAlarms(); updateStats();
+  toast('✓ تم حلّ جميع الإنذارات النشطة (' + active.length + ')', 'success');
+};
+
+/* ════════════════════════════════
+   RENDER RULES
+════════════════════════════════ */
+function renderRules() {
+  var html = '';
+  RULES_DEF.forEach(function(rd) {
+    var r = RULES[rd.key] || rd;
+    var isOn = r.enabled;
+    html += '<div class="sk-rule-card '+(isOn?'active':'inactive')+'" id="rc-'+rd.key+'">'
+      + '<div class="sk-rule-hd">'
+      + '<div class="rt"><div class="rname"><span>'+rd.icon+'</span>'+rd.name
+      + '<span style="font-size:10px;font-family:var(--font-en);color:var(--fg-3);font-weight:400;margin-inline-start:4px">'+rd.key+'</span></div>'
+      + '<div class="rsub">'+rd.sub+'</div></div>'
+      + '<label class="toggle-sw"><input type="checkbox" id="rule-'+rd.key+'" '+(isOn?'checked':'')+' onchange="toggleRule(\''+rd.key+'\')"/><span class="slider"></span></label>'
+      + '</div>';
+    if (rd.opts && rd.opts.length) {
+      html += '<div class="sk-rule-opts">';
+      rd.opts.forEach(function(opt) {
+        var v = (r.opts && r.opts[0]) ? r.opts[0].val : opt.val;
+        html += '<div class="sk-rule-opt"><span>'+opt.label+'</span>'
+          + '<input type="number" id="ropt-'+rd.key+'-'+opt.field+'" value="'+v+'" min="1" max="999"/>'
+          + '<span class="unit">'+opt.unit+'</span></div>';
+      });
+      html += '</div>';
+    }
+    html += '</div>';
+  });
+  var el = document.getElementById('rulesGrid');
+  if (el) el.innerHTML = html;
+}
+
+window.toggleRule = function(key) {
+  var cb = document.getElementById('rule-'+key);
+  if (RULES[key]) RULES[key].enabled = cb.checked;
+  var card = document.getElementById('rc-'+key);
+  if (card) { card.classList.toggle('active', cb.checked); card.classList.toggle('inactive', !cb.checked); }
+};
+
+window.saveRules = function() {
+  RULES_DEF.forEach(function(rd) {
+    var cb = document.getElementById('rule-'+rd.key);
+    if (cb && RULES[rd.key]) RULES[rd.key].enabled = cb.checked;
+    rd.opts && rd.opts.forEach(function(opt) {
+      var inp = document.getElementById('ropt-'+rd.key+'-'+opt.field);
+      if (inp && RULES[rd.key] && RULES[rd.key].opts && RULES[rd.key].opts[0]) {
+        RULES[rd.key].opts[0].val = parseFloat(inp.value) || opt.val;
+      }
+    });
+  });
+  try { localStorage.setItem('sk_rules', JSON.stringify(RULES)); } catch(e){}
+  var t = document.getElementById('rulestoast'); if(t){ t.classList.add('show'); setTimeout(function(){ t.classList.remove('show'); }, 2500); }
+  toast('✓ تم حفظ قواعد التبليغ', 'success');
+};
+
+/* ════════════════════════════════
+   RENDER DURATIONS
+════════════════════════════════ */
+function renderDurations() {
+  var html = '';
+  DURATIONS_DEF.forEach(function(g) {
+    html += '<div class="sk-dur-card"><h4>⏱ '+g.group+'</h4>';
+    g.items.forEach(function(it) {
+      html += '<div class="dur-row">'
+        + '<div class="dr-info"><div class="dr-label">'+it.label+'</div><div class="dr-hint">'+it.hint+'</div></div>'
+        + '<div class="dr-ctrl">'
+        + '<input type="number" id="dur-'+it.key+'" value="'+(DURATIONS[it.key]!==undefined?DURATIONS[it.key]:it.val)+'" min="'+it.min+'" max="'+it.max+'"/>'
+        + '<span class="du-unit">'+it.unit+'</span></div></div>';
+    });
+    html += '</div>';
+  });
+  var el = document.getElementById('durationsForm'); if(el) el.innerHTML = html;
+}
+
+window.saveDurations = function() {
+  DURATIONS_DEF.forEach(function(g){
+    g.items.forEach(function(it){
+      var inp = document.getElementById('dur-'+it.key);
+      if (inp) DURATIONS[it.key] = parseFloat(inp.value) || it.val;
+    });
+  });
+  try { localStorage.setItem('sk_durations', JSON.stringify(DURATIONS)); } catch(e){}
+  var t = document.getElementById('durtoast'); if(t){ t.classList.add('show'); setTimeout(function(){ t.classList.remove('show'); }, 2500); }
+  toast('✓ تم حفظ إعدادات المدد', 'success');
+  /* update EOD time display if POS module is open in same tab */
+  var eodEl = document.getElementById('eodTime');
+  if (eodEl) eodEl.textContent = DURATIONS['scan_interval'] || '23:59';
+};
+
+window.resetDurations = function() {
+  DURATIONS_DEF.forEach(function(g){ g.items.forEach(function(it){ DURATIONS[it.key] = it.val; }); });
+  renderDurations();
+  toast('تمت إعادة ضبط المدد الافتراضية');
+};
+
+/* ════════════════════════════════
+   LOG
+════════════════════════════════ */
+function renderLog() {
+  var all = ALARMS.slice().sort(function(a,b){ return b.id-a.id; });
+  var count = document.getElementById('logCount');
+  if (count) count.textContent = all.length + ' إنذار في السجل';
+
+  var html = '<div class="sk-log-row lhd"><span>الأولوية</span><span>الإنذار</span><span>المصدر</span><span>الحالة</span><span>الوقت</span></div>';
+  all.forEach(function(a) {
+    var sevLabel = {high:'عالية',med:'متوسطة',low:'منخفضة',info:'معلوماتي'}[a.sev]||a.sev;
+    var stLabel  = {active:'نشط',resolved:'محلول',snoozed:'مؤجّل'}[a.status]||a.status;
+    html += '<div class="sk-log-row">'
+      + '<span class="log-sev '+a.sev+'">'+sevLabel+'</span>'
+      + '<div><div class="log-nm">'+a.title+'</div><div class="log-sub">'+a.desc.substring(0,60)+'…</div></div>'
+      + '<div><div class="log-nm">'+a.src+'</div><div class="log-sub">'+a.target+'</div></div>'
+      + '<span class="log-status '+a.status+'">'+stLabel+'</span>'
+      + '<span class="log-time">'+a.time+'</span>'
+      + '</div>';
+  });
+  var el = document.getElementById('logTable'); if(el) el.innerHTML = html;
+}
+
+/* ════════════════════════════════
+   EXPORT LOG
+════════════════════════════════ */
+window.exportLog = function() {
+  var bom = '﻿';
+  var headers = ['الأولوية','عنوان الإنذار','الوصف','المصدر','الجهة المستهدفة','الحالة','الوقت','القاعدة'];
+  var rows = ALARMS.map(function(a){
+    return [
+      {high:'عالية',med:'متوسطة',low:'منخفضة',info:'معلوماتي'}[a.sev]||a.sev,
+      a.title, a.desc, a.src, a.target,
+      {active:'نشط',resolved:'محلول',snoozed:'مؤجّل'}[a.status]||a.status,
+      a.time, a.rule
+    ].map(function(v){ return '"'+String(v||'').replace(/"/g,'""')+'"'; }).join(',');
+  });
+  var csv = bom + headers.map(function(h){ return '"'+h+'"'; }).join(',') + '\r\n' + rows.join('\r\n');
+  var blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a'); a.href=url;
+  a.download = 'SmartKey_Log_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click(); URL.revokeObjectURL(url);
+  toast('تم تصدير السجل ('+ALARMS.length+' سجل) ✓', 'success');
+};
+
+/* ════════════════════════════════
+   SCAN
+════════════════════════════════ */
+window.runScan = function() {
+  var lbl = document.getElementById('lastScanLabel');
+  if (lbl) lbl.textContent = 'جارٍ الفحص…';
+  setTimeout(function(){
+    /* simulate finding a new alarm occasionally */
+    if (Math.random() > 0.6 && RULES['missing_data'] && RULES['missing_data'].enabled) {
+      ALARMS.unshift({
+        id: nextId++, sev:'med', status:'active',
+        title:'بيانات نزيل مفقودة — غرفة '+(Math.floor(Math.random()*400)+100),
+        desc:'الفحص التلقائي رصد حقل الجواز فارغاً.',
+        src:'الضيوف', target:'بيانات · نقص',
+        program:'01', time:new Date().toTimeString().slice(0,5), minsAgo:0, rule:'missing_data'
+      });
+      renderAlarms(); updateStats();
+      toast('⚠ رُصد إنذار جديد أثناء الفحص', 'warn');
+    } else {
+      if (lbl) lbl.textContent = 'الآن';
+      toast('✓ الفحص اكتمل — لا جديد', 'success');
+    }
+    if (lbl) lbl.textContent = 'الآن';
+  }, 1400);
+};
+
+/* ── Live counter ── */
+(function() {
+  var sec = 0;
+  var lbl = document.getElementById('lastScanLabel');
+  setInterval(function(){
+    sec++;
+    if (!lbl) return;
+    if (sec < 60) lbl.textContent = 'قبل ' + sec + ' ثانية';
+    else lbl.textContent = 'قبل ' + Math.floor(sec/60) + ' دقيقة';
+    /* auto re-scan based on DURATIONS */
+    if (sec > 0 && sec % ((DURATIONS['scan_interval']||5)*60) === 0) {
+      sec = 0; if (lbl) lbl.textContent = 'الآن';
+    }
+  }, 1000);
+})();
+
+/* ════════════════════════════════
+   INIT
+════════════════════════════════ */
+setTimeout(function(){
+  document.querySelectorAll('[data-m-rise],[data-m-rise-stagger]').forEach(function(el){ el.classList.add('is-in'); });
+  renderAlarms();
+  renderRules();
+  renderDurations();
+  updateStats();
 }, 80);
+
+})();
 </script>
 </body>
 </html>
