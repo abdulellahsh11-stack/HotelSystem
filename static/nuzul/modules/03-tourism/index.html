@@ -2,148 +2,114 @@
 <html lang="ar" dir="rtl" data-screen-label="03 Government Docs">
 <head>
 <meta charset="utf-8"/>
-<title>ضيوف · المستندات والاشتراكات</title>
+<title>ضيوف · المستندات الحكومية</title>
 <meta name="viewport" content="width=1440, initial-scale=1"/>
 <link rel="stylesheet" href="/static/nuzul/colors_and_type.css"/>
 <link rel="stylesheet" href="/static/nuzul/assets/animations.css"/>
 <link rel="stylesheet" href="/static/nuzul/shared/chrome.css"/>
 <link rel="stylesheet" href="/static/nuzul/shared/module.css"/>
 <style>
-  body { background: var(--paper-tint); }
+/* ── Alert banner ──────────────────────────────────────────────── */
+.doc-alert{background:linear-gradient(135deg,#C99428,#9A6D14);color:var(--paper);border-radius:14px;padding:22px 26px;margin-bottom:22px;display:grid;grid-template-columns:auto 1fr auto auto;gap:22px;align-items:center;position:relative;overflow:hidden}
+.doc-alert::after{content:"";position:absolute;top:-40px;inset-inline-end:-40px;width:200px;height:200px;border-radius:999px;background:radial-gradient(circle,rgba(255,255,255,.18),transparent 60%)}
+.doc-alert>*{position:relative}
+.doc-alert .ic{width:52px;height:52px;background:var(--paper);color:#9A6D14;border-radius:12px;display:grid;place-items:center;font-size:26px}
+.doc-alert .ar{font-family:var(--font-ar-display);font-weight:600;font-size:19px}
+.doc-alert .en{font-family:var(--font-en);font-style:italic;font-size:12px;color:rgba(255,255,255,.75);margin-top:3px}
+.doc-alert .meta{font-size:13px;color:rgba(255,255,255,.9);margin-top:8px}
+.doc-alert .v{font-family:var(--font-en);font-size:38px;font-weight:600;color:var(--paper);line-height:1}
+.doc-alert .v-lbl{font-size:11px;color:rgba(255,255,255,.75);margin-top:4px;font-family:var(--font-en);letter-spacing:.06em;text-transform:uppercase}
+.doc-alert button{background:var(--paper);color:#9A6D14;border:none;padding:10px 18px;border-radius:6px;font-family:var(--font-ar);font-weight:600;font-size:13px;cursor:pointer}
+.doc-alert button:hover{background:#f5f5f5}
 
-  /* Alert banner */
-  .doc-alert {
-    background: linear-gradient(135deg, #C99428, #9A6D14);
-    color: var(--paper);
-    border-radius: 14px;
-    padding: 22px 26px;
-    margin-bottom: 22px;
-    display: grid; grid-template-columns: auto 1fr auto; gap: 22px; align-items: center;
-    position: relative; overflow: hidden;
-  }
-  .doc-alert::after { content: ""; position: absolute; top: -40px; inset-inline-end: -40px; width: 200px; height: 200px; border-radius: 999px; background: radial-gradient(circle, rgba(255,255,255,0.18), transparent 60%); }
-  .doc-alert > * { position: relative; }
-  .doc-alert .ic { width: 52px; height: 52px; background: var(--paper); color: #9A6D14; border-radius: 12px; display: grid; place-items: center; font-size: 26px; }
-  .doc-alert .ar { font-family: var(--font-ar-display); font-weight: 600; font-size: 19px; }
-  .doc-alert .en { font-family: var(--font-en); font-style: italic; font-size: 12px; color: rgba(255,255,255,0.75); margin-top: 3px; }
-  .doc-alert .meta { font-size: 13px; color: rgba(255,255,255,0.9); margin-top: 8px; }
-  .doc-alert .v { font-family: var(--font-en); font-variant-numeric: tabular-nums; font-size: 38px; font-weight: 600; color: var(--paper); line-height: 1; }
-  .doc-alert .v-lbl { font-size: 11px; color: rgba(255,255,255,0.75); margin-top: 4px; font-family: var(--font-en); letter-spacing: 0.06em; text-transform: uppercase; }
-  .doc-alert button { background: var(--paper); color: #9A6D14; border: none; padding: 10px 18px; border-radius: 6px; font-family: var(--font-ar); font-weight: 600; font-size: 13px; cursor: pointer; }
+/* ── Toolbar ───────────────────────────────────────────────────── */
+.tbl-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.search-wrap{display:flex;align-items:center;gap:8px;background:var(--white);border:1px solid var(--hairline);border-radius:8px;padding:7px 14px;flex:1;max-width:340px}
+.search-wrap svg{width:15px;height:15px;color:var(--fg-3);flex-shrink:0}
+.search-wrap input{border:none;outline:none;background:transparent;font-family:var(--font-ar);font-size:13px;width:100%}
+.filter-chip{padding:6px 14px;border-radius:999px;border:1px solid var(--hairline);font-family:var(--font-ar);font-size:12px;color:var(--fg-2);background:var(--white);cursor:pointer;transition:all 140ms}
+.filter-chip.is-on{background:var(--brand-700);color:var(--paper);border-color:var(--brand-700)}
+.ml-auto{margin-inline-start:auto}
+.btn-primary{padding:9px 18px;background:var(--brand-700);color:var(--paper);border:none;border-radius:8px;font-family:var(--font-ar);font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.btn-primary:hover{background:var(--brand-800)}
+.btn-sec{padding:7px 14px;background:var(--white);color:var(--ink-800);border:1px solid var(--hairline);border-radius:7px;font-family:var(--font-ar);font-size:12px;cursor:pointer}
+.btn-sec:hover{background:var(--paper-tint)}
+.btn-danger{padding:7px 14px;background:var(--danger-50);color:var(--danger-700);border:1px solid var(--danger-200);border-radius:7px;font-family:var(--font-ar);font-size:12px;cursor:pointer}
+.btn-danger:hover{background:var(--danger-100)}
 
-  /* Upload zone */
-  .doc-upload {
-    background: var(--white);
-    border: 1.5px dashed var(--gold-400);
-    border-radius: 12px;
-    padding: 22px 24px;
-    display: grid; grid-template-columns: auto 1fr auto; gap: 20px; align-items: center;
-    margin-bottom: 22px;
-  }
-  .doc-upload .ic { width: 50px; height: 50px; background: var(--gold-100); color: var(--gold-800); border-radius: 10px; display: grid; place-items: center; font-size: 22px; }
-  .doc-upload .body .ttl { font-family: var(--font-ar-display); font-weight: 600; font-size: 16px; color: var(--ink-900); }
-  .doc-upload .body .sub { font-size: 12px; color: var(--fg-2); margin-top: 3px; }
-  .doc-upload button { background: var(--brand-700); color: var(--paper); border: none; padding: 10px 18px; border-radius: 6px; font-family: var(--font-ar); font-weight: 500; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+/* ── Documents table ───────────────────────────────────────────── */
+.doc-tbl{background:var(--white);border:1px solid var(--hairline);border-radius:14px;overflow:hidden}
+.doc-tr{display:grid;grid-template-columns:48px 2.5fr 1.3fr 1.2fr 1.6fr 110px;gap:14px;align-items:center;padding:14px 20px;border-top:1px solid var(--hairline);font-size:13px}
+.doc-tr.is-head{background:var(--paper-tint);font-size:11px;color:var(--fg-3);font-weight:600;border-top:none;letter-spacing:.04em}
+.doc-ic{width:40px;height:40px;border-radius:9px;display:grid;place-items:center;font-size:20px;border:1px solid var(--hairline);background:var(--paper-tint);flex-shrink:0}
+.doc-nm{font-weight:600;color:var(--ink-900);font-size:13.5px}
+.doc-sub{font-size:11px;color:var(--fg-3);margin-top:2px}
+.doc-auth{font-size:12px;color:var(--ink-700)}
+.doc-date .v{font-family:var(--font-mono);font-size:12px;color:var(--ink-800);font-weight:500}
+.doc-date .ago{font-size:10px;color:var(--fg-3);margin-top:2px}
+.doc-exp{display:flex;flex-direction:column;gap:5px}
+.doc-exp .bar{height:6px;background:var(--paper-tint);border-radius:999px;overflow:hidden}
+.doc-exp .fill{height:100%;border-radius:999px;transition:width .4s}
+.doc-exp .row{display:flex;align-items:center;justify-content:space-between}
+.doc-exp .exp-date{font-family:var(--font-mono);font-size:11px;color:var(--ink-800);font-weight:500}
+.doc-exp .days-lbl{font-size:11px;font-weight:600}
+.doc-exp.ok    .fill{background:var(--success-500)}.doc-exp.ok    .days-lbl{color:var(--success-700)}
+.doc-exp.warn  .fill{background:var(--warning-500)}.doc-exp.warn  .days-lbl{color:var(--warning-700)}
+.doc-exp.err   .fill{background:var(--danger-500)} .doc-exp.err   .days-lbl{color:var(--danger-700)}
+.doc-exp.over  .fill{background:var(--fg-3)}        .doc-exp.over  .days-lbl{color:var(--fg-2)}
+.acts{display:flex;gap:5px}
+.acts button{padding:5px 11px;border-radius:6px;font-family:var(--font-ar);font-size:11px;cursor:pointer;border:1px solid var(--hairline);background:transparent;color:var(--fg-2)}
+.acts button:hover{color:var(--ink-900);border-color:var(--ink-300)}
+.acts button.renew{background:var(--brand-700);color:var(--paper);border-color:transparent}
+.acts button.renew:hover{background:var(--brand-800)}
 
-  /* Documents table */
-  .doc-tbl { background: var(--white); border: 1px solid var(--hairline); border-radius: 12px; overflow: hidden; }
-  .doc-tr {
-    display: grid;
-    grid-template-columns: auto 2.2fr 1.4fr 1.4fr 1.6fr 90px;
-    gap: 14px; align-items: center;
-    padding: 14px 22px;
-    border-top: 1px solid var(--hairline);
-    font-size: 13px;
-  }
-  .doc-tr.is-head { background: var(--surface-2); font-size: 11px; color: var(--fg-3); font-weight: 500; border-top: none; }
+/* ── Notification prefs ────────────────────────────────────────── */
+.doc-notify{margin-top:22px;background:var(--white);border:1px solid var(--hairline);border-radius:14px;padding:22px 26px}
+.doc-notify h4{font-family:var(--font-ar-display);font-weight:600;font-size:16px;color:var(--ink-900);margin:0 0 4px}
+.doc-notify .sub{font-style:italic;font-size:12px;color:var(--fg-3);margin-bottom:18px}
+.doc-pref-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.doc-pref{background:var(--paper-tint);border:2px solid var(--hairline);border-radius:10px;padding:14px 16px;cursor:pointer;transition:all 140ms}
+.doc-pref:hover{border-color:var(--brand-300)}
+.doc-pref.is-on{background:var(--brand-50);border-color:var(--brand-600)}
+.doc-pref .head{display:flex;align-items:center;justify-content:space-between}
+.doc-pref .dnum{font-family:var(--font-en);font-size:28px;font-weight:700;color:var(--ink-800);line-height:1}
+.doc-pref.is-on .dnum{color:var(--brand-800)}
+.doc-pref .plbl{font-size:12px;color:var(--ink-700);margin-top:6px}
+.doc-pref .chk{width:22px;height:22px;border-radius:6px;border:1.5px solid var(--ink-200);background:var(--white);display:grid;place-items:center;font-size:13px}
+.doc-pref.is-on .chk{background:var(--brand-700);border-color:var(--brand-700);color:var(--paper)}
+.doc-channels{display:flex;gap:12px;flex-wrap:wrap;padding:14px 16px;background:var(--paper-tint);border-radius:8px;align-items:center}
+.doc-channels .lbl{font-size:12px;color:var(--ink-800);font-weight:600;margin-inline-end:6px}
+.doc-channels label{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-700);cursor:pointer}
+.doc-channels input{width:14px;height:14px;accent-color:var(--brand-700)}
+.save-notif-btn{margin-top:14px;display:flex;justify-content:flex-end}
 
-  .doc-ic {
-    width: 40px; height: 40px;
-    background: var(--paper-tint);
-    border-radius: 8px;
-    display: grid; place-items: center;
-    font-size: 18px;
-    border: 1px solid var(--hairline);
-  }
-  .doc-tr .nm { font-weight: 500; color: var(--ink-900); }
-  .doc-tr .sub { font-size: 11px; color: var(--fg-3); margin-top: 2px; }
-  .doc-tr .auth { font-size: 12px; color: var(--ink-700); }
+/* ── Upload zone ───────────────────────────────────────────────── */
+.doc-upload{background:var(--white);border:2px dashed var(--gold-400);border-radius:12px;padding:22px 24px;display:grid;grid-template-columns:auto 1fr auto;gap:20px;align-items:center;margin-bottom:22px;cursor:pointer;transition:border-color 140ms}
+.doc-upload:hover{border-color:var(--brand-600)}
+.doc-upload .ic{width:50px;height:50px;background:var(--gold-50);color:var(--gold-800);border-radius:10px;display:grid;place-items:center;font-size:24px}
+.doc-upload .ttl{font-weight:600;font-size:15px;color:var(--ink-900)}
+.doc-upload .usub{font-size:12px;color:var(--fg-2);margin-top:3px}
 
-  .doc-date { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
-  .doc-date .v { color: var(--ink-800); font-weight: 500; font-size: 13px; }
-  .doc-date .ago { font-size: 10px; color: var(--fg-3); margin-top: 2px; font-family: var(--font-ar); }
+/* ── Modal ─────────────────────────────────────────────────────── */
+.nz-modal-bd{position:fixed;inset:0;background:rgba(14,42,34,.6);backdrop-filter:blur(4px);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px}
+.nz-modal{background:var(--white);border-radius:16px;width:min(580px,95vw);max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 64px -16px rgba(14,42,34,.45)}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;border-bottom:1px solid var(--hairline);background:var(--paper-tint)}
+.modal-head .ttl{font-family:var(--font-ar-display);font-size:16px;font-weight:700}
+.modal-body{padding:20px 22px;overflow-y:auto}
+.modal-foot{padding:14px 22px;border-top:1px solid var(--hairline);display:flex;gap:8px;background:var(--paper-tint)}
+.close-btn{background:transparent;border:1px solid var(--ink-100);color:var(--fg-3);border-radius:6px;padding:5px 14px;cursor:pointer;font-family:var(--font-ar);font-size:12px}
+.form-field{margin-bottom:14px}
+.form-field label{font-size:11px;font-weight:600;color:var(--fg-2);letter-spacing:.04em;display:block;margin-bottom:5px}
+.form-field input,.form-field select,.form-field textarea{width:100%;padding:9px 12px;border:1px solid var(--ink-100);border-radius:8px;font-family:var(--font-ar);font-size:13px;background:var(--white);outline:none;box-sizing:border-box}
+.form-field input:focus,.form-field select:focus{border-color:var(--brand-500);box-shadow:0 0 0 3px rgba(0,100,60,.08)}
+.form-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.detail-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--hairline);font-size:13px}
+.detail-row:last-child{border-bottom:none}
+.detail-row .lbl{color:var(--fg-2)}
+.detail-row .val{font-weight:600;color:var(--ink-900)}
 
-  /* Expiry bar with status */
-  .doc-exp { display: flex; flex-direction: column; gap: 6px; }
-  .doc-exp .bar {
-    position: relative;
-    height: 6px;
-    background: var(--sand);
-    border-radius: 999px;
-    overflow: hidden;
-  }
-  .doc-exp .fill { height: 100%; border-radius: 999px; }
-  .doc-exp.ok    .fill { background: var(--success-500); width: 80%; }
-  .doc-exp.warn  .fill { background: var(--warning-500); width: 35%; }
-  .doc-exp.err   .fill { background: var(--danger-500);  width: 10%; }
-  .doc-exp .row { display: flex; align-items: center; justify-content: space-between; }
-  .doc-exp .date { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 12px; color: var(--ink-800); font-weight: 500; }
-  .doc-exp .days { font-family: var(--font-ar); font-size: 11px; font-weight: 600; }
-  .doc-exp.ok    .days { color: var(--success-700); }
-  .doc-exp.warn  .days { color: var(--warning-700); }
-  .doc-exp.err   .days { color: var(--danger-700); }
-
-  .doc-tr .acts button {
-    background: transparent;
-    border: 1px solid var(--ink-100);
-    color: var(--fg-2);
-    font-family: var(--font-ar); font-size: 11px;
-    padding: 5px 10px; border-radius: 5px; cursor: pointer;
-  }
-  .doc-tr .acts button:hover { color: var(--ink-900); border-color: var(--ink-200); }
-
-  /* Notification preferences */
-  .doc-notify {
-    margin-top: 22px;
-    background: var(--white);
-    border: 1px solid var(--hairline);
-    border-radius: 12px;
-    padding: 22px 26px;
-  }
-  .doc-notify h4 { font-family: var(--font-ar-display); font-weight: 600; font-size: 16px; color: var(--ink-900); margin: 0 0 4px; }
-  .doc-notify .sub { font-family: var(--font-en); font-style: italic; font-size: 12px; color: var(--fg-3); margin-bottom: 18px; }
-  .doc-pref-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-  .doc-pref {
-    background: var(--paper-tint);
-    border: 1px solid var(--hairline);
-    border-radius: 10px;
-    padding: 14px 16px;
-    cursor: pointer;
-    transition: all 120ms;
-    position: relative;
-  }
-  .doc-pref.is-on { background: var(--brand-50); border-color: var(--brand-700); }
-  .doc-pref .head { display: flex; align-items: center; justify-content: space-between; }
-  .doc-pref .days { font-family: var(--font-en); font-variant-numeric: tabular-nums; font-weight: 600; font-size: 28px; color: var(--ink-900); line-height: 1; }
-  .doc-pref.is-on .days { color: var(--brand-800); }
-  .doc-pref .lbl { font-family: var(--font-ar); font-size: 12px; color: var(--ink-700); margin-top: 6px; }
-  .doc-pref .check {
-    width: 22px; height: 22px; border-radius: 6px;
-    border: 1.5px solid var(--ink-200);
-    background: var(--white);
-    display: grid; place-items: center;
-  }
-  .doc-pref.is-on .check { background: var(--brand-700); border-color: var(--brand-700); color: var(--paper); }
-  .doc-pref .ch-tt { font-size: 14px; }
-
-  .doc-channels {
-    display: flex; gap: 10px; flex-wrap: wrap;
-    padding: 14px 16px; background: var(--paper-tint); border-radius: 8px; margin-top: 16px;
-    align-items: center;
-  }
-  .doc-channels .lbl { font-size: 12px; color: var(--ink-800); font-weight: 600; margin-inline-end: 6px; }
-  .doc-channels label { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-700); cursor: pointer; }
-  .doc-channels input { width: 14px; height: 14px; accent-color: var(--brand-700); }
+/* ── Toast ─────────────────────────────────────────────────────── */
+.nz-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--brand-800);color:var(--paper);padding:12px 24px;border-radius:10px;font-family:var(--font-ar);font-size:13.5px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.28);z-index:9999;white-space:nowrap;display:flex;align-items:center;gap:10px;direction:rtl}
 </style>
 </head>
 <body>
@@ -157,55 +123,63 @@
         <div class="left">
           <div class="num-row">
             <span class="num">03 · DOCS</span>
-            <span class="en-tag">Government Docs &amp; Subscription Expiry</span>
+            <span class="en-tag">Government Documents &amp; Licenses</span>
           </div>
-          <h1>المستندات الحكومية والاشتراكات</h1>
-          <p class="sub">رفع جميع المستندات الحكومية، تخصيص تنبيهات الاشتراكات، وإخبار مدير المنشأة بتاريخ كل وثيقة ومتى تنتهي.</p>
+          <h1>المستندات الحكومية والتراخيص</h1>
+          <p class="sub">رصد جميع المستندات والتراخيص مع حساب الأيام المتبقية تلقائياً وإرسال تنبيهات مبكرة قبل انتهائها.</p>
         </div>
         <div class="actions">
-          <button style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">📋 سجل التنبيهات</button>
-          <button style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--brand-700);color:var(--paper);border:none;cursor:pointer">+ رفع مستند جديد</button>
+          <button class="btn-primary" onclick="showAddDoc()">+ رفع مستند جديد</button>
         </div>
       </div>
 
-      <div class="doc-alert" data-m-rise>
+      <!-- Alert banner (auto) -->
+      <div class="doc-alert" data-m-rise id="alert-banner">
         <div class="ic">⚠</div>
         <div>
-          <div class="ar">٣ مستندات تنتهي خلال ٣٠ يوم</div>
-          <div class="en">3 documents expire within 30 days · manager notified</div>
-          <div class="meta">آخر إشعار مُرسَل إلى سارة أحمد قبل ١٤ ساعة عبر WhatsApp و البريد</div>
+          <div class="ar" id="alert-ar">جارٍ الحساب...</div>
+          <div class="en" id="alert-en"></div>
+          <div class="meta" id="alert-meta">آخر فحص: الآن</div>
         </div>
-        <div style="text-align: center">
-          <div class="v">٣</div>
+        <div style="text-align:center">
+          <div class="v" id="alert-count">—</div>
           <div class="v-lbl">عاجلة</div>
         </div>
-        <button>تجديد فوري</button>
+        <button onclick="showUrgent()">عرض العاجلة</button>
       </div>
 
-      <div class="mod-stats" style="--cols: 4">
-        <div class="mod-stat"><div class="lbl">إجمالي المستندات</div><div class="v">٢٤</div><div class="meta">١٨ سارية · ٦ تنبيهات</div></div>
-        <div class="mod-stat"><div class="lbl">تنتهي ≤ ٣٠ يوم</div><div class="v is-bad">٣</div><div class="meta">عاجلة — تجديد فوري</div></div>
-        <div class="mod-stat"><div class="lbl">تنتهي ≤ ٩٠ يوم</div><div class="v is-warn">٣</div><div class="meta">تنبيه مبكر</div></div>
-        <div class="mod-stat"><div class="lbl">آخر تجديد</div><div class="v">٢١<span class="cur">يوم</span></div><div class="meta">رخصة الدفاع المدني</div></div>
+      <!-- KPI strip -->
+      <div class="mod-stats" style="--cols:4" data-m-rise>
+        <div class="mod-stat"><div class="lbl">إجمالي المستندات</div><div class="v" id="kpi-total">—</div><div class="meta" id="kpi-total-meta">—</div></div>
+        <div class="mod-stat"><div class="lbl">تنتهي ≤ ٣٠ يوم</div><div class="v is-bad" id="kpi-30">—</div><div class="meta">عاجلة — تجديد فوري</div></div>
+        <div class="mod-stat"><div class="lbl">تنتهي ≤ ٩٠ يوم</div><div class="v is-warn" id="kpi-90">—</div><div class="meta">تنبيه مبكر</div></div>
+        <div class="mod-stat"><div class="lbl">سارية المفعول</div><div class="v is-good" id="kpi-ok">—</div><div class="meta">أكثر من ٩٠ يوم</div></div>
       </div>
 
-      <div class="doc-upload" data-m-rise>
+      <!-- Upload zone -->
+      <div class="doc-upload" data-m-rise onclick="showAddDoc()">
         <div class="ic">📤</div>
-        <div class="body">
-          <div class="ttl">اسحب وأفلت المستند هنا — أو اختر ملفاً</div>
-          <div class="sub">يدعم PDF، JPG، PNG · حجم أقصى ١٠ ميجا · يُستخرج تاريخ الانتهاء تلقائياً من النص</div>
-        </div>
-        <button>📁 اختر ملفاً</button>
-      </div>
-
-      <div class="mod-section-head" style="padding-inline: 0">
         <div>
-          <div class="ttl">المستندات الحكومية النشطة</div>
-          <div class="sub">Active government documents · sorted by expiry</div>
+          <div class="ttl">اسحب وأفلت المستند هنا — أو انقر لإضافة مستند جديد</div>
+          <div class="usub">PDF، JPG، PNG · أقصى ١٠ ميجا · أدخل اسم المستند وتاريخ انتهائه وسيتم الرصد تلقائياً</div>
         </div>
+        <button class="btn-primary" onclick="event.stopPropagation();showAddDoc()">📁 إضافة مستند</button>
       </div>
 
-      <div class="doc-tbl" data-m-rise-stagger>
+      <!-- Toolbar -->
+      <div class="tbl-toolbar" data-m-rise>
+        <div class="search-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input id="doc-search" placeholder="بحث بالاسم أو الجهة أو الرقم..."/>
+        </div>
+        <button class="filter-chip is-on" data-dfilter="all">الكل</button>
+        <button class="filter-chip" data-dfilter="urgent">عاجلة (≤٣٠)</button>
+        <button class="filter-chip" data-dfilter="warn">تنبيه (≤٩٠)</button>
+        <button class="filter-chip" data-dfilter="ok">سارية</button>
+      </div>
+
+      <!-- Table -->
+      <div class="doc-tbl" data-m-rise>
         <div class="doc-tr is-head">
           <span></span>
           <span>المستند</span>
@@ -214,122 +188,41 @@
           <span>صلاحية الانتهاء</span>
           <span></span>
         </div>
-
-        <div class="doc-tr">
-          <div class="doc-ic">⚠</div>
-          <div><div class="nm">رخصة بلدية المنشأة</div><div class="sub">رقم: BLD-2024-RYD-08172 · PDF · 2.1MB</div></div>
-          <div class="auth">أمانة الرياض</div>
-          <div class="doc-date"><div class="v">2024-06-12</div><div class="ago">منذ ١١ شهراً</div></div>
-          <div class="doc-exp err">
-            <div class="row"><span class="date">2025-06-12</span><span class="days">١٤ يوم متبقّي</span></div>
-            <div class="bar"><div class="fill"></div></div>
-          </div>
-          <div class="acts"><button>تجديد</button></div>
-        </div>
-
-        <div class="doc-tr">
-          <div class="doc-ic">🚨</div>
-          <div><div class="nm">شهادة الدفاع المدني</div><div class="sub">رقم: CD-2023-FE-94821 · PDF · 1.4MB</div></div>
-          <div class="auth">الدفاع المدني</div>
-          <div class="doc-date"><div class="v">2023-04-22</div><div class="ago">منذ سنتين</div></div>
-          <div class="doc-exp err">
-            <div class="row"><span class="date">2025-06-22</span><span class="days">٢٤ يوم متبقّي</span></div>
-            <div class="bar"><div class="fill"></div></div>
-          </div>
-          <div class="acts"><button>تجديد</button></div>
-        </div>
-
-        <div class="doc-tr">
-          <div class="doc-ic">🏛</div>
-          <div><div class="nm">السجل التجاري</div><div class="sub">رقم: CR-1010847291 · PDF · 0.8MB</div></div>
-          <div class="auth">وزارة التجارة</div>
-          <div class="doc-date"><div class="v">2024-03-08</div><div class="ago">منذ ١٤ شهراً</div></div>
-          <div class="doc-exp err">
-            <div class="row"><span class="date">2025-06-25</span><span class="days">٢٧ يوم متبقّي</span></div>
-            <div class="bar"><div class="fill"></div></div>
-          </div>
-          <div class="acts"><button>تجديد</button></div>
-        </div>
-
-        <div class="doc-tr">
-          <div class="doc-ic">🏨</div>
-          <div><div class="nm">ترخيص هيئة السياحة</div><div class="sub">رقم: STA-HTL-2024-1284 · PDF · 3.2MB</div></div>
-          <div class="auth">هيئة السياحة</div>
-          <div class="doc-date"><div class="v">2024-08-14</div><div class="ago">منذ ٩ أشهر</div></div>
-          <div class="doc-exp warn">
-            <div class="row"><span class="date">2025-08-14</span><span class="days">٧٨ يوم متبقّي</span></div>
-            <div class="bar"><div class="fill"></div></div>
-          </div>
-          <div class="acts"><button>عرض</button></div>
-        </div>
-
-        <div class="doc-tr">
-          <div class="doc-ic">📜</div>
-          <div><div class="nm">شهادة الزكاة والضريبة</div><div class="sub">رقم: ZK-2024-308472 · PDF · 0.6MB</div></div>
-          <div class="auth">هيئة الزكاة والضريبة</div>
-          <div class="doc-date"><div class="v">2024-12-31</div><div class="ago">منذ ٥ أشهر</div></div>
-          <div class="doc-exp warn">
-            <div class="row"><span class="date">2025-08-30</span><span class="days">٩٤ يوم متبقّي</span></div>
-            <div class="bar"><div class="fill"></div></div>
-          </div>
-          <div class="acts"><button>عرض</button></div>
-        </div>
-
-        <div class="doc-tr">
-          <div class="doc-ic">✅</div>
-          <div><div class="nm">شهادة الاشتراك في GOSI</div><div class="sub">رقم: GS-2025-094271 · PDF · 0.4MB</div></div>
-          <div class="auth">التأمينات الاجتماعية</div>
-          <div class="doc-date"><div class="v">2025-01-15</div><div class="ago">منذ ٤ أشهر</div></div>
-          <div class="doc-exp ok">
-            <div class="row"><span class="date">2026-01-15</span><span class="days">٢٣٤ يوم متبقّي</span></div>
-            <div class="bar"><div class="fill"></div></div>
-          </div>
-          <div class="acts"><button>عرض</button></div>
-        </div>
-
-        <div class="doc-tr">
-          <div class="doc-ic">⚖</div>
-          <div><div class="nm">ترخيص قوى — العمالة</div><div class="sub">رقم: QW-2025-A84612 · PDF · 1.1MB</div></div>
-          <div class="auth">وزارة الموارد البشرية</div>
-          <div class="doc-date"><div class="v">2025-02-28</div><div class="ago">منذ ٣ أشهر</div></div>
-          <div class="doc-exp ok">
-            <div class="row"><span class="date">2026-02-28</span><span class="days">٢٧٧ يوم متبقّي</span></div>
-            <div class="bar"><div class="fill"></div></div>
-          </div>
-          <div class="acts"><button>عرض</button></div>
-        </div>
+        <div id="doc-tbody"></div>
       </div>
 
+      <!-- Notification preferences -->
       <div class="doc-notify" data-m-rise>
-        <h4>تخصيص الاشتراكات — متى يصلني الإشعار؟</h4>
-        <div class="sub">Customize notification thresholds · we'll alert the manager via the chosen channels</div>
-
-        <div class="doc-pref-grid">
-          <div class="doc-pref is-on">
-            <div class="head"><span class="days">٩٠</span><div class="check"><span class="ch-tt">✓</span></div></div>
-            <div class="lbl">قبل ٩٠ يوم — تنبيه مبكر</div>
+        <h4>تخصيص التنبيهات — متى يصلني الإشعار؟</h4>
+        <div class="sub">Customize notification thresholds — alerts sent to the property manager</div>
+        <div class="doc-pref-grid" id="pref-grid">
+          <div class="doc-pref is-on" data-days="90" onclick="togglePref(this)">
+            <div class="head"><span class="dnum">90</span><div class="chk">✓</div></div>
+            <div class="plbl">قبل ٩٠ يوم — تنبيه مبكر</div>
           </div>
-          <div class="doc-pref is-on">
-            <div class="head"><span class="days">٦٠</span><div class="check"><span class="ch-tt">✓</span></div></div>
-            <div class="lbl">قبل ٦٠ يوم — تذكير</div>
+          <div class="doc-pref is-on" data-days="60" onclick="togglePref(this)">
+            <div class="head"><span class="dnum">60</span><div class="chk">✓</div></div>
+            <div class="plbl">قبل ٦٠ يوم — تذكير</div>
           </div>
-          <div class="doc-pref is-on">
-            <div class="head"><span class="days">٣٠</span><div class="check"><span class="ch-tt">✓</span></div></div>
-            <div class="lbl">قبل ٣٠ يوم — عاجل</div>
+          <div class="doc-pref is-on" data-days="30" onclick="togglePref(this)">
+            <div class="head"><span class="dnum">30</span><div class="chk">✓</div></div>
+            <div class="plbl">قبل ٣٠ يوم — عاجل</div>
           </div>
-          <div class="doc-pref is-on">
-            <div class="head"><span class="days">٧</span><div class="check"><span class="ch-tt">✓</span></div></div>
-            <div class="lbl">قبل ٧ أيام — تنبيه يومي</div>
+          <div class="doc-pref is-on" data-days="7" onclick="togglePref(this)">
+            <div class="head"><span class="dnum">7</span><div class="chk">✓</div></div>
+            <div class="plbl">قبل ٧ أيام — تنبيه يومي</div>
           </div>
         </div>
-
         <div class="doc-channels">
           <span class="lbl">قنوات الإشعار:</span>
-          <label><input type="checkbox" checked/> 📧 البريد الإلكتروني</label>
-          <label><input type="checkbox" checked/> 💬 WhatsApp</label>
-          <label><input type="checkbox" checked/> 📱 رسالة نصية (SMS)</label>
-          <label><input type="checkbox"/> 🔔 إشعار داخل النظام</label>
-          <span style="margin-inline-start: auto; font-size: 12px; color: var(--fg-3)">المستلم: <strong style="color: var(--ink-900)">سارة أحمد المالكي</strong> · مدير المنشأة</span>
+          <label><input type="checkbox" id="ch-email" checked/> 📧 البريد الإلكتروني</label>
+          <label><input type="checkbox" id="ch-wa" checked/> 💬 WhatsApp</label>
+          <label><input type="checkbox" id="ch-sms" checked/> 📱 SMS</label>
+          <label><input type="checkbox" id="ch-inapp"/> 🔔 إشعار داخل النظام</label>
+          <span style="margin-inline-start:auto;font-size:12px;color:var(--fg-3)">المستلم: <strong style="color:var(--ink-900)" id="notif-recipient">سارة أحمد المالكي</strong></span>
+        </div>
+        <div class="save-notif-btn">
+          <button class="btn-primary" onclick="saveNotifPrefs()">💾 حفظ التفضيلات</button>
         </div>
       </div>
 
@@ -338,15 +231,358 @@
 </div>
 
 <script src="/static/nuzul/shared/sidebar.js"></script>
-<script>StaticSidebar.mount({ activeId: "03-tourism", placeholder: "بحث في المستندات والاشتراكات..." });</script>
+<script>StaticSidebar.mount({ activeId: "03-tourism", placeholder: "بحث في المستندات..." });</script>
 <script src="/static/nuzul/assets/animations.js"></script>
 <script>
-// Ensure content is always visible — fallback if IntersectionObserver threshold not met
 setTimeout(function(){
-  document.querySelectorAll('[data-m-rise],[data-m-rise-stagger]').forEach(function(el){
-    el.classList.add('is-in');
-  });
+  document.querySelectorAll('[data-m-rise],[data-m-rise-stagger]').forEach(function(el){ el.classList.add('is-in'); });
 }, 80);
+</script>
+
+<script>
+(function(){
+'use strict';
+
+/* ═══════════════════════════════════════════════
+   DATA
+═══════════════════════════════════════════════ */
+var DOCS = [
+  {id:1, icon:'⚠',  name:'رخصة بلدية المنشأة',        num:'BLD-2024-RYD-08172', authority:'أمانة الرياض',              issued:'2024-06-12', expires:'2026-06-12'},
+  {id:2, icon:'🚨', name:'شهادة الدفاع المدني',         num:'CD-2023-FE-94821',  authority:'الدفاع المدني',             issued:'2023-04-22', expires:'2026-07-22'},
+  {id:3, icon:'🏛', name:'السجل التجاري',              num:'CR-1010847291',     authority:'وزارة التجارة',             issued:'2024-03-08', expires:'2026-08-08'},
+  {id:4, icon:'🏨', name:'ترخيص هيئة السياحة',         num:'STA-HTL-2024-1284', authority:'هيئة السياحة',              issued:'2024-08-14', expires:'2027-08-14'},
+  {id:5, icon:'📜', name:'شهادة الزكاة والضريبة',      num:'ZK-2024-308472',    authority:'هيئة الزكاة والضريبة',      issued:'2024-12-31', expires:'2026-12-31'},
+  {id:6, icon:'✅', name:'شهادة الاشتراك في GOSI',     num:'GS-2025-094271',    authority:'التأمينات الاجتماعية',      issued:'2025-01-15', expires:'2027-01-15'},
+  {id:7, icon:'⚖', name:'ترخيص قوى — العمالة',        num:'QW-2025-A84612',   authority:'وزارة الموارد البشرية',     issued:'2025-02-28', expires:'2027-02-28'},
+  {id:8, icon:'🔐', name:'تصريح العمل الليلي',         num:'NW-2025-RYD-00412', authority:'إمارة الرياض',              issued:'2025-03-01', expires:'2026-08-30'},
+  {id:9, icon:'💧', name:'شهادة سلامة الأغذية',        num:'FS-2025-MOH-3341',  authority:'وزارة الصحة',               issued:'2025-04-10', expires:'2026-10-10'},
+];
+var docCounter = 10;
+
+var activeFilter = 'all';
+var searchQ = '';
+
+/* ═══════════════════════════════════════════════
+   UTILITIES
+═══════════════════════════════════════════════ */
+var TODAY = new Date(); TODAY.setHours(0,0,0,0);
+
+function daysLeft(expiresStr){
+  var d = new Date(expiresStr); d.setHours(0,0,0,0);
+  return Math.round((d - TODAY) / 86400000);
+}
+
+function statusClass(days){
+  if(days < 0)  return 'over';
+  if(days <= 30) return 'err';
+  if(days <= 90) return 'warn';
+  return 'ok';
+}
+
+function daysLabel(days){
+  if(days < 0)  return 'منتهي منذ '+Math.abs(days)+' يوم';
+  if(days === 0) return 'ينتهي اليوم!';
+  return days+' يوم متبقّي';
+}
+
+function barWidth(issuedStr, expiresStr, days){
+  var issued  = new Date(issuedStr);
+  var expires = new Date(expiresStr);
+  var total = (expires - issued) / 86400000;
+  if(total <= 0) return 5;
+  var pct = Math.round(days / total * 100);
+  return Math.min(100, Math.max(3, pct));
+}
+
+function relativeIssued(issuedStr){
+  var issued = new Date(issuedStr); issued.setHours(0,0,0,0);
+  var diff = Math.round((TODAY - issued) / 86400000);
+  if(diff < 7)   return 'منذ '+diff+' أيام';
+  if(diff < 30)  return 'منذ '+Math.round(diff/7)+' أسابيع';
+  if(diff < 365) return 'منذ '+Math.round(diff/30)+' شهر';
+  return 'منذ '+Math.round(diff/365)+' سنة';
+}
+
+function toast(msg, isErr){
+  var old = document.querySelector('.nz-toast'); if(old) old.remove();
+  var t = document.createElement('div'); t.className='nz-toast';
+  t.style.background = isErr ? 'var(--danger-700)' : 'var(--brand-800)';
+  t.innerHTML = '<span style="color:var(--gold-400)">'+(isErr?'✕':'✓')+'</span> '+msg;
+  document.body.appendChild(t);
+  setTimeout(function(){ t.style.opacity='0'; t.style.transition='opacity .4s'; setTimeout(function(){ if(t.parentNode)t.remove(); },400); },3200);
+}
+
+function modal(title, html, footHtml){
+  var old = document.querySelector('.nz-modal-bd'); if(old) old.remove();
+  var bd = document.createElement('div'); bd.className='nz-modal-bd';
+  bd.addEventListener('click',function(e){ if(e.target===bd) bd.remove(); });
+  bd.innerHTML = '<div class="nz-modal" dir="rtl">'
+    +'<div class="modal-head"><div class="ttl">'+title+'</div>'
+    +'<button class="close-btn" onclick="document.querySelector(\'.nz-modal-bd\').remove()">✕ إغلاق</button></div>'
+    +'<div class="modal-body">'+html+'</div>'
+    +(footHtml?'<div class="modal-foot">'+footHtml+'</div>':'')
+    +'</div>';
+  document.body.appendChild(bd);
+}
+
+/* ═══════════════════════════════════════════════
+   RENDER
+═══════════════════════════════════════════════ */
+function renderDocs(){
+  var list = DOCS.filter(function(d){
+    var q = searchQ.toLowerCase();
+    var matchQ = !q || d.name.includes(q) || d.authority.includes(q) || d.num.toLowerCase().includes(q);
+    var days = daysLeft(d.expires);
+    var cls  = statusClass(days);
+    var matchF = activeFilter==='all'
+      || (activeFilter==='urgent' && (cls==='err'||cls==='over'))
+      || (activeFilter==='warn'   && cls==='warn')
+      || (activeFilter==='ok'     && cls==='ok');
+    return matchQ && matchF;
+  });
+
+  var tbody = document.getElementById('doc-tbody');
+  if(!tbody) return;
+
+  if(!list.length){
+    tbody.innerHTML = '<div style="padding:32px;text-align:center;color:var(--fg-3)">لا توجد مستندات تطابق البحث</div>';
+    return;
+  }
+
+  tbody.innerHTML = list.map(function(d){
+    var days  = daysLeft(d.expires);
+    var cls   = statusClass(days);
+    var w     = barWidth(d.issued, d.expires, days);
+    var dlbl  = daysLabel(days);
+    var isBtn = (cls==='err'||cls==='over') ? 'renew' : '';
+    var btnLabel = (cls==='err'||cls==='over') ? 'تجديد' : 'عرض';
+    return '<div class="doc-tr">'
+      +'<div class="doc-ic">'+d.icon+'</div>'
+      +'<div><div class="doc-nm">'+d.name+'</div><div class="doc-sub">رقم: '+d.num+'</div></div>'
+      +'<div class="doc-auth">'+d.authority+'</div>'
+      +'<div class="doc-date"><div class="v">'+d.issued+'</div><div class="ago">'+relativeIssued(d.issued)+'</div></div>'
+      +'<div class="doc-exp '+cls+'">'
+        +'<div class="row"><span class="exp-date">'+d.expires+'</span><span class="days-lbl">'+dlbl+'</span></div>'
+        +'<div class="bar"><div class="fill" style="width:'+w+'%"></div></div>'
+      +'</div>'
+      +'<div class="acts">'
+        +'<button class="'+isBtn+'" onclick="showDocDetail('+d.id+')">'+btnLabel+'</button>'
+        +'<button onclick="deleteDoc('+d.id+')" style="color:var(--danger-600)">حذف</button>'
+      +'</div>'
+      +'</div>';
+  }).join('');
+}
+
+function updateKPIs(){
+  var total = DOCS.length;
+  var urgent = 0, warn = 0, ok = 0;
+  DOCS.forEach(function(d){
+    var days = daysLeft(d.expires);
+    var cls  = statusClass(days);
+    if(cls==='err'||cls==='over') urgent++;
+    else if(cls==='warn') warn++;
+    else ok++;
+  });
+
+  function set(id,v){ var el=document.getElementById(id); if(el) el.textContent=v; }
+  set('kpi-total',  total);
+  set('kpi-total-meta', (total-urgent-warn)+' سارية · '+urgent+' تنبيه');
+  set('kpi-30',  urgent);
+  set('kpi-90',  warn);
+  set('kpi-ok',  ok);
+  set('alert-count', urgent);
+
+  var alertAr  = document.getElementById('alert-ar');
+  var alertEn  = document.getElementById('alert-en');
+  var alertMeta = document.getElementById('alert-meta');
+  if(urgent > 0){
+    if(alertAr)   alertAr.textContent  = urgent+' مستندات تنتهي خلال ٣٠ يوم';
+    if(alertEn)   alertEn.textContent  = urgent+' documents expire within 30 days · manager notified';
+    if(alertMeta) alertMeta.textContent= 'آخر إشعار مُرسَل إلى سارة أحمد قبل ١٤ ساعة عبر WhatsApp';
+  } else {
+    var banner = document.getElementById('alert-banner');
+    if(banner){
+      banner.style.background = 'linear-gradient(135deg,var(--success-600),var(--success-800))';
+      if(alertAr)   alertAr.textContent  = 'جميع المستندات سارية المفعول ✓';
+      if(alertEn)   alertEn.textContent  = 'All documents valid — no renewals required';
+      if(alertMeta) alertMeta.textContent= 'آخر فحص: الآن';
+    }
+  }
+}
+
+function refresh(){ renderDocs(); updateKPIs(); }
+
+/* ═══════════════════════════════════════════════
+   FILTER & SEARCH
+═══════════════════════════════════════════════ */
+document.querySelectorAll('[data-dfilter]').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    document.querySelectorAll('[data-dfilter]').forEach(function(b){ b.classList.remove('is-on'); });
+    btn.classList.add('is-on');
+    activeFilter = btn.dataset.dfilter;
+    refresh();
+  });
+});
+var srch = document.getElementById('doc-search');
+if(srch) srch.addEventListener('input',function(){ searchQ=this.value; refresh(); });
+
+/* ═══════════════════════════════════════════════
+   ADD DOCUMENT
+═══════════════════════════════════════════════ */
+var AUTHORITIES = [
+  'أمانة الرياض','أمانة جدة','أمانة مكة المكرمة','أمانة المدينة المنورة',
+  'الدفاع المدني','وزارة التجارة','هيئة السياحة','هيئة الزكاة والضريبة',
+  'التأمينات الاجتماعية (GOSI)','وزارة الموارد البشرية','وزارة الصحة',
+  'إمارة المنطقة','هيئة الاستثمار','وزارة البلديات','أخرى',
+];
+
+var ICONS_MAP = {
+  'ترخيص':'📋','شهادة':'✅','سجل':'🏛','رخصة':'⚠','تصريح':'🔐','اشتراك':'📜','قوى':'⚖','سلامة':'💧','سياحة':'🏨','دفاع':'🚨'
+};
+
+function guessIcon(name){
+  var keys = Object.keys(ICONS_MAP);
+  for(var i=0;i<keys.length;i++){ if(name.includes(keys[i])) return ICONS_MAP[keys[i]]; }
+  return '📄';
+}
+
+window.showAddDoc = function(){
+  var today = new Date().toISOString().split('T')[0];
+  var html = '<div class="form-grid-2">'
+    +'<div class="form-field" style="grid-column:1/-1"><label>اسم المستند *</label><input id="d-name" placeholder="مثال: رخصة بلدية المنشأة"/></div>'
+    +'<div class="form-field"><label>الجهة المُصدِرة *</label><select id="d-auth">'
+    +AUTHORITIES.map(function(a){ return '<option>'+a+'</option>'; }).join('')
+    +'</select></div>'
+    +'<div class="form-field"><label>رقم المستند</label><input id="d-num" dir="ltr" placeholder="BLD-2025-XXX"/></div>'
+    +'<div class="form-field"><label>تاريخ الإصدار *</label><input id="d-issued" type="date" value="'+today+'"/></div>'
+    +'<div class="form-field"><label>تاريخ الانتهاء *</label><input id="d-expires" type="date"/></div>'
+    +'</div>';
+  modal('إضافة مستند جديد', html,
+    '<button class="btn-primary" onclick="saveDoc()">+ إضافة للقائمة</button>'
+    +'<button class="close-btn" onclick="document.querySelector(\'.nz-modal-bd\').remove()">إلغاء</button>'
+  );
+};
+
+window.saveDoc = function(){
+  var name    = (document.getElementById('d-name')||{}).value||'';
+  var auth    = (document.getElementById('d-auth')||{}).value||'';
+  var num     = (document.getElementById('d-num')||{}).value||('DOC-'+Date.now());
+  var issued  = (document.getElementById('d-issued')||{}).value||'';
+  var expires = (document.getElementById('d-expires')||{}).value||'';
+  if(!name.trim()){ toast('أدخل اسم المستند',true); return; }
+  if(!expires){ toast('أدخل تاريخ الانتهاء',true); return; }
+  DOCS.push({id:docCounter++, icon:guessIcon(name), name:name.trim(), num:num.trim(), authority:auth, issued:issued||new Date().toISOString().split('T')[0], expires:expires});
+  var bd = document.querySelector('.nz-modal-bd'); if(bd) bd.remove();
+  refresh();
+  toast('تم إضافة المستند ✓');
+};
+
+/* ═══════════════════════════════════════════════
+   VIEW / RENEW / DELETE
+═══════════════════════════════════════════════ */
+window.showDocDetail = function(id){
+  var d = DOCS.find(function(x){ return x.id===id; });
+  if(!d) return;
+  var days = daysLeft(d.expires);
+  var cls  = statusClass(days);
+  var statusColors = {ok:'#16a34a',warn:'#d97706',err:'#dc2626',over:'#6b7280'};
+
+  var html = [
+    {l:'اسم المستند', v:d.name},
+    {l:'الجهة المُصدِرة', v:d.authority},
+    {l:'رقم المستند', v:'<span style="font-family:var(--font-mono)">'+d.num+'</span>'},
+    {l:'تاريخ الإصدار', v:'<span style="font-family:var(--font-mono)">'+d.issued+'</span>'},
+    {l:'تاريخ الانتهاء', v:'<span style="font-family:var(--font-mono);color:'+statusColors[cls]+'">'+d.expires+'</span>'},
+    {l:'الأيام المتبقية', v:'<strong style="color:'+statusColors[cls]+'">'+daysLabel(days)+'</strong>'},
+  ].map(function(r){
+    return '<div class="detail-row"><span class="lbl">'+r.l+'</span><span class="val">'+r.v+'</span></div>';
+  }).join('');
+
+  var renewBtn = (cls==='err'||cls==='over')
+    ? '<button class="btn-primary" onclick="showRenew('+id+');document.querySelector(\'.nz-modal-bd\').remove()">🔄 تجديد المستند</button>'
+    : '';
+  modal(d.icon+' '+d.name, html,
+    renewBtn+'<button class="close-btn" onclick="document.querySelector(\'.nz-modal-bd\').remove()">إغلاق</button>'
+  );
+};
+
+window.showRenew = function(id){
+  var d = DOCS.find(function(x){ return x.id===id; });
+  if(!d) return;
+  var html = '<div class="form-field"><label>تاريخ الإصدار الجديد</label><input id="r-issued" type="date" value="'+new Date().toISOString().split('T')[0]+'"/></div>'
+    +'<div class="form-field"><label>تاريخ الانتهاء الجديد *</label><input id="r-expires" type="date"/></div>'
+    +'<div class="form-field"><label>ملاحظة (اختياري)</label><input id="r-note" placeholder="رقم العقد الجديد، ملاحظة..."/></div>';
+  modal('تجديد — '+d.name, html,
+    '<button class="btn-primary" onclick="saveRenew('+id+')">✓ حفظ التجديد</button>'
+    +'<button class="close-btn" onclick="document.querySelector(\'.nz-modal-bd\').remove()">إلغاء</button>'
+  );
+};
+
+window.saveRenew = function(id){
+  var d = DOCS.find(function(x){ return x.id===id; });
+  if(!d) return;
+  var newIssued  = (document.getElementById('r-issued')||{}).value||'';
+  var newExpires = (document.getElementById('r-expires')||{}).value||'';
+  if(!newExpires){ toast('أدخل تاريخ الانتهاء الجديد',true); return; }
+  if(newIssued)  d.issued  = newIssued;
+  d.expires = newExpires;
+  var bd = document.querySelector('.nz-modal-bd'); if(bd) bd.remove();
+  refresh();
+  toast('تم تجديد '+d.name+' ✓');
+};
+
+window.deleteDoc = function(id){
+  var d = DOCS.find(function(x){ return x.id===id; });
+  if(!d) return;
+  if(!confirm('حذف مستند «'+d.name+'»؟')) return;
+  DOCS = DOCS.filter(function(x){ return x.id!==id; });
+  refresh();
+  toast('تم حذف المستند');
+};
+
+window.showUrgent = function(){
+  var urgent = DOCS.filter(function(d){
+    var cls = statusClass(daysLeft(d.expires));
+    return cls==='err'||cls==='over';
+  });
+  if(!urgent.length){ toast('لا توجد مستندات عاجلة ✓'); return; }
+  var html = urgent.map(function(d){
+    var days = daysLeft(d.expires);
+    return '<div class="detail-row"><span class="lbl">'+d.icon+' '+d.name+'</span><span class="val" style="color:var(--danger-700)">'+daysLabel(days)+'</span></div>';
+  }).join('');
+  modal('المستندات العاجلة', html,
+    '<button class="close-btn" onclick="document.querySelector(\'.nz-modal-bd\').remove()">إغلاق</button>'
+  );
+};
+
+/* ═══════════════════════════════════════════════
+   NOTIFICATION PREFS
+═══════════════════════════════════════════════ */
+window.togglePref = function(el){
+  el.classList.toggle('is-on');
+  var chk = el.querySelector('.chk');
+  if(chk) chk.textContent = el.classList.contains('is-on') ? '✓' : '';
+};
+
+window.saveNotifPrefs = function(){
+  var prefs = [];
+  document.querySelectorAll('[data-days]').forEach(function(el){
+    if(el.classList.contains('is-on')) prefs.push(el.dataset.days);
+  });
+  var channels = [];
+  if(document.getElementById('ch-email')  && document.getElementById('ch-email').checked)  channels.push('البريد');
+  if(document.getElementById('ch-wa')     && document.getElementById('ch-wa').checked)     channels.push('WhatsApp');
+  if(document.getElementById('ch-sms')    && document.getElementById('ch-sms').checked)    channels.push('SMS');
+  if(document.getElementById('ch-inapp')  && document.getElementById('ch-inapp').checked)  channels.push('إشعار النظام');
+  toast('تم حفظ التفضيلات — تنبيه قبل: '+prefs.join(', ')+' يوم — عبر: '+channels.join('، ')+' ✓');
+};
+
+/* ═══════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════ */
+refresh();
+
+})();
 </script>
 </body>
 </html>
