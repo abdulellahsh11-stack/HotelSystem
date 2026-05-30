@@ -1,90 +1,536 @@
 <!doctype html>
-<html lang="ar" dir="rtl" data-screen-label="Inventory">
+<html lang="ar" dir="rtl" data-screen-label="04 Hospitality Inventory">
 <head>
 <meta charset="utf-8"/>
-<title>ضيوف · المخزون والضيافة</title>
+<title>ضيوف · مخزون الضيافة</title>
 <meta name="viewport" content="width=1440, initial-scale=1"/>
 <link rel="stylesheet" href="/static/nuzul/colors_and_type.css"/>
+<link rel="stylesheet" href="/static/nuzul/assets/animations.css"/>
 <link rel="stylesheet" href="/static/nuzul/shared/chrome.css"/>
-<link rel="stylesheet" href="/static/nuzul/modules/04-inventory/inventory.css"/>
+<link rel="stylesheet" href="/static/nuzul/shared/module.css"/>
+<style>
+/* ── Layout ─────────────────────────────────────────────────────── */
+.hi-wrap{display:grid;grid-template-columns:230px 1fr;gap:16px;align-items:start}
+
+/* ── Category rail ──────────────────────────────────────────────── */
+.hi-rail{background:var(--white);border:1px solid var(--hairline);border-radius:12px;padding:12px 10px;position:sticky;top:76px;max-height:calc(100vh - 110px);overflow-y:auto}
+.hi-rail-lbl{font-family:var(--font-en);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--fg-3);padding:6px 10px 4px;font-weight:500}
+.hi-cat{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:6px;cursor:pointer;font-size:13px;color:var(--ink-800);transition:background 120ms;margin-bottom:2px}
+.hi-cat:hover{background:var(--surface-2)}
+.hi-cat.on{background:var(--brand-50);color:var(--brand-800)}
+.hi-cat .ci{width:24px;height:24px;border-radius:5px;background:var(--sand);display:grid;place-items:center;font-size:14px;flex-shrink:0}
+.hi-cat.on .ci{background:var(--gold-200)}
+.hi-cat .cn{flex:1;font-weight:500}
+.hi-cat .cc{font-family:var(--font-mono);font-size:10px;color:var(--fg-3)}
+.hi-cat.on .cc{color:var(--brand-700);font-weight:600}
+.hi-rail-div{height:1px;background:var(--hairline);margin:10px 8px}
+
+/* ── KPIs ───────────────────────────────────────────────────────── */
+.hi-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.hi-kpi{background:var(--white);border:1px solid var(--hairline);border-radius:10px;padding:14px 16px}
+.hi-kpi .lbl{font-size:12px;color:var(--fg-2)}
+.hi-kpi .v{font-family:var(--font-en);font-size:28px;font-weight:700;color:var(--ink-900);line-height:1;margin-top:4px}
+.hi-kpi .v.ok{color:var(--success-700)}
+.hi-kpi .v.warn{color:var(--warning-700)}
+.hi-kpi .v.bad{color:var(--danger-700)}
+.hi-kpi .meta{font-size:11px;color:var(--fg-3);margin-top:3px}
+
+/* ── Table ──────────────────────────────────────────────────────── */
+.hi-tbl{background:var(--white);border:1px solid var(--hairline);border-radius:14px;overflow:hidden}
+.hi-card-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 12px}
+.hi-card-head .ttl{font-family:var(--font-ar-display);font-size:16px;font-weight:600;color:var(--ink-900)}
+.hi-card-head .sub{font-family:var(--font-en);font-size:11px;color:var(--fg-3);margin-top:2px}
+.hi-tr{display:grid;grid-template-columns:44px 2.2fr 1.1fr 1.1fr 150px 100px 70px;gap:10px;align-items:center;padding:12px 20px;border-top:1px solid var(--hairline);font-size:13px}
+.hi-tr.hd{background:var(--paper-tint);border-top:none;font-size:10px;color:var(--fg-3);font-weight:600;letter-spacing:.04em;padding:10px 20px}
+.hi-ic{width:38px;height:38px;border-radius:8px;background:var(--paper-tint);border:1px solid var(--hairline);display:grid;place-items:center;font-size:18px;flex-shrink:0}
+.hi-nm{font-weight:600;color:var(--ink-900);font-size:13px;line-height:1.3}
+.hi-sku{font-family:var(--font-mono);font-size:10px;color:var(--fg-3);margin-top:2px}
+.hi-loc{font-size:12px;color:var(--ink-700)}
+.hi-loc .sub{font-size:10px;color:var(--fg-3);margin-top:1px}
+.hi-cat-tag{font-size:11px;background:var(--paper-tint);border:1px solid var(--hairline);border-radius:5px;padding:2px 8px;display:inline-block;color:var(--fg-2);white-space:nowrap}
+
+/* ── Qty control ────────────────────────────────────────────────── */
+.qty-wrap{display:flex;align-items:center;gap:5px}
+.qty-v{font-family:var(--font-en);font-size:15px;font-weight:700;color:var(--ink-900);min-width:34px;text-align:center}
+.qty-par{font-family:var(--font-mono);font-size:10px;color:var(--fg-3)}
+.qty-btn{width:24px;height:24px;border-radius:5px;border:1px solid var(--hairline);background:var(--paper-tint);color:var(--ink-700);cursor:pointer;display:grid;place-items:center;font-size:14px;font-weight:700;line-height:1;flex-shrink:0}
+.qty-btn:hover{border-color:var(--brand-600);background:var(--brand-50);color:var(--brand-700)}
+.qty-bar{height:4px;background:var(--paper-tint);border-radius:999px;overflow:hidden;margin-top:3px}
+.qty-fill{height:100%;border-radius:999px}
+
+/* ── Status pill ────────────────────────────────────────────────── */
+.st-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;white-space:nowrap}
+.st-ok{background:#DCFCE7;color:#166534}
+.st-warn{background:#FEF3C7;color:#92400E}
+.st-bad{background:#FEE2E2;color:#991B1B}
+
+/* ── Row actions ────────────────────────────────────────────────── */
+.acts{display:flex;gap:4px}
+.ic-btn{width:30px;height:30px;border-radius:6px;border:1px solid var(--hairline);background:transparent;color:var(--fg-2);cursor:pointer;display:grid;place-items:center;font-size:13px}
+.ic-btn:hover{color:var(--ink-900);border-color:var(--ink-300);background:var(--paper-tint)}
+.ic-btn.del:hover{color:var(--danger-600);border-color:var(--danger-200);background:var(--danger-50)}
+
+/* ── Toolbar ────────────────────────────────────────────────────── */
+.hi-toolbar{display:flex;align-items:center;gap:10px;padding:0 20px 14px;flex-wrap:wrap}
+.hi-search{display:flex;align-items:center;gap:8px;background:var(--white);border:1px solid var(--hairline);border-radius:8px;padding:7px 12px;flex:1;max-width:320px}
+.hi-search svg{width:13px;height:13px;color:var(--fg-3);flex-shrink:0}
+.hi-search input{border:none;outline:none;background:transparent;font-family:var(--font-ar);font-size:13px;width:100%}
+.ml-auto{margin-inline-start:auto}
+.btn-green{padding:8px 16px;background:var(--brand-700);color:var(--paper);border:none;border-radius:7px;font-family:var(--font-ar);font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.btn-green:hover{background:var(--brand-800)}
+.btn-sec{padding:7px 14px;background:var(--white);color:var(--ink-900);border:1px solid var(--hairline);border-radius:7px;font-family:var(--font-ar);font-size:12px;cursor:pointer}
+.btn-sec:hover{background:var(--paper-tint)}
+
+/* ── Low-stock alert ────────────────────────────────────────────── */
+.hi-alert{background:linear-gradient(135deg,#C99428,#9A6D14);color:var(--paper);border-radius:12px;padding:14px 20px;display:flex;align-items:center;gap:16px;margin-bottom:4px}
+.hi-alert .ic{width:38px;height:38px;background:rgba(255,255,255,.15);border-radius:8px;display:grid;place-items:center;font-size:18px;flex-shrink:0}
+.hi-alert .ar{font-family:var(--font-ar-display);font-size:15px;font-weight:600}
+.hi-alert .sub{font-size:11px;color:rgba(255,255,255,.8);margin-top:1px}
+.hi-alert .act{margin-inline-start:auto;background:var(--paper);color:#9A6D14;border:none;padding:7px 14px;border-radius:6px;font-family:var(--font-ar);font-weight:600;font-size:12px;cursor:pointer;flex-shrink:0}
+
+/* ── Modal ──────────────────────────────────────────────────────── */
+.nz-modal-bd{position:fixed;inset:0;background:rgba(14,42,34,.6);backdrop-filter:blur(4px);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px}
+.nz-modal{background:var(--white);border-radius:16px;width:min(580px,95vw);max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 64px -16px rgba(14,42,34,.45)}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:15px 20px;border-bottom:1px solid var(--hairline);background:var(--paper-tint)}
+.modal-head .ttl{font-family:var(--font-ar-display);font-size:15px;font-weight:700}
+.modal-body{padding:20px;overflow-y:auto}
+.modal-foot{padding:12px 20px;border-top:1px solid var(--hairline);display:flex;gap:8px;background:var(--paper-tint)}
+.close-btn{background:transparent;border:1px solid var(--ink-100);color:var(--fg-3);border-radius:6px;padding:5px 12px;cursor:pointer;font-family:var(--font-ar);font-size:12px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-field{display:flex;flex-direction:column;gap:5px}
+.form-field label{font-size:11px;font-weight:600;color:var(--fg-2);letter-spacing:.04em}
+.form-field input,.form-field select{padding:9px 12px;border:1px solid var(--ink-100);border-radius:8px;font-family:var(--font-ar);font-size:13px;background:var(--white);outline:none;width:100%}
+.form-field input:focus,.form-field select:focus{border-color:var(--brand-500);box-shadow:0 0 0 3px rgba(0,100,60,.08)}
+.form-full{grid-column:1/-1}
+
+/* ── Toast ──────────────────────────────────────────────────────── */
+.nz-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--brand-800);color:var(--paper);padding:11px 22px;border-radius:10px;font-family:var(--font-ar);font-size:13px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.28);z-index:9999;white-space:nowrap;display:flex;align-items:center;gap:9px;direction:rtl}
+</style>
 </head>
 <body>
-<div id="root"></div>
+<div class="nz-app">
+  <div id="sidebar-slot"></div>
+  <div>
+    <div id="topbar-slot"></div>
+    <main class="nz-main">
 
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+      <!-- Page header -->
+      <div class="mod-head" data-m-rise>
+        <div class="left">
+          <div class="num-row">
+            <span class="num">04 · HOSPITALITY INVENTORY</span>
+            <span class="en-tag">Linens · Amenities · Beverages · Guest Supplies</span>
+          </div>
+          <h1>مخزون الضيافة وتجهيزات الغرف</h1>
+          <p class="sub">لُحف وبياضات · عطور وعناية شخصية · مشروبات الضيوف — مستقل تماماً عن مستودع الصيانة (٠٥)</p>
+        </div>
+        <div class="actions">
+          <button class="btn-sec" onclick="exportCSV()">⬇ تصدير Excel</button>
+          <button class="btn-green" onclick="showAddItem()">+ صنف جديد</button>
+        </div>
+      </div>
 
-<script type="text/babel" src="/static/nuzul/shared/chrome.jsx"></script>
-<script type="text/babel" src="/static/nuzul/modules/04-inventory/Items.jsx"></script>
+      <!-- KPIs -->
+      <div class="hi-kpis" data-m-rise>
+        <div class="hi-kpi"><div class="lbl">إجمالي الأصناف</div><div class="v ok" id="kpi-total">—</div><div class="meta">في المخزون</div></div>
+        <div class="hi-kpi"><div class="lbl">بياضات وأغطية</div><div class="v" id="kpi-linen">—</div><div class="meta">صنف</div></div>
+        <div class="hi-kpi"><div class="lbl">عناية وعطور</div><div class="v" id="kpi-care">—</div><div class="meta">صنف</div></div>
+        <div class="hi-kpi"><div class="lbl">تحت الحد الأدنى</div><div class="v bad" id="kpi-low">—</div><div class="meta">تحتاج تعبئة</div></div>
+      </div>
 
-<script type="text/babel">
-const { useState } = React;
+      <!-- Main layout: rail + table -->
+      <div class="hi-wrap" data-m-rise>
 
-const ITEMS = {
-  linens: [
-    { sku: "LN-2401", ic: "🛏", name: "لحاف قطن مصري — كينج", loc: "المستودع أ — الطابق ٢", zone: "رف A-12", qty: 240, par: 360, reorder: 100, dir: "out", move: 12, when: "قبل ساعتين" },
-    { sku: "LN-2402", ic: "🛏", name: "لحاف صوف — كوين",       loc: "المستودع أ — الطابق ٢", zone: "رف A-14", qty: 86,  par: 240, reorder: 100, dir: "out", move: 8,  when: "قبل ٤ ساعات" },
-    { sku: "LN-2403", ic: "🛏", name: "لحاف كشمير VIP",         loc: "خزينة الأجنحة", zone: "S-VIP",  qty: 18,  par: 40,  reorder: 12,  dir: "in",  move: 6,  when: "أمس" },
-    { sku: "TW-3010", ic: "🧺", name: "فوط استحمام كبيرة",      loc: "المستودع أ — الطابق ١", zone: "B-08",   qty: 420, par: 800, reorder: 250, dir: "out", move: 36, when: "اليوم" },
-    { sku: "PR-5081", ic: "✨", name: "عطر التوقيع — Dheuof Signature 50ml", loc: "خزينة الأجنحة", zone: "S-PR", qty: 14, par: 60, reorder: 20, dir: "in", move: 30, when: "البارحة" },
-    { sku: "SP-1102", ic: "🧼", name: "صابون فاخر — مرسيليا",  loc: "مخزن العناية",          zone: "C-04",   qty: 1840, par: 2400, reorder: 800, dir: "out", move: 60, when: "اليوم" },
-  ]
-};
+        <!-- Category rail -->
+        <aside class="hi-rail">
+          <div class="hi-rail-lbl">البياضات والأغطية · Linens</div>
+          <a class="hi-cat on" data-cat="all" onclick="setCat('all',this)">
+            <span class="ci">🏨</span><span class="cn">الكل</span><span class="cc" id="rc-all">—</span>
+          </a>
+          <a class="hi-cat" data-cat="لحف"  onclick="setCat('لحف',this)">
+            <span class="ci">🛏</span><span class="cn">لُحف وأغطية</span><span class="cc" id="rc-لحف">—</span>
+          </a>
+          <a class="hi-cat" data-cat="مفارش" onclick="setCat('مفارش',this)">
+            <span class="ci">📜</span><span class="cn">مفارش</span><span class="cc" id="rc-مفارش">—</span>
+          </a>
+          <a class="hi-cat" data-cat="مخدات" onclick="setCat('مخدات',this)">
+            <span class="ci">🪶</span><span class="cn">مخدات</span><span class="cc" id="rc-مخدات">—</span>
+          </a>
+          <a class="hi-cat" data-cat="أغطية مخدات" onclick="setCat('أغطية مخدات',this)">
+            <span class="ci">🧺</span><span class="cn">أغطية مخدات</span><span class="cc" id="rc-أغطية مخدات">—</span>
+          </a>
 
-function App() {
-  const [active, setActive] = useState("inventory");
-  const [cat, setCat] = useState("linens");
-  return (
-    <div className="nz-app">
-      <NzSidebar active={active} onChange={setActive}/>
-      <div>
-        <NzTopBar placeholder="بحث في المنتجات والـ SKUs..."/>
-        <main className="nz-main">
-          <NzPageHead
-            eyebrow="العمليات · المخزون والضيافة وتجهيز الغرف"
-            title="المخزون والضيافة"
-            sub="لُحف، فوط، عطور، صابون، تجهيزات غرف · إدارة مستقلة عن مستودع الصيانة · جرد آلي يومي؋ ٢ صباحاً"
-            actions={<>
-              <button className="nz-btn is-secondary"><NzIcon.download/>تصدير الجرد</button>
-              <button className="nz-btn is-primary"><NzIcon.plus/>سند صرف</button>
-              <button className="nz-btn is-gold"><NzIcon.plus/>سند توريد</button>
-            </>}
-          />
+          <div class="hi-rail-div"></div>
+          <div class="hi-rail-lbl">العناية والعطور · Amenities</div>
+          <a class="hi-cat" data-cat="عناية شخصية" onclick="setCat('عناية شخصية',this)">
+            <span class="ci">🧴</span><span class="cn">عناية شخصية</span><span class="cc" id="rc-عناية شخصية">—</span>
+          </a>
+          <a class="hi-cat" data-cat="صابون ونظافة" onclick="setCat('صابون ونظافة',this)">
+            <span class="ci">🧼</span><span class="cn">صابون ونظافة</span><span class="cc" id="rc-صابون ونظافة">—</span>
+          </a>
+          <a class="hi-cat" data-cat="عطور" onclick="setCat('عطور',this)">
+            <span class="ci">✨</span><span class="cn">عطور</span><span class="cc" id="rc-عطور">—</span>
+          </a>
 
-          <div className="inv-kpi">
-            <div className="card"><div className="lbl">إجمالي الأصناف</div><div className="v">١٬٢٤٦</div><div className="sub">في ١٣ فئة</div></div>
-            <div className="card"><div className="lbl">قيمة المخزون</div><div className="v">٤٨٤٬٢٠٠ <span style={{fontSize:14, color:"var(--fg-3)"}}>ر.س</span></div><div className="sub">آخر تقييم: اليوم</div></div>
-            <div className="card"><div className="lbl">تحت حد الطلب</div><div className="v is-warn">٢٢</div><div className="sub">صنف يحتاج تجديد</div></div>
-            <div className="card"><div className="lbl">نفد المخزون</div><div className="v is-err">٤</div><div className="sub">أصناف بحاجة عاجلة</div></div>
+          <div class="hi-rail-div"></div>
+          <div class="hi-rail-lbl">مشروبات الضيوف · Beverages</div>
+          <a class="hi-cat" data-cat="سكر" onclick="setCat('سكر',this)">
+            <span class="ci">🍬</span><span class="cn">سكر</span><span class="cc" id="rc-سكر">—</span>
+          </a>
+          <a class="hi-cat" data-cat="نسكافيه" onclick="setCat('نسكافيه',this)">
+            <span class="ci">☕</span><span class="cn">نسكافيه</span><span class="cc" id="rc-نسكافيه">—</span>
+          </a>
+          <a class="hi-cat" data-cat="ماء" onclick="setCat('ماء',this)">
+            <span class="ci">💧</span><span class="cn">ماء</span><span class="cc" id="rc-ماء">—</span>
+          </a>
+        </aside>
+
+        <!-- Table card -->
+        <div>
+          <!-- Low-stock alert -->
+          <div class="hi-alert" id="hi-alert" style="display:none">
+            <div class="ic">⚠</div>
+            <div><div class="ar" id="hi-alert-txt">—</div><div class="sub">الكميات وصلت للحد الأدنى — يُنصح بطلب التوريد</div></div>
+            <button class="act" onclick="filterLow()">عرض الأصناف الناقصة</button>
           </div>
 
-          <div className="inv-shell">
-            <CategoryRail active={cat} onChange={setCat}/>
-            <div className="inv-tbl-card">
-              <div className="nz-card-head">
-                <div>
-                  <div className="ttl">لُحف وأغطية وعناية شخصية</div>
-                  <div className="sub">Linens &amp; amenities · 6 items shown</div>
-                </div>
-                <div className="nz-card-actions">
-                  <button className="nz-chip is-on">الكل</button>
-                  <button className="nz-chip">منخفض</button>
-                  <button className="nz-chip">VIP فقط</button>
-                  <button className="nz-icon-btn"><NzIcon.filter/></button>
-                </div>
+          <div class="hi-tbl">
+            <div class="hi-card-head">
+              <div>
+                <div class="ttl" id="tbl-ttl">جميع أصناف الضيافة</div>
+                <div class="sub" id="tbl-sub">All hospitality items</div>
               </div>
-              <ItemsTable items={ITEMS.linens}/>
             </div>
+
+            <!-- Toolbar -->
+            <div class="hi-toolbar">
+              <div class="hi-search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                <input id="hi-q" placeholder="بحث بالصنف أو SKU أو الموقع..." oninput="filterItems()"/>
+              </div>
+              <div class="ml-auto" style="display:flex;gap:8px">
+                <button class="btn-sec" onclick="exportCSV()">⬇ Excel</button>
+                <button class="btn-green" onclick="showAddItem()">+ صنف جديد</button>
+              </div>
+            </div>
+
+            <div class="hi-tr hd">
+              <span></span>
+              <span>الصنف</span>
+              <span>الفئة</span>
+              <span>الموقع</span>
+              <span>الكمية / المستوى</span>
+              <span>الحالة</span>
+              <span></span>
+            </div>
+            <div id="hi-tbody"></div>
           </div>
-        </main>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- Modal -->
+<div id="add-modal" style="display:none" class="nz-modal-bd" onclick="if(event.target===this)closeModal()">
+  <div class="nz-modal" dir="rtl">
+    <div class="modal-head">
+      <div class="ttl" id="modal-ttl">+ إضافة صنف ضيافة</div>
+      <button class="close-btn" onclick="closeModal()">✕ إغلاق</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-field form-full"><label>اسم الصنف *</label><input id="f-name" placeholder="مثال: لحاف قطن كينج"/></div>
+        <div class="form-field"><label>الفئة *</label>
+          <select id="f-cat">
+            <option>لحف</option><option>مفارش</option><option>مخدات</option><option>أغطية مخدات</option>
+            <option>عناية شخصية</option><option>صابون ونظافة</option><option>عطور</option>
+            <option>سكر</option><option>نسكافيه</option><option>ماء</option>
+          </select>
+        </div>
+        <div class="form-field"><label>الأيقونة (رمز)</label><input id="f-icon" placeholder="🛏" maxlength="4" style="font-size:20px"/></div>
+        <div class="form-field"><label>الكمية الحالية *</label><input id="f-qty" type="number" min="0" value="0" dir="ltr"/></div>
+        <div class="form-field"><label>حد إعادة الطلب</label><input id="f-par" type="number" min="0" value="100" dir="ltr"/></div>
+        <div class="form-field"><label>وحدة القياس</label>
+          <select id="f-unit"><option>قطعة</option><option>علبة</option><option>كرتون</option><option>دلو</option><option>لتر</option><option>كيلو</option><option>طقم</option></select>
+        </div>
+        <div class="form-field"><label>الموقع</label><input id="f-loc" placeholder="المستودع أ — الطابق ٢"/></div>
+        <div class="form-field"><label>رمز SKU</label><input id="f-sku" placeholder="LN-2401" dir="ltr"/></div>
       </div>
     </div>
-  );
+    <div class="modal-foot">
+      <button class="btn-green" onclick="saveItem()">+ إضافة للمخزون</button>
+      <button class="close-btn" onclick="closeModal()">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<script src="/static/nuzul/shared/sidebar.js"></script>
+<script>StaticSidebar.mount({ activeId: "04-inventory", placeholder: "بحث في مخزون الضيافة..." });</script>
+<script src="/static/nuzul/assets/animations.js"></script>
+<script>setTimeout(function(){ document.querySelectorAll('[data-m-rise]').forEach(function(el){ el.classList.add('is-in'); }); }, 80);</script>
+
+<script>
+(function(){
+'use strict';
+
+/* ════ DATA ════════════════════════════════════════════════════════ */
+var ITEMS = [
+  /* لُحف وأغطية */
+  {id:1, ic:'🛏', name:'لحاف قطن مصري — كينج',      cat:'لحف',           loc:'المستودع أ — الطابق ٢', zone:'رف A-12', qty:240, par:360, unit:'قطعة', sku:'LN-2401'},
+  {id:2, ic:'🛏', name:'لحاف صوف — كوين',           cat:'لحف',           loc:'المستودع أ — الطابق ٢', zone:'رف A-13', qty:86,  par:240, unit:'قطعة', sku:'LN-2402'},
+  {id:3, ic:'🛏', name:'لحاف كشمير — أجنحة VIP',    cat:'لحف',           loc:'خزينة الأجنحة',          zone:'S-VIP',   qty:18,  par:40,  unit:'قطعة', sku:'LN-2403'},
+  {id:4, ic:'🛏', name:'غطاء سرير صيفي خفيف',       cat:'لحف',           loc:'المستودع أ — الطابق ٢', zone:'رف A-15', qty:310, par:400, unit:'قطعة', sku:'LN-2410'},
+  /* مفارش */
+  {id:5, ic:'📜', name:'مفرش سرير أبيض كينج',       cat:'مفارش',         loc:'المستودع أ — الطابق ١', zone:'رف B-01', qty:520, par:800, unit:'قطعة', sku:'SH-3001'},
+  {id:6, ic:'📜', name:'مفرش سرير أبيض كوين',       cat:'مفارش',         loc:'المستودع أ — الطابق ١', zone:'رف B-02', qty:380, par:600, unit:'قطعة', sku:'SH-3002'},
+  {id:7, ic:'📜', name:'مفرش سرير مزدوج سينغل',    cat:'مفارش',         loc:'المستودع أ — الطابق ١', zone:'رف B-03', qty:145, par:200, unit:'قطعة', sku:'SH-3003'},
+  /* مخدات */
+  {id:8, ic:'🪶', name:'مخدة ريش البط — ستاندرد',  cat:'مخدات',         loc:'المستودع أ — الطابق ٢', zone:'رف A-20', qty:420, par:600, unit:'قطعة', sku:'PL-4001'},
+  {id:9, ic:'🪶', name:'مخدة أورثوبيدي — كينج',    cat:'مخدات',         loc:'المستودع أ — الطابق ٢', zone:'رف A-21', qty:96,  par:200, unit:'قطعة', sku:'PL-4002'},
+  {id:10,ic:'🪶', name:'مخدة بيضاء ناعمة VIP',      cat:'مخدات',         loc:'خزينة الأجنحة',          zone:'S-VIP',   qty:28,  par:60,  unit:'قطعة', sku:'PL-4003'},
+  /* أغطية مخدات */
+  {id:11,ic:'🧺', name:'غطاء مخدة قطن — أبيض',     cat:'أغطية مخدات',  loc:'المستودع أ — الطابق ١', zone:'رف B-10', qty:1820,par:2400,unit:'قطعة', sku:'PC-5001'},
+  {id:12,ic:'🧺', name:'غطاء مخدة مطرزة VIP',      cat:'أغطية مخدات',  loc:'خزينة الأجنحة',          zone:'S-VIP',   qty:80,  par:120, unit:'قطعة', sku:'PC-5002'},
+  /* عناية شخصية */
+  {id:13,ic:'🧴', name:'شامبو فاخر — Dheuof 30ml',  cat:'عناية شخصية',  loc:'مخزن العناية',           zone:'C-01',    qty:3200,par:5000,unit:'قطعة', sku:'AM-6001'},
+  {id:14,ic:'🧴', name:'بلسم شعر — Dheuof 30ml',    cat:'عناية شخصية',  loc:'مخزن العناية',           zone:'C-02',    qty:2800,par:5000,unit:'قطعة', sku:'AM-6002'},
+  {id:15,ic:'🧴', name:'كريم جسم — Dheuof 50ml',    cat:'عناية شخصية',  loc:'مخزن العناية',           zone:'C-03',    qty:1400,par:3000,unit:'قطعة', sku:'AM-6003'},
+  {id:16,ic:'🪥', name:'فرشاة أسنان مع معجون',      cat:'عناية شخصية',  loc:'مخزن العناية',           zone:'C-06',    qty:940, par:2000,unit:'طقم',  sku:'AM-6010'},
+  /* صابون ونظافة */
+  {id:17,ic:'🧼', name:'صابون بار فاخر — مرسيليا',  cat:'صابون ونظافة', loc:'مخزن العناية',           zone:'C-04',    qty:1840,par:2400,unit:'قطعة', sku:'SP-1102'},
+  {id:18,ic:'🧼', name:'جل استحمام — Dheuof 50ml',   cat:'صابون ونظافة', loc:'مخزن العناية',           zone:'C-05',    qty:2100,par:3000,unit:'قطعة', sku:'SP-1105'},
+  {id:19,ic:'🧼', name:'معقم يد مضخة — 500ml',      cat:'صابون ونظافة', loc:'مخزن العناية',           zone:'C-08',    qty:180, par:400, unit:'قطعة', sku:'SP-1120'},
+  /* عطور */
+  {id:20,ic:'✨', name:'عطر التوقيع — Dheuof 50ml',  cat:'عطور',          loc:'خزينة الأجنحة',          zone:'S-PR',    qty:14,  par:60,  unit:'قطعة', sku:'PR-5081'},
+  {id:21,ic:'✨', name:'عود بخور الاستقبال — 100g', cat:'عطور',          loc:'خزينة الأجنحة',          zone:'S-FR',    qty:48,  par:80,  unit:'قطعة', sku:'PR-5090'},
+  {id:22,ic:'✨', name:'سبراي غرفة — Dheuof 200ml',  cat:'عطور',          loc:'مخزن العناية',           zone:'C-09',    qty:320, par:400, unit:'قطعة', sku:'PR-5095'},
+  /* سكر */
+  {id:23,ic:'🍬', name:'سكر أبيض — أكياس فردية',   cat:'سكر',           loc:'مخزن المشروبات',         zone:'BV-01',   qty:8400,par:12000,unit:'قطعة',sku:'FB-7001'},
+  {id:24,ic:'🍬', name:'سكر بني كعبات فردية',       cat:'سكر',           loc:'مخزن المشروبات',         zone:'BV-02',   qty:3600,par:6000,unit:'قطعة', sku:'FB-7002'},
+  /* نسكافيه */
+  {id:25,ic:'☕', name:'نسكافيه كلاسيك — أكياس 2g', cat:'نسكافيه',       loc:'مخزن المشروبات',         zone:'BV-05',   qty:6200,par:10000,unit:'قطعة',sku:'FB-7010'},
+  {id:26,ic:'☕', name:'نسكافيه 3 في 1 — أكياس',    cat:'نسكافيه',       loc:'مخزن المشروبات',         zone:'BV-06',   qty:2800,par:5000,unit:'قطعة', sku:'FB-7011'},
+  {id:27,ic:'☕', name:'شاي أحمر — أكياس فردية',    cat:'نسكافيه',       loc:'مخزن المشروبات',         zone:'BV-07',   qty:4100,par:6000,unit:'قطعة', sku:'FB-7015'},
+  /* ماء */
+  {id:28,ic:'💧', name:'ماء معدني — زجاجة 500ml',  cat:'ماء',           loc:'مخزن المشروبات',         zone:'BV-10',   qty:2400,par:4000,unit:'قطعة', sku:'FB-8001'},
+  {id:29,ic:'💧', name:'ماء معدني — زجاجة 330ml',  cat:'ماء',           loc:'مخزن المشروبات',         zone:'BV-11',   qty:3600,par:5000,unit:'قطعة', sku:'FB-8002'},
+  {id:30,ic:'💧', name:'ماء غازي — زجاجة 330ml',   cat:'ماء',           loc:'مخزن المشروبات',         zone:'BV-12',   qty:840, par:2000,unit:'قطعة', sku:'FB-8010'},
+];
+
+var itemCounter = 31;
+var activeCat = 'all';
+var activeQ   = '';
+var editingId = null;
+
+/* ════ STATUS HELPERS ═══════════════════════════════════════════════ */
+function statusOf(it){
+  if(it.qty <= 0) return 'bad';
+  if(it.qty < it.par * 0.25) return 'bad';
+  if(it.qty < it.par * 0.5)  return 'warn';
+  return 'ok';
+}
+function statusLabel(it){
+  var s = statusOf(it);
+  if(s==='bad')  return '<span class="st-pill st-bad">🔴 ناقص</span>';
+  if(s==='warn') return '<span class="st-pill st-warn">🟡 منخفض</span>';
+  return '<span class="st-pill st-ok">✓ متوفر</span>';
+}
+function pct(it){ return Math.min(100, Math.max(3, Math.round(it.qty / it.par * 100))); }
+function fillColor(it){ var s=statusOf(it); return s==='bad'?'#EF4444': s==='warn'?'#F59E0B':'#22C55E'; }
+
+/* ════ RENDER ═══════════════════════════════════════════════════════ */
+function renderTable(){
+  var list = ITEMS.filter(function(it){
+    var mQ = !activeQ || it.name.toLowerCase().includes(activeQ) || it.sku.toLowerCase().includes(activeQ) || it.loc.includes(activeQ);
+    var mC = activeCat==='all' || it.cat===activeCat;
+    return mQ && mC;
+  });
+  var tbody = document.getElementById('hi-tbody');
+  if(!tbody) return;
+  if(!list.length){ tbody.innerHTML='<div style="padding:32px;text-align:center;color:var(--fg-3)">لا توجد أصناف تطابق البحث</div>'; return; }
+  tbody.innerHTML = list.map(function(it){
+    var p=pct(it), fc=fillColor(it);
+    return '<div class="hi-tr">'
+      +'<div class="hi-ic">'+it.ic+'</div>'
+      +'<div><div class="hi-nm">'+it.name+'</div><div class="hi-sku">SKU · '+it.sku+'</div></div>'
+      +'<div><span class="hi-cat-tag">'+it.cat+'</span></div>'
+      +'<div class="hi-loc"><div>'+it.loc+'</div><div class="sub">'+it.zone+'</div></div>'
+      +'<div>'
+        +'<div class="qty-wrap">'
+          +'<button class="qty-btn" onclick="adjustQty('+it.id+',-1)">−</button>'
+          +'<div><div style="display:flex;align-items:baseline;gap:4px"><span class="qty-v" id="qv-'+it.id+'">'+it.qty+'</span><span class="qty-par">/'+it.par+' '+it.unit+'</span></div>'
+          +'<div class="qty-bar"><div class="qty-fill" id="qf-'+it.id+'" style="width:'+p+'%;background:'+fc+'"></div></div></div>'
+          +'<button class="qty-btn" onclick="adjustQty('+it.id+',+1)">+</button>'
+        +'</div>'
+      +'</div>'
+      +'<div id="qs-'+it.id+'">'+statusLabel(it)+'</div>'
+      +'<div class="acts">'
+        +'<button class="ic-btn" onclick="editItem('+it.id+')" title="تعديل">✏</button>'
+        +'<button class="ic-btn del" onclick="deleteItem('+it.id+')" title="حذف">🗑</button>'
+      +'</div>'
+      +'</div>';
+  }).join('');
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
-</script>
+function updateKPIs(){
+  var low   = ITEMS.filter(function(it){ return statusOf(it)!=='ok'; }).length;
+  var linen = ITEMS.filter(function(it){ return ['لحف','مفارش','مخدات','أغطية مخدات'].includes(it.cat); }).length;
+  var care  = ITEMS.filter(function(it){ return ['عناية شخصية','صابون ونظافة','عطور'].includes(it.cat); }).length;
+  function set(id,v){ var e=document.getElementById(id); if(e) e.textContent=v; }
+  set('kpi-total', ITEMS.length);
+  set('kpi-linen', linen);
+  set('kpi-care',  care);
+  set('kpi-low',   low);
+  // Rail counts
+  var cats=['لحف','مفارش','مخدات','أغطية مخدات','عناية شخصية','صابون ونظافة','عطور','سكر','نسكافيه','ماء'];
+  cats.forEach(function(c){
+    var el=document.getElementById('rc-'+c);
+    if(el) el.textContent=ITEMS.filter(function(it){ return it.cat===c; }).length;
+  });
+  var ra=document.getElementById('rc-all'); if(ra) ra.textContent=ITEMS.length;
+  // Alert bar
+  var al = document.getElementById('hi-alert');
+  var at = document.getElementById('hi-alert-txt');
+  if(al) al.style.display = low>0 ? 'flex' : 'none';
+  if(at) at.textContent = low+' '+(low===1?'صنف':'أصناف')+' وصلت للحد الأدنى';
+  // Table title
+  var ttl=document.getElementById('tbl-ttl'), sub=document.getElementById('tbl-sub');
+  if(activeCat==='all'){ if(ttl) ttl.textContent='جميع أصناف الضيافة'; if(sub) sub.textContent='All hospitality · '+ITEMS.length+' items'; }
+  else { if(ttl) ttl.textContent=activeCat; if(sub) sub.textContent=ITEMS.filter(function(it){return it.cat===activeCat;}).length+' items'; }
+}
 
+/* ════ FILTER ═══════════════════════════════════════════════════════ */
+window.setCat = function(cat, el){
+  activeCat = cat;
+  document.querySelectorAll('.hi-cat').forEach(function(a){ a.classList.remove('on'); });
+  el.classList.add('on');
+  renderTable(); updateKPIs();
+};
+window.filterItems = function(){
+  activeQ = (document.getElementById('hi-q')||{value:''}).value.toLowerCase();
+  renderTable();
+};
+window.filterLow = function(){
+  activeCat='all';
+  document.querySelectorAll('.hi-cat').forEach(function(a){ a.classList.toggle('on', a.dataset.cat==='all'); });
+  activeQ='';
+  var q=document.getElementById('hi-q'); if(q) q.value='';
+  var lowItems = ITEMS.filter(function(it){ return statusOf(it)!=='ok'; });
+  var tbody=document.getElementById('hi-tbody');
+  if(!tbody) return;
+  tbody.innerHTML = lowItems.map(function(it){
+    var p=pct(it),fc=fillColor(it);
+    return '<div class="hi-tr">'
+      +'<div class="hi-ic">'+it.ic+'</div>'
+      +'<div><div class="hi-nm">'+it.name+'</div><div class="hi-sku">SKU · '+it.sku+'</div></div>'
+      +'<div><span class="hi-cat-tag">'+it.cat+'</span></div>'
+      +'<div class="hi-loc"><div>'+it.loc+'</div><div class="sub">'+it.zone+'</div></div>'
+      +'<div><div class="qty-wrap"><button class="qty-btn" onclick="adjustQty('+it.id+',-1)">−</button>'
+      +'<div><div style="display:flex;align-items:baseline;gap:4px"><span class="qty-v" id="qv-'+it.id+'">'+it.qty+'</span><span class="qty-par">/'+it.par+' '+it.unit+'</span></div>'
+      +'<div class="qty-bar"><div class="qty-fill" id="qf-'+it.id+'" style="width:'+p+'%;background:'+fc+'"></div></div></div>'
+      +'<button class="qty-btn" onclick="adjustQty('+it.id+',+1)">+</button></div></div>'
+      +'<div id="qs-'+it.id+'">'+statusLabel(it)+'</div>'
+      +'<div class="acts"><button class="ic-btn" onclick="editItem('+it.id+')" title="تعديل">✏</button>'
+      +'<button class="ic-btn del" onclick="deleteItem('+it.id+')" title="حذف">🗑</button></div>'
+      +'</div>';
+  }).join('');
+  toast('يتم عرض '+lowItems.length+' صنف تحت الحد الأدنى');
+};
+
+/* ════ QTY ADJUST ════════════════════════════════════════════════════ */
+window.adjustQty = function(id, delta){
+  var it = ITEMS.find(function(x){ return x.id===id; });
+  if(!it) return;
+  it.qty = Math.max(0, it.qty + delta);
+  var qv=document.getElementById('qv-'+id), qf=document.getElementById('qf-'+id), qs=document.getElementById('qs-'+id);
+  if(qv) qv.textContent = it.qty;
+  if(qf){ var p=pct(it); qf.style.width=p+'%'; qf.style.background=fillColor(it); }
+  if(qs) qs.innerHTML = statusLabel(it);
+  updateKPIs();
+};
+
+/* ════ ADD / EDIT / DELETE ═══════════════════════════════════════════ */
+window.showAddItem = function(){
+  editingId = null;
+  document.getElementById('modal-ttl').textContent = '+ إضافة صنف ضيافة';
+  ['f-name','f-icon','f-loc','f-sku'].forEach(function(id){ var e=document.getElementById(id); if(e) e.value=''; });
+  var fq=document.getElementById('f-qty'); if(fq) fq.value='0';
+  var fp=document.getElementById('f-par'); if(fp) fp.value='100';
+  document.getElementById('add-modal').style.display='flex';
+};
+window.editItem = function(id){
+  var it=ITEMS.find(function(x){ return x.id===id; }); if(!it) return;
+  editingId=id;
+  var set=function(fid,v){ var e=document.getElementById(fid); if(e) e.value=v; };
+  set('f-name',it.name); set('f-cat',it.cat); set('f-icon',it.icon||it.ic);
+  set('f-qty',it.qty); set('f-par',it.par); set('f-unit',it.unit);
+  set('f-loc',it.loc+' — '+it.zone); set('f-sku',it.sku);
+  document.getElementById('modal-ttl').textContent = '✏ تعديل — '+it.name;
+  document.getElementById('add-modal').style.display='flex';
+};
+window.saveItem = function(){
+  var get=function(id){ return (document.getElementById(id)||{value:''}).value.trim(); };
+  var name=get('f-name'); if(!name){ toast('أدخل اسم الصنف',true); return; }
+  var qty=parseInt(get('f-qty'),10)||0, par=parseInt(get('f-par'),10)||100;
+  var locFull = get('f-loc') || 'المستودع العام';
+  var locParts = locFull.split(' — ');
+  if(editingId){
+    var it=ITEMS.find(function(x){ return x.id===editingId; });
+    if(it){
+      it.name=name; it.cat=get('f-cat')||it.cat; it.ic=get('f-icon')||it.ic;
+      it.qty=qty; it.par=par; it.unit=get('f-unit')||it.unit;
+      it.loc=locParts[0]; it.zone=locParts[1]||'—'; it.sku=get('f-sku')||it.sku;
+      toast('تم تحديث «'+it.name+'» ✓');
+    }
+  } else {
+    ITEMS.push({ id:itemCounter++, ic:get('f-icon')||'📦', name:name,
+      cat:get('f-cat')||'لحف', loc:locParts[0], zone:locParts[1]||'—',
+      qty:qty, par:par, unit:get('f-unit')||'قطعة', sku:get('f-sku')||('SKU-'+itemCounter) });
+    toast('تمت إضافة «'+name+'» للمخزون ✓');
+  }
+  closeModal(); renderTable(); updateKPIs();
+};
+window.deleteItem = function(id){
+  var it=ITEMS.find(function(x){ return x.id===id; }); if(!it) return;
+  if(!confirm('حذف «'+it.name+'» من المخزون؟')) return;
+  ITEMS=ITEMS.filter(function(x){ return x.id!==id; });
+  renderTable(); updateKPIs(); toast('تم حذف «'+it.name+'»');
+};
+window.closeModal = function(){ document.getElementById('add-modal').style.display='none'; editingId=null; };
+
+/* ════ EXPORT CSV ════════════════════════════════════════════════════ */
+window.exportCSV = function(){
+  var rows=[['الصنف','الفئة','الموقع','الكمية','حد الطلب','الوحدة','SKU','الحالة']];
+  ITEMS.forEach(function(it){
+    var statusAr={ok:'متوفر',warn:'منخفض',bad:'ناقص'}[statusOf(it)];
+    rows.push([it.name,it.cat,it.loc+' '+it.zone,it.qty,it.par,it.unit,it.sku,statusAr]);
+  });
+  var csv=rows.map(function(r){ return r.map(function(c){ return'"'+String(c).replace(/"/g,'""')+'"'; }).join(','); }).join('\r\n');
+  var bom='﻿';
+  var blob=new Blob([bom+csv],{type:'text/csv;charset=utf-8;'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a'); a.href=url; a.download='مخزون_الضيافة_'+new Date().toISOString().slice(0,10)+'.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  toast('تم تصدير '+ITEMS.length+' صنف ✓');
+};
+
+/* ════ TOAST ═════════════════════════════════════════════════════════ */
+function toast(msg,isErr){
+  var old=document.querySelector('.nz-toast'); if(old) old.remove();
+  var t=document.createElement('div'); t.className='nz-toast';
+  t.style.background=isErr?'var(--danger-700)':'var(--brand-800)';
+  t.innerHTML='<span style="color:var(--gold-400)">'+(isErr?'✕':'✓')+'</span> '+msg;
+  document.body.appendChild(t);
+  setTimeout(function(){ t.style.opacity='0'; t.style.transition='opacity .4s'; setTimeout(function(){ if(t.parentNode)t.remove(); },400); },3000);
+}
+
+/* ════ INIT ══════════════════════════════════════════════════════════ */
+renderTable();
+updateKPIs();
+
+})();
+</script>
 </body>
 </html>
