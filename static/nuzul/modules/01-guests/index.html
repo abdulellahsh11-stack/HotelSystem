@@ -1,97 +1,1008 @@
 <!doctype html>
-<html lang="ar" dir="rtl" data-screen-label="Admin Dashboard">
+<html lang="ar" dir="rtl" data-screen-label="01 Guests Dashboard">
 <head>
 <meta charset="utf-8"/>
-<title>ضيوف · لوحة التحكم</title>
+<title>ضيوف · لوحة الضيوف</title>
 <meta name="viewport" content="width=1440, initial-scale=1"/>
 <link rel="stylesheet" href="/static/nuzul/colors_and_type.css"/>
 <link rel="stylesheet" href="/static/nuzul/assets/animations.css"/>
-<link rel="stylesheet" href="/static/nuzul/modules/01-guests/dashboard.css"/>
-</head>
-<body>
-<div id="root"></div>
+<link rel="stylesheet" href="/static/nuzul/shared/chrome.css"/>
+<link rel="stylesheet" href="/static/nuzul/shared/module.css"/>
+<style>
+/* ── KPI strip ─────────────────────────────────────────────────── */
+.kpi-strip {
+  display: grid; grid-template-columns: repeat(5,1fr); gap: 12px;
+  margin-bottom: 24px;
+}
+.kpi-card {
+  background: var(--white); border: 1px solid var(--hairline);
+  border-radius: 14px; padding: 18px 20px;
+}
+.kpi-card.accent {
+  background: linear-gradient(135deg,var(--brand-800),var(--brand-900));
+  border-color: transparent; color: var(--paper);
+}
+.kpi-card .lbl { font-size: 11px; color: var(--fg-3); letter-spacing:.04em; }
+.kpi-card.accent .lbl { color: var(--gold-300); }
+.kpi-card .val { font-family: var(--font-en); font-size: 28px; font-weight: 700;
+  color: var(--ink-900); line-height:1.1; margin: 6px 0 4px; }
+.kpi-card.accent .val { color: var(--paper); }
+.kpi-card .val .sfx { font-size: 14px; font-weight: 500; color: var(--fg-2); margin-inline-start: 4px; }
+.kpi-card.accent .val .sfx { color: var(--gold-300); }
+.kpi-card .delta { font-size: 11px; display: flex; align-items: center; gap: 4px; }
+.kpi-card .delta.up { color: var(--success-700); }
+.kpi-card .delta.dn { color: var(--danger-600); }
 
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+/* ── Tabs ──────────────────────────────────────────────────────── */
+.tab-bar {
+  display: flex; gap: 4px; border-bottom: 2px solid var(--hairline);
+  margin-bottom: 20px;
+}
+.tab-btn {
+  padding: 10px 18px; border: none; background: transparent;
+  font-family: var(--font-ar); font-size: 13.5px; font-weight: 500;
+  color: var(--fg-2); border-bottom: 2px solid transparent;
+  margin-bottom: -2px; cursor: pointer; transition: all 150ms;
+  display: flex; align-items: center; gap: 8px;
+}
+.tab-btn:hover { color: var(--ink-900); }
+.tab-btn.is-on { color: var(--brand-700); border-bottom-color: var(--brand-700); }
+.tab-btn .badge {
+  background: var(--brand-100); color: var(--brand-800);
+  font-size: 10px; font-family: var(--font-en); font-weight: 600;
+  padding: 1px 7px; border-radius: 999px;
+}
+.tab-btn.is-on .badge { background: var(--brand-700); color: var(--paper); }
+.tab-pane { display: none; }
+.tab-pane.is-on { display: block; }
 
-<script type="text/babel" src="/static/nuzul/modules/01-guests/Sidebar.jsx"></script>
-<script type="text/babel" src="/static/nuzul/modules/01-guests/TopBar.jsx"></script>
-<script type="text/babel" src="/static/nuzul/modules/01-guests/KpiGrid.jsx"></script>
-<script type="text/babel" src="/static/nuzul/modules/01-guests/OccupancyHeatmap.jsx"></script>
-<script type="text/babel" src="/static/nuzul/modules/01-guests/BookingsTable.jsx"></script>
-<script type="text/babel" src="/static/nuzul/modules/01-guests/RevenueChart.jsx"></script>
-<script type="text/babel" src="/static/nuzul/modules/01-guests/Panels.jsx"></script>
+/* ── Toolbar ───────────────────────────────────────────────────── */
+.tbl-toolbar {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 14px; flex-wrap: wrap;
+}
+.tbl-toolbar .search-wrap {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--white); border: 1px solid var(--hairline);
+  border-radius: 8px; padding: 7px 14px; flex: 1; max-width: 320px;
+}
+.tbl-toolbar .search-wrap svg { width: 15px; height: 15px; color: var(--fg-3); flex-shrink: 0; }
+.tbl-toolbar .search-wrap input {
+  border: none; outline: none; background: transparent;
+  font-family: var(--font-ar); font-size: 13px; width: 100%;
+}
+.filter-chip {
+  padding: 6px 14px; border-radius: 999px; border: 1px solid var(--hairline);
+  font-family: var(--font-ar); font-size: 12px; color: var(--fg-2);
+  background: var(--white); cursor: pointer; transition: all 140ms;
+}
+.filter-chip.is-on {
+  background: var(--brand-700); color: var(--paper); border-color: var(--brand-700);
+}
+.ml-auto { margin-inline-start: auto; }
+.btn-primary {
+  padding: 8px 18px; background: var(--brand-700); color: var(--paper);
+  border: none; border-radius: 8px; font-family: var(--font-ar);
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  display: flex; align-items: center; gap: 6px;
+}
+.btn-primary:hover { background: var(--brand-800); }
+.btn-sec {
+  padding: 8px 16px; background: var(--white); color: var(--ink-800);
+  border: 1px solid var(--hairline); border-radius: 8px;
+  font-family: var(--font-ar); font-size: 12px; cursor: pointer;
+}
+.btn-sec:hover { background: var(--paper-tint); }
 
-<script type="text/babel">
-const { useState } = React;
-
-function App() {
-  const [active, setActive] = useState("dashboard");
-  const [lang, setLang] = useState("ar");
-
-  return (
-    <div className="nz-app">
-      <Sidebar active={active} onChange={setActive} />
-      <div>
-        <TopBar lang={lang} onLang={setLang} />
-        <main className="nz-main">
-          <div className="nz-page-head" data-m-rise>
-            <div className="ttl-grp">
-              <span className="nz-eyebrow">الإثنين · ١٢ أبريل ٢٠٢٥</span>
-              <h1 className="nz-page-title">صباح الخير، سارة</h1>
-              <div className="nz-page-sub">إليكِ ما يحدث في فندق الواحة الذهبية اليوم.</div>
-            </div>
-            <div className="nz-page-actions">
-              <button className="nz-btn is-secondary">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                تصدير تقرير
-              </button>
-              <button className="nz-btn is-primary m-shimmer">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                حجز جديد
-              </button>
-            </div>
-          </div>
-
-          <KpiGrid />
-
-          <div data-m-rise>
-            <OccupancyHeatmap />
-          </div>
-
-          <div className="nz-2col" data-m-rise-stagger>
-            <RevenueChart />
-            <ChannelMix />
-          </div>
-
-          <div className="nz-2col-table" data-m-rise>
-            <div style={{gridColumn: "1 / -1"}}>
-              <BookingsTable />
-            </div>
-          </div>
-        </main>
-      </div>
-    </div>
-  );
+/* ── Table ─────────────────────────────────────────────────────── */
+.data-tbl { width: 100%; border-collapse: collapse; }
+.data-tbl th {
+  text-align: start; padding: 10px 14px; font-size: 11px;
+  letter-spacing: .06em; color: var(--fg-3); font-weight: 600;
+  background: var(--paper-tint); border-bottom: 1px solid var(--hairline);
+  white-space: nowrap;
+}
+.data-tbl td {
+  padding: 13px 14px; border-bottom: 1px solid var(--hairline);
+  font-size: 13px; vertical-align: middle;
+}
+.data-tbl tr:last-child td { border-bottom: none; }
+.data-tbl tr:hover td { background: var(--paper-tint); }
+.tbl-wrap {
+  background: var(--white); border: 1px solid var(--hairline);
+  border-radius: 14px; overflow: hidden;
+}
+.av {
+  width: 38px; height: 38px; border-radius: 999px; flex-shrink: 0;
+  background: linear-gradient(135deg,var(--brand-600),var(--brand-800));
+  color: var(--gold-300); display: grid; place-items: center;
+  font-family: var(--font-ar-display); font-weight: 700; font-size: 13px;
+}
+.av.vip { background: linear-gradient(135deg,var(--gold-600),var(--gold-800)); color: var(--brand-900); }
+.guest-cell { display: flex; align-items: center; gap: 10px; }
+.guest-cell .name { font-weight: 600; font-size: 13.5px; color: var(--ink-900); }
+.guest-cell .meta { font-size: 11px; color: var(--fg-3); margin-top: 1px; }
+.pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 500;
+}
+.pill .d { width: 5px; height: 5px; border-radius: 999px; flex-shrink: 0; }
+.pill.ok   { background: var(--success-50); color: var(--success-700); }
+.pill.ok .d { background: var(--success-600); }
+.pill.warn { background: var(--warning-50); color: var(--warning-700); }
+.pill.warn .d { background: var(--warning-500); }
+.pill.info { background: var(--brand-50); color: var(--brand-700); }
+.pill.info .d { background: var(--brand-500); }
+.pill.neu  { background: var(--paper-tint); color: var(--fg-2); }
+.pill.neu .d { background: var(--fg-3); }
+.pill.danger { background: var(--danger-50); color: var(--danger-700); }
+.pill.danger .d { background: var(--danger-600); }
+.pill.gold { background: var(--gold-50); color: var(--gold-800); }
+.pill.gold .d { background: var(--gold-500); }
+.amt { font-family: var(--font-en); font-weight: 600; font-size: 13px;
+  color: var(--ink-900); text-align: end; }
+.amt .cur { font-size: 11px; color: var(--fg-3); margin-inline-start: 3px; }
+.icon-btn {
+  width: 32px; height: 32px; border: none; background: transparent;
+  border-radius: 6px; display: grid; place-items: center; cursor: pointer; color: var(--fg-3);
+}
+.icon-btn:hover { background: var(--paper-tint); color: var(--ink-800); }
+.icon-btn svg { width: 16px; height: 16px; }
+.vip-tag {
+  display: inline-block; font-size: 9px; font-family: var(--font-en);
+  font-weight: 700; letter-spacing: .08em; padding: 1px 5px;
+  background: var(--gold-500); color: var(--brand-900); border-radius: 4px;
+  margin-inline-start: 5px; vertical-align: middle;
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
-</script>
+/* ── Alerts in guests table ────────────────────────────────────── */
+.alert-list { display: flex; flex-wrap: wrap; gap: 5px; }
+.alert-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 8px; border-radius: 6px; font-size: 11px; cursor: pointer;
+  border: 1px solid transparent;
+}
+.alert-tag.red   { background: var(--danger-50);  color: var(--danger-700); border-color: var(--danger-200); }
+.alert-tag.amber { background: var(--warning-50); color: var(--warning-700); border-color: var(--warning-200); }
+.alert-tag.blue  { background: var(--brand-50);   color: var(--brand-700); border-color: var(--brand-200); }
+.alert-tag.gold  { background: var(--gold-50);    color: var(--gold-800); border-color: var(--gold-200); }
+.alert-tag .x { opacity: .5; font-size: 10px; }
+.alert-tag:hover .x { opacity: 1; }
+.add-alert-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 8px; border-radius: 6px; font-size: 11px;
+  background: var(--paper-tint); border: 1px dashed var(--ink-100);
+  color: var(--fg-3); cursor: pointer;
+}
+.add-alert-btn:hover { border-color: var(--brand-500); color: var(--brand-700); }
 
+/* ── Room map ──────────────────────────────────────────────────── */
+.floor-section { margin-bottom: 20px; }
+.floor-head {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px 12px;
+  background: var(--white); border: 1px solid var(--hairline);
+  border-radius: 12px 12px 0 0; cursor: pointer;
+  border-bottom: 1px solid var(--hairline);
+}
+.floor-head .floor-num {
+  font-family: var(--font-en); font-size: 10px; font-weight: 700;
+  letter-spacing: .12em; padding: 3px 8px;
+  background: var(--brand-700); color: var(--paper); border-radius: 5px;
+}
+.floor-head .floor-name { font-weight: 600; font-size: 14px; color: var(--ink-900); }
+.floor-head .floor-stats { display: flex; gap: 10px; margin-inline-start: auto; }
+.floor-stat { font-size: 11px; padding: 2px 8px; border-radius: 5px; }
+.floor-stat.occ  { background: var(--brand-100); color: var(--brand-800); }
+.floor-stat.avail { background: var(--success-50); color: var(--success-700); }
+.floor-stat.hk   { background: var(--warning-50); color: var(--warning-700); }
+.floor-stat.maint { background: var(--danger-50); color: var(--danger-700); }
+.floor-toggle { font-size: 11px; color: var(--fg-3); transition: transform 200ms; }
+.floor-toggle.open { transform: rotate(180deg); }
+.rooms-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px;
+  padding: 14px 16px 16px;
+  background: var(--white); border: 1px solid var(--hairline);
+  border-top: none; border-radius: 0 0 12px 12px;
+}
+.room-card {
+  border: 1px solid var(--hairline); border-radius: 10px;
+  padding: 12px 10px; text-align: center; cursor: pointer;
+  transition: all 160ms; position: relative;
+  min-height: 90px; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 4px;
+}
+.room-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.08); }
+.room-card .rnum {
+  font-family: var(--font-en); font-size: 16px; font-weight: 700;
+  color: var(--ink-900); line-height: 1;
+}
+.room-card .rtype { font-size: 10px; color: var(--fg-3); }
+.room-card .rstatus { font-size: 10px; font-weight: 500; margin-top: 2px; }
+.room-card.occupied  { background: var(--brand-50); border-color: var(--brand-300); }
+.room-card.occupied .rnum { color: var(--brand-800); }
+.room-card.occupied .rstatus { color: var(--brand-700); }
+.room-card.available { background: var(--success-50); border-color: var(--success-200); }
+.room-card.available .rnum { color: var(--success-800); }
+.room-card.available .rstatus { color: var(--success-700); }
+.room-card.hk-needed { background: var(--warning-50); border-color: var(--warning-300); }
+.room-card.hk-needed .rnum { color: var(--warning-800); }
+.room-card.hk-needed .rstatus { color: var(--warning-700); }
+.room-card.maintenance { background: var(--danger-50); border-color: var(--danger-200); }
+.room-card.maintenance .rnum { color: var(--danger-700); }
+.room-card.maintenance .rstatus { color: var(--danger-600); }
+.room-card.reserved { background: var(--gold-50); border-color: var(--gold-300); }
+.room-card.reserved .rnum { color: var(--gold-800); }
+.room-card.reserved .rstatus { color: var(--gold-700); }
+.room-card .guest-hint {
+  font-size: 9px; color: var(--fg-3); margin-top: 2px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 88px;
+}
+.room-legend { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
+.room-legend .item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--fg-2); }
+.room-legend .dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+
+/* ── Room detail modal ─────────────────────────────────────────── */
+.nz-modal-bd {
+  position: fixed; inset: 0;
+  background: rgba(14,42,34,.65); backdrop-filter: blur(4px);
+  z-index: 9000; display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.nz-modal {
+  background: var(--white); border-radius: 16px;
+  width: min(520px,95vw); max-height: 88vh; overflow: hidden;
+  display: flex; flex-direction: column;
+  box-shadow: 0 24px 64px -16px rgba(14,42,34,.45);
+}
+.nz-modal .modal-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 22px; border-bottom: 1px solid var(--hairline);
+  background: var(--paper-tint);
+}
+.nz-modal .modal-head .ttl { font-family: var(--font-ar-display); font-size: 16px; font-weight: 700; }
+.nz-modal .modal-body { padding: 20px 22px; overflow-y: auto; }
+.nz-modal .modal-foot {
+  padding: 14px 22px; border-top: 1px solid var(--hairline);
+  display: flex; gap: 8px; background: var(--paper-tint);
+}
+.close-btn {
+  background: transparent; border: 1px solid var(--ink-100);
+  color: var(--fg-3); border-radius: 6px; padding: 5px 14px;
+  cursor: pointer; font-family: var(--font-ar); font-size: 12px;
+}
+.detail-row { display: flex; justify-content: space-between; padding: 9px 0;
+  border-bottom: 1px solid var(--hairline); font-size: 13px; }
+.detail-row:last-child { border-bottom: none; }
+.detail-row .lbl { color: var(--fg-2); }
+.detail-row .val { font-weight: 600; color: var(--ink-900); }
+
+/* ── Checkin action ────────────────────────────────────────────── */
+.checkin-btn {
+  padding: 6px 14px; background: var(--brand-700); color: var(--paper);
+  border: none; border-radius: 7px; font-family: var(--font-ar);
+  font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap;
+}
+.checkin-btn:hover { background: var(--brand-800); }
+.checkin-btn:disabled { background: var(--success-600); cursor: default; }
+
+/* ── Toast ─────────────────────────────────────────────────────── */
+.nz-toast {
+  position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+  background: var(--brand-800); color: var(--paper);
+  padding: 12px 24px; border-radius: 10px;
+  font-family: var(--font-ar); font-size: 13.5px; font-weight: 500;
+  box-shadow: 0 8px 32px rgba(0,0,0,.28); z-index: 9999;
+  white-space: nowrap; display: flex; align-items: center; gap: 10px; direction: rtl;
+}
+
+/* ── Alert modal form ──────────────────────────────────────────── */
+.alert-form { display: flex; flex-direction: column; gap: 12px; }
+.alert-form label { font-size: 12px; font-weight: 600; color: var(--ink-700); margin-bottom: 4px; display: block; }
+.alert-form input, .alert-form select {
+  width: 100%; padding: 9px 12px; border: 1px solid var(--ink-100);
+  border-radius: 8px; font-family: var(--font-ar); font-size: 13px;
+  background: var(--white); outline: none;
+}
+.alert-form input:focus, .alert-form select:focus { border-color: var(--brand-500); }
+.color-opts { display: flex; gap: 8px; }
+.color-opt {
+  width: 32px; height: 32px; border-radius: 8px; border: 2px solid transparent;
+  cursor: pointer; transition: all 140ms;
+}
+.color-opt.is-on { border-color: var(--ink-900); transform: scale(1.1); }
+</style>
+</head>
+<body>
+<div class="nz-app">
+  <div id="sidebar-slot"></div>
+  <div>
+    <div id="topbar-slot"></div>
+    <main class="nz-main">
+
+      <div class="mod-head" data-m-rise>
+        <div class="left">
+          <div class="num-row">
+            <span class="num">01 · GUESTS</span>
+            <span class="en-tag">Front Desk Dashboard</span>
+          </div>
+          <h1>لوحة الضيوف</h1>
+          <p class="sub">الحجوزات القادمة، النزلاء الحاليون، وخريطة الغرف — كل شيء في مكان واحد.</p>
+        </div>
+        <div class="actions">
+          <a class="gr-btn sec" href="/static/nuzul/modules/01-guests/registration.html">+ تسجيل نزيل جديد</a>
+        </div>
+      </div>
+
+      <!-- KPI Strip -->
+      <div class="kpi-strip" data-m-rise>
+        <div class="kpi-card accent">
+          <div class="lbl">إشغال الليلة · Occupancy</div>
+          <div class="val">٨٧<span class="sfx">٪</span></div>
+          <div class="delta up">▲ +٤٪ عن أمس</div>
+        </div>
+        <div class="kpi-card">
+          <div class="lbl">نزلاء حاليون · In-house</div>
+          <div class="val" id="kpi-inhouse">—</div>
+          <div class="delta up" id="kpi-inhouse-delta">جارٍ الحساب...</div>
+        </div>
+        <div class="kpi-card">
+          <div class="lbl">حجوزات قادمة · Upcoming</div>
+          <div class="val" id="kpi-upcoming">—</div>
+          <div class="delta up" id="kpi-upcoming-delta">جارٍ الحساب...</div>
+        </div>
+        <div class="kpi-card">
+          <div class="lbl">تحتاج تنظيف · HK Needed</div>
+          <div class="val" id="kpi-hk">—</div>
+          <div class="delta" id="kpi-hk-delta" style="color:var(--warning-700)">غرف بعد الخروج</div>
+        </div>
+        <div class="kpi-card">
+          <div class="lbl">إيراد اليوم · Revenue</div>
+          <div class="val">٢٤٬٨٦٠<span class="sfx" style="font-size:12px">ر.س</span></div>
+          <div class="delta up">▲ +١٨٪ مقابل المتوقع</div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tab-bar" data-m-rise>
+        <button class="tab-btn is-on" data-tab="reservations">
+          📋 الحجوزات القادمة
+          <span class="badge" id="res-badge">0</span>
+        </button>
+        <button class="tab-btn" data-tab="guests">
+          🛏 النزلاء الحاليون
+          <span class="badge" id="guests-badge">0</span>
+        </button>
+        <button class="tab-btn" data-tab="rooms">
+          🏨 خريطة الغرف
+          <span class="badge" id="rooms-badge">0</span>
+        </button>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════
+           TAB 1: RESERVATIONS (لم يسجلوا دخول)
+           ═══════════════════════════════════════════════ -->
+      <div class="tab-pane is-on" id="tab-reservations" data-m-rise>
+        <div class="tbl-toolbar">
+          <div class="search-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input id="res-search" placeholder="بحث بالاسم أو رقم الحجز أو الغرفة..." />
+          </div>
+          <button class="filter-chip is-on" data-filter="all">الكل</button>
+          <button class="filter-chip" data-filter="today">اليوم</button>
+          <button class="filter-chip" data-filter="tomorrow">غداً</button>
+          <button class="filter-chip" data-filter="week">هذا الأسبوع</button>
+          <div class="ml-auto">
+            <button class="btn-primary" onclick="window.location='/static/nuzul/modules/01-guests/registration.html'">
+              + حجز جديد
+            </button>
+          </div>
+        </div>
+
+        <div class="tbl-wrap">
+          <table class="data-tbl" id="res-table">
+            <thead>
+              <tr>
+                <th>رقم الحجز</th>
+                <th>النزيل</th>
+                <th>الهوية / الجنسية</th>
+                <th>الغرفة</th>
+                <th>تاريخ الوصول</th>
+                <th>المغادرة</th>
+                <th>الليالي</th>
+                <th>القناة</th>
+                <th>الدفع</th>
+                <th>المبلغ</th>
+                <th>الحالة</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="res-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════
+           TAB 2: CURRENT GUESTS (نزلاء حاليون)
+           ═══════════════════════════════════════════════ -->
+      <div class="tab-pane" id="tab-guests" data-m-rise>
+        <div class="tbl-toolbar">
+          <div class="search-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input id="guest-search" placeholder="بحث بالاسم أو الغرفة أو رقم الهوية..." />
+          </div>
+          <button class="filter-chip is-on" data-gfilter="all">الكل</button>
+          <button class="filter-chip" data-gfilter="vip">VIP</button>
+          <button class="filter-chip" data-gfilter="departing">مغادر اليوم</button>
+          <button class="filter-chip" data-gfilter="alert">لديه تنبيه</button>
+        </div>
+
+        <div class="tbl-wrap">
+          <table class="data-tbl" id="guest-table">
+            <thead>
+              <tr>
+                <th>النزيل</th>
+                <th>الغرفة</th>
+                <th>تاريخ الوصول</th>
+                <th>تاريخ المغادرة</th>
+                <th>الجوال</th>
+                <th>المبلغ المتبقي</th>
+                <th>التنبيهات</th>
+                <th>الحالة</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="guest-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════
+           TAB 3: ROOM MAP (خريطة الغرف)
+           ═══════════════════════════════════════════════ -->
+      <div class="tab-pane" id="tab-rooms" data-m-rise>
+        <div class="room-legend">
+          <div class="item"><div class="dot" style="background:var(--brand-400)"></div> مشغولة</div>
+          <div class="item"><div class="dot" style="background:var(--success-400)"></div> متاحة ونظيفة</div>
+          <div class="item"><div class="dot" style="background:var(--warning-400)"></div> تحتاج تنظيف (HK)</div>
+          <div class="item"><div class="dot" style="background:var(--danger-400)"></div> صيانة</div>
+          <div class="item"><div class="dot" style="background:var(--gold-400)"></div> محجوزة (لم تصل بعد)</div>
+        </div>
+        <div id="floors-container"></div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="/static/nuzul/shared/sidebar.js"></script>
+<script>StaticSidebar.mount({ activeId: "01-guests", placeholder: "بحث في النزلاء والحجوزات..." });</script>
 <script src="/static/nuzul/assets/animations.js"></script>
 <script>
-  // Re-init after React mount
-  setTimeout(() => window.DheuofMotion && window.DheuofMotion.init(), 100);
+setTimeout(function(){
+  document.querySelectorAll('[data-m-rise],[data-m-rise-stagger]').forEach(function(el){ el.classList.add('is-in'); });
+}, 80);
 </script>
 
 <script>
-// Ensure content is always visible — fallback if IntersectionObserver threshold not met
-setTimeout(function(){
-  document.querySelectorAll('[data-m-rise],[data-m-rise-stagger]').forEach(function(el){
-    el.classList.add('is-in');
+(function(){
+/* ══════════════════════════════════════════════════════
+   DATA
+══════════════════════════════════════════════════════ */
+
+var RESERVATIONS = [
+  { id:"RES-١٨٢٤", initials:"نم", name:"نورة المنصور",        nationality:"🇸🇦 سعودية",  idType:"هوية وطنية", idNum:"1082334412", room:"٢١٨", roomType:"ديلوكس",    checkin:"2025-05-31", checkout:"2025-06-01", nights:1, channel:"Booking.com", payment:"مدفوع",    payClass:"ok",   amt:"٨٤٠",    phone:"+966 55 441 2201", vip:false },
+  { id:"RES-١٨٢٥", initials:"LK", name:"Layla Karam",          nationality:"🇱🇧 لبنانية", idType:"جواز سفر",  idNum:"LB8823411",  room:"٣٠٧", roomType:"ديلوكس",    checkin:"2025-05-31", checkout:"2025-06-04", nights:4, channel:"Agoda",       payment:"عربون",    payClass:"warn", amt:"٣٬١٢٠",  phone:"+961 70 882 341",  vip:false },
+  { id:"RES-١٨٢٨", initials:"فز", name:"فاطمة الزهراني",      nationality:"🇸🇦 سعودية",  idType:"هوية وطنية", idNum:"1091238844", room:"٤١٠", roomType:"جناح",       checkin:"2025-06-01", checkout:"2025-06-05", nights:4, channel:"مباشر",       payment:"مدفوع",    payClass:"ok",   amt:"٣٬٢٠٠",  phone:"+966 50 991 3344", vip:true  },
+  { id:"RES-١٨٢٩", initials:"عر", name:"عبدالعزيز الرشيد",    nationality:"🇸🇦 سعودي",   idType:"هوية وطنية", idNum:"1034882201", room:"١٠٦", roomType:"ستاندرد",   checkin:"2025-06-01", checkout:"2025-06-03", nights:2, channel:"مباشر",       payment:"لم يدفع",  payClass:"danger",amt:"٦٤٠",    phone:"+966 55 338 8821", vip:false },
+  { id:"RES-١٨٣٠", initials:"مب", name:"محمد البقمي",         nationality:"🇸🇦 سعودي",   idType:"هوية وطنية", idNum:"1056123490", room:"٣١٢", roomType:"ديلوكس",    checkin:"2025-06-02", checkout:"2025-06-07", nights:5, channel:"Booking.com", payment:"عربون",    payClass:"warn", amt:"٢٬٨٠٠",  phone:"+966 50 612 3490", vip:false },
+  { id:"RES-١٨٣١", initials:"سح", name:"سلطان الحربي",        nationality:"🇸🇦 سعودي",   idType:"هوية وطنية", idNum:"1072245512", room:"٤٠١", roomType:"جناح ملكي", checkin:"2025-06-03", checkout:"2025-06-06", nights:3, channel:"مباشر",       payment:"مدفوع",    payClass:"ok",   amt:"٧٬٢٠٠",  phone:"+966 55 224 5512", vip:true  },
+  { id:"RES-١٨٣٢", initials:"KJ", name:"Khalid Jassim",        nationality:"🇦🇪 إماراتي", idType:"هوية خليجية",idNum:"AE77223314", room:"٢٢٥", roomType:"ديلوكس",    checkin:"2025-06-04", checkout:"2025-06-06", nights:2, channel:"Expedia",     payment:"مدفوع",    payClass:"ok",   amt:"١٬٦٨٠",  phone:"+971 50 772 3314", vip:false },
+  { id:"RES-١٨٣٣", initials:"هق", name:"هند القرني",          nationality:"🇸🇦 سعودية",  idType:"هوية وطنية", idNum:"1023344812", room:"٣٠٩", roomType:"ديلوكس",    checkin:"2025-06-05", checkout:"2025-06-08", nights:3, channel:"Almosafer",   payment:"عربون",    payClass:"warn", amt:"٢٬١٠٠",  phone:"+966 55 334 4812", vip:false },
+];
+
+var GUESTS = [
+  { id:"RES-١٨٢٣", initials:"أس", name:"أحمد بن سليمان الفهد",  nationality:"🇸🇦 سعودي",   room:"٤٠٢", roomType:"جناح ملكي", checkin:"2025-05-28", checkout:"2025-05-31", phone:"+966 50 482 1108", balanceLeft:"٦٬٠٩٤", vip:true,  status:"ok",      alerts:[
+    {text:"طلب قهوة عربية صباحاً", color:"gold", id:1},
+    {text:"حساسية جلوتين", color:"red", id:2}
+  ]},
+  { id:"RES-١٨٢٦", initials:"مع", name:"محمد العتيبي",           nationality:"🇸🇦 سعودي",   room:"١٠٤", roomType:"ستاندرد",   checkin:"2025-05-30", checkout:"2025-05-31", phone:"+966 55 338 8821", balanceLeft:"٠",     vip:false, status:"departing", alerts:[] },
+  { id:"RES-١٨٣٤", initials:"رع", name:"ريم العنزي",             nationality:"🇸🇦 سعودية",  room:"٣٠٥", roomType:"ديلوكس",    checkin:"2025-05-29", checkout:"2025-06-02", phone:"+966 50 223 9912", balanceLeft:"١٬٢٤٠", vip:false, status:"ok",      alerts:[
+    {text:"مكيف يحتاج صيانة", color:"red", id:3}
+  ]},
+  { id:"RES-١٨٣٥", initials:"عغ", name:"عبدالله الغامدي",       nationality:"🇸🇦 سعودي",   room:"٢١٢", roomType:"ديلوكس",    checkin:"2025-05-30", checkout:"2025-06-03", phone:"+966 55 112 4490", balanceLeft:"٢٬٤٠٠", vip:false, status:"ok",      alerts:[] },
+  { id:"RES-١٨٣٦", initials:"MH", name:"Mohammed Hassan",        nationality:"🇪🇬 مصري",    room:"١٠٨", roomType:"ستاندرد",   checkin:"2025-05-30", checkout:"2025-06-01", phone:"+20 100 882 3310", balanceLeft:"٥٢٠",   vip:false, status:"ok",      alerts:[
+    {text:"عيد ميلاد اليوم 🎂", color:"amber", id:4}
+  ]},
+  { id:"RES-١٨٣٧", initials:"سع", name:"سارة العمري",            nationality:"🇸🇦 سعودية",  room:"٤٠٣", roomType:"جناح ملكي", checkin:"2025-05-27", checkout:"2025-06-01", phone:"+966 50 774 2231", balanceLeft:"٣٬٦٠٠", vip:true,  status:"ok",      alerts:[
+    {text:"VIP — خدمة بتلر مطلوبة", color:"gold", id:5},
+    {text:"طفلان — كرسي طفل مطلوب", color:"blue", id:6}
+  ]},
+];
+
+var FLOORS = [
+  { label:"الدور الأول", num:"F1", rooms:[
+    {num:"١٠١",type:"ستاندرد",status:"occupied", guest:"عبدالرحمن م.",checkout:"2025-06-02"},
+    {num:"١٠٢",type:"ستاندرد",status:"available"},
+    {num:"١٠٣",type:"ستاندرد",status:"hk-needed"},
+    {num:"١٠٤",type:"ستاندرد",status:"occupied", guest:"محمد العتيبي",checkout:"2025-05-31"},
+    {num:"١٠٥",type:"ستاندرد",status:"available"},
+    {num:"١٠٦",type:"ستاندرد",status:"reserved",  guest:"عبدالعزيز الرشيد",checkin:"2025-06-01"},
+    {num:"١٠٧",type:"ستاندرد",status:"hk-needed"},
+    {num:"١٠٨",type:"ستاندرد",status:"occupied", guest:"Mohammed H.",checkout:"2025-06-01"},
+    {num:"١٠٩",type:"ستاندرد",status:"available"},
+    {num:"١١٠",type:"ستاندرد",status:"maintenance"},
+    {num:"١١١",type:"ستاندرد",status:"available"},
+    {num:"١١٢",type:"ستاندرد",status:"hk-needed"},
+    {num:"١١٣",type:"ستاندرد",status:"available"},
+    {num:"١١٤",type:"ستاندرد",status:"occupied", guest:"نزيل — ١١٤",checkout:"2025-06-03"},
+    {num:"١١٥",type:"ستاندرد",status:"available"},
+  ]},
+  { label:"الدور الثاني", num:"F2", rooms:[
+    {num:"٢٠١",type:"ديلوكس",status:"hk-needed"},
+    {num:"٢٠٢",type:"ديلوكس",status:"occupied", guest:"نزيل — ٢٠٢",checkout:"2025-06-02"},
+    {num:"٢٠٣",type:"ديلوكس",status:"available"},
+    {num:"٢٠٤",type:"ديلوكس",status:"occupied", guest:"نزيل — ٢٠٤",checkout:"2025-06-04"},
+    {num:"٢٠٥",type:"ديلوكس",status:"available"},
+    {num:"٢٠٦",type:"ديلوكس",status:"available"},
+    {num:"٢٠٧",type:"ديلوكس",status:"hk-needed"},
+    {num:"٢٠٨",type:"ديلوكس",status:"occupied", guest:"نزيل — ٢٠٨",checkout:"2025-06-01"},
+    {num:"٢٠٩",type:"ديلوكس",status:"maintenance"},
+    {num:"٢١٠",type:"ديلوكس",status:"available"},
+    {num:"٢١١",type:"ديلوكس",status:"available"},
+    {num:"٢١٢",type:"ديلوكس",status:"occupied", guest:"عبدالله الغامدي",checkout:"2025-06-03"},
+    {num:"٢١٣",type:"ديلوكس",status:"reserved",  guest:"نورة المنصور",checkin:"2025-05-31"},
+    {num:"٢١٤",type:"ديلوكس",status:"available"},
+    {num:"٢١٨",type:"ديلوكس",status:"reserved",  guest:"نورة المنصور",checkin:"2025-05-31"},
+    {num:"٢٢٥",type:"ديلوكس",status:"reserved",  guest:"Khalid Jassim",checkin:"2025-06-04"},
+  ]},
+  { label:"الدور الثالث", num:"F3", rooms:[
+    {num:"٣٠١",type:"جناح",status:"hk-needed"},
+    {num:"٣٠٢",type:"جناح",status:"available"},
+    {num:"٣٠٣",type:"جناح",status:"occupied", guest:"نزيل — ٣٠٣",checkout:"2025-06-02"},
+    {num:"٣٠٤",type:"جناح",status:"available"},
+    {num:"٣٠٥",type:"جناح",status:"occupied", guest:"ريم العنزي",checkout:"2025-06-02"},
+    {num:"٣٠٦",type:"جناح",status:"hk-needed"},
+    {num:"٣٠٧",type:"جناح",status:"reserved",  guest:"Layla Karam",checkin:"2025-05-31"},
+    {num:"٣٠٨",type:"جناح",status:"available"},
+    {num:"٣٠٩",type:"جناح",status:"reserved",  guest:"هند القرني",checkin:"2025-06-05"},
+    {num:"٣١٢",type:"جناح",status:"reserved",  guest:"محمد البقمي",checkin:"2025-06-02"},
+  ]},
+  { label:"الدور الرابع — الأجنحة الملكية", num:"F4", rooms:[
+    {num:"٤٠١",type:"جناح ملكي",status:"reserved",  guest:"سلطان الحربي",checkin:"2025-06-03"},
+    {num:"٤٠٢",type:"جناح ملكي",status:"occupied", guest:"أحمد الفهد",checkout:"2025-05-31"},
+    {num:"٤٠٣",type:"جناح ملكي",status:"occupied", guest:"سارة العمري",checkout:"2025-06-01"},
+    {num:"٤١٠",type:"جناح ملكي",status:"reserved",  guest:"فاطمة الزهراني",checkin:"2025-06-01"},
+  ]},
+];
+
+/* ══════════════════════════════════════════════════════
+   UTILITIES
+══════════════════════════════════════════════════════ */
+function toast(msg, isErr){
+  var old=document.querySelector('.nz-toast'); if(old) old.remove();
+  var t=document.createElement('div'); t.className='nz-toast';
+  t.style.background = isErr ? 'var(--danger-700)' : 'var(--brand-800)';
+  t.innerHTML='<span style="color:var(--gold-400)">'+(isErr?'✕':'✓')+'</span> '+msg;
+  document.body.appendChild(t);
+  setTimeout(function(){ t.style.opacity='0'; t.style.transition='opacity 0.4s'; setTimeout(function(){ if(t.parentNode)t.remove(); },400); },3200);
+}
+
+function modal(title, html, footHtml){
+  var old=document.querySelector('.nz-modal-bd'); if(old) old.remove();
+  var bd=document.createElement('div'); bd.className='nz-modal-bd';
+  bd.addEventListener('click',function(e){ if(e.target===bd) bd.remove(); });
+  bd.innerHTML='<div class="nz-modal" dir="rtl">'
+    +'<div class="modal-head"><div class="ttl">'+title+'</div>'
+    +'<button class="close-btn" onclick="document.querySelector(\'.nz-modal-bd\').remove()">✕ إغلاق</button></div>'
+    +'<div class="modal-body">'+html+'</div>'
+    +(footHtml?'<div class="modal-foot">'+footHtml+'</div>':'')
+    +'</div>';
+  document.body.appendChild(bd);
+}
+
+/* ══════════════════════════════════════════════════════
+   TAB SWITCHING
+══════════════════════════════════════════════════════ */
+document.querySelectorAll('.tab-btn').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('is-on'); });
+    document.querySelectorAll('.tab-pane').forEach(function(p){ p.classList.remove('is-on'); });
+    btn.classList.add('is-on');
+    var pane = document.getElementById('tab-'+btn.dataset.tab);
+    if(pane) pane.classList.add('is-on');
   });
-}, 80);
+});
+
+/* ══════════════════════════════════════════════════════
+   TAB 1: RESERVATIONS
+══════════════════════════════════════════════════════ */
+var activeResFilter = 'all';
+
+function renderReservations(list){
+  var tbody = document.getElementById('res-tbody');
+  if(!tbody) return;
+  if(!list.length){
+    tbody.innerHTML='<tr><td colspan="12" style="text-align:center;padding:32px;color:var(--fg-3)">لا توجد حجوزات تطابق البحث</td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map(function(r){
+    var payPill = '<span class="pill '+r.payClass+'"><span class="d"></span>'+r.payment+'</span>';
+    var vipTag = r.vip ? '<span class="vip-tag">VIP</span>' : '';
+    return '<tr>'
+      +'<td><span style="font-family:var(--font-en);font-size:12px;color:var(--fg-3)">'+r.id+'</span></td>'
+      +'<td><div class="guest-cell"><div class="av'+(r.vip?' vip':'')+'">'+r.initials+'</div><div>'
+        +'<div class="name">'+r.name+vipTag+'</div>'
+        +'<div class="meta">'+r.nationality+' · '+r.idType+'</div>'
+      +'</div></div></td>'
+      +'<td><span style="font-family:var(--font-mono);font-size:11px;color:var(--fg-2)">'+r.idNum+'</span></td>'
+      +'<td><div style="font-weight:600">'+r.room+'</div><div class="meta" style="font-size:11px;color:var(--fg-3)">'+r.roomType+'</div></td>'
+      +'<td style="font-family:var(--font-mono);font-size:12px">'+r.checkin+'</td>'
+      +'<td style="font-family:var(--font-mono);font-size:12px">'+r.checkout+'</td>'
+      +'<td style="text-align:center"><span style="font-family:var(--font-en);font-weight:600">'+r.nights+'</span> <span style="font-size:11px;color:var(--fg-3)">ليلة</span></td>'
+      +'<td><span style="font-size:12px">'+r.channel+'</span></td>'
+      +'<td>'+payPill+'</td>'
+      +'<td class="amt">'+r.amt+' <span class="cur">ر.س</span></td>'
+      +'<td><button class="checkin-btn" data-rid="'+r.id+'" onclick="doCheckin(this,\''+r.id+'\')">تسجيل دخول</button></td>'
+      +'<td><button class="icon-btn" onclick="showResDetail(\''+r.id+'\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg></button></td>'
+      +'</tr>';
+  }).join('');
+}
+
+function filterAndRenderRes(){
+  var q = (document.getElementById('res-search')||{}).value||'';
+  q = q.toLowerCase();
+  var today = new Date().toISOString().split('T')[0];
+  var tomorrow = new Date(Date.now()+86400000).toISOString().split('T')[0];
+  var weekEnd = new Date(Date.now()+7*86400000).toISOString().split('T')[0];
+  var filtered = RESERVATIONS.filter(function(r){
+    var matchQ = !q || r.name.includes(q) || r.id.includes(q) || r.room.includes(q) || r.idNum.includes(q);
+    var matchF = activeResFilter==='all' ||
+      (activeResFilter==='today' && r.checkin===today) ||
+      (activeResFilter==='tomorrow' && r.checkin===tomorrow) ||
+      (activeResFilter==='week' && r.checkin>=today && r.checkin<=weekEnd);
+    return matchQ && matchF;
+  });
+  renderReservations(filtered);
+}
+
+document.querySelectorAll('[data-filter]').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    document.querySelectorAll('[data-filter]').forEach(function(b){ b.classList.remove('is-on'); });
+    btn.classList.add('is-on');
+    activeResFilter = btn.dataset.filter;
+    filterAndRenderRes();
+  });
+});
+var resSearch = document.getElementById('res-search');
+if(resSearch) resSearch.addEventListener('input', filterAndRenderRes);
+
+window.doCheckin = function(btn, rid){
+  btn.disabled = true; btn.textContent = '✓ مسجَّل';
+  toast('تم تسجيل الدخول — الحجز '+rid+' ✓');
+};
+
+window.showResDetail = function(rid){
+  var r = RESERVATIONS.find(function(x){ return x.id===rid; });
+  if(!r) return;
+  var html = '<div class="detail-row"><span class="lbl">اسم النزيل</span><span class="val">'+r.name+'</span></div>'
+    +'<div class="detail-row"><span class="lbl">رقم الهوية</span><span class="val" style="font-family:var(--font-mono)">'+r.idNum+'</span></div>'
+    +'<div class="detail-row"><span class="lbl">نوع الهوية</span><span class="val">'+r.idType+'</span></div>'
+    +'<div class="detail-row"><span class="lbl">الجنسية</span><span class="val">'+r.nationality+'</span></div>'
+    +'<div class="detail-row"><span class="lbl">الجوال</span><span class="val" style="direction:ltr;font-family:var(--font-mono)">'+r.phone+'</span></div>'
+    +'<div class="detail-row"><span class="lbl">الغرفة</span><span class="val">'+r.room+' — '+r.roomType+'</span></div>'
+    +'<div class="detail-row"><span class="lbl">تاريخ الوصول</span><span class="val" style="font-family:var(--font-mono)">'+r.checkin+'</span></div>'
+    +'<div class="detail-row"><span class="lbl">تاريخ المغادرة</span><span class="val" style="font-family:var(--font-mono)">'+r.checkout+'</span></div>'
+    +'<div class="detail-row"><span class="lbl">عدد الليالي</span><span class="val">'+r.nights+' ليالٍ</span></div>'
+    +'<div class="detail-row"><span class="lbl">القناة</span><span class="val">'+r.channel+'</span></div>'
+    +'<div class="detail-row"><span class="lbl">المبلغ الإجمالي</span><span class="val">'+r.amt+' ر.س</span></div>'
+    +'<div class="detail-row"><span class="lbl">حالة الدفع</span><span class="val">'+r.payment+'</span></div>';
+  modal('تفاصيل الحجز — '+rid, html,
+    '<button class="btn-primary" onclick="doCheckin(document.querySelector(\'[data-rid=\\\''+ rid +'\\\']\')||{},\''+rid+'\');document.querySelector(\'.nz-modal-bd\').remove()">تسجيل دخول الآن</button>'
+    +'<button class="close-btn" onclick="document.querySelector(\'.nz-modal-bd\').remove()">إغلاق</button>'
+  );
+};
+
+/* ══════════════════════════════════════════════════════
+   TAB 2: GUESTS
+══════════════════════════════════════════════════════ */
+var alertCounter = 100;
+var activeGuestFilter = 'all';
+
+function renderGuestAlerts(guestId, alerts){
+  return '<div class="alert-list" id="alerts-'+guestId+'">'
+    + alerts.map(function(a){
+        return '<span class="alert-tag '+a.color+'" onclick="removeAlert(\''+guestId+'\','+a.id+')">'
+          +a.text+' <span class="x">✕</span></span>';
+      }).join('')
+    +'<button class="add-alert-btn" onclick="showAddAlert(\''+guestId+'\')">+ تنبيه</button>'
+  +'</div>';
+}
+
+function renderGuests(list){
+  var tbody = document.getElementById('guest-tbody');
+  if(!tbody) return;
+  if(!list.length){
+    tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--fg-3)">لا يوجد نزلاء يطابقون البحث</td></tr>';
+    return;
+  }
+  var statusMap = {
+    ok:        '<span class="pill info"><span class="d"></span>مقيم</span>',
+    departing: '<span class="pill warn"><span class="d"></span>مغادر اليوم</span>',
+  };
+  tbody.innerHTML = list.map(function(g){
+    var vipTag = g.vip ? '<span class="vip-tag">VIP</span>' : '';
+    var balance = g.balanceLeft==='٠'
+      ? '<span style="color:var(--success-700);font-weight:600">مسدَّد</span>'
+      : '<span class="amt">'+g.balanceLeft+' <span class="cur">ر.س</span></span>';
+    return '<tr id="grow-'+g.id+'">'
+      +'<td><div class="guest-cell"><div class="av'+(g.vip?' vip':'')+'">'+g.initials+'</div><div>'
+        +'<div class="name">'+g.name+vipTag+'</div>'
+        +'<div class="meta">'+g.nationality+'</div>'
+      +'</div></div></td>'
+      +'<td><div style="font-weight:600">'+g.room+'</div><div style="font-size:11px;color:var(--fg-3)">'+g.roomType+'</div></td>'
+      +'<td style="font-family:var(--font-mono);font-size:12px">'+g.checkin+'</td>'
+      +'<td style="font-family:var(--font-mono);font-size:12px">'+g.checkout+'</td>'
+      +'<td style="direction:ltr;font-family:var(--font-mono);font-size:12px;color:var(--fg-2)">'+g.phone+'</td>'
+      +'<td>'+balance+'</td>'
+      +'<td>'+renderGuestAlerts(g.id, g.alerts)+'</td>'
+      +'<td>'+statusMap[g.status]+'</td>'
+      +'<td>'
+        +'<button class="icon-btn" onclick="showGuestDetail(\''+g.id+'\')" title="تفاصيل"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>'
+        +(g.status==='departing'?'<button class="icon-btn" style="color:var(--warning-700)" onclick="doCheckout(\''+g.id+'\')" title="تسجيل خروج"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>':'')
+      +'</td>'
+      +'</tr>';
+  }).join('');
+}
+
+function filterAndRenderGuests(){
+  var q = (document.getElementById('guest-search')||{}).value||'';
+  q = q.toLowerCase();
+  var filtered = GUESTS.filter(function(g){
+    var matchQ = !q || g.name.toLowerCase().includes(q) || g.room.includes(q) || g.id.includes(q);
+    var matchF = activeGuestFilter==='all'
+      || (activeGuestFilter==='vip' && g.vip)
+      || (activeGuestFilter==='departing' && g.status==='departing')
+      || (activeGuestFilter==='alert' && g.alerts.length>0);
+    return matchQ && matchF;
+  });
+  renderGuests(filtered);
+}
+
+document.querySelectorAll('[data-gfilter]').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    document.querySelectorAll('[data-gfilter]').forEach(function(b){ b.classList.remove('is-on'); });
+    btn.classList.add('is-on');
+    activeGuestFilter = btn.dataset.gfilter;
+    filterAndRenderGuests();
+  });
+});
+var guestSearch = document.getElementById('guest-search');
+if(guestSearch) guestSearch.addEventListener('input', filterAndRenderGuests);
+
+window.removeAlert = function(guestId, alertId){
+  var g = GUESTS.find(function(x){ return x.id===guestId; });
+  if(!g) return;
+  g.alerts = g.alerts.filter(function(a){ return a.id!==alertId; });
+  var wrap = document.getElementById('alerts-'+guestId);
+  if(wrap) wrap.outerHTML = renderGuestAlerts(guestId, g.alerts);
+  updateBadges();
+};
+
+window.showAddAlert = function(guestId){
+  var g = GUESTS.find(function(x){ return x.id===guestId; });
+  if(!g) return;
+  var colors = [
+    {key:'red',  label:'طارئ (أحمر)',  bg:'#fef2f2'},
+    {key:'amber',label:'تنبيه (برتقالي)',bg:'#fffbeb'},
+    {key:'blue', label:'معلومة (أزرق)', bg:'#eff6ff'},
+    {key:'gold', label:'طلب (ذهبي)',   bg:'#fefce8'},
+  ];
+  var selectedColor = 'amber';
+  var html = '<div class="alert-form">'
+    +'<div><label>نص التنبيه</label><input id="alert-text" placeholder="مثال: يطلب فطور الساعة ٨، حساسية من..."/></div>'
+    +'<div><label>اللون</label><div class="color-opts">'
+    + colors.map(function(c){
+        return '<div class="color-opt'+(c.key==='amber'?' is-on':'')+'" style="background:'+c.bg+';border-color:'+c.bg+'" data-ckey="'+c.key+'" onclick="selectAlertColor(this,\''+c.key+'\')" title="'+c.label+'"></div>';
+      }).join('')
+    +'</div></div></div>';
+  modal('إضافة تنبيه — '+g.name, html,
+    '<button class="btn-primary" onclick="saveAlert(\''+guestId+'\')">حفظ التنبيه</button>'
+    +'<button class="close-btn" onclick="document.querySelector(\'.nz-modal-bd\').remove()">إلغاء</button>'
+  );
+  window._alertColor = selectedColor;
+};
+
+window.selectAlertColor = function(el, key){
+  document.querySelectorAll('.color-opt').forEach(function(c){ c.classList.remove('is-on'); });
+  el.classList.add('is-on');
+  window._alertColor = key;
+};
+
+window.saveAlert = function(guestId){
+  var txt = (document.getElementById('alert-text')||{}).value||'';
+  if(!txt.trim()){ toast('أدخل نص التنبيه', true); return; }
+  var g = GUESTS.find(function(x){ return x.id===guestId; });
+  if(!g) return;
+  alertCounter++;
+  g.alerts.push({text:txt.trim(), color:window._alertColor||'amber', id:alertCounter});
+  var bd = document.querySelector('.nz-modal-bd'); if(bd) bd.remove();
+  filterAndRenderGuests();
+  updateBadges();
+  toast('تم إضافة التنبيه ✓');
+};
+
+window.doCheckout = function(guestId){
+  var g = GUESTS.find(function(x){ return x.id===guestId; });
+  if(!g) return;
+  if(!confirm('تسجيل خروج '+g.name+' من غرفة '+g.room+'؟')) return;
+  // Mark room as HK-needed
+  FLOORS.forEach(function(fl){
+    fl.rooms.forEach(function(rm){
+      if(rm.num===g.room && rm.status==='occupied'){
+        rm.status='hk-needed'; rm.guest=null;
+      }
+    });
+  });
+  GUESTS = GUESTS.filter(function(x){ return x.id!==guestId; });
+  filterAndRenderGuests();
+  renderFloors();
+  updateBadges();
+  toast('تم تسجيل خروج '+g.name+' — غرفة '+g.room+' أُضيفت لقائمة التنظيف ✓');
+};
+
+window.showGuestDetail = function(guestId){
+  var g = GUESTS.find(function(x){ return x.id===guestId; });
+  if(!g) return;
+  var html = '<div class="detail-row"><span class="lbl">الاسم</span><span class="val">'+g.name+(g.vip?' <span class="vip-tag">VIP</span>':'')+'</span></div>'
+    +'<div class="detail-row"><span class="lbl">الغرفة</span><span class="val">'+g.room+' — '+g.roomType+'</span></div>'
+    +'<div class="detail-row"><span class="lbl">تاريخ الوصول</span><span class="val" style="font-family:var(--font-mono)">'+g.checkin+'</span></div>'
+    +'<div class="detail-row"><span class="lbl">تاريخ المغادرة</span><span class="val" style="font-family:var(--font-mono)">'+g.checkout+'</span></div>'
+    +'<div class="detail-row"><span class="lbl">الجوال</span><span class="val" style="direction:ltr;font-family:var(--font-mono)">'+g.phone+'</span></div>'
+    +'<div class="detail-row"><span class="lbl">المبلغ المتبقي</span><span class="val">'+g.balanceLeft+' ر.س</span></div>'
+    +'<div class="detail-row"><span class="lbl">التنبيهات</span><span class="val">'+(g.alerts.length?g.alerts.map(function(a){return a.text;}).join(' · '):'لا يوجد')+'</span></div>';
+  modal('ملف النزيل — '+g.name, html);
+};
+
+/* ══════════════════════════════════════════════════════
+   TAB 3: ROOMS
+══════════════════════════════════════════════════════ */
+var floorOpen = [true, true, true, true];
+
+function statusLabel(s){
+  return {
+    occupied:'مشغولة',available:'متاحة',
+    'hk-needed':'يحتاج تنظيف','maintenance':'صيانة',reserved:'محجوزة'
+  }[s]||s;
+}
+
+function renderFloors(){
+  var container = document.getElementById('floors-container');
+  if(!container) return;
+  container.innerHTML = '';
+  FLOORS.forEach(function(fl, fi){
+    var occCount   = fl.rooms.filter(function(r){return r.status==='occupied';}).length;
+    var availCount = fl.rooms.filter(function(r){return r.status==='available';}).length;
+    var hkCount    = fl.rooms.filter(function(r){return r.status==='hk-needed';}).length;
+    var maintCount = fl.rooms.filter(function(r){return r.status==='maintenance';}).length;
+
+    var section = document.createElement('div');
+    section.className = 'floor-section';
+
+    var head = '<div class="floor-head" onclick="toggleFloor('+fi+')">'
+      +'<span class="floor-num">'+fl.num+'</span>'
+      +'<span class="floor-name">'+fl.label+'</span>'
+      +'<div class="floor-stats">'
+      +(occCount   ? '<span class="floor-stat occ">'+occCount+' مشغولة</span>':'')
+      +(availCount ? '<span class="floor-stat avail">'+availCount+' متاحة</span>':'')
+      +(hkCount    ? '<span class="floor-stat hk">'+hkCount+' تنظيف</span>':'')
+      +(maintCount ? '<span class="floor-stat maint">'+maintCount+' صيانة</span>':'')
+      +'</div>'
+      +'<span class="floor-toggle'+(floorOpen[fi]?' open':'')+'">▼</span>'
+      +'</div>';
+
+    var roomsHtml = '<div class="rooms-grid" id="floor-grid-'+fi+'" style="'+(floorOpen[fi]?'':'display:none')+'">'
+      + fl.rooms.map(function(rm, ri){
+          var hint = rm.guest ? '<div class="guest-hint">'+rm.guest+'</div>' : (rm.checkin?'<div class="guest-hint">وصول '+rm.checkin+'</div>':'');
+          return '<div class="room-card '+rm.status+'" onclick="showRoomDetail('+fi+','+ri+')" title="غرفة '+rm.num+'">'
+            +'<div class="rnum">'+rm.num+'</div>'
+            +'<div class="rtype">'+rm.type+'</div>'
+            +'<div class="rstatus">'+statusLabel(rm.status)+'</div>'
+            +hint
+          +'</div>';
+        }).join('')
+      +'</div>';
+
+    section.innerHTML = head + roomsHtml;
+    container.appendChild(section);
+  });
+}
+
+window.toggleFloor = function(fi){
+  floorOpen[fi] = !floorOpen[fi];
+  var grid = document.getElementById('floor-grid-'+fi);
+  var toggle = document.querySelector('.floor-section:nth-child('+(fi+1)+') .floor-toggle');
+  if(grid){ grid.style.display = floorOpen[fi] ? '' : 'none'; }
+  if(toggle){ toggle.classList.toggle('open', floorOpen[fi]); }
+};
+
+window.showRoomDetail = function(fi, ri){
+  var rm = FLOORS[fi].rooms[ri];
+  var fl = FLOORS[fi];
+  var statusColors = {occupied:'info',available:'ok','hk-needed':'warn',maintenance:'danger',reserved:'gold'};
+  var html = '<div class="detail-row"><span class="lbl">رقم الغرفة</span><span class="val" style="font-family:var(--font-en);font-size:18px">'+rm.num+'</span></div>'
+    +'<div class="detail-row"><span class="lbl">نوع الغرفة</span><span class="val">'+rm.type+'</span></div>'
+    +'<div class="detail-row"><span class="lbl">الدور</span><span class="val">'+fl.label+'</span></div>'
+    +'<div class="detail-row"><span class="lbl">الحالة</span><span class="val"><span class="pill '+statusColors[rm.status]+'"><span class="d"></span>'+statusLabel(rm.status)+'</span></span></div>'
+    +(rm.guest?'<div class="detail-row"><span class="lbl">النزيل</span><span class="val">'+rm.guest+'</span></div>':'')
+    +(rm.checkout?'<div class="detail-row"><span class="lbl">تاريخ المغادرة</span><span class="val" style="font-family:var(--font-mono)">'+rm.checkout+'</span></div>':'')
+    +(rm.checkin?'<div class="detail-row"><span class="lbl">تاريخ الوصول</span><span class="val" style="font-family:var(--font-mono)">'+rm.checkin+'</span></div>':'');
+
+  var actions = '';
+  if(rm.status==='hk-needed'){
+    actions='<button class="btn-primary" onclick="markRoomClean('+fi+','+ri+')">✓ تم التنظيف — تحويل لمتاحة</button>';
+  } else if(rm.status==='available'){
+    actions='<button class="btn-sec" onclick="markRoomMaint('+fi+','+ri+')">🔧 تحويل لصيانة</button>';
+  } else if(rm.status==='maintenance'){
+    actions='<button class="btn-primary" onclick="markRoomClean('+fi+','+ri+')">✓ انتهت الصيانة — تحويل لمتاحة</button>';
+  }
+  actions += '<button class="close-btn" onclick="document.querySelector(\'.nz-modal-bd\').remove()">إغلاق</button>';
+
+  modal('غرفة '+rm.num+' — '+statusLabel(rm.status), html, actions);
+};
+
+window.markRoomClean = function(fi, ri){
+  FLOORS[fi].rooms[ri].status = 'available';
+  FLOORS[fi].rooms[ri].guest = null;
+  var bd = document.querySelector('.nz-modal-bd'); if(bd) bd.remove();
+  renderFloors(); updateBadges();
+  toast('غرفة '+FLOORS[fi].rooms[ri].num+' — تم التحويل إلى متاحة ✓');
+};
+
+window.markRoomMaint = function(fi, ri){
+  FLOORS[fi].rooms[ri].status = 'maintenance';
+  var bd = document.querySelector('.nz-modal-bd'); if(bd) bd.remove();
+  renderFloors(); updateBadges();
+  toast('غرفة '+FLOORS[fi].rooms[ri].num+' — تم التحويل إلى صيانة');
+};
+
+/* ══════════════════════════════════════════════════════
+   BADGES & KPIs
+══════════════════════════════════════════════════════ */
+function updateBadges(){
+  var resBadge = document.getElementById('res-badge');
+  var gBadge   = document.getElementById('guests-badge');
+  var rBadge   = document.getElementById('rooms-badge');
+  var kpiIH    = document.getElementById('kpi-inhouse');
+  var kpiUp    = document.getElementById('kpi-upcoming');
+  var kpiHK    = document.getElementById('kpi-hk');
+  var kpiUpD   = document.getElementById('kpi-upcoming-delta');
+  var kpiIHD   = document.getElementById('kpi-inhouse-delta');
+  var kpiHKD   = document.getElementById('kpi-hk-delta');
+
+  var hkCount = 0;
+  FLOORS.forEach(function(fl){ fl.rooms.forEach(function(rm){ if(rm.status==='hk-needed') hkCount++; }); });
+
+  if(resBadge) resBadge.textContent = RESERVATIONS.length;
+  if(gBadge)   gBadge.textContent   = GUESTS.length;
+  if(rBadge)   rBadge.textContent   = hkCount+' HK';
+  if(kpiIH)    kpiIH.textContent    = GUESTS.length;
+  if(kpiUp)    kpiUp.textContent    = RESERVATIONS.length;
+  if(kpiHK)    kpiHK.textContent    = hkCount;
+  if(kpiUpD)   kpiUpD.textContent   = RESERVATIONS.filter(function(r){return r.payment==='لم يدفع';}).length+' لم يدفع بعد';
+  if(kpiIHD)   kpiIHD.textContent   = GUESTS.filter(function(g){return g.status==='departing';}).length+' مغادر اليوم';
+  if(kpiHKD)   kpiHKD.style.color   = hkCount>0 ? 'var(--warning-700)' : 'var(--success-700)';
+  if(kpiHKD)   kpiHKD.textContent   = hkCount>0 ? 'تحتاج تنظيف' : 'جميع الغرف نظيفة ✓';
+}
+
+/* ══════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════ */
+filterAndRenderRes();
+filterAndRenderGuests();
+renderFloors();
+updateBadges();
+
+})();
 </script>
 </body>
 </html>
