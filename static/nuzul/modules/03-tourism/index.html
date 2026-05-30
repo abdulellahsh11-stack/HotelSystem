@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="/static/nuzul/assets/animations.css"/>
 <link rel="stylesheet" href="/static/nuzul/shared/chrome.css"/>
 <link rel="stylesheet" href="/static/nuzul/shared/module.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
 /* ── Alert banner ──────────────────────────────────────────────── */
 .doc-alert{background:linear-gradient(135deg,#C99428,#9A6D14);color:var(--paper);border-radius:14px;padding:22px 26px;margin-bottom:22px;display:grid;grid-template-columns:auto 1fr auto auto;gap:22px;align-items:center;position:relative;overflow:hidden}
@@ -89,6 +90,10 @@
 .doc-upload .ic{width:50px;height:50px;background:var(--gold-50);color:var(--gold-800);border-radius:10px;display:grid;place-items:center;font-size:24px}
 .doc-upload .ttl{font-weight:600;font-size:15px;color:var(--ink-900)}
 .doc-upload .usub{font-size:12px;color:var(--fg-2);margin-top:3px}
+.doc-upload.drag-over{border-color:var(--brand-600);background:var(--brand-50)}
+.doc-upload.loading{opacity:.7;pointer-events:none}
+.extract-badge{display:inline-flex;align-items:center;gap:5px;background:var(--success-50);color:var(--success-700);border:1px solid var(--success-200);border-radius:6px;font-size:11px;padding:2px 8px;margin-top:4px}
+.extract-badge.warn{background:var(--warning-50);color:var(--warning-700);border-color:var(--warning-200)}
 
 /* ── Modal ─────────────────────────────────────────────────────── */
 .nz-modal-bd{position:fixed;inset:0;background:rgba(14,42,34,.6);backdrop-filter:blur(4px);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px}
@@ -157,13 +162,14 @@
       </div>
 
       <!-- Upload zone -->
-      <div class="doc-upload" data-m-rise onclick="showAddDoc()">
-        <div class="ic">📤</div>
+      <div class="doc-upload" data-m-rise id="upload-zone" onclick="document.getElementById('file-input').click()">
+        <input type="file" id="file-input" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="handleFileSelect(this.files[0]);this.value=''"/>
+        <div class="ic" id="upload-ic">📤</div>
         <div>
-          <div class="ttl">اسحب وأفلت المستند هنا — أو انقر لإضافة مستند جديد</div>
-          <div class="usub">PDF، JPG، PNG · أقصى ١٠ ميجا · أدخل اسم المستند وتاريخ انتهائه وسيتم الرصد تلقائياً</div>
+          <div class="ttl" id="upload-ttl">اسحب وأفلت المستند هنا — أو انقر للاختيار</div>
+          <div class="usub" id="upload-sub">PDF يُستخرج منه البيانات تلقائياً · JPG · PNG · أقصى ١٠ ميجا</div>
         </div>
-        <button class="btn-primary" onclick="event.stopPropagation();showAddDoc()">📁 إضافة مستند</button>
+        <button class="btn-primary" onclick="event.stopPropagation();document.getElementById('file-input').click()">📁 اختر ملفاً</button>
       </div>
 
       <!-- Toolbar -->
@@ -446,16 +452,34 @@ function guessIcon(name){
   return '📄';
 }
 
-window.showAddDoc = function(){
+window.showAddDoc = function(prefill){
+  prefill = prefill || {};
   var today = new Date().toISOString().split('T')[0];
-  var html = '<div class="form-grid-2">'
-    +'<div class="form-field" style="grid-column:1/-1"><label>اسم المستند *</label><input id="d-name" placeholder="مثال: رخصة بلدية المنشأة"/></div>'
-    +'<div class="form-field"><label>الجهة المُصدِرة *</label><select id="d-auth">'
-    +AUTHORITIES.map(function(a){ return '<option>'+a+'</option>'; }).join('')
-    +'</select></div>'
-    +'<div class="form-field"><label>رقم المستند</label><input id="d-num" dir="ltr" placeholder="BLD-2025-XXX"/></div>'
-    +'<div class="form-field"><label>تاريخ الإصدار *</label><input id="d-issued" type="date" value="'+today+'"/></div>'
-    +'<div class="form-field"><label>تاريخ الانتهاء *</label><input id="d-expires" type="date"/></div>'
+  function escAttr(s){ return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+  var badge = '';
+  if(prefill.extracted){
+    badge = '<div style="margin-bottom:12px"><span class="extract-badge">✓ تم استخراج البيانات تلقائياً من PDF</span></div>';
+  } else if(prefill.pagesScanned === false){
+    badge = '<div style="margin-bottom:12px"><span class="extract-badge warn">⚠ PDF مصوَّر — أدخل البيانات يدوياً</span></div>';
+  } else if(prefill.pagesScanned === true){
+    badge = '<div style="margin-bottom:12px"><span class="extract-badge warn">⚠ لم تُعثر على تواريخ كافية — راجع البيانات</span></div>';
+  }
+  var pa = (prefill.authority||'').trim();
+  var authOptions = AUTHORITIES.map(function(a){
+    var sel = pa && (a.includes(pa) || pa.includes(a.replace(/\s*\(.*\)/,'')));
+    return '<option'+(sel?' selected':'')+'>'+a+'</option>';
+  }).join('');
+  var html = badge
+    +'<div class="form-grid-2">'
+    +'<div class="form-field" style="grid-column:1/-1"><label>اسم المستند *</label>'
+    +'<input id="d-name" value="'+escAttr(prefill.name)+'" placeholder="مثال: رخصة بلدية المنشأة"/></div>'
+    +'<div class="form-field"><label>الجهة المُصدِرة *</label><select id="d-auth">'+authOptions+'</select></div>'
+    +'<div class="form-field"><label>رقم المستند</label>'
+    +'<input id="d-num" dir="ltr" value="'+escAttr(prefill.num)+'" placeholder="BLD-2025-XXX"/></div>'
+    +'<div class="form-field"><label>تاريخ الإصدار *</label>'
+    +'<input id="d-issued" type="date" value="'+(prefill.issued||today)+'"/></div>'
+    +'<div class="form-field"><label>تاريخ الانتهاء *</label>'
+    +'<input id="d-expires" type="date" value="'+(prefill.expires||'')+'"/></div>'
     +'</div>';
   modal('إضافة مستند جديد', html,
     '<button class="btn-primary" onclick="saveDoc()">+ إضافة للقائمة</button>'
@@ -576,6 +600,203 @@ window.saveNotifPrefs = function(){
   if(document.getElementById('ch-inapp')  && document.getElementById('ch-inapp').checked)  channels.push('إشعار النظام');
   toast('تم حفظ التفضيلات — تنبيه قبل: '+prefs.join(', ')+' يوم — عبر: '+channels.join('، ')+' ✓');
 };
+
+/* ═══════════════════════════════════════════════
+   PDF EXTRACTION
+═══════════════════════════════════════════════ */
+
+// Configure PDF.js worker
+if(typeof pdfjsLib !== 'undefined'){
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
+
+// Arabic-Indic digits → Western
+function toWestern(s){
+  return String(s).replace(/[٠١٢٣٤٥٦٧٨٩]/g, function(d){
+    return '٠١٢٣٤٥٦٧٨٩'.indexOf(d);
+  });
+}
+
+// Normalize date string → YYYY-MM-DD or null
+function normalizeDate(y, m, d){
+  var yr = parseInt(y,10), mo = parseInt(m,10), dy = parseInt(d,10);
+  if(isNaN(yr)||isNaN(mo)||isNaN(dy)) return null;
+  // Hijri to Gregorian rough convert (if year < 1500 assume Hijri)
+  if(yr < 1500){
+    yr = Math.round(yr - yr/33.7 + 621.5);
+  }
+  if(yr < 2000 || yr > 2060) return null;
+  if(mo < 1 || mo > 12 || dy < 1 || dy > 31) return null;
+  return yr+'-'+String(mo).padStart(2,'0')+'-'+String(dy).padStart(2,'0');
+}
+
+function findDatesInText(text){
+  var t = toWestern(text);
+  var results = [];
+  var patterns = [
+    // YYYY-MM-DD or YYYY/MM/DD
+    /\b(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})\b/g,
+    // DD/MM/YYYY or DD-MM-YYYY
+    /\b(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})\b/g,
+  ];
+  patterns.forEach(function(re, pi){
+    var m;
+    while((m = re.exec(t)) !== null){
+      var nd = pi===0 ? normalizeDate(m[1],m[2],m[3]) : normalizeDate(m[3],m[2],m[1]);
+      if(nd) results.push({date:nd, index:m.index});
+    }
+  });
+  // Sort by index in text
+  results.sort(function(a,b){ return a.index-b.index; });
+  return results;
+}
+
+var EXPIRY_KEYWORDS  = ['انتهاء','صلاحية','ينتهي','نافذة','الصلاحية','تاريخ الانتهاء','expir','valid until','validity','expiry'];
+var ISSUE_KEYWORDS   = ['إصدار','صدر','تاريخ الإصدار','أصدر','منح','issued','issue date','granted','issuance'];
+
+function dateNearKeyword(text, datePosns, keywords){
+  var t = toWestern(text.toLowerCase());
+  var best = null;
+  keywords.forEach(function(kw){
+    var ki = t.indexOf(kw.toLowerCase());
+    if(ki === -1) return;
+    // Find closest date within 120 chars of keyword
+    datePosns.forEach(function(dp){
+      var dist = Math.abs(dp.index - ki);
+      if(dist < 120){
+        if(!best || dist < Math.abs(best.index - ki)) best = dp;
+      }
+    });
+  });
+  return best ? best.date : null;
+}
+
+var KNOWN_AUTHORITIES = [
+  'أمانة الرياض','أمانة جدة','أمانة مكة','أمانة المدينة',
+  'الدفاع المدني','وزارة التجارة','هيئة السياحة',
+  'هيئة الزكاة','التأمينات الاجتماعية','GOSI',
+  'وزارة الموارد البشرية','وزارة الصحة','إمارة',
+  'وزارة البلديات','هيئة الاستثمار','وزارة الداخلية',
+];
+
+function findAuthority(text){
+  for(var i=0;i<KNOWN_AUTHORITIES.length;i++){
+    if(text.includes(KNOWN_AUTHORITIES[i])) return KNOWN_AUTHORITIES[i];
+  }
+  return '';
+}
+
+// Find document reference number
+function findDocNum(text){
+  var t = toWestern(text);
+  var m = t.match(/\b([A-Z]{2,6}[-\/]\d{4}[-\/][A-Z0-9\-]{3,20})\b/);
+  if(m) return m[1];
+  m = t.match(/(?:رقم|no\.|number)[:\s]+([A-Z0-9\-\/]{5,25})/i);
+  if(m) return m[1].trim();
+  return '';
+}
+
+// Extract text from all pages of a PDF
+function extractPDFText(arrayBuffer){
+  return pdfjsLib.getDocument({data: arrayBuffer}).promise.then(function(pdf){
+    var pages = [];
+    for(var i=1; i<=pdf.numPages; i++) pages.push(i);
+    return Promise.all(pages.map(function(pn){
+      return pdf.getPage(pn).then(function(page){
+        return page.getTextContent().then(function(tc){
+          return tc.items.map(function(it){ return it.str; }).join(' ');
+        });
+      });
+    })).then(function(txts){ return txts.join('\n'); });
+  });
+}
+
+function setUploadState(loading, icon, title, sub){
+  var zone  = document.getElementById('upload-zone');
+  var ic    = document.getElementById('upload-ic');
+  var ttl   = document.getElementById('upload-ttl');
+  var usub  = document.getElementById('upload-sub');
+  if(zone) zone.classList.toggle('loading', loading);
+  if(ic)   ic.textContent  = icon;
+  if(ttl)  ttl.textContent = title;
+  if(usub) usub.innerHTML  = sub;
+}
+
+function resetUploadZone(){
+  setUploadState(false,'📤',
+    'اسحب وأفلت المستند هنا — أو انقر للاختيار',
+    'PDF يُستخرج منه البيانات تلقائياً · JPG · PNG · أقصى ١٠ ميجا'
+  );
+}
+
+window.handleFileSelect = function(file){
+  if(!file) return;
+  var ext = file.name.split('.').pop().toLowerCase();
+  if(file.size > 10*1024*1024){ toast('حجم الملف أكبر من ١٠ ميجا',true); return; }
+
+  if(ext !== 'pdf'){
+    // Non-PDF: just open form with filename as pre-fill
+    var name = file.name.replace(/\.[^.]+$/,'').replace(/[-_]/g,' ');
+    showAddDoc({name: name});
+    return;
+  }
+
+  if(typeof pdfjsLib === 'undefined'){
+    toast('جارٍ تحميل محرك PDF... حاول مجدداً بعد ثانية',true);
+    return;
+  }
+
+  setUploadState(true,'⏳','جارٍ قراءة الملف...','يُستخرج النص والتواريخ تلقائياً');
+
+  var reader = new FileReader();
+  reader.onload = function(e){
+    extractPDFText(e.target.result)
+      .then(function(text){
+        var dates     = findDatesInText(text);
+        var expires   = dateNearKeyword(text, dates, EXPIRY_KEYWORDS);
+        var issued    = dateNearKeyword(text, dates, ISSUE_KEYWORDS);
+        var authority = findAuthority(text);
+        var num       = findDocNum(text);
+        // Fallback: if only 2 dates found use first=issued, last=expires
+        if(!issued && !expires && dates.length >= 2){
+          issued  = dates[0].date;
+          expires = dates[dates.length-1].date;
+        } else if(!issued && !expires && dates.length === 1){
+          expires = dates[0].date;
+        }
+        var name = file.name.replace(/\.[^.]+$/,'').replace(/[-_]/g,' ');
+        var extracted = dates.length > 0;
+        resetUploadZone();
+        showAddDoc({
+          name: name, authority: authority, num: num,
+          issued: issued||'', expires: expires||'',
+          extracted: extracted, pagesScanned: text.length > 0
+        });
+      })
+      .catch(function(err){
+        resetUploadZone();
+        toast('تعذّر قراءة الملف — تأكد أنه PDF نصي وليس صورة',true);
+        showAddDoc({name: file.name.replace(/\.[^.]+$/,'').replace(/[-_]/g,' ')});
+      });
+  };
+  reader.readAsArrayBuffer(file);
+};
+
+// Drag & Drop on upload zone
+(function(){
+  var zone = document.getElementById('upload-zone');
+  if(!zone) return;
+  zone.addEventListener('dragover',function(e){
+    e.preventDefault(); zone.classList.add('drag-over');
+  });
+  zone.addEventListener('dragleave',function(){ zone.classList.remove('drag-over'); });
+  zone.addEventListener('drop',function(e){
+    e.preventDefault(); zone.classList.remove('drag-over');
+    var f = e.dataTransfer.files[0];
+    if(f) handleFileSelect(f);
+  });
+})();
 
 /* ═══════════════════════════════════════════════
    INIT
