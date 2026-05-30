@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="/static/nuzul/shared/chrome.css"/>
 <link rel="stylesheet" href="/static/nuzul/shared/module.css"/>
 <style>
-/* ── KPI cards ─────────────────────────────────────────────── */
+/* ── KPI cards ──────────────────────────────────────────────── */
 .ac-kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
 .ac-kpi{background:var(--white);border:1px solid var(--hairline);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:4px}
 .ac-kpi .lbl{font-size:11px;color:var(--fg-2);font-weight:500}
@@ -22,52 +22,54 @@
 .ac-kpi .meta.up{color:var(--success-600)}
 .ac-kpi .meta.dn{color:var(--danger-600)}
 
-/* ── ZATCA / e-Invoice card ────────────────────────────────── */
-.zatca-card{background:linear-gradient(135deg,var(--brand-800),var(--brand-900));color:var(--paper);border-radius:14px;padding:20px 26px;display:flex;align-items:center;gap:22px;position:relative;overflow:hidden}
-.zatca-card::before{content:"";position:absolute;inset-block-start:-40px;inset-inline-end:-40px;width:180px;height:180px;border-radius:999px;background:radial-gradient(circle,rgba(201,168,95,.3),transparent 65%)}
-.zatca-card > *{position:relative}
-.zatca-card .ic{width:52px;height:52px;background:var(--gold-500);color:var(--brand-900);border-radius:11px;display:grid;place-items:center;font-size:24px;font-weight:700;flex-shrink:0}
+/* ── ZATCA card — قريباً ─────────────────────────────────────── */
+.zatca-card{background:linear-gradient(135deg,#4B5563,#374151);color:var(--paper);border-radius:14px;padding:20px 26px;display:flex;align-items:center;gap:22px;position:relative;overflow:hidden}
+.zatca-card::before{content:"";position:absolute;inset-block-start:-40px;inset-inline-end:-40px;width:180px;height:180px;border-radius:999px;background:radial-gradient(circle,rgba(255,255,255,.08),transparent 65%)}
+.zatca-card>*{position:relative}
+.zatca-card .ic{width:52px;height:52px;background:rgba(255,255,255,.15);border-radius:11px;display:grid;place-items:center;font-size:26px;flex-shrink:0}
 .zatca-card .body{flex:1}
 .zatca-card .ttl{font-family:var(--font-ar-display);font-size:17px;font-weight:600}
-.zatca-card .sub{font-family:var(--font-en);font-size:11px;color:var(--gold-300);margin-top:3px}
-.zatca-card .badges{display:flex;gap:8px;margin-top:10px}
-.zatca-card .badge{background:rgba(255,255,255,.12);padding:4px 12px;border-radius:999px;font-size:11px;display:flex;align-items:center;gap:5px}
-.zatca-card .badge .dot{width:6px;height:6px;border-radius:999px;background:var(--success-400)}
-.zatca-card .actions{display:flex;flex-direction:column;gap:8px;align-items:flex-end;flex-shrink:0}
-.zatca-card .btn-gold{background:var(--gold-500);color:var(--brand-900);border:none;padding:9px 18px;border-radius:7px;font-family:var(--font-ar);font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap}
+.zatca-card .sub{font-family:var(--font-en);font-size:11px;color:rgba(255,255,255,.55);margin-top:3px}
+.zatca-card .badges{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.zatca-card .badge{background:rgba(255,255,255,.1);padding:4px 12px;border-radius:999px;font-size:11px;display:flex;align-items:center;gap:5px;border:1px solid rgba(255,255,255,.15)}
+.zatca-card .badge .dot{width:6px;height:6px;border-radius:999px}
+.zatca-card .coming-tag{background:rgba(255,200,40,.2);border:1px solid rgba(255,200,40,.5);color:#FFD700;padding:4px 14px;border-radius:999px;font-size:12px;font-weight:600;font-family:var(--font-ar);white-space:nowrap;flex-shrink:0}
 
-/* ── Integration links panel ───────────────────────────────── */
+/* ── Integration links panel ────────────────────────────────── */
 .int-panel{background:var(--white);border:1px solid var(--hairline);border-radius:14px;padding:18px 20px}
 .int-panel .head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .int-panel .head .ttl{font-family:var(--font-ar-display);font-size:15px;font-weight:700;color:var(--ink-900)}
-.int-panel .head .sub{font-size:11px;color:var(--fg-3);font-family:var(--font-en)}
+.int-panel .head .sub{font-size:11px;color:var(--fg-3);font-family:var(--font-en);margin-top:2px}
 .int-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
-.int-item{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border-radius:10px;border:1px solid var(--hairline);cursor:pointer;transition:all 140ms;background:var(--paper-tint);position:relative}
-.int-item:hover{border-color:var(--brand-400);background:var(--brand-50)}
-.int-item.linked{border-color:var(--success-400);background:#F0FDF4}
-.int-item.linked::after{content:"✓";position:absolute;top:5px;inset-inline-end:5px;width:14px;height:14px;background:var(--success-600);color:#fff;border-radius:999px;font-size:9px;display:grid;place-items:center}
+.int-item{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border-radius:10px;border:1.5px solid var(--hairline);cursor:pointer;transition:all 160ms;background:var(--paper-tint);position:relative;user-select:none}
+.int-item:hover{border-color:var(--brand-400);background:var(--brand-50);transform:translateY(-1px)}
+.int-item.linked{border-color:var(--success-500);background:#F0FDF4;box-shadow:0 0 0 3px rgba(34,197,94,.12)}
+.int-item.linked::after{content:"✓";position:absolute;top:5px;inset-inline-end:5px;width:15px;height:15px;background:var(--success-600);color:#fff;border-radius:999px;font-size:9px;font-weight:700;display:grid;place-items:center}
 .int-item .ic{font-size:22px;line-height:1}
 .int-item .nm{font-size:10px;font-weight:600;color:var(--ink-800);text-align:center;line-height:1.3}
 .int-item .st{font-size:9px;color:var(--fg-3);font-family:var(--font-mono)}
+.int-item .cnt{font-size:9px;font-weight:700;color:var(--success-700);font-family:var(--font-mono);display:none}
+.int-item.linked .cnt{display:block}
 
-/* ── Main layout ───────────────────────────────────────────── */
+/* ── Main layout ─────────────────────────────────────────────── */
 .ac-layout{display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start}
 
-/* ── Journal toolbar ───────────────────────────────────────── */
+/* ── Toolbar ─────────────────────────────────────────────────── */
 .ac-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
 .ac-search{display:flex;align-items:center;gap:8px;background:var(--white);border:1px solid var(--hairline);border-radius:8px;padding:8px 14px;flex:1;max-width:340px}
 .ac-search svg{width:14px;height:14px;color:var(--fg-3);flex-shrink:0}
 .ac-search input{border:none;outline:none;background:transparent;font-family:var(--font-ar);font-size:13px;width:100%}
-.ac-filter-chips{display:flex;gap:6px;flex-wrap:wrap}
 .ac-chip{padding:5px 14px;border-radius:999px;border:1px solid var(--hairline);font-family:var(--font-ar);font-size:12px;color:var(--fg-2);background:var(--white);cursor:pointer;transition:all 140ms}
 .ac-chip.on{background:var(--brand-700);color:var(--paper);border-color:var(--brand-700)}
 .ac-chip.in.on{background:var(--success-700);border-color:var(--success-700)}
 .ac-chip.out.on{background:var(--danger-600);border-color:var(--danger-600)}
+.ml-auto{margin-inline-start:auto}
 
-/* ── Journal table ─────────────────────────────────────────── */
+/* ── Journal table ───────────────────────────────────────────── */
 .ac-tbl{background:var(--white);border:1px solid var(--hairline);border-radius:14px;overflow:hidden}
-.ac-tr{display:grid;grid-template-columns:72px 1.8fr 1.1fr 1fr 110px 110px 80px;gap:10px;align-items:center;padding:12px 18px;border-top:1px solid var(--hairline);font-size:13px}
+.ac-tr{display:grid;grid-template-columns:72px 1.8fr 1.1fr 1fr 110px 80px 70px;gap:10px;align-items:center;padding:12px 18px;border-top:1px solid var(--hairline);font-size:13px}
 .ac-tr.hd{background:var(--paper-tint);border-top:none;font-size:10px;color:var(--fg-3);font-weight:600;letter-spacing:.04em;padding:10px 18px}
+.ac-tr.auto-row{background:rgba(34,197,94,.03);border-inline-start:3px solid var(--success-400)}
 .ac-id{font-family:var(--font-mono);font-size:11px;color:var(--fg-3)}
 .ac-src{display:flex;align-items:center;gap:8px}
 .ac-src .sic{width:28px;height:28px;border-radius:7px;background:var(--paper-tint);border:1px solid var(--hairline);display:grid;place-items:center;font-size:14px;flex-shrink:0}
@@ -83,13 +85,14 @@
 .ic-btn{width:28px;height:28px;border-radius:6px;border:1px solid var(--hairline);background:transparent;color:var(--fg-2);cursor:pointer;display:grid;place-items:center;font-size:12px}
 .ic-btn:hover{color:var(--ink-900);background:var(--paper-tint);border-color:var(--ink-200)}
 .ic-btn.del:hover{color:var(--danger-600);background:var(--danger-50);border-color:var(--danger-200)}
+.auto-tag{display:inline-block;font-size:9px;background:var(--success-50);color:var(--success-700);border:1px solid var(--success-200);border-radius:4px;padding:1px 6px;margin-inline-start:5px;font-weight:600;font-family:var(--font-mono)}
 
-/* ── P&L panel ─────────────────────────────────────────────── */
+/* ── P&L ─────────────────────────────────────────────────────── */
 .pl-card{background:var(--white);border:1px solid var(--hairline);border-radius:14px;overflow:hidden}
-.pl-head{padding:14px 18px;background:var(--paper-tint);border-bottom:1px solid var(--hairline);display:flex;align-items:center;justify-content:space-between}
+.pl-head{padding:14px 18px;background:var(--paper-tint);border-bottom:1px solid var(--hairline)}
 .pl-head .ttl{font-family:var(--font-ar-display);font-size:15px;font-weight:700;color:var(--ink-900)}
 .pl-head .sub{font-family:var(--font-en);font-size:10px;color:var(--fg-3);margin-top:2px}
-.pl-row{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;padding:10px 16px;border-top:1px solid var(--hairline);font-size:12px}
+.pl-row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:10px 16px;border-top:1px solid var(--hairline);font-size:12px}
 .pl-row.sec{background:var(--paper-tint);font-family:var(--font-ar-display);font-weight:700;font-size:13px;color:var(--ink-900);border-top:2px solid var(--hairline)}
 .pl-row.tot{background:var(--brand-50);font-weight:700;font-size:13px;border-top:2px solid var(--brand-200)}
 .pl-row.net{background:var(--gold-50);border-top:2px solid var(--gold-300)}
@@ -98,11 +101,8 @@
 .pl-v.cr{color:var(--success-700)}
 .pl-v.dr{color:var(--danger-600)}
 .pl-v.gold{color:var(--gold-700)}
-.pl-d{font-family:var(--font-en);font-size:11px;text-align:end}
-.pl-d.up{color:var(--success-600)}
-.pl-d.dn{color:var(--danger-600)}
 
-/* ── Monthly bars ──────────────────────────────────────────── */
+/* ── Monthly bars ────────────────────────────────────────────── */
 .bars-card{background:var(--white);border:1px solid var(--hairline);border-radius:14px;padding:16px 18px}
 .bars-title{font-family:var(--font-ar-display);font-size:14px;font-weight:700;color:var(--ink-900);margin-bottom:14px}
 .bars-wrap{display:flex;align-items:flex-end;gap:8px;height:100px}
@@ -115,7 +115,7 @@
 .bars-legend .dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
 .bars-legend span{font-size:11px;color:var(--fg-2)}
 
-/* ── Modal ─────────────────────────────────────────────────── */
+/* ── Modal ───────────────────────────────────────────────────── */
 .nz-modal-bd{position:fixed;inset:0;background:rgba(14,42,34,.6);backdrop-filter:blur(4px);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px}
 .nz-modal{background:var(--white);border-radius:16px;width:min(640px,96vw);max-height:92vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 64px -16px rgba(14,42,34,.45)}
 .modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;border-bottom:1px solid var(--hairline);background:var(--paper-tint)}
@@ -126,22 +126,21 @@
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .form-field{display:flex;flex-direction:column;gap:5px}
 .form-field label{font-size:11px;font-weight:600;color:var(--fg-2);letter-spacing:.04em;text-transform:uppercase}
-.form-field input,.form-field select,.form-field textarea{padding:9px 12px;border:1px solid var(--ink-100);border-radius:8px;font-family:var(--font-ar);font-size:13px;background:var(--white);outline:none;width:100%;box-sizing:border-box}
+.form-field input,.form-field select{padding:9px 12px;border:1px solid var(--ink-100);border-radius:8px;font-family:var(--font-ar);font-size:13px;background:var(--white);outline:none;width:100%;box-sizing:border-box}
 .form-field input:focus,.form-field select:focus{border-color:var(--brand-500);box-shadow:0 0 0 3px rgba(0,100,60,.08)}
 .form-full{grid-column:1/-1}
-.type-toggle{display:flex;gap:0;border:1px solid var(--hairline);border-radius:8px;overflow:hidden}
+.type-toggle{display:flex;border:1px solid var(--hairline);border-radius:8px;overflow:hidden}
 .type-toggle button{flex:1;padding:9px;border:none;background:transparent;font-family:var(--font-ar);font-size:13px;cursor:pointer;transition:background .12s}
 .type-toggle button.on{background:var(--brand-700);color:var(--paper);font-weight:600}
 
-/* ── Toast ─────────────────────────────────────────────────── */
+/* ── Toast ───────────────────────────────────────────────────── */
 .nz-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--brand-800);color:var(--paper);padding:12px 24px;border-radius:10px;font-family:var(--font-ar);font-size:13px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.28);z-index:9999;white-space:nowrap;display:flex;align-items:center;gap:10px;direction:rtl}
 
-/* ── Btn helpers ───────────────────────────────────────────── */
+/* ── Buttons ─────────────────────────────────────────────────── */
 .btn-green{padding:9px 18px;background:var(--brand-700);color:var(--paper);border:none;border-radius:8px;font-family:var(--font-ar);font-size:13px;font-weight:600;cursor:pointer}
 .btn-green:hover{background:var(--brand-800)}
 .btn-sec{padding:8px 16px;background:var(--white);color:var(--ink-900);border:1px solid var(--hairline);border-radius:8px;font-family:var(--font-ar);font-size:13px;cursor:pointer}
 .btn-sec:hover{background:var(--paper-tint)}
-.ml-auto{margin-inline-start:auto}
 </style>
 </head>
 <body>
@@ -151,23 +150,23 @@
     <div id="topbar-slot"></div>
     <main class="nz-main">
 
-      <!-- ── Header ───────────────────────────────────────────── -->
+      <!-- Header -->
       <div class="mod-head" data-m-rise>
         <div class="left">
           <div class="num-row">
             <span class="num">06 · ACCOUNTING</span>
-            <span class="en-tag">Ledger · P&amp;L · VAT · ZATCA · Integrations</span>
+            <span class="en-tag">Ledger · P&amp;L · VAT · ZATCA · Auto-Integrations</span>
           </div>
           <h1>المحاسبة العامة</h1>
-          <p class="sub">دفتر اليومية التفاعلي — إيرادات ومصاريف — ربط اختياري مع الضيوف والمستودع وشموس وPOS والموارد البشرية والسياحة.</p>
+          <p class="sub">دفتر اليومية التفاعلي — فعّل الربط مع أي برنامج وستُضاف حركاته تلقائياً · ألغِ الربط وتُحذف فوراً.</p>
         </div>
         <div class="actions">
           <button class="btn-sec" onclick="exportCSV()">⬇ تصدير Excel</button>
-          <button class="btn-green" onclick="showAddEntry()">+ إدخال جديد</button>
+          <button class="btn-green" onclick="showAddEntry()">+ إدخال يدوي</button>
         </div>
       </div>
 
-      <!-- ── KPI strip ─────────────────────────────────────────── -->
+      <!-- KPIs -->
       <div class="ac-kpis" data-m-rise>
         <div class="ac-kpi">
           <div class="lbl">إيرادات اليوم</div>
@@ -187,110 +186,118 @@
         <div class="ac-kpi">
           <div class="lbl">ضريبة VAT (١٥٪)</div>
           <div class="v warn" id="kpi-vat">—<span class="cur">ر.س</span></div>
-          <div class="meta">مستحقة الشهر</div>
+          <div class="meta">مستحقة — يحتسب من الإيرادات</div>
         </div>
         <div class="ac-kpi">
-          <div class="lbl">القيود المحاسبية</div>
+          <div class="lbl">قيود محاسبية</div>
           <div class="v" id="kpi-count">—</div>
-          <div class="meta">حركة اليوم</div>
+          <div class="meta" id="kpi-count-m">—</div>
         </div>
       </div>
 
-      <!-- ── ZATCA card ─────────────────────────────────────────── -->
+      <!-- ZATCA — قريباً -->
       <div class="zatca-card" data-m-rise>
-        <div class="ic">✓</div>
+        <div class="ic">🔒</div>
         <div class="body">
-          <div class="ttl">متّصل بمنصة فاتورة — ZATCA Phase 2</div>
-          <div class="sub">e-Invoicing · Fatoora platform · clearance &amp; reporting mode</div>
+          <div class="ttl">ربط ZATCA — فاتورة إلكترونية Phase 2</div>
+          <div class="sub">Fatoora platform · clearance &amp; reporting mode · e-Invoicing integration</div>
           <div class="badges">
-            <span class="badge"><span class="dot"></span>٢٤٨ فاتورة مرسلة اليوم</span>
-            <span class="badge"><span class="dot"></span>صفر أخطاء</span>
-            <span class="badge"><span class="dot"></span>آخر مزامنة ١٤:٠٠</span>
+            <span class="badge"><span class="dot" style="background:#9CA3AF"></span>في انتظار التفعيل الرسمي</span>
+            <span class="badge"><span class="dot" style="background:#9CA3AF"></span>الواجهة جاهزة للربط</span>
+            <span class="badge"><span class="dot" style="background:#FCD34D"></span>بيانات VAT تُحتسب محلياً</span>
           </div>
         </div>
-        <div class="actions">
-          <button class="btn-gold">📄 لوحة ZATCA</button>
-          <button class="btn-gold" style="background:rgba(255,255,255,.15);color:var(--paper)">📊 تقرير VAT</button>
-        </div>
+        <div class="coming-tag">⏳ قريباً</div>
       </div>
 
-      <!-- ── Integration panel ──────────────────────────────────── -->
+      <!-- Integration panel -->
       <div class="int-panel" data-m-rise>
         <div class="head">
           <div>
-            <div class="ttl">ربط مع البرامج الأخرى</div>
-            <div class="sub">اضغط لتفعيل / إلغاء الربط الاختياري — الحركات المرتبطة تُسجَّل تلقائياً</div>
+            <div class="ttl">ربط تلقائي مع البرامج</div>
+            <div class="sub">اضغط على برنامج لربطه — حركاته تُضاف للمحاسبة فوراً · اضغط مجدداً لإزالتها</div>
           </div>
-          <span style="font-size:11px;color:var(--fg-3)" id="int-linked-count">٠ مرتبط</span>
+          <span style="font-size:12px;color:var(--success-700);font-weight:600" id="int-linked-count">٠ برنامج مرتبط</span>
         </div>
         <div class="int-grid" id="int-grid">
-          <div class="int-item linked" data-mod="01" onclick="toggleInt(this)">
+          <div class="int-item" data-mod="01" onclick="toggleInt(this)">
             <div class="ic">🛏</div>
             <div class="nm">الضيوف والحجوزات</div>
             <div class="st">01-guests</div>
+            <div class="cnt" id="cnt-01">٠ قيد</div>
           </div>
-          <div class="int-item linked" data-mod="02" onclick="toggleInt(this)">
+          <div class="int-item" data-mod="02" onclick="toggleInt(this)">
             <div class="ic">🌅</div>
             <div class="nm">شموس</div>
             <div class="st">02-shumus</div>
+            <div class="cnt" id="cnt-02">٠ قيد</div>
           </div>
           <div class="int-item" data-mod="03" onclick="toggleInt(this)">
             <div class="ic">🧭</div>
             <div class="nm">السياحة والجولات</div>
             <div class="st">03-tourism</div>
+            <div class="cnt" id="cnt-03">٠ قيد</div>
           </div>
           <div class="int-item" data-mod="04" onclick="toggleInt(this)">
             <div class="ic">🧺</div>
             <div class="nm">مخزون الضيافة</div>
             <div class="st">04-inventory</div>
+            <div class="cnt" id="cnt-04">٠ قيد</div>
           </div>
-          <div class="int-item linked" data-mod="05" onclick="toggleInt(this)">
+          <div class="int-item" data-mod="05" onclick="toggleInt(this)">
             <div class="ic">🔧</div>
             <div class="nm">المستودع</div>
             <div class="st">05-warehouse</div>
+            <div class="cnt" id="cnt-05">٠ قيد</div>
           </div>
-          <div class="int-item linked" data-mod="07" onclick="toggleInt(this)">
+          <div class="int-item" data-mod="07" onclick="toggleInt(this)">
             <div class="ic">💳</div>
             <div class="nm">نقاط البيع POS</div>
             <div class="st">07-pos</div>
+            <div class="cnt" id="cnt-07">٠ قيد</div>
           </div>
           <div class="int-item" data-mod="08" onclick="toggleInt(this)">
             <div class="ic">🗝</div>
             <div class="nm">المفتاح الذكي</div>
             <div class="st">08-smart-key</div>
+            <div class="cnt" id="cnt-08">٠ قيد</div>
           </div>
-          <div class="int-item linked" data-mod="09" onclick="toggleInt(this)">
+          <div class="int-item" data-mod="09" onclick="toggleInt(this)">
             <div class="ic">👥</div>
             <div class="nm">الموارد البشرية</div>
             <div class="st">09-hr</div>
+            <div class="cnt" id="cnt-09">٠ قيد</div>
           </div>
           <div class="int-item" data-mod="10" onclick="toggleInt(this)">
             <div class="ic">📡</div>
             <div class="nm">التسويق</div>
             <div class="st">10-channel</div>
+            <div class="cnt" id="cnt-10">٠ قيد</div>
           </div>
           <div class="int-item" data-mod="11" onclick="toggleInt(this)">
             <div class="ic">📊</div>
             <div class="nm">مؤشرات الأداء</div>
             <div class="st">11-kpis</div>
+            <div class="cnt" id="cnt-11">٠ قيد</div>
           </div>
           <div class="int-item" data-mod="12" onclick="toggleInt(this)">
             <div class="ic">📈</div>
             <div class="nm">التحليلات</div>
             <div class="st">12-analytics</div>
+            <div class="cnt" id="cnt-12">٠ قيد</div>
           </div>
           <div class="int-item" data-mod="14" onclick="toggleInt(this)">
             <div class="ic">🎯</div>
             <div class="nm">أهداف المدير</div>
             <div class="st">14-goals</div>
+            <div class="cnt" id="cnt-14">٠ قيد</div>
           </div>
         </div>
       </div>
 
-      <!-- ── Main layout: journal + sidebar ────────────────────── -->
+      <!-- Main: journal + sidebar -->
       <div class="ac-layout" data-m-rise>
 
-        <!-- LEFT: journal entries -->
         <div>
           <!-- Toolbar -->
           <div class="ac-toolbar">
@@ -298,55 +305,47 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
               <input id="ac-q" placeholder="بحث بالوصف أو الحساب أو المصدر..." oninput="filterJournal()"/>
             </div>
-            <div class="ac-filter-chips">
+            <div style="display:flex;gap:6px">
               <button class="ac-chip on"  data-f="all" onclick="setFilter('all',this)">الكل</button>
               <button class="ac-chip in"  data-f="cr"  onclick="setFilter('cr',this)">إيرادات</button>
               <button class="ac-chip out" data-f="dr"  onclick="setFilter('dr',this)">مصاريف</button>
             </div>
-            <div class="ml-auto" style="display:flex;gap:8px">
+            <div class="ml-auto">
               <select id="src-filter" onchange="filterJournal()" style="padding:7px 12px;border:1px solid var(--hairline);border-radius:8px;font-family:var(--font-ar);font-size:12px;background:var(--white);cursor:pointer;outline:none">
                 <option value="">كل المصادر</option>
                 <option value="يدوي">يدوي</option>
                 <option value="الضيوف">الضيوف</option>
+                <option value="شموس">شموس</option>
+                <option value="السياحة">السياحة</option>
+                <option value="المخزون">المخزون</option>
+                <option value="المستودع">المستودع</option>
                 <option value="POS">POS</option>
                 <option value="HR">HR</option>
-                <option value="المستودع">المستودع</option>
-                <option value="السياحة">السياحة</option>
-                <option value="شموس">شموس</option>
+                <option value="التسويق">التسويق</option>
               </select>
             </div>
           </div>
 
-          <!-- Table -->
           <div class="ac-tbl">
             <div class="ac-tr hd">
-              <span>#</span>
-              <span>الحركة / الوصف</span>
-              <span>الحساب</span>
-              <span>المصدر</span>
-              <span style="text-align:end">المبلغ</span>
-              <span style="text-align:end">الوقت</span>
-              <span></span>
+              <span>#</span><span>الحركة / الوصف</span><span>الحساب</span>
+              <span>المصدر</span><span style="text-align:end">المبلغ</span>
+              <span style="text-align:end">الوقت</span><span></span>
             </div>
             <div id="ac-tbody"></div>
           </div>
         </div>
 
-        <!-- RIGHT: P&L + bars -->
+        <!-- Sidebar -->
         <div style="display:flex;flex-direction:column;gap:16px">
-
-          <!-- P&L -->
           <div class="pl-card">
             <div class="pl-head">
-              <div>
-                <div class="ttl">الأرباح والخسائر</div>
-                <div class="sub">P&amp;L — Today's income statement</div>
-              </div>
+              <div class="ttl">الأرباح والخسائر</div>
+              <div class="sub">P&amp;L — live from journal entries</div>
             </div>
             <div id="pl-body"></div>
           </div>
 
-          <!-- Monthly bars -->
           <div class="bars-card">
             <div class="bars-title">الإيرادات والمصاريف — ٦ أشهر</div>
             <div class="bars-wrap" id="bars-wrap"></div>
@@ -355,7 +354,6 @@
               <div style="display:flex;align-items:center;gap:5px"><div class="dot" style="background:var(--danger-300)"></div><span>مصاريف</span></div>
             </div>
           </div>
-
         </div>
       </div>
 
@@ -363,15 +361,14 @@
   </div>
 </div>
 
-<!-- ══ ADD / EDIT ENTRY MODAL ══════════════════════════════════ -->
+<!-- Modal -->
 <div id="entry-modal" style="display:none" class="nz-modal-bd" onclick="if(event.target===this)closeModal()">
   <div class="nz-modal" dir="rtl">
     <div class="modal-head">
-      <div class="ttl" id="modal-ttl">+ إدخال محاسبي جديد</div>
+      <div class="ttl" id="modal-ttl">+ إدخال يدوي جديد</div>
       <button class="close-btn" onclick="closeModal()">✕ إغلاق</button>
     </div>
     <div class="modal-body">
-      <!-- Type toggle -->
       <div class="form-field form-full" style="margin-bottom:14px">
         <label>نوع الحركة</label>
         <div class="type-toggle">
@@ -380,79 +377,25 @@
         </div>
       </div>
       <div class="form-grid">
-        <div class="form-field form-full">
-          <label>الوصف *</label>
-          <input id="f-desc" placeholder="مثال: حجز غرفة ٣٠١ — ليلتان"/>
-        </div>
-        <div class="form-field">
-          <label>الحساب *</label>
+        <div class="form-field form-full"><label>الوصف *</label><input id="f-desc" placeholder="مثال: حجز غرفة ٣٠١ — ليلتان"/></div>
+        <div class="form-field"><label>الحساب *</label>
           <select id="f-acct">
             <optgroup label="إيرادات">
-              <option value="إيراد الغرف">إيراد الغرف</option>
-              <option value="إيراد F&B">إيراد F&B</option>
-              <option value="إيراد السبا">إيراد السبا</option>
-              <option value="إيراد الجولات">إيراد الجولات</option>
-              <option value="إيراد متنوع">إيراد متنوع</option>
+              <option>إيراد الغرف</option><option>إيراد F&B</option><option>إيراد السبا</option>
+              <option>إيراد الجولات</option><option>إيراد متنوع</option>
             </optgroup>
             <optgroup label="مصاريف">
-              <option value="الرواتب">الرواتب</option>
-              <option value="مصاريف صيانة">مصاريف صيانة</option>
-              <option value="مصاريف F&B">مصاريف F&B</option>
-              <option value="مرافق وطاقة">مرافق وطاقة</option>
-              <option value="تسويق وإعلان">تسويق وإعلان</option>
-              <option value="مصاريف إدارية">مصاريف إدارية</option>
-              <option value="مصاريف متنوعة">مصاريف متنوعة</option>
+              <option>الرواتب</option><option>مصاريف صيانة</option><option>مصاريف F&B</option>
+              <option>مرافق وطاقة</option><option>تسويق وإعلان</option><option>مصاريف إدارية</option><option>مصاريف متنوعة</option>
             </optgroup>
           </select>
         </div>
-        <div class="form-field">
-          <label>المصدر</label>
-          <select id="f-src">
-            <option value="يدوي">يدوي</option>
-            <option value="الضيوف">الضيوف (01)</option>
-            <option value="شموس">شموس (02)</option>
-            <option value="السياحة">السياحة (03)</option>
-            <option value="المخزون">المخزون (04)</option>
-            <option value="المستودع">المستودع (05)</option>
-            <option value="POS">POS (07)</option>
-            <option value="HR">HR (09)</option>
-          </select>
+        <div class="form-field"><label>المبلغ (ر.س) *</label><input id="f-amt" type="number" min="0" step="0.01" placeholder="٠٫٠٠" dir="ltr"/></div>
+        <div class="form-field"><label>هل يشمل VAT ١٥٪؟</label>
+          <select id="f-vat"><option value="no">لا يشمل</option><option value="yes">يشمل ١٥٪</option></select>
         </div>
-        <div class="form-field">
-          <label>المبلغ (ر.س) *</label>
-          <input id="f-amt" type="number" min="0" step="0.01" placeholder="٠٫٠٠" dir="ltr"/>
-        </div>
-        <div class="form-field">
-          <label>هل يشمل VAT ١٥٪؟</label>
-          <select id="f-vat">
-            <option value="no">لا يشمل</option>
-            <option value="yes">يشمل ١٥٪</option>
-          </select>
-        </div>
-        <div class="form-field">
-          <label>التاريخ والوقت</label>
-          <input id="f-time" type="time" dir="ltr"/>
-        </div>
-        <div class="form-field form-full">
-          <label>ملاحظة (اختياري)</label>
-          <input id="f-note" placeholder="تفاصيل إضافية..."/>
-        </div>
-        <!-- Integration reference -->
-        <div class="form-field form-full" style="background:var(--paper-tint);border-radius:8px;padding:12px;border:1px solid var(--hairline)">
-          <label>مرجع الربط مع برنامج آخر (اختياري)</label>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px">
-            <select id="f-link-mod" style="padding:8px 12px;border:1px solid var(--ink-100);border-radius:7px;font-family:var(--font-ar);font-size:12px;background:var(--white);outline:none">
-              <option value="">— بدون ربط —</option>
-              <option value="01">01 الضيوف</option>
-              <option value="02">02 شموس</option>
-              <option value="03">03 السياحة</option>
-              <option value="05">05 المستودع</option>
-              <option value="07">07 POS</option>
-              <option value="09">09 HR</option>
-            </select>
-            <input id="f-link-ref" placeholder="رقم المرجع / ID" dir="ltr" style="padding:8px 12px;border:1px solid var(--ink-100);border-radius:7px;font-family:var(--font-mono);font-size:12px;background:var(--white);outline:none"/>
-          </div>
-        </div>
+        <div class="form-field"><label>الوقت</label><input id="f-time" type="time" dir="ltr"/></div>
+        <div class="form-field form-full"><label>ملاحظة</label><input id="f-note" placeholder="تفاصيل إضافية..."/></div>
       </div>
     </div>
     <div class="modal-foot">
@@ -476,51 +419,105 @@ setTimeout(function(){
 'use strict';
 
 /* ════════════════════════════════════════════════
-   DATA
+   DATA — base manual entries (always present)
 ════════════════════════════════════════════════ */
-var ENTRIES = [
-  {id:142,type:'cr',desc:'حجز جناح ٤٠٢ — ٣ ليالٍ',acct:'إيراد الغرف',   src:'الضيوف',   amt:2400, vat:false, time:'14:32', note:'أحمد الفهد — VIP',        link:{mod:'01',ref:'BK-3021'}},
-  {id:141,type:'cr',desc:'عشاء مطعم الواحة — ٨ ضيوف',acct:'إيراد F&B',   src:'POS',      amt:1240, vat:true,  time:'14:18', note:'MADA',                    link:{}},
-  {id:140,type:'dr',desc:'صرف رواتب — موظفو التشغيل',acct:'الرواتب',     src:'HR',       amt:4800, vat:false, time:'14:00', note:'٤ موظفين',                 link:{mod:'09',ref:'PAY-0614'}},
-  {id:139,type:'cr',desc:'جولة الدرعية — ٤ ضيوف',    acct:'إيراد الجولات',src:'السياحة', amt:1680, vat:true,  time:'13:45', note:'Layla Karam',              link:{mod:'03',ref:'TR-0241'}},
-  {id:138,type:'cr',desc:'جلسة سبا — حمام مغربي',    acct:'إيراد السبا', src:'POS',      amt:420,  vat:true,  time:'13:30', note:'غرفة ٢١٨',                 link:{}},
-  {id:137,type:'dr',desc:'شراء قطع غيار — لمبات LED', acct:'مصاريف صيانة',src:'المستودع',amt:840,  vat:false, time:'13:00', note:'٤٠ وحدة',                  link:{mod:'05',ref:'WH-1024'}},
-  {id:136,type:'cr',desc:'حجز غرفة ٣٠١ — ليلتان',   acct:'إيراد الغرف', src:'الضيوف',  amt:960,  vat:false, time:'12:20', note:'',                         link:{mod:'01',ref:'BK-3018'}},
-  {id:135,type:'dr',desc:'فاتورة كهرباء — يونيو',    acct:'مرافق وطاقة', src:'يدوي',    amt:1200, vat:false, time:'11:00', note:'',                         link:{}},
-  {id:134,type:'cr',desc:'خدمة غرفة — إفطار كينج',   acct:'إيراد F&B',   src:'شموس',    amt:380,  vat:true,  time:'10:30', note:'غرفة ٢٢٠',                 link:{mod:'02',ref:'SM-0541'}},
-  {id:133,type:'dr',desc:'مواد تنظيف — كيمياء',       acct:'مصاريف متنوعة',src:'المستودع',amt:320, vat:false, time:'10:00', note:'',                         link:{mod:'05',ref:'WH-1021'}},
-  {id:132,type:'cr',desc:'حجز قاعة مؤتمرات — نصف يوم',acct:'إيراد متنوع',src:'الضيوف',  amt:2200, vat:true,  time:'09:15', note:'شركة الأفق',               link:{mod:'01',ref:'BK-3015'}},
-  {id:131,type:'dr',desc:'مكافأة موظف الشهر',         acct:'الرواتب',     src:'HR',       amt:600,  vat:false, time:'09:00', note:'',                         link:{mod:'09',ref:'HR-0312'}},
+var BASE_ENTRIES = [
+  {id:100, type:'cr', desc:'دفعة مقدمة — قاعة المؤتمرات', acct:'إيراد متنوع',    src:'يدوي', amt:3200, vat:true,  time:'09:00', note:'شركة الأفق للمقاولات'},
+  {id:101, type:'dr', desc:'فاتورة الكهرباء — يونيو',      acct:'مرافق وطاقة',   src:'يدوي', amt:1200, vat:false, time:'10:00', note:''},
+  {id:102, type:'dr', desc:'فاتورة مياه وصرف — يونيو',     acct:'مرافق وطاقة',   src:'يدوي', amt:340,  vat:false, time:'10:05', note:''},
+  {id:103, type:'cr', desc:'إيراد ميني بار — طابق VIP',    acct:'إيراد F&B',     src:'يدوي', amt:890,  vat:true,  time:'11:30', note:''},
 ];
 
-var entryCounter = 143;
-var activeFilter = 'all';
-var activeQ      = '';
-var activeSrc    = '';
-var editingId    = null;
-var entryType    = 'cr';
-
-/* source icons */
-var SRC_IC = {
-  'الضيوف':'🛏','شموس':'🌅','السياحة':'🧭','المخزون':'🧺',
-  'المستودع':'🔧','POS':'💳','HR':'👥','يدوي':'✏'
+/* ════════════════════════════════════════════════
+   DATA — per-module auto entries (added/removed dynamically)
+════════════════════════════════════════════════ */
+var MOD_ENTRIES = {
+  '01': [
+    {id:1001, type:'cr', desc:'حجز جناح ٤٠٢ — ٣ ليالٍ',        acct:'إيراد الغرف',   src:'الضيوف',  amt:2400, vat:false, time:'14:32', note:'أحمد الفهد — VIP',       link:'BK-3021'},
+    {id:1002, type:'cr', desc:'حجز غرفة ٣٠١ — ليلتان',          acct:'إيراد الغرف',   src:'الضيوف',  amt:960,  vat:false, time:'12:20', note:'',                       link:'BK-3018'},
+    {id:1003, type:'cr', desc:'حجز غرفة ١١٥ — قياسية',          acct:'إيراد الغرف',   src:'الضيوف',  amt:480,  vat:false, time:'08:15', note:'',                       link:'BK-3022'},
+  ],
+  '02': [
+    {id:2001, type:'cr', desc:'خدمة غرفة — إفطار كينج',          acct:'إيراد F&B',     src:'شموس',    amt:380,  vat:true,  time:'10:30', note:'غرفة ٢٢٠',               link:'SM-0541'},
+    {id:2002, type:'cr', desc:'خدمة تنظيف إضافية — أجنحة VIP',  acct:'إيراد متنوع',   src:'شموس',    amt:250,  vat:true,  time:'11:00', note:'',                       link:'SM-0545'},
+  ],
+  '03': [
+    {id:3001, type:'cr', desc:'جولة الدرعية — ٤ ضيوف',           acct:'إيراد الجولات', src:'السياحة', amt:1680, vat:true,  time:'13:45', note:'Layla Karam',            link:'TR-0241'},
+    {id:3002, type:'cr', desc:'جولة العُلا — يومية',              acct:'إيراد الجولات', src:'السياحة', amt:2200, vat:true,  time:'08:00', note:'',                       link:'TR-0238'},
+  ],
+  '04': [
+    {id:4001, type:'dr', desc:'استهلاك مستلزمات ضيافة — يومي',   acct:'مصاريف متنوعة', src:'المخزون', amt:420,  vat:false, time:'07:00', note:'شامبو · صابون · بياضات', link:'IV-0891'},
+  ],
+  '05': [
+    {id:5001, type:'dr', desc:'شراء قطع غيار — لمبات LED',        acct:'مصاريف صيانة',  src:'المستودع',amt:840,  vat:false, time:'13:00', note:'٤٠ وحدة',               link:'WH-1024'},
+    {id:5002, type:'dr', desc:'مواد تنظيف — كيمياء وأدوات',       acct:'مصاريف صيانة',  src:'المستودع',amt:320,  vat:false, time:'10:00', note:'',                       link:'WH-1021'},
+  ],
+  '07': [
+    {id:7001, type:'cr', desc:'عشاء مطعم الواحة — ٨ ضيوف',       acct:'إيراد F&B',     src:'POS',     amt:1240, vat:true,  time:'14:18', note:'MADA',                   link:'POS-8841'},
+    {id:7002, type:'cr', desc:'جلسة سبا — حمام مغربي',            acct:'إيراد السبا',   src:'POS',     amt:420,  vat:true,  time:'13:30', note:'غرفة ٢١٨',               link:'POS-8839'},
+    {id:7003, type:'cr', desc:'كافيه الردهة — مشروبات',            acct:'إيراد F&B',     src:'POS',     amt:310,  vat:true,  time:'11:45', note:'',                       link:'POS-8835'},
+  ],
+  '08': [
+    {id:8001, type:'dr', desc:'اشتراك منصة المفاتيح الذكية',      acct:'مصاريف إدارية', src:'المفتاح', amt:450,  vat:false, time:'00:01', note:'رسوم شهرية',             link:'SK-0060'},
+  ],
+  '09': [
+    {id:9001, type:'dr', desc:'صرف رواتب — موظفو التشغيل',        acct:'الرواتب',        src:'HR',       amt:4800, vat:false, time:'14:00', note:'٤ موظفين',              link:'PAY-0614'},
+    {id:9002, type:'dr', desc:'مكافأة موظف الشهر',                 acct:'الرواتب',        src:'HR',       amt:600,  vat:false, time:'09:00', note:'',                       link:'HR-0312'},
+  ],
+  '10': [
+    {id:1001, type:'dr', desc:'إعلان Google — حملة الصيف',        acct:'تسويق وإعلان',  src:'التسويق', amt:1200, vat:false, time:'00:01', note:'يونيو 2026',             link:'MK-0144'},
+  ],
+  '11': [
+    /* KPIs — لا حركات مالية مباشرة، يُضاف مؤشر رمزي */
+    {id:1101, type:'cr', desc:'تقييم أداء — مؤشر إيرادات Q2',    acct:'إيراد متنوع',   src:'المؤشرات',amt:0,    vat:false, time:'00:00', note:'قيد معلوماتي فقط',       link:'KPI-Q2'},
+  ],
+  '12': [
+    {id:1201, type:'cr', desc:'عائد تحليل الطلب — تسعير ديناميكي',acct:'إيراد متنوع',   src:'التحليلات',amt:620, vat:false, time:'00:00', note:'',                       link:'AN-0031'},
+  ],
+  '14': [
+    {id:1401, type:'dr', desc:'بدل أهداف الإدارة — ربع سنوي',    acct:'مصاريف إدارية', src:'الأهداف', amt:800,  vat:false, time:'00:01', note:'',                       link:'GL-0014'},
+  ],
 };
 
 /* ════════════════════════════════════════════════
-   HELPERS
+   STATE
 ════════════════════════════════════════════════ */
-function fmt(n){ return n.toLocaleString('ar-EG'); }
-function fmtNum(n){ return n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,','); }
+var LINKED       = {};          /* { mod: true/false } */
+var MANUAL       = BASE_ENTRIES.slice();
+var manualNextId = 200;
+var entryType    = 'cr';
+var editingId    = null;
+var activeFilter = 'all';
+var activeQ      = '';
+var activeSrc    = '';
 
-function vatAmt(e){ return e.vat ? Math.round(e.amt * 0.15 * 100)/100 : 0; }
+var SRC_IC = {
+  'الضيوف':'🛏','شموس':'🌅','السياحة':'🧭','المخزون':'🧺','المفتاح':'🗝',
+  'المستودع':'🔧','POS':'💳','HR':'👥','التسويق':'📡','المؤشرات':'📊',
+  'التحليلات':'📈','الأهداف':'🎯','يدوي':'✏'
+};
 
 /* ════════════════════════════════════════════════
-   RENDER JOURNAL
+   COMPUTE ALL VISIBLE ENTRIES
+════════════════════════════════════════════════ */
+function allEntries(){
+  var result = MANUAL.slice();
+  Object.keys(LINKED).forEach(function(mod){
+    if(LINKED[mod] && MOD_ENTRIES[mod]){
+      MOD_ENTRIES[mod].forEach(function(e){ result.push(e); });
+    }
+  });
+  result.sort(function(a,b){ return b.id - a.id; });
+  return result;
+}
+
+/* ════════════════════════════════════════════════
+   RENDER
 ════════════════════════════════════════════════ */
 function renderJournal(){
   var q   = activeQ.toLowerCase();
   var src = activeSrc;
-  var list = ENTRIES.filter(function(e){
+  var list = allEntries().filter(function(e){
     if(activeFilter==='cr' && e.type!=='cr') return false;
     if(activeFilter==='dr' && e.type!=='dr') return false;
     if(src && e.src!==src) return false;
@@ -529,138 +526,151 @@ function renderJournal(){
   });
 
   var tbody = document.getElementById('ac-tbody');
+  if(!tbody) return;
+
   if(!list.length){
     tbody.innerHTML = '<div style="padding:36px;text-align:center;color:var(--fg-3)">لا توجد حركات تطابق البحث</div>';
     return;
   }
 
-  tbody.innerHTML = list.map(function(e){
-    var ic   = SRC_IC[e.src]||'📌';
+  var isAuto = {};
+  Object.keys(LINKED).forEach(function(mod){
+    if(LINKED[mod] && MOD_ENTRIES[mod]){
+      MOD_ENTRIES[mod].forEach(function(e){ isAuto[e.id] = true; });
+    }
+  });
+
+  tbody.innerHTML = list.filter(function(e){ return e.amt > 0 || e.type!=='cr'; }).map(function(e){
+    var ic   = SRC_IC[e.src] || '📌';
     var sign = e.type==='cr' ? '+' : '−';
     var cls  = e.type==='cr' ? 'cr' : 'dr';
-    var linkBadge = (e.link && e.link.mod)
-      ? '<span style="font-family:var(--font-mono);font-size:9px;background:var(--brand-50);color:var(--brand-700);padding:2px 7px;border-radius:4px;border:1px solid var(--brand-200);margin-inline-start:6px">'+e.link.ref+'</span>'
+    var auto = isAuto[e.id];
+    var linkBadge = (e.link)
+      ? '<span style="font-family:var(--font-mono);font-size:9px;background:var(--brand-50);color:var(--brand-700);padding:1px 6px;border-radius:4px;border:1px solid var(--brand-200);margin-inline-start:5px">'+e.link+'</span>'
       : '';
-    return '<div class="ac-tr">'
-      +'<span class="ac-id">JE-'+String(e.id).padStart(4,'0')+'</span>'
-      +'<div class="ac-src">'
-        +'<div class="sic">'+ic+'</div>'
-        +'<div><div class="ac-nm">'+e.desc+linkBadge+'</div>'
-        +(e.note?'<div class="ac-sub">'+e.note+'</div>':'')+'</div>'
-      +'</div>'
-      +'<div class="ac-acct">'+e.acct+'</div>'
-      +'<div style="font-size:12px;color:var(--ink-700)">'+e.src+'</div>'
-      +'<div class="ac-amt '+cls+'">'+sign+fmt(e.amt)+'<span class="cur">ر.س</span></div>'
-      +'<div class="ac-time">'+e.time+'</div>'
-      +'<div class="ac-acts">'
-        +'<button class="ic-btn" onclick="editEntry('+e.id+')" title="تعديل">✏</button>'
-        +'<button class="ic-btn del" onclick="deleteEntry('+e.id+')" title="حذف">🗑</button>'
-      +'</div>'
-      +'</div>';
+    var autoTag = auto ? '<span class="auto-tag">AUTO</span>' : '';
+    return '<div class="ac-tr'+(auto?' auto-row':'')+'">'+
+      '<span class="ac-id">JE-'+String(e.id).padStart(4,'0')+'</span>'+
+      '<div class="ac-src">'+
+        '<div class="sic">'+ic+'</div>'+
+        '<div><div class="ac-nm">'+e.desc+linkBadge+autoTag+'</div>'+
+        (e.note?'<div class="ac-sub">'+e.note+'</div>':'')+
+        '</div>'+
+      '</div>'+
+      '<div class="ac-acct">'+e.acct+'</div>'+
+      '<div style="font-size:12px;color:var(--ink-700)">'+e.src+'</div>'+
+      '<div class="ac-amt '+cls+'">'+sign+(e.amt?e.amt.toLocaleString('ar-EG'):'—')+'<span class="cur">ر.س</span></div>'+
+      '<div class="ac-time">'+e.time+'</div>'+
+      '<div class="ac-acts">'+
+        (!auto ? '<button class="ic-btn" onclick="editEntry('+e.id+')" title="تعديل">✏</button>' : '')+
+        (!auto ? '<button class="ic-btn del" onclick="deleteEntry('+e.id+')" title="حذف">🗑</button>' : '')+
+        (auto  ? '<span style="font-size:11px;color:var(--fg-3)">تلقائي</span>' : '')+
+      '</div>'+
+      '</div>';
   }).join('');
 }
 
-/* ════════════════════════════════════════════════
-   UPDATE KPIs
-════════════════════════════════════════════════ */
 function updateKPIs(){
   var rev=0, exp=0, vatSum=0;
-  ENTRIES.forEach(function(e){
-    if(e.type==='cr'){ rev+=e.amt; vatSum+=vatAmt(e); }
+  allEntries().forEach(function(e){
+    if(e.amt===0) return;
+    if(e.type==='cr'){ rev+=e.amt; if(e.vat) vatSum+=Math.round(e.amt*0.15*100)/100; }
     else exp+=e.amt;
   });
   var net = rev - exp;
-  function s(id,v){ var el=document.getElementById(id); if(el) el.childNodes[0].textContent=v; }
-  function st(id,v){ var el=document.getElementById(id); if(el) el.textContent=v; }
-  s('kpi-rev', fmt(rev));
-  s('kpi-exp', fmt(exp));
-  s('kpi-net', fmt(net));
-  s('kpi-vat', fmtNum(vatSum));
-  st('kpi-count', ENTRIES.length);
-  st('kpi-rev-m', 'هامش '+Math.round(net/rev*100)+'٪ من الإيراد');
-  st('kpi-exp-m', Math.round(exp/rev*100)+'٪ من الإيرادات');
-  st('kpi-net-m', net>0?'↑ ربح صافي':'↓ خسارة صافية');
-  updatePL(rev, exp, net);
+  var total = allEntries().filter(function(e){ return e.amt>0; }).length;
+  function s(id,v){ var el=document.getElementById(id); if(el){ el.childNodes[0].textContent=v; } }
+  function t(id,v){ var el=document.getElementById(id); if(el) el.textContent=v; }
+  s('kpi-rev', rev.toLocaleString('ar-EG'));
+  s('kpi-exp', exp.toLocaleString('ar-EG'));
+  s('kpi-net', net.toLocaleString('ar-EG'));
+  s('kpi-vat', vatSum.toFixed(2));
+  s('kpi-count', total);
+  t('kpi-rev-m', rev>0 ? 'هامش '+Math.round(net/rev*100)+'٪' : '—');
+  t('kpi-exp-m', rev>0 ? Math.round(exp/rev*100)+'٪ من الإيرادات' : '—');
+  t('kpi-net-m', net>0 ? '↑ ربح صافي' : '↓ خسارة صافية');
+  t('kpi-count-m', Object.keys(LINKED).filter(function(m){ return LINKED[m]; }).length+' برنامج مرتبط');
+  updatePL(rev, exp);
 }
 
-/* ════════════════════════════════════════════════
-   P&L PANEL
-════════════════════════════════════════════════ */
-function sumCat(cats){
-  return ENTRIES.filter(function(e){ return e.type==='cr' && cats.includes(e.acct); })
+function sumBy(type, accts){
+  return allEntries().filter(function(e){ return e.type===type && accts.indexOf(e.acct)!==-1 && e.amt>0; })
     .reduce(function(s,e){ return s+e.amt; },0);
 }
-function sumExp(cats){
-  return ENTRIES.filter(function(e){ return e.type==='dr' && cats.includes(e.acct); })
-    .reduce(function(s,e){ return s+e.amt; },0);
-}
-function updatePL(rev, exp, net){
-  var rooms  = sumCat(['إيراد الغرف']);
-  var fb     = sumCat(['إيراد F&B']);
-  var spa    = sumCat(['إيراد السبا']);
-  var tours  = sumCat(['إيراد الجولات']);
-  var misc   = sumCat(['إيراد متنوع']);
-  var sal    = sumExp(['الرواتب']);
-  var maint  = sumExp(['مصاريف صيانة']);
-  var fbCost = sumExp(['مصاريف F&B']);
-  var util   = sumExp(['مرافق وطاقة']);
-  var others = sumExp(['تسويق وإعلان','مصاريف إدارية','مصاريف متنوعة']);
 
+function updatePL(rev, exp){
   var rows = '';
-  function row(nm, v, cls, delta, tot, net2){
-    var dc = !delta?'':'<span class="pl-d '+(delta[0]==='+' && !net2?'up':'dn')+'">'+delta+'</span>';
-    var vc = v===0?'—':fmt(v);
-    return '<div class="pl-row'+(tot?' tot':'')+(net2?' net':'')+'"><span class="pl-nm">'+nm+'</span><span class="pl-v '+cls+'">'+vc+'</span>'+dc+'</div>';
+  function fv(n){ return n?n.toLocaleString('ar-EG'):'—'; }
+  function row(nm, v, cls, sec, tot, net){
+    return '<div class="pl-row'+(sec?' sec':'')+(tot?' tot':'')+(net?' net':'')+'">'
+      +'<span class="pl-nm">'+nm+'</span>'
+      +'<span class="pl-v '+cls+'">'+fv(v)+'</span>'
+      +'</div>';
   }
-  rows += '<div class="pl-row sec"><span class="pl-nm">الإيرادات</span><span></span><span></span></div>';
-  if(rooms)  rows += row('إيراد الغرف',  rooms, 'cr','');
-  if(fb)     rows += row('إيراد F&B',    fb,    'cr','');
-  if(spa)    rows += row('إيراد السبا',   spa,   'cr','');
-  if(tours)  rows += row('إيراد الجولات', tours, 'cr','');
-  if(misc)   rows += row('إيراد متنوع',   misc,  'cr','');
-  rows += row('إجمالي الإيرادات', rev, 'cr', '', true);
+  var rooms  = sumBy('cr',['إيراد الغرف']);
+  var fb     = sumBy('cr',['إيراد F&B']);
+  var spa    = sumBy('cr',['إيراد السبا']);
+  var tours  = sumBy('cr',['إيراد الجولات']);
+  var misc   = sumBy('cr',['إيراد متنوع']);
+  var sal    = sumBy('dr',['الرواتب']);
+  var maint  = sumBy('dr',['مصاريف صيانة']);
+  var fbC    = sumBy('dr',['مصاريف F&B']);
+  var util   = sumBy('dr',['مرافق وطاقة']);
+  var mktg   = sumBy('dr',['تسويق وإعلان']);
+  var admin  = sumBy('dr',['مصاريف إدارية','مصاريف متنوعة']);
 
-  rows += '<div class="pl-row sec"><span class="pl-nm">المصاريف</span><span></span><span></span></div>';
-  if(sal)    rows += row('الرواتب',       sal,    'dr','');
-  if(maint)  rows += row('الصيانة',       maint,  'dr','');
-  if(fbCost) rows += row('F&B (تكلفة)',   fbCost, 'dr','');
-  if(util)   rows += row('المرافق',        util,   'dr','');
-  if(others) rows += row('أخرى',           others, 'dr','');
-  rows += row('إجمالي المصاريف', exp, 'dr', '', true);
-
-  var netCls = net>=0?'gold':'dr';
-  rows += '<div class="pl-row net"><span class="pl-nm" style="font-weight:700">الربح الصافي</span><span class="pl-v '+netCls+'" style="font-size:15px">'+(net>=0?'+':'')+fmt(net)+'</span></div>';
-
+  rows += row('الإيرادات','','','sec');
+  if(rooms)  rows += row('إيراد الغرف',  rooms, 'cr');
+  if(fb)     rows += row('إيراد F&B',    fb,    'cr');
+  if(spa)    rows += row('إيراد السبا',   spa,   'cr');
+  if(tours)  rows += row('إيراد الجولات', tours, 'cr');
+  if(misc)   rows += row('إيراد متنوع',   misc,  'cr');
+  rows += row('إجمالي الإيرادات', rev, 'cr','','tot');
+  rows += row('المصاريف','','','sec');
+  if(sal)    rows += row('الرواتب',    sal,   'dr');
+  if(maint)  rows += row('الصيانة',    maint, 'dr');
+  if(fbC)    rows += row('F&B تكلفة', fbC,   'dr');
+  if(util)   rows += row('المرافق',    util,  'dr');
+  if(mktg)   rows += row('التسويق',    mktg,  'dr');
+  if(admin)  rows += row('إدارية وأخرى', admin,'dr');
+  rows += row('إجمالي المصاريف', exp, 'dr','','tot');
+  var net = rev-exp;
+  rows += '<div class="pl-row net"><span class="pl-nm" style="font-weight:700">الربح الصافي</span>'
+    +'<span class="pl-v '+(net>=0?'gold':'dr')+'" style="font-size:15px">'+(net>=0?'+':'')+fv(Math.abs(net))+'</span></div>';
   document.getElementById('pl-body').innerHTML = rows;
 }
 
 /* ════════════════════════════════════════════════
-   BARS CHART
+   INTEGRATION TOGGLE
 ════════════════════════════════════════════════ */
-(function buildBars(){
-  var months = [
-    {m:'يناير',  rev:68000, exp:42000},
-    {m:'فبراير', rev:72000, exp:44000},
-    {m:'مارس',   rev:85000, exp:51000},
-    {m:'أبريل',  rev:91000, exp:55000},
-    {m:'مايو',   rev:88000, exp:53000},
-    {m:'يونيو',  rev:95000, exp:58000},
-  ];
-  var maxV = Math.max.apply(null, months.map(function(m){ return m.rev; }));
-  var wrap = document.getElementById('bars-wrap');
-  if(!wrap) return;
-  wrap.innerHTML = months.map(function(m){
-    var rh = Math.round(m.rev/maxV*90);
-    var eh = Math.round(m.exp/maxV*90);
-    return '<div class="bar-col">'
-      +'<div style="display:flex;gap:3px;align-items:flex-end;height:90px">'
-        +'<div class="bar rev" style="height:'+rh+'px;width:48%"></div>'
-        +'<div class="bar exp" style="height:'+eh+'px;width:48%"></div>'
-      +'</div>'
-      +'<div class="mon">'+m.m+'</div>'
-      +'</div>';
-  }).join('');
-})();
+window.toggleInt = function(el){
+  var mod = el.dataset.mod;
+  var linking = !el.classList.contains('linked');
+  el.classList.toggle('linked', linking);
+  LINKED[mod] = linking;
+
+  /* update count badge on the card */
+  var countEl = document.getElementById('cnt-'+mod);
+  if(countEl && MOD_ENTRIES[mod]){
+    var n = MOD_ENTRIES[mod].filter(function(e){ return e.amt>0; }).length;
+    countEl.textContent = n + ' قيد';
+  }
+
+  /* update panel header count */
+  var linked = Object.keys(LINKED).filter(function(m){ return LINKED[m]; });
+  var hdr = document.getElementById('int-linked-count');
+  if(hdr) hdr.textContent = linked.length + ' برنامج مرتبط';
+
+  var nm = el.querySelector('.nm').textContent;
+  if(linking){
+    toast('تم ربط ' + nm + ' — أُضيفت حركاته تلقائياً ✓');
+  } else {
+    toast('تم فك ربط ' + nm + ' — حُذفت حركاته من المحاسبة');
+  }
+
+  renderJournal();
+  updateKPIs();
+};
 
 /* ════════════════════════════════════════════════
    FILTER
@@ -671,7 +681,6 @@ window.setFilter = function(f, btn){
   btn.classList.add('on');
   renderJournal();
 };
-
 window.filterJournal = function(){
   activeQ   = (document.getElementById('ac-q')||{value:''}).value.toLowerCase();
   activeSrc = (document.getElementById('src-filter')||{value:''}).value;
@@ -679,146 +688,119 @@ window.filterJournal = function(){
 };
 
 /* ════════════════════════════════════════════════
-   INTEGRATION TOGGLE
-════════════════════════════════════════════════ */
-window.toggleInt = function(el){
-  el.classList.toggle('linked');
-  var count = document.querySelectorAll('.int-item.linked').length;
-  var c = document.getElementById('int-linked-count');
-  if(c) c.textContent = count + ' مرتبط';
-  var nm = el.querySelector('.nm').textContent;
-  toast(el.classList.contains('linked') ? 'تم ربط '+nm+' ✓' : 'تم فك ربط '+nm);
-};
-
-/* ════════════════════════════════════════════════
-   ADD / EDIT / DELETE
+   ADD / EDIT / DELETE  (manual entries only)
 ════════════════════════════════════════════════ */
 window.showAddEntry = function(){
   editingId = null;
   entryType = 'cr';
-  document.getElementById('modal-ttl').textContent = '+ إدخال محاسبي جديد';
-  ['f-desc','f-amt','f-note','f-link-ref'].forEach(function(id){ var e=document.getElementById(id); if(e) e.value=''; });
+  document.getElementById('modal-ttl').textContent = '+ إدخال يدوي جديد';
+  ['f-desc','f-amt','f-note'].forEach(function(id){ var e=document.getElementById(id); if(e) e.value=''; });
   document.getElementById('f-acct').value = 'إيراد الغرف';
-  document.getElementById('f-src').value  = 'يدوي';
   document.getElementById('f-vat').value  = 'no';
-  document.getElementById('f-link-mod').value = '';
   var now = new Date();
-  document.getElementById('f-time').value = String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+  document.getElementById('f-time').value = ('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2);
   setType('cr');
   document.getElementById('entry-modal').style.display = 'flex';
 };
-
 window.editEntry = function(id){
-  var e = ENTRIES.find(function(x){ return x.id===id; });
+  var e = MANUAL.find(function(x){ return x.id===id; });
   if(!e) return;
-  editingId = id;
-  entryType = e.type;
+  editingId = id; entryType = e.type;
   document.getElementById('modal-ttl').textContent = '✏ تعديل قيد #JE-'+String(id).padStart(4,'0');
   document.getElementById('f-desc').value = e.desc;
   document.getElementById('f-acct').value = e.acct;
-  document.getElementById('f-src').value  = e.src;
   document.getElementById('f-amt').value  = e.amt;
   document.getElementById('f-vat').value  = e.vat?'yes':'no';
   document.getElementById('f-time').value = e.time;
   document.getElementById('f-note').value = e.note||'';
-  document.getElementById('f-link-mod').value = (e.link&&e.link.mod)||'';
-  document.getElementById('f-link-ref').value = (e.link&&e.link.ref)||'';
   setType(e.type);
   document.getElementById('entry-modal').style.display = 'flex';
 };
-
 window.saveEntry = function(){
   var get = function(id){ return (document.getElementById(id)||{value:''}).value.trim(); };
-  var desc = get('f-desc');
-  if(!desc){ toast('أدخل وصف الحركة', true); return; }
-  var amt = parseFloat(get('f-amt'))||0;
-  if(amt<=0){ toast('أدخل مبلغاً صحيحاً', true); return; }
-
+  var desc = get('f-desc'); if(!desc){ toast('أدخل وصف الحركة',true); return; }
+  var amt  = parseFloat(get('f-amt'))||0; if(amt<=0){ toast('أدخل مبلغاً صحيحاً',true); return; }
   var data = {
-    type: entryType,
-    desc: desc,
-    acct: get('f-acct')||'إيراد الغرف',
-    src:  get('f-src')||'يدوي',
-    amt:  amt,
-    vat:  get('f-vat')==='yes',
-    time: get('f-time')||'--:--',
-    note: get('f-note'),
-    link: { mod: get('f-link-mod'), ref: get('f-link-ref') },
+    type:entryType, desc:desc, acct:get('f-acct')||'إيراد الغرف',
+    src:'يدوي', amt:amt, vat:get('f-vat')==='yes',
+    time:get('f-time')||'--:--', note:get('f-note'),
   };
-
   if(editingId){
-    var idx = ENTRIES.findIndex(function(x){ return x.id===editingId; });
-    if(idx>-1){ ENTRIES[idx] = Object.assign({id:editingId}, data); toast('تم تحديث القيد ✓'); }
+    var idx = MANUAL.findIndex(function(x){ return x.id===editingId; });
+    if(idx>-1){ MANUAL[idx]=Object.assign({id:editingId},data); toast('تم تحديث القيد ✓'); }
   } else {
-    data.id = entryCounter++;
-    ENTRIES.unshift(data);
-    toast('تمت إضافة القيد المحاسبي ✓');
+    data.id = manualNextId++;
+    MANUAL.unshift(data);
+    toast('تمت إضافة القيد اليدوي ✓');
   }
-  closeModal();
-  renderJournal();
-  updateKPIs();
+  closeModal(); renderJournal(); updateKPIs();
 };
-
 window.deleteEntry = function(id){
-  var e = ENTRIES.find(function(x){ return x.id===id; });
-  if(!e) return;
+  var e = MANUAL.find(function(x){ return x.id===id; }); if(!e) return;
   if(!confirm('حذف القيد «'+e.desc+'»؟')) return;
-  ENTRIES = ENTRIES.filter(function(x){ return x.id!==id; });
-  renderJournal(); updateKPIs();
-  toast('تم حذف القيد');
+  MANUAL = MANUAL.filter(function(x){ return x.id!==id; });
+  renderJournal(); updateKPIs(); toast('تم حذف القيد');
 };
-
 window.closeModal = function(){
-  document.getElementById('entry-modal').style.display = 'none';
-  editingId = null;
+  document.getElementById('entry-modal').style.display='none'; editingId=null;
 };
-
 window.setType = function(t){
-  entryType = t;
-  document.getElementById('btn-cr').classList.toggle('on', t==='cr');
-  document.getElementById('btn-dr').classList.toggle('on', t==='dr');
-  var acct = document.getElementById('f-acct');
-  if(acct){
-    if(t==='cr') acct.value = acct.value.startsWith('مصار')||acct.value==='الرواتب'||acct.value==='مرافق وطاقة' ? 'إيراد الغرف' : acct.value;
-    else         acct.value = acct.value.startsWith('إيراد') ? 'الرواتب' : acct.value;
-  }
+  entryType=t;
+  document.getElementById('btn-cr').classList.toggle('on',t==='cr');
+  document.getElementById('btn-dr').classList.toggle('on',t==='dr');
 };
 
 /* ════════════════════════════════════════════════
    EXPORT CSV
 ════════════════════════════════════════════════ */
 window.exportCSV = function(){
-  var rows = [['#','النوع','الوصف','الحساب','المصدر','المبلغ','VAT','الوقت','ملاحظة','ربط','مرجع']];
-  ENTRIES.forEach(function(e){
+  var rows=[['#','النوع','الوصف','الحساب','المصدر','المبلغ','VAT','الوقت','ملاحظة','مصدر الربط']];
+  allEntries().forEach(function(e){
     rows.push([
       'JE-'+String(e.id).padStart(4,'0'),
       e.type==='cr'?'إيراد':'مصروف',
-      e.desc, e.acct, e.src, e.amt,
+      e.desc,e.acct,e.src,e.amt,
       e.vat?Math.round(e.amt*.15):'',
-      e.time, e.note||'',
-      (e.link&&e.link.mod)||'', (e.link&&e.link.ref)||''
+      e.time,e.note||'',e.link||''
     ]);
   });
-  var csv = rows.map(function(r){ return r.map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(','); }).join('\r\n');
-  var blob = new Blob(['﻿'+csv], {type:'text/csv;charset=utf-8;'});
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'المحاسبة_العامة_'+new Date().toISOString().slice(0,10)+'.csv';
+  var csv=rows.map(function(r){ return r.map(function(c){ return'"'+String(c).replace(/"/g,'""')+'"'; }).join(','); }).join('\r\n');
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'}));
+  a.download='المحاسبة_'+new Date().toISOString().slice(0,10)+'.csv';
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  toast('تم تصدير '+ENTRIES.length+' قيد إلى Excel ✓');
+  toast('تم تصدير '+allEntries().length+' قيد ✓');
 };
+
+/* ════════════════════════════════════════════════
+   MONTHLY BARS (static sample)
+════════════════════════════════════════════════ */
+(function(){
+  var months=[
+    {m:'يناير',rev:68,exp:42},{m:'فبراير',rev:72,exp:44},{m:'مارس',rev:85,exp:51},
+    {m:'أبريل',rev:91,exp:55},{m:'مايو',rev:88,exp:53},{m:'يونيو',rev:95,exp:58},
+  ];
+  var mx=Math.max.apply(null,months.map(function(m){ return m.rev; }));
+  var w=document.getElementById('bars-wrap'); if(!w) return;
+  w.innerHTML=months.map(function(m){
+    var rh=Math.round(m.rev/mx*88), eh=Math.round(m.exp/mx*88);
+    return '<div class="bar-col"><div style="display:flex;gap:3px;align-items:flex-end;height:88px">'
+      +'<div class="bar rev" style="height:'+rh+'px;width:48%"></div>'
+      +'<div class="bar exp" style="height:'+eh+'px;width:48%"></div>'
+      +'</div><div class="mon">'+m.m+'</div></div>';
+  }).join('');
+})();
 
 /* ════════════════════════════════════════════════
    TOAST
 ════════════════════════════════════════════════ */
-function toast(msg, isErr){
-  var old = document.querySelector('.nz-toast'); if(old) old.remove();
-  var t = document.createElement('div');
-  t.className = 'nz-toast';
-  t.style.background = isErr ? 'var(--danger-700)' : 'var(--brand-800)';
-  t.innerHTML = '<span style="color:var(--gold-400)">'+(isErr?'✕':'✓')+'</span> '+msg;
+function toast(msg,isErr){
+  var old=document.querySelector('.nz-toast'); if(old) old.remove();
+  var t=document.createElement('div'); t.className='nz-toast';
+  t.style.background=isErr?'var(--danger-700)':'var(--brand-800)';
+  t.innerHTML='<span style="color:var(--gold-400)">'+(isErr?'✕':'✓')+'</span> '+msg;
   document.body.appendChild(t);
-  setTimeout(function(){ t.style.opacity='0'; t.style.transition='opacity .4s'; setTimeout(function(){ if(t.parentNode) t.remove(); },400); }, 3200);
+  setTimeout(function(){ t.style.opacity='0'; t.style.transition='opacity .4s'; setTimeout(function(){ if(t.parentNode)t.remove(); },400); },3200);
 }
 
 /* ════════════════════════════════════════════════
@@ -826,11 +808,6 @@ function toast(msg, isErr){
 ════════════════════════════════════════════════ */
 renderJournal();
 updateKPIs();
-/* sync linked count */
-(function(){
-  var c = document.getElementById('int-linked-count');
-  if(c) c.textContent = document.querySelectorAll('.int-item.linked').length + ' مرتبط';
-})();
 
 })();
 </script>
