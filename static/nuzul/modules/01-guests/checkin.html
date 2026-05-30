@@ -141,6 +141,41 @@
 
 /* ── Toast ──────────────────────────────────────────────────────── */
 .nz-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--brand-800);color:var(--paper);padding:12px 24px;border-radius:10px;font-family:var(--font-ar);font-size:13.5px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.28);z-index:9999;white-space:nowrap;display:flex;align-items:center;gap:10px;direction:rtl}
+
+/* ── Room Settings Drawer ──────────────────────────────────────── */
+.cfg-overlay{position:fixed;inset:0;background:rgba(10,30,22,.55);backdrop-filter:blur(3px);z-index:8000;display:none;justify-content:flex-end}
+.cfg-overlay.open{display:flex}
+.cfg-drawer{background:var(--white);width:min(740px,96vw);height:100vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:-28px 0 80px rgba(0,0,0,.2)}
+.cfg-head{padding:16px 24px;border-bottom:1px solid var(--hairline);background:var(--brand-900);display:flex;align-items:center;gap:14px;flex-shrink:0}
+.cfg-head .ttl{font-family:var(--font-ar-display);font-size:17px;font-weight:600;color:var(--paper);flex:1}
+.cfg-head .sub{font-size:11px;color:var(--gold-400);font-family:var(--font-en);margin-top:2px}
+.cfg-head button{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);color:var(--paper);padding:7px 16px;border-radius:7px;font-family:var(--font-ar);font-size:12px;cursor:pointer}
+.cfg-head button:hover{background:rgba(255,255,255,.2)}
+.cfg-body{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:16px}
+.cfg-foot{padding:14px 24px;border-top:1px solid var(--hairline);background:var(--paper-tint);display:flex;gap:10px;flex-shrink:0}
+
+.cfg-floor{border:1.5px solid var(--hairline);border-radius:12px;overflow:hidden}
+.cfg-floor-hd{display:grid;grid-template-columns:auto 1fr auto auto;gap:10px;align-items:center;padding:11px 16px;background:var(--paper-tint);border-bottom:1px solid var(--hairline)}
+.cfg-floor-badge{font-family:var(--font-en);font-size:10px;font-weight:700;background:var(--brand-700);color:var(--paper);padding:2px 10px;border-radius:5px;letter-spacing:.06em;white-space:nowrap}
+.cfg-floor-name{font-family:var(--font-ar-display);font-size:14px;font-weight:600;color:var(--ink-900);border:none;background:transparent;outline:none;width:100%}
+.cfg-floor-name:focus{background:var(--white);border:1px solid var(--brand-400);border-radius:6px;padding:2px 8px}
+.cfg-floor-count{font-size:11px;color:var(--fg-3);white-space:nowrap}
+.cfg-del-floor{width:28px;height:28px;border-radius:6px;border:1px solid var(--danger-200);background:var(--danger-50);color:var(--danger-600);display:grid;place-items:center;cursor:pointer;font-size:14px;flex-shrink:0}
+.cfg-del-floor:hover{background:var(--danger-600);color:var(--paper)}
+
+.cfg-rooms-hd{display:grid;grid-template-columns:90px 1fr 120px 110px 30px;gap:8px;padding:8px 16px 6px;font-size:10px;font-weight:600;color:var(--fg-3);letter-spacing:.04em;border-bottom:1px solid var(--hairline);background:var(--paper-tint)}
+.cfg-room-row{display:grid;grid-template-columns:90px 1fr 120px 110px 30px;gap:8px;align-items:center;padding:8px 16px;border-bottom:1px solid var(--hairline)}
+.cfg-room-row:last-child{border-bottom:none}
+.cfg-inp{padding:5px 9px;border:1px solid var(--ink-100);border-radius:6px;font-family:var(--font-ar);font-size:12px;background:var(--white);outline:none;width:100%}
+.cfg-inp:focus{border-color:var(--brand-500);box-shadow:0 0 0 2px rgba(0,100,60,.08)}
+.cfg-sel{padding:5px 8px;border:1px solid var(--ink-100);border-radius:6px;font-family:var(--font-ar);font-size:12px;background:var(--white);outline:none;width:100%}
+.cfg-sel:focus{border-color:var(--brand-500)}
+.cfg-del-room{width:26px;height:26px;border-radius:5px;border:1px solid var(--danger-100);background:transparent;color:var(--danger-400);cursor:pointer;font-size:13px;display:grid;place-items:center}
+.cfg-del-room:hover{background:var(--danger-50);color:var(--danger-700);border-color:var(--danger-200)}
+.cfg-add-room-row{padding:10px 16px;border-top:1px solid var(--hairline)}
+
+.cfg-add-floor{background:var(--paper-tint);border:2px dashed var(--hairline);border-radius:12px;padding:16px;text-align:center;cursor:pointer;transition:all 140ms;color:var(--fg-2);font-size:13px;font-weight:500}
+.cfg-add-floor:hover{border-color:var(--brand-400);color:var(--brand-700);background:var(--brand-50)}
 </style>
 </head>
 <body>
@@ -476,7 +511,13 @@
         <div class="left">
           <div class="num-row"><span class="num">01 · ROOMS</span><span class="en-tag">Room Status Map</span></div>
           <h1>حالة الغرف</h1>
-          <p class="sub">خريطة الغرف الكاملة — ٥٢ غرفة على ٤ طوابق</p>
+          <p class="sub" id="rooms-subtitle">خريطة الغرف الكاملة</p>
+        </div>
+        <div class="actions">
+          <button class="btn-sm sec" onclick="openRoomSettings()" style="display:inline-flex;align-items:center;gap:6px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+            تخصيص الغرف والأدوار
+          </button>
         </div>
       </div>
       <div id="floors-container" style="display:flex;flex-direction:column;gap:14px"></div>
@@ -833,16 +874,164 @@ window.markMaint = function(no, floorId){
 };
 
 /* ════════════════════════════════════════
+   ROOM SETTINGS — DRAWER
+════════════════════════════════════════ */
+var ROOM_TYPES = ['ستاندرد','ديلوكس','جناح','جناح ملكي','غرفة مزدوجة','سويت عائلي'];
+var STATUS_LABELS = {clean:'جاهزة',dirty:'تنظيف',occ:'مشغولة',maint:'صيانة'};
+var floorCounter = 10;
+var roomCounter  = 100;
+
+window.openRoomSettings = function(){
+  renderCfg();
+  document.getElementById('cfg-overlay').classList.add('open');
+};
+
+window.closeRoomSettings = function(){
+  document.getElementById('cfg-overlay').classList.remove('open');
+};
+
+function renderCfg(){
+  var body = document.getElementById('cfg-body'); if(!body) return;
+  body.innerHTML = FLOORS.map(function(fl, fi){
+    var rows = fl.rooms.map(function(r, ri){
+      var typeOpts = ROOM_TYPES.map(function(t){
+        return '<option'+(t===r.type?' selected':'')+'>'+t+'</option>';
+      }).join('');
+      var statOpts = Object.keys(STATUS_LABELS).map(function(s){
+        return '<option value="'+s+'"'+(s===r.status?' selected':'')+'>'+STATUS_LABELS[s]+'</option>';
+      }).join('');
+      return '<div class="cfg-room-row">'
+        +'<input class="cfg-inp" data-fi="'+fi+'" data-ri="'+ri+'" data-f="no"  value="'+r.no+'" placeholder="رقم الغرفة" dir="ltr"/>'
+        +'<input class="cfg-inp" data-fi="'+fi+'" data-ri="'+ri+'" data-f="guest" value="'+(r.guest||'')+'" placeholder="اسم النزيل (إن وُجد)"/>'
+        +'<select class="cfg-sel" data-fi="'+fi+'" data-ri="'+ri+'" data-f="type">'+typeOpts+'</select>'
+        +'<select class="cfg-sel" data-fi="'+fi+'" data-ri="'+ri+'" data-f="status">'+statOpts+'</select>'
+        +'<button class="cfg-del-room" onclick="cfgDeleteRoom('+fi+','+ri+')" title="حذف الغرفة">✕</button>'
+        +'</div>';
+    }).join('');
+    return '<div class="cfg-floor" id="cfg-fl-'+fi+'">'
+      +'<div class="cfg-floor-hd">'
+        +'<span class="cfg-floor-badge">'+fl.floor+'</span>'
+        +'<input class="cfg-floor-name" data-fi="'+fi+'" data-f="ar" value="'+fl.ar+'" placeholder="اسم الطابق"/>'
+        +'<span class="cfg-floor-count">'+fl.rooms.length+' غرفة</span>'
+        +'<button class="cfg-del-floor" onclick="cfgDeleteFloor('+fi+')" title="حذف الطابق">🗑</button>'
+      +'</div>'
+      +(fl.rooms.length
+        ? '<div class="cfg-rooms-hd"><span>رقم الغرفة</span><span>النزيل</span><span>النوع</span><span>الحالة</span><span></span></div>'
+        : '')
+      +rows
+      +'<div class="cfg-add-room-row">'
+        +'<button class="btn-sm sec" style="width:100%;justify-content:center" onclick="cfgAddRoom('+fi+')">+ إضافة غرفة لهذا الطابق</button>'
+      +'</div>'
+    +'</div>';
+  }).join('')
+  +'<div class="cfg-add-floor" onclick="cfgAddFloor()">+ إضافة طابق جديد</div>';
+}
+
+function cfgReadInputs(){
+  // Read all current input values back into FLOORS before any mutation
+  document.querySelectorAll('.cfg-inp,.cfg-sel,.cfg-floor-name').forEach(function(el){
+    var fi = el.dataset.fi, ri = el.dataset.ri, f = el.dataset.f;
+    if(fi === undefined || f === undefined) return;
+    fi = parseInt(fi,10);
+    var fl = FLOORS[fi]; if(!fl) return;
+    if(ri === undefined){
+      fl[f] = el.value;
+    } else {
+      ri = parseInt(ri,10);
+      var rm = fl.rooms[ri]; if(!rm) return;
+      rm[f] = el.value;
+      if(f==='status' && el.value!=='occ') delete rm.guest;
+    }
+  });
+}
+
+window.cfgAddFloor = function(){
+  cfgReadInputs();
+  floorCounter++;
+  FLOORS.push({ floor:'F'+floorCounter, ar:'طابق جديد '+floorCounter, rooms:[] });
+  renderCfg();
+  // Scroll to bottom
+  var body = document.getElementById('cfg-body');
+  if(body) body.scrollTop = body.scrollHeight;
+};
+
+window.cfgDeleteFloor = function(fi){
+  cfgReadInputs();
+  if(FLOORS.length <= 1){ toast('لا يمكن حذف الطابق الأخير',true); return; }
+  if(!confirm('حذف الطابق «'+FLOORS[fi].ar+'» وجميع غرفه؟')) return;
+  FLOORS.splice(fi,1);
+  renderCfg();
+};
+
+window.cfgAddRoom = function(fi){
+  cfgReadInputs();
+  roomCounter++;
+  var fl = FLOORS[fi]; if(!fl) return;
+  fl.rooms.push({ no: String(roomCounter), type:'ستاندرد', status:'clean' });
+  renderCfg();
+};
+
+window.cfgDeleteRoom = function(fi, ri){
+  cfgReadInputs();
+  FLOORS[fi].rooms.splice(ri,1);
+  renderCfg();
+};
+
+window.saveRoomSettings = function(){
+  cfgReadInputs();
+  // Sync status: if guest name set, force status=occ
+  FLOORS.forEach(function(fl){
+    fl.rooms.forEach(function(r){
+      if(r.guest && r.guest.trim()) r.status='occ';
+      else if(r.status==='occ') r.status='clean';
+      if(!r.guest) delete r.guest;
+      r.no = r.no.trim() || '?';
+    });
+  });
+  closeRoomSettings();
+  renderFloors();
+  // Update subtitle
+  var total = FLOORS.reduce(function(s,f){ return s+f.rooms.length; },0);
+  var sub = document.getElementById('rooms-subtitle');
+  if(sub) sub.textContent = 'خريطة الغرف الكاملة — '+total+' غرفة على '+FLOORS.length+' طوابق';
+  toast('تم حفظ إعدادات الغرف ✓');
+};
+
+/* ════════════════════════════════════════
    INIT
 ════════════════════════════════════════ */
 renderResTable(RESERVATIONS);
 renderCIList('');
 renderGuests();
 renderFloors();
+// Init subtitle
+(function(){
+  var total = FLOORS.reduce(function(s,f){ return s+f.rooms.length; },0);
+  var sub = document.getElementById('rooms-subtitle');
+  if(sub) sub.textContent = 'خريطة الغرف الكاملة — '+total+' غرفة على '+FLOORS.length+' طوابق';
+})();
 showView('checkin'); // default view = check-in
 
 })();
 </script>
+
+<!-- ═══ ROOM SETTINGS DRAWER ══════════════════════════════════ -->
+<div class="cfg-overlay" id="cfg-overlay" onclick="if(event.target===this)closeRoomSettings()">
+  <div class="cfg-drawer" dir="rtl">
+    <div class="cfg-head">
+      <div>
+        <div class="ttl">⚙ تخصيص الغرف والأدوار</div>
+        <div class="sub">Add floors · Add / remove rooms · Edit number, type and status</div>
+      </div>
+      <button onclick="closeRoomSettings()">✕ إغلاق</button>
+    </div>
+    <div class="cfg-body" id="cfg-body"></div>
+    <div class="cfg-foot">
+      <button class="btn-sm primary" style="min-width:120px" onclick="saveRoomSettings()">💾 حفظ وتطبيق</button>
+      <button class="btn-sm sec" onclick="closeRoomSettings()">إلغاء</button>
+    </div>
+  </div>
+</div>
 
 <script src="/static/nuzul/assets/animations.js"></script>
 <script>
