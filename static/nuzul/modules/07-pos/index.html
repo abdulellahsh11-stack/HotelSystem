@@ -807,6 +807,16 @@ body { background: var(--paper-tint); }
 var LINKED_TO_ACCOUNTING = false;
 var REPORT_PERIOD = 'today';
 
+/* read initial state from shared localStorage channel */
+try { LINKED_TO_ACCOUNTING = localStorage.getItem('nuzul_link_07') === '1'; } catch(e){}
+
+/* react when accounting page changes the link from its side */
+window.addEventListener('storage', function(ev) {
+  if (ev.key !== 'nuzul_link_07') return;
+  LINKED_TO_ACCOUNTING = ev.newValue === '1';
+  applyLinkUI();
+});
+
 var TX = [
   {id:'TX-0248', outlet:'مطعم الواحة', icon:'🍽', desc:'٤ ضيوف · غداء', customer:'أحمد الفهد', room:'٤٠٢', method:'مدى', methodKey:'mada', amt:1240, vat:186, status:'مكتملة', time:'14:32'},
   {id:'TX-0247', outlet:'مقهى الردهة', icon:'☕', desc:'قهوة + كرواسون', customer:'زائر', room:'—', method:'Apple Pay', methodKey:'apple', amt:48, vat:7.2, status:'مكتملة', time:'14:28'},
@@ -1019,26 +1029,34 @@ window.generateReport = function() {
 };
 
 /* ── Accounting Link ── */
-window.toggleAccountingLink = function() {
-  LINKED_TO_ACCOUNTING = !LINKED_TO_ACCOUNTING;
-  var badge = document.getElementById('acctLinkLabel');
-  var txt = document.getElementById('acctLinkText');
+function applyLinkUI() {
+  var badge  = document.getElementById('acctLinkLabel');
+  var txt    = document.getElementById('acctLinkText');
   var bigBtn = document.getElementById('acctLinkBtnBig');
   var status = document.getElementById('acctLinkStatus');
-
+  if (!badge) return;
   if (LINKED_TO_ACCOUNTING) {
     badge.className = 'link-badge linked';
     txt.textContent = 'مرتبط بالمحاسبة';
     bigBtn.textContent = 'إيقاف الربط';
     bigBtn.classList.add('active');
     status.textContent = '✓ الحركات تُرسل تلقائياً إلى دفتر المحاسبة';
-    toast('✓ تم الربط بالمحاسبة — الحركات تُضاف تلقائياً', 'success');
   } else {
     badge.className = 'link-badge unlinked';
     txt.textContent = 'ربط بالمحاسبة';
     bigBtn.textContent = 'تفعيل الربط';
     bigBtn.classList.remove('active');
     status.textContent = 'غير مرتبط';
+  }
+}
+
+window.toggleAccountingLink = function() {
+  LINKED_TO_ACCOUNTING = !LINKED_TO_ACCOUNTING;
+  try { localStorage.setItem('nuzul_link_07', LINKED_TO_ACCOUNTING ? '1' : '0'); } catch(e){}
+  applyLinkUI();
+  if (LINKED_TO_ACCOUNTING) {
+    toast('✓ تم الربط بالمحاسبة — الحركات تُضاف تلقائياً', 'success');
+  } else {
     toast('تم إيقاف الربط بالمحاسبة');
   }
 };
@@ -1107,6 +1125,7 @@ try {
 setTimeout(function(){
   document.querySelectorAll('[data-m-rise],[data-m-rise-stagger]').forEach(function(el){ el.classList.add('is-in'); });
   renderTx();
+  applyLinkUI(); /* reflect saved link state on page load */
 }, 80);
 
 })();
