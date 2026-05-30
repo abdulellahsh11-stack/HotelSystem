@@ -9,20 +9,7 @@
 <link rel="stylesheet" href="/static/nuzul/shared/chrome.css"/>
 <link rel="stylesheet" href="/static/nuzul/shared/module.css"/>
 <style>
-/* ── Page tabs ─────────────────────────────────────────────────── */
-.wh-tabs{display:flex;gap:4px;border-bottom:1px solid var(--ink-100);padding:0 4px;margin-bottom:22px}
-.wh-tab{background:transparent;border:none;padding:12px 18px;color:var(--fg-2);font-family:var(--font-ar);font-size:13px;font-weight:500;cursor:pointer;position:relative;display:inline-flex;align-items:center;gap:7px}
-.wh-tab:hover{color:var(--ink-800)}
-.wh-tab.is-on{color:var(--brand-800)}
-.wh-tab.is-on::after{content:"";position:absolute;bottom:-1px;left:12px;right:12px;height:2px;background:var(--gold-500);border-radius:2px}
-.wh-tab .ct{background:var(--sand);color:var(--fg-2);border-radius:999px;font-size:10px;padding:1px 7px;font-family:var(--font-mono);font-weight:600}
-.wh-tab.is-on .ct{background:var(--danger-100);color:var(--danger-700)}
-
-/* ── Views ─────────────────────────────────────────────────────── */
-.wh-view{display:none;flex-direction:column;gap:20px}
-.wh-view.on{display:flex}
-
-/* ── Tickets table ─────────────────────────────────────────────── */
+/* ── Tickets table ─────────────────────────────────────────────────── */
 .wh-tk{background:var(--white);border:1px solid var(--hairline);border-radius:12px;overflow:hidden}
 .wh-tk-row{display:grid;grid-template-columns:60px 60px 2.2fr 1.4fr 1.4fr 1fr 36px;gap:14px;align-items:center;padding:14px 20px;border-top:1px solid var(--hairline);font-size:13px}
 .wh-tk-row.is-head{background:var(--paper-tint);font-size:11px;color:var(--fg-3);font-weight:600;border-top:none;letter-spacing:.04em}
@@ -36,7 +23,13 @@
 .wh-tk-row .assignee{display:flex;align-items:center;gap:8px}
 .wh-tk-row .assignee .av{width:28px;height:28px;border-radius:999px;background:var(--brand-200);color:var(--brand-800);display:grid;place-items:center;font-family:var(--font-ar);font-size:11px;font-weight:600}
 
-/* ── Inventory toolbar ─────────────────────────────────────────── */
+/* ── Inventory section heading ─────────────────────────────────────── */
+.inv-sec-head{display:flex;align-items:flex-start;justify-content:space-between;padding:4px 0}
+.inv-sec-head .left .ttl{font-family:var(--font-ar-display);font-size:18px;font-weight:700;color:var(--ink-900)}
+.inv-sec-head .left .sub{font-family:var(--font-en);font-size:11px;color:var(--fg-3);margin-top:3px;letter-spacing:.02em}
+.inv-sec-head .right{display:flex;gap:8px;align-items:center;padding-top:2px}
+
+/* ── Inventory toolbar ─────────────────────────────────────────────── */
 .inv-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .inv-search{display:flex;align-items:center;gap:8px;background:var(--white);border:1px solid var(--hairline);border-radius:8px;padding:8px 14px;flex:1;max-width:360px}
 .inv-search svg{width:14px;height:14px;color:var(--fg-3);flex-shrink:0}
@@ -44,14 +37,12 @@
 .cat-chip{padding:6px 14px;border-radius:999px;border:1px solid var(--hairline);font-family:var(--font-ar);font-size:12px;color:var(--fg-2);background:var(--white);cursor:pointer;transition:all 140ms}
 .cat-chip.on{background:var(--brand-700);color:var(--paper);border-color:var(--brand-700)}
 .ml-auto{margin-inline-start:auto}
-.btn-gold{padding:9px 18px;background:var(--gold-700);color:var(--paper);border:none;border-radius:8px;font-family:var(--font-ar);font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
-.btn-gold:hover{background:var(--gold-800)}
 .btn-green{padding:9px 18px;background:var(--brand-700);color:var(--paper);border:none;border-radius:8px;font-family:var(--font-ar);font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
 .btn-green:hover{background:var(--brand-800)}
 .btn-sec{padding:8px 16px;background:var(--white);color:var(--ink-900);border:1px solid var(--hairline);border-radius:8px;font-family:var(--font-ar);font-size:13px;cursor:pointer}
 .btn-sec:hover{background:var(--paper-tint)}
 
-/* ── Inventory KPI strip ───────────────────────────────────────── */
+/* ── Inventory KPI strip ───────────────────────────────────────────── */
 .inv-kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
 .inv-kpi{background:var(--white);border:1px solid var(--hairline);border-radius:10px;padding:14px 18px}
 .inv-kpi .lbl{font-size:11px;color:var(--fg-2);margin-bottom:4px}
@@ -61,9 +52,9 @@
 .inv-kpi .v.bad{color:var(--danger-700)}
 .inv-kpi .meta{font-size:11px;color:var(--fg-3);margin-top:3px}
 
-/* ── Inventory table ───────────────────────────────────────────── */
+/* ── Inventory table ───────────────────────────────────────────────── */
 .inv-tbl{background:var(--white);border:1px solid var(--hairline);border-radius:14px;overflow:hidden}
-.inv-tr{display:grid;grid-template-columns:44px 2.2fr 1fr 1.1fr .9fr 1.1fr 130px 100px 80px;gap:10px;align-items:center;padding:12px 18px;border-top:1px solid var(--hairline);font-size:13px}
+.inv-tr{display:grid;grid-template-columns:44px 2.2fr 1fr 1.1fr .9fr 1.1fr 140px 100px 80px;gap:10px;align-items:center;padding:12px 18px;border-top:1px solid var(--hairline);font-size:13px}
 .inv-tr.hd{background:var(--paper-tint);border-top:none;font-size:10px;color:var(--fg-3);font-weight:600;letter-spacing:.04em;padding:10px 18px}
 .inv-ic{width:36px;height:36px;border-radius:8px;background:var(--paper-tint);border:1px solid var(--hairline);display:grid;place-items:center;font-size:18px;flex-shrink:0}
 .inv-nm{font-weight:600;color:var(--ink-900);font-size:13px;line-height:1.3}
@@ -72,6 +63,8 @@
 .inv-spec{font-family:var(--font-mono);font-size:11px;color:var(--ink-700)}
 .inv-color{display:flex;align-items:center;gap:6px;font-size:12px}
 .inv-dot{width:11px;height:11px;border-radius:999px;flex-shrink:0;border:1px solid rgba(0,0,0,.12)}
+
+/* ── Qty control ────────────────────────────────────────────────────── */
 .qty-cell{display:flex;align-items:center;gap:6px}
 .qty-val{font-family:var(--font-en);font-size:15px;font-weight:700;color:var(--ink-900);min-width:28px;text-align:center}
 .qty-max{font-family:var(--font-mono);font-size:10px;color:var(--fg-3)}
@@ -79,23 +72,27 @@
 .qty-btn:hover{border-color:var(--brand-600);background:var(--brand-50);color:var(--brand-700)}
 .qty-bar{height:4px;background:var(--paper-tint);border-radius:999px;overflow:hidden;margin-top:3px}
 .qty-fill{height:100%;border-radius:999px}
+
+/* ── Status pills ───────────────────────────────────────────────────── */
 .stat-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;white-space:nowrap}
 .stat-ok{background:#DCFCE7;color:#166534}
 .stat-warn{background:#FEF3C7;color:#92400E}
 .stat-bad{background:#FEE2E2;color:#991B1B}
+
+/* ── Row actions ────────────────────────────────────────────────────── */
 .acts-cell{display:flex;gap:4px}
 .ic-btn{width:30px;height:30px;border-radius:6px;border:1px solid var(--hairline);background:transparent;color:var(--fg-2);cursor:pointer;display:grid;place-items:center;font-size:13px}
 .ic-btn:hover{color:var(--ink-900);border-color:var(--ink-300);background:var(--paper-tint)}
 .ic-btn.del:hover{color:var(--danger-600);border-color:var(--danger-200);background:var(--danger-50)}
 
-/* ── Low-stock alert bar ───────────────────────────────────────── */
+/* ── Low-stock alert bar ───────────────────────────────────────────── */
 .low-bar{background:linear-gradient(135deg,#C99428,#9A6D14);color:var(--paper);border-radius:12px;padding:16px 22px;display:flex;align-items:center;gap:18px}
 .low-bar .ic{width:42px;height:42px;background:rgba(255,255,255,.15);border-radius:9px;display:grid;place-items:center;font-size:20px;flex-shrink:0}
 .low-bar .txt .ar{font-family:var(--font-ar-display);font-size:16px;font-weight:600}
 .low-bar .txt .sub{font-size:11px;color:rgba(255,255,255,.8);margin-top:2px}
 .low-bar .act{margin-inline-start:auto;background:var(--paper);color:#9A6D14;border:none;padding:8px 16px;border-radius:6px;font-family:var(--font-ar);font-weight:600;font-size:12px;cursor:pointer;flex-shrink:0}
 
-/* ── Modal ─────────────────────────────────────────────────────── */
+/* ── Modal ─────────────────────────────────────────────────────────── */
 .nz-modal-bd{position:fixed;inset:0;background:rgba(14,42,34,.6);backdrop-filter:blur(4px);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px}
 .nz-modal{background:var(--white);border-radius:16px;width:min(620px,95vw);max-height:92vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 64px -16px rgba(14,42,34,.45)}
 .modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;border-bottom:1px solid var(--hairline);background:var(--paper-tint)}
@@ -110,11 +107,11 @@
 .form-field input:focus,.form-field select:focus{border-color:var(--brand-500);box-shadow:0 0 0 3px rgba(0,100,60,.08)}
 .form-full{grid-column:1/-1}
 
-/* ── Toast ─────────────────────────────────────────────────────── */
+/* ── Toast ─────────────────────────────────────────────────────────── */
 .nz-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--brand-800);color:var(--paper);padding:12px 24px;border-radius:10px;font-family:var(--font-ar);font-size:13.5px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.28);z-index:9999;white-space:nowrap;display:flex;align-items:center;gap:10px;direction:rtl}
 
-/* ── Parts ribbon (low-stock) ──────────────────────────────────── */
-.wh-parts-ribbon{background:var(--white);border:1px solid var(--hairline);border-radius:12px;overflow:hidden;margin-top:6px}
+/* ── Parts ribbon ───────────────────────────────────────────────────── */
+.wh-parts-ribbon{background:var(--white);border:1px solid var(--hairline);border-radius:12px;overflow:hidden}
 .wh-parts-ribbon .body{display:grid;grid-template-columns:repeat(4,1fr);gap:0}
 .wh-parts-ribbon .part{padding:16px 20px;border-inline-start:1px solid var(--hairline);display:flex;flex-direction:column;gap:8px}
 .wh-parts-ribbon .part:first-child{border-inline-start:none}
@@ -125,6 +122,9 @@
 .wh-parts-ribbon .part .qty-row{display:flex;align-items:baseline;justify-content:space-between}
 .wh-parts-ribbon .part .qty{font-family:var(--font-en);font-variant-numeric:tabular-nums;font-weight:600;font-size:19px;color:var(--danger-700)}
 .wh-parts-ribbon .part .par{font-size:11px;color:var(--fg-3);font-family:var(--font-mono)}
+
+/* ── Section divider ────────────────────────────────────────────────── */
+.sec-divider{height:1px;background:var(--hairline);margin:8px 0}
 </style>
 </head>
 <body>
@@ -150,7 +150,7 @@
         </div>
       </div>
 
-      <!-- KPIs -->
+      <!-- KPIs strip -->
       <div class="mod-stats" style="--cols:5" data-m-rise>
         <div class="mod-stat"><div class="lbl">تذاكر مفتوحة</div><div class="v">٧</div><div class="meta down">+٢ منذ الأمس</div></div>
         <div class="mod-stat"><div class="lbl">عاجلة</div><div class="v is-bad">٢</div><div class="meta">تتطلب تدخل فوري</div></div>
@@ -159,162 +159,169 @@
         <div class="mod-stat"><div class="lbl">أصناف تحت الحد</div><div class="v is-warn" id="kpi-low">—</div><div class="meta">في المستودع</div></div>
       </div>
 
-      <!-- Tab bar -->
-      <div class="wh-tabs" data-m-rise>
-        <button class="wh-tab is-on" onclick="switchTab('tickets',this)">تذاكر الصيانة<span class="ct">٧</span></button>
-        <button class="wh-tab" onclick="switchTab('inventory',this)">جدول كميات المستودع<span class="ct" id="inv-tab-ct">—</span></button>
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <!-- SECTION 1 — MAINTENANCE TICKETS                           -->
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <div class="mod-section-head" style="padding-inline:0" data-m-rise>
+        <div><div class="ttl">تذاكر الصيانة</div><div class="sub">Maintenance tickets · open &amp; in-progress</div></div>
       </div>
 
-      <!-- ══ VIEW: TICKETS ══════════════════════════════════════════ -->
-      <div class="wh-view on" id="view-tickets">
-
-        <div class="wh-tk" data-m-rise-stagger>
-          <div class="wh-tk-row is-head">
-            <span>#</span><span>أولوية</span><span>التذكرة</span><span>الموقع</span><span>الفني</span><span>الحالة</span><span></span>
-          </div>
-          <div class="wh-tk-row">
-            <span class="id">TK-2841</span>
-            <div class="prio urgent">⚠</div>
-            <div><div class="ttl">عطل مكيف — درجة حرارة عالية</div><div class="sub">منذ ١٤ دقيقة · أبلغت عنها الاستقبال</div></div>
-            <div><div>غرفة ٢١٨</div><div class="sub">الطابق الثاني — الجناح الشرقي</div></div>
-            <div class="assignee"><div class="av">رك</div><div><div>Rajesh K.</div><div class="sub">في الطريق</div></div></div>
-            <div><span class="mod-tag err"><span class="d"></span>عاجلة</span></div>
-            <div>⋯</div>
-          </div>
-          <div class="wh-tk-row">
-            <span class="id">TK-2840</span>
-            <div class="prio urgent">⚠</div>
-            <div><div class="ttl">تسريب مياه تحت المغسلة</div><div class="sub">منذ ٢٦ دقيقة · أبلغت عنها التدبير</div></div>
-            <div><div>جناح ٤٠٢</div><div class="sub">VIP — أحمد الفهد</div></div>
-            <div class="assignee"><div class="av">مع</div><div><div>محمد العتيبي</div><div class="sub">في الموقع</div></div></div>
-            <div><span class="mod-tag err"><span class="d"></span>عاجلة</span></div>
-            <div>⋯</div>
-          </div>
-          <div class="wh-tk-row">
-            <span class="id">TK-2839</span>
-            <div class="prio high">!</div>
-            <div><div class="ttl">استبدال لمبة LED — ٤ وحدات</div><div class="sub">منذ ٢ ساعة</div></div>
-            <div><div>الردهة الرئيسية</div><div class="sub">الطابق الأرضي</div></div>
-            <div class="assignee"><div class="av">سح</div><div><div>سعيد الحارثي</div><div class="sub">قيد التنفيذ</div></div></div>
-            <div><span class="mod-tag warn"><span class="d"></span>عالية</span></div>
-            <div>⋯</div>
-          </div>
-          <div class="wh-tk-row">
-            <span class="id">TK-2838</span>
-            <div class="prio norm">•</div>
-            <div><div class="ttl">طلاء جدار — تجديد</div><div class="sub">منذ ٥ ساعات</div></div>
-            <div><div>غرفة ١٠٤</div><div class="sub">الطابق الأرضي</div></div>
-            <div class="assignee"><div class="av">جم</div><div><div>جمال المتروك</div><div class="sub">مجدولة لغد</div></div></div>
-            <div><span class="mod-tag info"><span class="d"></span>عادية</span></div>
-            <div>⋯</div>
-          </div>
-          <div class="wh-tk-row">
-            <span class="id">TK-2837</span>
-            <div class="prio norm">•</div>
-            <div><div class="ttl">استبدال مفتاح كهرباء</div><div class="sub">أمس · جدولة عادية</div></div>
-            <div><div>غرفة ٣٠٧</div><div class="sub">الطابق الثالث</div></div>
-            <div class="assignee"><div class="av">رك</div><div><div>Rajesh K.</div><div class="sub">مجدولة</div></div></div>
-            <div><span class="mod-tag info"><span class="d"></span>عادية</span></div>
-            <div>⋯</div>
-          </div>
-          <div class="wh-tk-row">
-            <span class="id">TK-2836</span>
-            <div class="prio norm">•</div>
-            <div><div class="ttl">صيانة سلم النجاة الشرقي</div><div class="sub">صيانة دورية شهرية</div></div>
-            <div><div>الطابق ٢ → السطح</div><div class="sub">الجناح الشرقي</div></div>
-            <div class="assignee"><div class="av">جم</div><div><div>جمال المتروك</div><div class="sub">مجدولة الخميس</div></div></div>
-            <div><span class="mod-tag info"><span class="d"></span>عادية</span></div>
-            <div>⋯</div>
-          </div>
+      <div class="wh-tk" data-m-rise-stagger>
+        <div class="wh-tk-row is-head">
+          <span>#</span><span>أولوية</span><span>التذكرة</span><span>الموقع</span><span>الفني</span><span>الحالة</span><span></span>
         </div>
-
-        <div class="mod-section-head" style="padding-inline:0;margin-top:6px">
-          <div><div class="ttl">قطع تحت حد الطلب — يجب التوريد</div><div class="sub">Items below reorder threshold</div></div>
+        <div class="wh-tk-row">
+          <span class="id">TK-2841</span>
+          <div class="prio urgent">⚠</div>
+          <div><div class="ttl">عطل مكيف — درجة حرارة عالية</div><div class="sub">منذ ١٤ دقيقة · أبلغت عنها الاستقبال</div></div>
+          <div><div>غرفة ٢١٨</div><div class="sub">الطابق الثاني — الجناح الشرقي</div></div>
+          <div class="assignee"><div class="av">رك</div><div><div>Rajesh K.</div><div class="sub">في الطريق</div></div></div>
+          <div><span class="mod-tag err"><span class="d"></span>عاجلة</span></div>
+          <div>⋯</div>
         </div>
-        <div class="wh-parts-ribbon" data-m-rise-stagger>
-          <div class="body">
-            <div class="part">
-              <div class="row1"><div class="ic">💡</div><div><div class="nm">لمبات LED سبوت ١٠ واط</div><div class="sku">SKU · LT-1812</div></div></div>
-              <div class="qty-row"><span class="qty">١٤</span><span class="par">/١٠٠ par</span></div>
-            </div>
-            <div class="part">
-              <div class="row1"><div class="ic">🔌</div><div><div class="nm">أسلاك كهرباء ٢٫٥ مم</div><div class="sku">SKU · WR-2531</div></div></div>
-              <div class="qty-row"><span class="qty">٢٢ <span style="font-size:11px;color:var(--fg-3)">م</span></span><span class="par">/٢٠٩ م par</span></div>
-            </div>
-            <div class="part">
-              <div class="row1"><div class="ic">🎨</div><div><div class="nm">صبغ جدران أبيض ٢٠ كغ</div><div class="sku">SKU · PT-W201</div></div></div>
-              <div class="qty-row"><span class="qty">٣ <span style="font-size:11px;color:var(--fg-3)">دلو</span></span><span class="par">/١٢ par</span></div>
-            </div>
-            <div class="part">
-              <div class="row1"><div class="ic">⚙</div><div><div class="nm">مفاتيح إنارة مفرد رمادي</div><div class="sku">SKU · SW-0001</div></div></div>
-              <div class="qty-row"><span class="qty">٨</span><span class="par">/٥٠ par</span></div>
-            </div>
-          </div>
+        <div class="wh-tk-row">
+          <span class="id">TK-2840</span>
+          <div class="prio urgent">⚠</div>
+          <div><div class="ttl">تسريب مياه تحت المغسلة</div><div class="sub">منذ ٢٦ دقيقة · أبلغت عنها التدبير</div></div>
+          <div><div>جناح ٤٠٢</div><div class="sub">VIP — أحمد الفهد</div></div>
+          <div class="assignee"><div class="av">مع</div><div><div>محمد العتيبي</div><div class="sub">في الموقع</div></div></div>
+          <div><span class="mod-tag err"><span class="d"></span>عاجلة</span></div>
+          <div>⋯</div>
+        </div>
+        <div class="wh-tk-row">
+          <span class="id">TK-2839</span>
+          <div class="prio high">!</div>
+          <div><div class="ttl">استبدال لمبة LED — ٤ وحدات</div><div class="sub">منذ ٢ ساعة</div></div>
+          <div><div>الردهة الرئيسية</div><div class="sub">الطابق الأرضي</div></div>
+          <div class="assignee"><div class="av">سح</div><div><div>سعيد الحارثي</div><div class="sub">قيد التنفيذ</div></div></div>
+          <div><span class="mod-tag warn"><span class="d"></span>عالية</span></div>
+          <div>⋯</div>
+        </div>
+        <div class="wh-tk-row">
+          <span class="id">TK-2838</span>
+          <div class="prio norm">•</div>
+          <div><div class="ttl">طلاء جدار — تجديد</div><div class="sub">منذ ٥ ساعات</div></div>
+          <div><div>غرفة ١٠٤</div><div class="sub">الطابق الأرضي</div></div>
+          <div class="assignee"><div class="av">جم</div><div><div>جمال المتروك</div><div class="sub">مجدولة لغد</div></div></div>
+          <div><span class="mod-tag info"><span class="d"></span>عادية</span></div>
+          <div>⋯</div>
+        </div>
+        <div class="wh-tk-row">
+          <span class="id">TK-2837</span>
+          <div class="prio norm">•</div>
+          <div><div class="ttl">استبدال مفتاح كهرباء</div><div class="sub">أمس · جدولة عادية</div></div>
+          <div><div>غرفة ٣٠٧</div><div class="sub">الطابق الثالث</div></div>
+          <div class="assignee"><div class="av">رك</div><div><div>Rajesh K.</div><div class="sub">مجدولة</div></div></div>
+          <div><span class="mod-tag info"><span class="d"></span>عادية</span></div>
+          <div>⋯</div>
+        </div>
+        <div class="wh-tk-row">
+          <span class="id">TK-2836</span>
+          <div class="prio norm">•</div>
+          <div><div class="ttl">صيانة سلم النجاة الشرقي</div><div class="sub">صيانة دورية شهرية</div></div>
+          <div><div>الطابق ٢ → السطح</div><div class="sub">الجناح الشرقي</div></div>
+          <div class="assignee"><div class="av">جم</div><div><div>جمال المتروك</div><div class="sub">مجدولة الخميس</div></div></div>
+          <div><span class="mod-tag info"><span class="d"></span>عادية</span></div>
+          <div>⋯</div>
         </div>
       </div>
 
-      <!-- ══ VIEW: INVENTORY TABLE ══════════════════════════════════ -->
-      <div class="wh-view" id="view-inventory">
-
-        <!-- Alert bar (shown when low-stock items exist) -->
-        <div class="low-bar" id="inv-alert">
-          <div class="ic">⚠</div>
-          <div class="txt">
-            <div class="ar" id="inv-alert-txt">—</div>
-            <div class="sub">تجاوزت الكميات الحد الأدنى — يُنصح بطلب التوريد فوراً</div>
+      <!-- Quick low-stock parts ribbon -->
+      <div class="mod-section-head" style="padding-inline:0;margin-top:4px" data-m-rise-stagger>
+        <div><div class="ttl">قطع تحت حد الطلب — يجب التوريد</div><div class="sub">Items below reorder threshold</div></div>
+      </div>
+      <div class="wh-parts-ribbon" data-m-rise-stagger>
+        <div class="body">
+          <div class="part">
+            <div class="row1"><div class="ic">💡</div><div><div class="nm">لمبات LED سبوت ١٠ واط</div><div class="sku">SKU · LT-1812</div></div></div>
+            <div class="qty-row"><span class="qty">١٤</span><span class="par">/١٠٠ par</span></div>
           </div>
-          <button class="act" onclick="filterByLow()">عرض الأصناف الناقصة</button>
-        </div>
-
-        <!-- Inventory KPIs -->
-        <div class="inv-kpis">
-          <div class="inv-kpi"><div class="lbl">إجمالي الأصناف</div><div class="v ok" id="kpi-total">—</div><div class="meta">في المستودع</div></div>
-          <div class="inv-kpi"><div class="lbl">إضافة كهربائية</div><div class="v" id="kpi-elec">—</div><div class="meta">صنف</div></div>
-          <div class="inv-kpi"><div class="lbl">أصباغ وكيمياء</div><div class="v" id="kpi-paint">—</div><div class="meta">صنف</div></div>
-          <div class="inv-kpi"><div class="lbl">أدوات وسباكة</div><div class="v" id="kpi-tools">—</div><div class="meta">صنف</div></div>
-          <div class="inv-kpi"><div class="lbl">تحت الحد الأدنى</div><div class="v bad" id="kpi-low2">—</div><div class="meta">تحتاج تعبئة</div></div>
-        </div>
-
-        <!-- Toolbar -->
-        <div class="inv-toolbar">
-          <div class="inv-search">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-            <input id="inv-q" placeholder="بحث بالصنف أو الماركة أو SKU..." oninput="filterInv()"/>
+          <div class="part">
+            <div class="row1"><div class="ic">🔌</div><div><div class="nm">أسلاك كهرباء ٢٫٥ مم</div><div class="sku">SKU · WR-2531</div></div></div>
+            <div class="qty-row"><span class="qty">٢٢ <span style="font-size:11px;color:var(--fg-3)">م</span></span><span class="par">/٢٠٩ م par</span></div>
           </div>
-          <button class="cat-chip on" data-cat="all" onclick="setCat('all',this)">الكل</button>
-          <button class="cat-chip" data-cat="إضافة"   onclick="setCat('إضافة',this)">إضافة</button>
-          <button class="cat-chip" data-cat="كيمياء"  onclick="setCat('كيمياء',this)">كيمياء</button>
-          <button class="cat-chip" data-cat="أصباغ"   onclick="setCat('أصباغ',this)">أصباغ</button>
-          <button class="cat-chip" data-cat="أدوات"   onclick="setCat('أدوات',this)">أدوات</button>
-          <button class="cat-chip" data-cat="سباكة"   onclick="setCat('سباكة',this)">سباكة</button>
-          <div class="ml-auto" style="display:flex;gap:8px">
-            <button class="btn-sec" onclick="exportCSV()">⬇ تصدير Excel</button>
-            <button class="btn-green" onclick="showAddItem()">+ صنف جديد</button>
+          <div class="part">
+            <div class="row1"><div class="ic">🎨</div><div><div class="nm">صبغ جدران أبيض ٢٠ كغ</div><div class="sku">SKU · PT-W201</div></div></div>
+            <div class="qty-row"><span class="qty">٣ <span style="font-size:11px;color:var(--fg-3)">دلو</span></span><span class="par">/١٢ par</span></div>
+          </div>
+          <div class="part">
+            <div class="row1"><div class="ic">⚙</div><div><div class="nm">مفاتيح إنارة مفرد رمادي</div><div class="sku">SKU · SW-0001</div></div></div>
+            <div class="qty-row"><span class="qty">٨</span><span class="par">/٥٠ par</span></div>
           </div>
         </div>
+      </div>
 
-        <!-- Table -->
-        <div class="inv-tbl">
-          <div class="inv-tr hd">
-            <span></span>
-            <span>الصنف</span>
-            <span>النوع</span>
-            <span>العلامة التجارية</span>
-            <span>اللون</span>
-            <span>المقاس · الكهرباء</span>
-            <span>الكمية / الإضافات</span>
-            <span>الحالة</span>
-            <span></span>
-          </div>
-          <div id="inv-tbody"></div>
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <!-- SECTION 2 — INVENTORY QUANTITIES TABLE                    -->
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <div class="sec-divider"></div>
+
+      <!-- Inventory section heading -->
+      <div class="inv-sec-head" data-m-rise>
+        <div class="left">
+          <div class="ttl">جدول كميات المستودع</div>
+          <div class="sub">Full inventory — type · brand · color · size · electrical</div>
         </div>
+        <div class="right">
+          <button class="btn-sec" onclick="exportCSV()">⬇ تصدير Excel</button>
+          <button class="btn-green" onclick="showAddItem()">+ صنف جديد</button>
+        </div>
+      </div>
+
+      <!-- Low-stock alert bar -->
+      <div class="low-bar" id="inv-alert" data-m-rise>
+        <div class="ic">⚠</div>
+        <div class="txt">
+          <div class="ar" id="inv-alert-txt">—</div>
+          <div class="sub">تجاوزت الكميات الحد الأدنى — يُنصح بطلب التوريد فوراً</div>
+        </div>
+        <button class="act" onclick="filterByLow()">عرض الأصناف الناقصة</button>
+      </div>
+
+      <!-- Inventory KPIs -->
+      <div class="inv-kpis" data-m-rise>
+        <div class="inv-kpi"><div class="lbl">إجمالي الأصناف</div><div class="v ok" id="kpi-total">—</div><div class="meta">في المستودع</div></div>
+        <div class="inv-kpi"><div class="lbl">إضافة كهربائية</div><div class="v" id="kpi-elec">—</div><div class="meta">صنف</div></div>
+        <div class="inv-kpi"><div class="lbl">أصباغ وكيمياء</div><div class="v" id="kpi-paint">—</div><div class="meta">صنف</div></div>
+        <div class="inv-kpi"><div class="lbl">أدوات وسباكة</div><div class="v" id="kpi-tools">—</div><div class="meta">صنف</div></div>
+        <div class="inv-kpi"><div class="lbl">تحت الحد الأدنى</div><div class="v bad" id="kpi-low2">—</div><div class="meta">تحتاج تعبئة</div></div>
+      </div>
+
+      <!-- Toolbar: search + category chips -->
+      <div class="inv-toolbar" data-m-rise>
+        <div class="inv-search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input id="inv-q" placeholder="بحث بالصنف أو الماركة أو SKU..." oninput="filterInv()"/>
+        </div>
+        <button class="cat-chip on" data-cat="all" onclick="setCat('all',this)">الكل</button>
+        <button class="cat-chip" data-cat="إضافة"  onclick="setCat('إضافة',this)">إضافة</button>
+        <button class="cat-chip" data-cat="كيمياء" onclick="setCat('كيمياء',this)">كيمياء</button>
+        <button class="cat-chip" data-cat="أصباغ"  onclick="setCat('أصباغ',this)">أصباغ</button>
+        <button class="cat-chip" data-cat="أدوات"  onclick="setCat('أدوات',this)">أدوات</button>
+        <button class="cat-chip" data-cat="سباكة"  onclick="setCat('سباكة',this)">سباكة</button>
+      </div>
+
+      <!-- Inventory table -->
+      <div class="inv-tbl" data-m-rise>
+        <div class="inv-tr hd">
+          <span></span>
+          <span>الصنف</span>
+          <span>النوع</span>
+          <span>العلامة التجارية</span>
+          <span>اللون</span>
+          <span>المقاس · الكهرباء</span>
+          <span>الكمية / الإضافات</span>
+          <span>الحالة</span>
+          <span></span>
+        </div>
+        <div id="inv-tbody"></div>
       </div>
 
     </main>
   </div>
 </div>
 
-<!-- ═══ ADD ITEM MODAL ══════════════════════════════════════════ -->
+<!-- ═══ ADD / EDIT ITEM MODAL ══════════════════════════════════════════ -->
 <div id="add-modal" style="display:none" class="nz-modal-bd" onclick="if(event.target===this)closeAddModal()">
   <div class="nz-modal" dir="rtl">
     <div class="modal-head">
@@ -336,7 +343,7 @@
         <div class="form-field"><label>الكمية الحالية *</label><input id="f-qty" type="number" min="0" value="0" dir="ltr"/></div>
         <div class="form-field"><label>حد إعادة الطلب</label><input id="f-par" type="number" min="0" value="20" dir="ltr"/></div>
         <div class="form-field"><label>وحدة القياس</label>
-          <select id="f-unit"><option>قطعة</option><option>متر</option><option>كيلو</option><option>دلو</option><option>علبة</option><option>كرتون</option></select>
+          <select id="f-unit"><option>قطعة</option><option>متر</option><option>كيلو</option><option>دلو</option><option>علبة</option><option>كرتون</option><option>لفة</option><option>أنبوب</option><option>مجموعة</option></select>
         </div>
         <div class="form-field"><label>رمز SKU</label><input id="f-sku" placeholder="LT-1812" dir="ltr"/></div>
       </div>
@@ -362,10 +369,10 @@ setTimeout(function(){
 'use strict';
 
 /* ════════════════════════════════════════
-   DATA
+   DATA — 20 maintenance / warehouse items
 ════════════════════════════════════════ */
 var ITEMS = [
-  /* ── إضافة كهربائية ──── */
+  /* ── إضافة كهربائية ─────────────────── */
   {id:1, icon:'💡', name:'لمبة LED سبوت ١٠ واط',       cat:'إضافة', brand:'Philips',   color:'أبيض دافئ', colorHex:'#FFFDE7', spec:'١٠ واط · ٢٢٠V', qty:14,  par:100, unit:'قطعة', sku:'LT-1812'},
   {id:2, icon:'💡', name:'لمبة LED بانل مدمجة',        cat:'إضافة', brand:'Osram',     color:'أبيض ثلجي', colorHex:'#E3F2FD', spec:'٢٠ واط · ٢٢٠V', qty:62,  par:80,  unit:'قطعة', sku:'LT-2448'},
   {id:3, icon:'💡', name:'شريط LED مرن RGB',           cat:'إضافة', brand:'Tuya',      color:'متعدد',      colorHex:'#FCE4EC', spec:'٢٤V · ١٢ واط/م', qty:9,   par:30,  unit:'متر',  sku:'LT-3856'},
@@ -374,101 +381,77 @@ var ITEMS = [
   {id:6, icon:'⚙',  name:'مفتاح إنارة مفرد',          cat:'إضافة', brand:'Schneider', color:'رمادي',      colorHex:'#ECEFF1', spec:'١٦ أمبير',       qty:8,   par:50,  unit:'قطعة', sku:'SW-0001'},
   {id:7, icon:'⚡', name:'قاطع كهربائي ١ فاز',        cat:'إضافة', brand:'ABB',       color:'أبيض',       colorHex:'#F5F5F5', spec:'٢٠ أمبير · ٢٤٠V', qty:34, par:40,  unit:'قطعة', sku:'BR-0028'},
   {id:8, icon:'🔌', name:'مقبس كهربائي مزدوج',        cat:'إضافة', brand:'Legrand',   color:'أبيض',       colorHex:'#F5F5F5', spec:'١٣ أمبير',       qty:45,  par:40,  unit:'قطعة', sku:'SK-1140'},
-  /* ── أصباغ ──────────── */
+  /* ── أصباغ ──────────────────────────── */
   {id:9,  icon:'🎨', name:'صبغ جدران أبيض ٢٠ كغ',    cat:'أصباغ', brand:'Jotun',     color:'أبيض ناصع',  colorHex:'#FAFAFA', spec:'٢٠ كغ / دلو',    qty:3,   par:12,  unit:'دلو',  sku:'PT-W201'},
   {id:10, icon:'🎨', name:'صبغ خارجي بيج',            cat:'أصباغ', brand:'Dulux',     color:'بيج',        colorHex:'#F5F0E8', spec:'١٠ لتر',          qty:6,   par:8,   unit:'دلو',  sku:'PT-B402'},
   {id:11, icon:'🖌', name:'بريمر عازل أبيض',          cat:'أصباغ', brand:'National',  color:'أبيض',       colorHex:'#FAFAFA', spec:'٢٠ لتر',          qty:5,   par:6,   unit:'دلو',  sku:'PR-W100'},
-  /* ── كيمياء ─────────── */
+  /* ── كيمياء ─────────────────────────── */
   {id:12, icon:'🧴', name:'منظف متعدد الأغراض',       cat:'كيمياء', brand:'Dettol',   color:'—',          colorHex:'#E8F5E9', spec:'٥ لتر',           qty:28,  par:20,  unit:'علبة', sku:'CL-D501'},
   {id:13, icon:'🧪', name:'مزيل صدأ مركز',           cat:'كيمياء', brand:'WD-40',    color:'—',          colorHex:'#FFF8E1', spec:'٥٠٠ مل',          qty:12,  par:10,  unit:'قطعة', sku:'CL-R200'},
   {id:14, icon:'💧', name:'مواد إحكام سيليكون',       cat:'كيمياء', brand:'Sika',     color:'شفاف',       colorHex:'#E3F2FD', spec:'٣٠٠ مل',          qty:18,  par:15,  unit:'أنبوب', sku:'CL-S301'},
-  /* ── أدوات ──────────── */
+  /* ── أدوات ──────────────────────────── */
   {id:15, icon:'🔧', name:'مفك براغي مجموعة',        cat:'أدوات', brand:'Stanley',   color:'أصفر',       colorHex:'#FFF9C4', spec:'١٢ قطعة',         qty:7,   par:5,   unit:'مجموعة',sku:'TL-S012'},
   {id:16, icon:'🔨', name:'مطرقة ٥٠٠ غ',             cat:'أدوات', brand:'Dewalt',    color:'أصفر',       colorHex:'#FFF9C4', spec:'٥٠٠ غرام',        qty:9,   par:6,   unit:'قطعة', sku:'TL-H500'},
   {id:17, icon:'📏', name:'شريط قياس ٥ م',           cat:'أدوات', brand:'Bosch',     color:'أصفر',       colorHex:'#FFF9C4', spec:'٥ متر',           qty:11,  par:8,   unit:'قطعة', sku:'TL-M005'},
-  /* ── سباكة ──────────── */
+  /* ── سباكة ──────────────────────────── */
   {id:18, icon:'🚿', name:'أنابيب PPR ٢٠ مم',        cat:'سباكة', brand:'Wavin',     color:'أخضر',       colorHex:'#E8F5E9', spec:'٢٠ مم · ٦ م',    qty:16,  par:20,  unit:'قطعة', sku:'PL-P020'},
   {id:19, icon:'🔩', name:'صمام كروي ١ بوصة',        cat:'سباكة', brand:'Giacomini', color:'فضي',        colorHex:'#ECEFF1', spec:'١ بوصة',          qty:14,  par:12,  unit:'قطعة', sku:'PL-V100'},
   {id:20, icon:'💧', name:'شريط تيفلون',             cat:'سباكة', brand:'—',         color:'أبيض',       colorHex:'#F5F5F5', spec:'١٢ مم × ١٠ م',   qty:35,  par:30,  unit:'لفة',  sku:'PL-T001'},
 ];
 
 var itemCounter = 21;
-var activeCat = 'all';
-var activeQ   = '';
-
-/* ════════════════════════════════════════
-   TAB SWITCHING
-════════════════════════════════════════ */
-window.switchTab = function(id, btn){
-  document.querySelectorAll('.wh-tab').forEach(function(b){ b.classList.remove('is-on'); });
-  btn.classList.add('is-on');
-  document.getElementById('view-tickets').classList.toggle('on', id==='tickets');
-  document.getElementById('view-inventory').classList.toggle('on', id==='inventory');
-};
-
-/* ════════════════════════════════════════
-   TOAST
-════════════════════════════════════════ */
-function toast(msg, isErr){
-  var old = document.querySelector('.nz-toast'); if(old) old.remove();
-  var t = document.createElement('div'); t.className='nz-toast';
-  t.style.background = isErr ? 'var(--danger-700)' : 'var(--brand-800)';
-  t.innerHTML = '<span style="color:var(--gold-400)">'+(isErr?'✕':'✓')+'</span> '+msg;
-  document.body.appendChild(t);
-  setTimeout(function(){ t.style.opacity='0'; t.style.transition='opacity .4s'; setTimeout(function(){ if(t.parentNode)t.remove(); },400); },3000);
-}
+var activeCat   = 'all';
+var activeQ     = '';
+var editingId   = null;
 
 /* ════════════════════════════════════════
    STATUS HELPERS
 ════════════════════════════════════════ */
 function statusOf(item){
-  if(item.qty <= 0) return 'bad';
+  if(item.qty <= 0)              return 'bad';
   if(item.qty < item.par * 0.25) return 'bad';
   if(item.qty < item.par * 0.5)  return 'warn';
   return 'ok';
 }
-
 function statusLabel(item){
   var s = statusOf(item);
   if(s==='bad')  return '<span class="stat-pill stat-bad">🔴 نفد / ناقص جداً</span>';
   if(s==='warn') return '<span class="stat-pill stat-warn">🟡 تحت الحد</span>';
   return '<span class="stat-pill stat-ok">✓ جيدة</span>';
 }
-
-function pct(item){
-  return Math.min(100, Math.max(3, Math.round(item.qty / item.par * 100)));
-}
-
+function pct(item){ return Math.min(100, Math.max(3, Math.round(item.qty / item.par * 100))); }
 function fillColor(item){
   var s = statusOf(item);
-  if(s==='bad')  return '#EF4444';
-  if(s==='warn') return '#F59E0B';
-  return '#22C55E';
+  return s==='bad' ? '#EF4444' : s==='warn' ? '#F59E0B' : '#22C55E';
 }
 
 /* ════════════════════════════════════════
-   RENDER INVENTORY TABLE
+   RENDER
 ════════════════════════════════════════ */
 function renderInv(){
   var list = ITEMS.filter(function(it){
-    var mQ = !activeQ || it.name.toLowerCase().includes(activeQ) || it.brand.toLowerCase().includes(activeQ) || it.sku.toLowerCase().includes(activeQ);
+    var mQ = !activeQ
+      || it.name.toLowerCase().includes(activeQ)
+      || it.brand.toLowerCase().includes(activeQ)
+      || it.sku.toLowerCase().includes(activeQ);
     var mC = activeCat==='all' || it.cat===activeCat;
     return mQ && mC;
   });
 
-  var tbody = document.getElementById('inv-tbody'); if(!tbody) return;
+  var tbody = document.getElementById('inv-tbody');
+  if(!tbody) return;
   if(!list.length){
     tbody.innerHTML = '<div style="padding:32px;text-align:center;color:var(--fg-3)">لا توجد أصناف تطابق البحث</div>';
     return;
   }
 
   tbody.innerHTML = list.map(function(it){
-    var p = pct(it);
+    var p  = pct(it);
     var fc = fillColor(it);
     return '<div class="inv-tr">'
       +'<div class="inv-ic">'+it.icon+'</div>'
       +'<div><div class="inv-nm">'+it.name+'</div><div class="inv-sku">SKU · '+it.sku+'</div></div>'
-      +'<div style="font-size:11px;background:var(--paper-tint);border:1px solid var(--hairline);border-radius:5px;padding:2px 8px;display:inline-block;color:var(--fg-2)">'+it.cat+'</div>'
+      +'<div style="font-size:11px;background:var(--paper-tint);border:1px solid var(--hairline);border-radius:5px;padding:2px 8px;display:inline-block;color:var(--fg-2);white-space:nowrap">'+it.cat+'</div>'
       +'<div class="inv-brand">'+it.brand+'</div>'
       +'<div class="inv-color"><span class="inv-dot" style="background:'+it.colorHex+'"></span>'+it.color+'</div>'
       +'<div class="inv-spec">'+it.spec+'</div>'
@@ -495,10 +478,10 @@ function renderInv(){
 }
 
 function updateKPIs(){
-  var low  = ITEMS.filter(function(it){ return statusOf(it)!=='ok'; }).length;
-  var elec = ITEMS.filter(function(it){ return it.cat==='إضافة'; }).length;
-  var paint= ITEMS.filter(function(it){ return it.cat==='أصباغ'||it.cat==='كيمياء'; }).length;
-  var tools= ITEMS.filter(function(it){ return it.cat==='أدوات'||it.cat==='سباكة'; }).length;
+  var low   = ITEMS.filter(function(it){ return statusOf(it)!=='ok'; }).length;
+  var elec  = ITEMS.filter(function(it){ return it.cat==='إضافة'; }).length;
+  var paint = ITEMS.filter(function(it){ return it.cat==='أصباغ'||it.cat==='كيمياء'; }).length;
+  var tools = ITEMS.filter(function(it){ return it.cat==='أدوات'||it.cat==='سباكة'; }).length;
   function set(id,v){ var e=document.getElementById(id); if(e) e.textContent=v; }
   set('kpi-total', ITEMS.length);
   set('kpi-elec',  elec);
@@ -506,8 +489,6 @@ function updateKPIs(){
   set('kpi-tools', tools);
   set('kpi-low2',  low);
   set('kpi-low',   low);
-  set('inv-tab-ct', ITEMS.length);
-  // Alert bar
   var al = document.getElementById('inv-alert-txt');
   if(al) al.textContent = low+' '+(low===1?'صنف':'أصناف')+' وصلت للحد الأدنى أو أقل — يلزم التوريد';
 }
@@ -528,24 +509,25 @@ window.filterInv = function(){
 };
 
 window.filterByLow = function(){
-  // Switch to inventory tab and filter by low-stock
-  document.querySelectorAll('.wh-tab')[1].click();
-  // Highlight low-stock items: rerender with status filter
-  var lowIds = ITEMS.filter(function(it){ return statusOf(it)!=='ok'; }).map(function(it){ return it.id; });
   activeCat = 'all';
-  document.querySelectorAll('[data-cat]').forEach(function(b){ b.classList.remove('on'); b.classList.toggle('on', b.dataset.cat==='all'); });
+  document.querySelectorAll('[data-cat]').forEach(function(b){
+    b.classList.remove('on');
+    b.classList.toggle('on', b.dataset.cat==='all');
+  });
+  activeQ = '';
+  var q = document.getElementById('inv-q'); if(q) q.value='';
+  var lowIds = ITEMS.filter(function(it){ return statusOf(it)!=='ok'; }).length;
   renderInv();
-  toast('يتم عرض '+lowIds.length+' صنف تحت الحد الأدنى');
+  toast('يتم عرض '+lowIds+' صنف تحت الحد الأدنى');
 };
 
 /* ════════════════════════════════════════
-   QUANTITY ADJUST
+   QUANTITY ADJUST (in-place DOM update)
 ════════════════════════════════════════ */
 window.adjustQty = function(id, delta){
   var it = ITEMS.find(function(x){ return x.id===id; });
   if(!it) return;
   it.qty = Math.max(0, it.qty + delta);
-  // Update cells in-place without full re-render
   var qv = document.getElementById('qv-'+id);
   var qf = document.getElementById('qf-'+id);
   var qs = document.getElementById('qs-'+id);
@@ -558,24 +540,21 @@ window.adjustQty = function(id, delta){
 /* ════════════════════════════════════════
    ADD / EDIT / DELETE
 ════════════════════════════════════════ */
-var editingId = null;
-
 window.showAddItem = function(){
   editingId = null;
   document.getElementById('modal-title').textContent = '+ إضافة صنف جديد';
-  ['f-name','f-brand','f-color','f-spec','f-icon','f-sku'].forEach(function(id){ var e=document.getElementById(id); if(e) e.value=''; });
-  var fq = document.getElementById('f-qty'); if(fq) fq.value='0';
-  var fp = document.getElementById('f-par'); if(fp) fp.value='20';
+  ['f-name','f-brand','f-color','f-spec','f-icon','f-sku'].forEach(function(id){
+    var e=document.getElementById(id); if(e) e.value='';
+  });
+  var fq=document.getElementById('f-qty'); if(fq) fq.value='0';
+  var fp=document.getElementById('f-par'); if(fp) fp.value='20';
   document.getElementById('add-modal').style.display='flex';
-  // Switch to inventory tab to show result
-  document.querySelectorAll('.wh-tab')[1].click();
 };
 
 window.editItem = function(id){
   var it = ITEMS.find(function(x){ return x.id===id; });
   if(!it) return;
   editingId = id;
-  document.getElementById('modal-title').textContent = 'تعديل — '+it.name;
   var set = function(fid, val){ var e=document.getElementById(fid); if(e) e.value=val; };
   set('f-name',  it.name);
   set('f-cat',   it.cat);
@@ -594,7 +573,7 @@ window.editItem = function(id){
 window.saveItem = function(){
   var get = function(id){ return (document.getElementById(id)||{value:''}).value.trim(); };
   var name = get('f-name');
-  if(!name){ toast('أدخل اسم الصنف',true); return; }
+  if(!name){ toast('أدخل اسم الصنف', true); return; }
   var qty = parseInt(get('f-qty'),10)||0;
   var par = parseInt(get('f-par'),10)||20;
 
@@ -615,22 +594,21 @@ window.saveItem = function(){
     }
   } else {
     ITEMS.push({
-      id: itemCounter++,
-      icon:  get('f-icon')||'📦',
-      name:  name,
-      cat:   get('f-cat')||'إضافة',
-      brand: get('f-brand')||'—',
-      color: get('f-color')||'—',
+      id:       itemCounter++,
+      icon:     get('f-icon')||'📦',
+      name:     name,
+      cat:      get('f-cat')||'إضافة',
+      brand:    get('f-brand')||'—',
+      color:    get('f-color')||'—',
       colorHex: '#F5F5F5',
-      spec:  get('f-spec'),
-      qty:   qty,
-      par:   par,
-      unit:  get('f-unit')||'قطعة',
-      sku:   get('f-sku')||('SKU-'+itemCounter),
+      spec:     get('f-spec'),
+      qty:      qty,
+      par:      par,
+      unit:     get('f-unit')||'قطعة',
+      sku:      get('f-sku')||('SKU-'+itemCounter),
     });
     toast('تمت إضافة «'+name+'» للمستودع ✓');
   }
-
   closeAddModal();
   renderInv();
   updateKPIs();
@@ -660,15 +638,35 @@ window.exportCSV = function(){
     var statusAr = {ok:'جيدة',warn:'تحت الحد',bad:'ناقص'}[statusOf(it)];
     rows.push([it.name, it.cat, it.brand, it.color, it.spec, it.qty, it.par, it.unit, it.sku, statusAr]);
   });
-  var csv = rows.map(function(r){ return r.map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(','); }).join('\r\n');
-  var bom = '﻿'; // UTF-8 BOM for Excel Arabic
+  var csv = rows.map(function(r){
+    return r.map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(',');
+  }).join('\r\n');
+  var bom  = '﻿';
   var blob = new Blob([bom+csv], {type:'text/csv;charset=utf-8;'});
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement('a'); a.href=url; a.download='مستودع_الصيانة_'+new Date().toISOString().slice(0,10)+'.csv';
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a');
+  a.href   = url;
+  a.download = 'مستودع_الصيانة_'+new Date().toISOString().slice(0,10)+'.csv';
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
   toast('تم تصدير '+ITEMS.length+' صنف إلى Excel ✓');
 };
+
+/* ════════════════════════════════════════
+   TOAST
+════════════════════════════════════════ */
+function toast(msg, isErr){
+  var old = document.querySelector('.nz-toast'); if(old) old.remove();
+  var t   = document.createElement('div');
+  t.className = 'nz-toast';
+  t.style.background = isErr ? 'var(--danger-700)' : 'var(--brand-800)';
+  t.innerHTML = '<span style="color:var(--gold-400)">'+(isErr?'✕':'✓')+'</span> '+msg;
+  document.body.appendChild(t);
+  setTimeout(function(){
+    t.style.opacity='0'; t.style.transition='opacity .4s';
+    setTimeout(function(){ if(t.parentNode) t.remove(); }, 400);
+  }, 3000);
+}
 
 /* ════════════════════════════════════════
    INIT
