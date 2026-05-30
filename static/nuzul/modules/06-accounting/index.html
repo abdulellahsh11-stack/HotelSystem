@@ -806,6 +806,25 @@ function toast(msg,isErr){
 /* ════════════════════════════════════════════════
    INIT
 ════════════════════════════════════════════════ */
+
+/* auto-activate POS link if it was set from the POS page */
+try {
+  if (localStorage.getItem('nuzul_link_07') === '1') {
+    var posEl = document.querySelector('[data-mod="07"]');
+    if (posEl && !posEl.classList.contains('linked')) toggleInt(posEl);
+  }
+} catch(e){}
+
+/* react in real-time when POS page changes the link state */
+window.addEventListener('storage', function(ev) {
+  if (ev.key !== 'nuzul_link_07') return;
+  var posEl = document.querySelector('[data-mod="07"]');
+  if (!posEl) return;
+  var shouldLink = ev.newValue === '1';
+  var isLinked   = posEl.classList.contains('linked');
+  if (shouldLink !== isLinked) toggleInt(posEl);
+});
+
 renderJournal();
 updateKPIs();
 
