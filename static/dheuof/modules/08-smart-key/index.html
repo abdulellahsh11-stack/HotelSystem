@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="/static/dheuof/assets/animations.css"/>
 <link rel="stylesheet" href="/static/dheuof/shared/chrome.css"/>
 <link rel="stylesheet" href="/static/dheuof/shared/module.css"/>
+<script src="/static/dheuof/shared/vibrant.js"></script>
 <style>
 body { background: var(--paper-tint); }
 
@@ -275,6 +276,9 @@ body { background: var(--paper-tint); }
   <div>
     <div id="topbar-slot"></div>
     <main class="dh-main">
+<div id="vib-hero-wrap"></div>
+<div id="tier-bar-wrap"></div>
+
 
       <!-- Header -->
       <div class="mod-head" data-m-rise>
@@ -986,6 +990,10 @@ setTimeout(function(){
 }, 80);
 
 })();
+</script>
+<script>
+renderVibrantHero({ icon:'🔐', num:'08', title:'المفتاح الذكي', en:'Smart Key · Fraud Guard', sub:'يراقب جميع البرامج دفعة واحدة، إنذارات فورية', badges:[{v:'٤',l:'إنذار نشط'},{v:'١٧',l:'برنامج مراقَب'}] });
+renderTierBar({ exc:280, good:95, low:22, bad:4 });
 </script>
 </body>
 </html>

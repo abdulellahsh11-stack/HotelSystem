@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="/static/dheuof/assets/animations.css"/>
 <link rel="stylesheet" href="/static/dheuof/shared/chrome.css"/>
 <link rel="stylesheet" href="/static/dheuof/shared/module.css"/>
+<script src="/static/dheuof/shared/vibrant.js"></script>
 <style>
   body { background: var(--paper-tint); }
 
@@ -49,6 +50,9 @@
   <div>
     <div id="topbar-slot"></div>
     <main class="dh-main">
+<div id="vib-hero-wrap"></div>
+<div id="tier-bar-wrap"></div>
+
 
       <div class="mod-head" data-m-rise>
         <div class="left">
@@ -288,6 +292,10 @@ window.exportPDF = function(){
   win.document.close();
   setTimeout(function(){win.print();},700);
 };
+</script>
+<script>
+renderVibrantHero({ icon:'⏰', num:'13', title:'أداء الموظفين', en:'Staff Performance · Attendance', sub:'تسجيل الحضور والتأخير، حوافز أسبوعية', badges:[{v:'١٨/٢٠',l:'حاضر اليوم'},{v:'٩٠٪',l:'الانضباط'}] });
+renderTierBar({ exc:12, good:4, low:2, bad:2 });
 </script>
 </body>
 </html>

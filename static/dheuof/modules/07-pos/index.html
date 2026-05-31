@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="/static/dheuof/assets/animations.css"/>
 <link rel="stylesheet" href="/static/dheuof/shared/chrome.css"/>
 <link rel="stylesheet" href="/static/dheuof/shared/module.css"/>
+<script src="/static/dheuof/shared/vibrant.js"></script>
 <style>
 body { background: var(--paper-tint); }
 
@@ -437,6 +438,9 @@ body { background: var(--paper-tint); }
   <div>
     <div id="topbar-slot"></div>
     <main class="dh-main">
+<div id="vib-hero-wrap"></div>
+<div id="tier-bar-wrap"></div>
+
 
       <!-- Header -->
       <div class="mod-head" data-m-rise>
@@ -1341,6 +1345,10 @@ setTimeout(function(){
 }, 80);
 
 })();
+</script>
+<script>
+renderVibrantHero({ icon:'🏧', num:'07', title:'نقاط البيع', en:'POS · MADA · Apple Pay', sub:'٦ أجهزة متصلة، إقفال يومي تلقائي', badges:[{v:'٢٤٨',l:'حركة اليوم'},{v:'٦',l:'جهاز نشط'}] });
+renderTierBar({ exc:186, good:42, low:14, bad:6 });
 </script>
 </body>
 </html>

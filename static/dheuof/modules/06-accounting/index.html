@@ -169,6 +169,9 @@
   <div>
     <div id="topbar-slot"></div>
     <main class="dh-main">
+<div id="vib-hero-wrap"></div>
+<div id="tier-bar-wrap"></div>
+
 
       <!-- Header -->
       <div class="mod-head" data-m-rise>
@@ -1139,6 +1142,10 @@ renderJournal();
 updateKPIs();
 
 })();
+</script>
+<script>
+renderVibrantHero({ icon:'💳', num:'06', title:'المحاسبة', en:'Accounting · P&L · VAT', sub:'دفتر اليومية، الربح والخسارة، ضريبة القيمة المضافة', badges:[{v:'١٦٬٤٤٠',l:'ربح اليوم ر.س'},{v:'٩٢٪',l:'نسبة التحصيل'}] });
+renderTierBar({ exc:142, good:48, low:18, bad:6 });
 </script>
 </body>
 </html>

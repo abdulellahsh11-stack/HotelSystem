@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="/static/dheuof/shared/chrome.css"/>
 <link rel="stylesheet" href="/static/dheuof/shared/module.css"/>
 <link rel="stylesheet" href="/static/dheuof/modules/12-analytics/analytics.css"/>
+<script src="/static/dheuof/shared/vibrant.js"></script>
 </head>
 <body>
 <div class="dh-app">
@@ -16,6 +17,9 @@
   <div>
     <div id="topbar-slot"></div>
     <main class="dh-main">
+<div id="vib-hero-wrap"></div>
+<div id="tier-bar-wrap"></div>
+
 
       <!-- Page head -->
       <div class="mod-head" data-m-rise>
@@ -667,6 +671,10 @@ setTimeout(function(){
     setTimeout(function(){win.print();},700);
   };
 })();
+</script>
+<script>
+renderVibrantHero({ icon:'🧠', num:'12', title:'تحليل البيانات', en:'Insights & Analytics · SWOT', sub:'تنبؤ ٩٠ يوم، توصيات شهرية بقيمة محسوبة', badges:[{v:'١٤',l:'رؤية نشطة'},{v:'٩٠',l:'يوم تنبؤ'}] });
+renderTierBar({ exc:8, good:4, low:1, bad:1 });
 </script>
 </body>
 </html>
