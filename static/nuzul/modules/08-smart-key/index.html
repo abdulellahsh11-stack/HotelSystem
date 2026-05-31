@@ -805,23 +805,34 @@ function renderLog() {
 /* ════════════════════════════════
    EXPORT LOG
 ════════════════════════════════ */
+/* ════ EXCEL XML HELPER ════════════════════════════════════════════ */
+function toXLS(hdrs,dataRows,sheetName){
+  function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function cell(v,h){ var t=(!h&&v!==''&&!isNaN(+v))?'Number':'String'; return '<Cell'+(h?' ss:StyleID="H"':'')+'><Data ss:Type="'+t+'">'+esc(v)+'</Data></Cell>'; }
+  return '﻿<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?>'
+    +'<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'
+    +'<Styles><Style ss:ID="H"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1B4D3D" ss:Pattern="Solid"/></Style></Styles>'
+    +'<Worksheet ss:Name="'+esc(sheetName||'تقرير')+'"><Table>'
+    +'<Row>'+hdrs.map(function(h){return cell(h,true);}).join('')+'</Row>'
+    +dataRows.map(function(r){return '<Row>'+r.map(function(c){return cell(c,false);}).join('')+'</Row>';}).join('')
+    +'</Table></Worksheet></Workbook>';
+}
+function dlXLS(content,fname){
+  var blob=new Blob([content],{type:'application/vnd.ms-excel;charset=utf-8'});
+  var url=URL.createObjectURL(blob); var a=document.createElement('a');
+  a.href=url; a.download=fname; document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+function todayStr(){ return new Date().toISOString().slice(0,10); }
 window.exportLog = function() {
-  var bom = '﻿';
   var headers = ['الأولوية','عنوان الإنذار','الوصف','المصدر','الجهة المستهدفة','الحالة','الوقت','القاعدة'];
   var rows = ALARMS.map(function(a){
-    return [
-      {high:'عالية',med:'متوسطة',low:'منخفضة',info:'معلوماتي'}[a.sev]||a.sev,
-      a.title, a.desc, a.src, a.target,
-      {active:'نشط',resolved:'محلول',snoozed:'مؤجّل'}[a.status]||a.status,
-      a.time, a.rule
-    ].map(function(v){ return String(v||''); }).join('\t');
+    return [{high:'عالية',med:'متوسطة',low:'منخفضة',info:'معلوماتي'}[a.sev]||a.sev,
+            a.title, a.desc, a.src, a.target,
+            {active:'نشط',resolved:'محلول',snoozed:'مؤجّل'}[a.status]||a.status,
+            a.time, a.rule];
   });
-  var tsv = bom + headers.join('\t') + '\r\n' + rows.join('\r\n');
-  var blob = new Blob([tsv], {type:'text/tab-separated-values;charset=utf-8'});
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement('a'); a.href=url;
-  a.download = 'SmartKey_Log_'+new Date().toISOString().slice(0,10)+'.xls';
-  a.click(); URL.revokeObjectURL(url);
+  dlXLS(toXLS(headers, rows, 'سجل الإنذارات'), 'SmartKey_Log_'+todayStr()+'.xls');
   toast('تم تصدير السجل ('+ALARMS.length+' سجل) ✓', 'success');
 };
 

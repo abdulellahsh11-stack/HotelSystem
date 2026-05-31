@@ -786,22 +786,33 @@ window.setType = function(t){
 /* ════════════════════════════════════════════════
    EXPORT CSV
 ════════════════════════════════════════════════ */
+/* ════ EXCEL XML HELPER ════════════════════════════════════════════ */
+function toXLS(hdrs,dataRows,sheetName){
+  function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function cell(v,h){ var t=(!h&&v!==''&&!isNaN(+v))?'Number':'String'; return '<Cell'+(h?' ss:StyleID="H"':'')+'><Data ss:Type="'+t+'">'+esc(v)+'</Data></Cell>'; }
+  return '﻿<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?>'
+    +'<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'
+    +'<Styles><Style ss:ID="H"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1B4D3D" ss:Pattern="Solid"/></Style></Styles>'
+    +'<Worksheet ss:Name="'+esc(sheetName||'تقرير')+'"><Table>'
+    +'<Row>'+hdrs.map(function(h){return cell(h,true);}).join('')+'</Row>'
+    +dataRows.map(function(r){return '<Row>'+r.map(function(c){return cell(c,false);}).join('')+'</Row>';}).join('')
+    +'</Table></Worksheet></Workbook>';
+}
+function dlXLS(content,fname){
+  var blob=new Blob([content],{type:'application/vnd.ms-excel;charset=utf-8'});
+  var url=URL.createObjectURL(blob); var a=document.createElement('a');
+  a.href=url; a.download=fname; document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+function todayStr(){ return new Date().toISOString().slice(0,10); }
 window.exportCSV = function(){
-  var rows=[['#','النوع','الوصف','الحساب','المصدر','المبلغ','VAT','الوقت','ملاحظة','مصدر الربط']];
-  allEntries().forEach(function(e){
-    rows.push([
-      'JE-'+String(e.id).padStart(4,'0'),
-      e.type==='cr'?'إيراد':'مصروف',
-      e.desc,e.acct,e.src,e.amt,
-      e.vat?Math.round(e.amt*.15):'',
-      e.time,e.note||'',e.link||''
-    ]);
+  var headers = ['#','النوع','الوصف','الحساب','المصدر','المبلغ','VAT','الوقت','ملاحظة','مصدر الربط'];
+  var rows = allEntries().map(function(e){
+    return ['JE-'+String(e.id).padStart(4,'0'), e.type==='cr'?'إيراد':'مصروف',
+            e.desc, e.acct, e.src, e.amt, e.vat?Math.round(e.amt*.15):'',
+            e.time, e.note||'', e.link||''];
   });
-  var csv=rows.map(function(r){ return r.map(function(c){ return String(c); }).join('\t'); }).join('\r\n');
-  var a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob(['﻿'+csv],{type:'text/tab-separated-values;charset=utf-8;'}));
-  a.download='المحاسبة_'+new Date().toISOString().slice(0,10)+'.xls';
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  dlXLS(toXLS(headers, rows, 'دفتر المحاسبة'), 'المحاسبة_'+todayStr()+'.xls');
   toast('تم تصدير '+allEntries().length+' قيد ✓');
 };
 
