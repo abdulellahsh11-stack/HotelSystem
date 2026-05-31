@@ -906,13 +906,13 @@ window.exportExcel = function() {
       t.id, t.outlet, t.desc, t.customer, t.room, t.method,
       t.amt.toFixed(2), t.vat.toFixed(2), (t.amt + t.vat).toFixed(2),
       t.status, t.time
-    ].map(function(v){ return '"' + String(v).replace(/"/g,'""') + '"'; }).join(',');
+    ].map(function(v){ return String(v); }).join('\t');
   });
-  var csv = bom + headers.map(function(h){ return '"'+h+'"'; }).join(',') + '\r\n' + rows.join('\r\n');
-  var blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+  var tsv = bom + headers.join('\t') + '\r\n' + rows.join('\r\n');
+  var blob = new Blob([tsv], {type:'text/tab-separated-values;charset=utf-8'});
   var url = URL.createObjectURL(blob);
   var a = document.createElement('a');
-  a.href = url; a.download = 'POS_Payments_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.href = url; a.download = 'POS_Payments_' + new Date().toISOString().slice(0,10) + '.xls';
   a.click();
   URL.revokeObjectURL(url);
   toast('تم تصدير ' + TX.length + ' حركة إلى Excel ✓', 'success');
@@ -1002,24 +1002,25 @@ window.renderReport = function() {
 window.exportReport = function() {
   var d = PERIOD_DATA[REPORT_PERIOD];
   var bom = '﻿';
+  var periodLabel = REPORT_PERIOD === 'today' ? 'اليوم' : REPORT_PERIOD === 'week' ? 'الأسبوع' : 'الشهر';
   var lines = [
-    '"تقرير المدفوعات - ' + (REPORT_PERIOD === 'today' ? 'اليوم' : REPORT_PERIOD === 'week' ? 'الأسبوع' : 'الشهر') + '"',
-    '"إجمالي المبيعات","' + d.totals.rev + ' ر.س"',
-    '"عدد الحركات","' + d.totals.txns + '"',
-    '"ضريبة VAT","' + Math.round(d.totals.rev*0.13) + ' ر.س"',
+    'تقرير المدفوعات - ' + periodLabel,
+    'إجمالي المبيعات\t' + d.totals.rev + ' ر.س',
+    'عدد الحركات\t' + d.totals.txns,
+    'ضريبة VAT\t' + Math.round(d.totals.rev*0.13) + ' ر.س',
     '',
-    '"المنفذ","الحركات","الإيراد ر.س","النسبة"',
+    'المنفذ\tالحركات\tالإيراد ر.س\tالنسبة',
   ];
   d.outlets.forEach(function(o){
     var total = d.outlets.reduce(function(s,x){ return s+x.amt; },0);
-    lines.push('"'+o.name+'","'+o.txns+'","'+o.amt+'","'+Math.round(o.amt/total*100)+'%"');
+    lines.push(o.name.replace(/\p{Emoji}/gu,'').trim() + '\t' + o.txns + '\t' + o.amt + '\t' + Math.round(o.amt/total*100) + '%');
   });
-  lines.push('', '"طريقة الدفع","الإيراد ر.س","النسبة"');
-  d.methods.forEach(function(m){ lines.push('"'+m.name+'","'+m.val+'","'+m.pct+'%"'); });
-  var blob = new Blob([bom + lines.join('\r\n')], {type:'text/csv;charset=utf-8'});
+  lines.push('', 'طريقة الدفع\tالإيراد ر.س\tالنسبة');
+  d.methods.forEach(function(m){ lines.push(m.name + '\t' + m.val + '\t' + m.pct + '%'); });
+  var blob = new Blob([bom + lines.join('\r\n')], {type:'text/tab-separated-values;charset=utf-8'});
   var url = URL.createObjectURL(blob);
   var a = document.createElement('a'); a.href=url;
-  a.download = 'POS_Report_' + REPORT_PERIOD + '_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.download = 'POS_Report_' + REPORT_PERIOD + '_' + new Date().toISOString().slice(0,10) + '.xls';
   a.click(); URL.revokeObjectURL(url);
   toast('تم تصدير التقرير ✓','success');
 };

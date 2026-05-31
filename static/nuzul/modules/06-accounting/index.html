@@ -108,12 +108,21 @@
 .bars-wrap{display:flex;align-items:flex-end;gap:8px;height:100px}
 .bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
 .bar-col .bar{width:100%;border-radius:6px 6px 0 0;min-height:4px;transition:height .3s}
-.bar-col .bar.rev{background:var(--brand-500)}
-.bar-col .bar.exp{background:var(--danger-300)}
+.bar-col .bar.rev{background:var(--success-500)}
+.bar-col .bar.exp{background:var(--danger-500)}
 .bar-col .mon{font-size:9px;color:var(--fg-3);font-weight:500}
 .bars-legend{display:flex;gap:14px;margin-top:10px}
 .bars-legend .dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
 .bars-legend span{font-size:11px;color:var(--fg-2)}
+
+/* ── Donut card ─────────────────────────────────────────────── */
+.donut-card{background:var(--white);border:1px solid var(--hairline);border-radius:14px;padding:16px 18px}
+.donut-card .ttl{font-family:var(--font-ar-display);font-size:14px;font-weight:700;color:var(--ink-900);margin-bottom:14px}
+.donut-inner{display:flex;align-items:center;gap:18px}
+.donut-legend{display:flex;flex-direction:column;gap:8px}
+.donut-legend .leg-row{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink-800)}
+.donut-legend .leg-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.donut-legend .leg-val{font-family:var(--font-en);font-variant-numeric:tabular-nums;font-weight:700;font-size:13px}
 
 /* ── Modal ───────────────────────────────────────────────────── */
 .nz-modal-bd{position:fixed;inset:0;background:rgba(14,42,34,.6);backdrop-filter:blur(4px);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px}
@@ -346,12 +355,35 @@
             <div id="pl-body"></div>
           </div>
 
+          <div class="donut-card" id="donut-card">
+            <div class="ttl">توزيع الإيرادات والمصاريف</div>
+            <div class="donut-inner">
+              <div style="position:relative;width:120px;height:120px;flex-shrink:0">
+                <div id="donut-ring" style="width:120px;height:120px;border-radius:50%;background:conic-gradient(var(--success-500) 0% 180deg,var(--danger-500) 180deg 360deg);margin:auto">
+                  <div id="donut-label" style="position:absolute;inset:20px;background:var(--white);border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700;color:var(--ink-900);text-align:center">NET<br>—</div>
+                </div>
+              </div>
+              <div class="donut-legend">
+                <div class="leg-row"><div class="leg-dot" style="background:var(--success-500)"></div><span>إيرادات</span></div>
+                <div class="leg-row" style="flex-direction:column;align-items:flex-start;gap:2px">
+                  <div class="leg-val ok" id="donut-rev-val" style="color:var(--success-700)">—</div>
+                  <div style="font-size:10px;color:var(--fg-3)">ر.س</div>
+                </div>
+                <div class="leg-row"><div class="leg-dot" style="background:var(--danger-500)"></div><span>مصاريف</span></div>
+                <div class="leg-row" style="flex-direction:column;align-items:flex-start;gap:2px">
+                  <div class="leg-val" id="donut-exp-val" style="color:var(--danger-700)">—</div>
+                  <div style="font-size:10px;color:var(--fg-3)">ر.س</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="bars-card">
             <div class="bars-title">الإيرادات والمصاريف — ٦ أشهر</div>
             <div class="bars-wrap" id="bars-wrap"></div>
             <div class="bars-legend">
-              <div style="display:flex;align-items:center;gap:5px"><div class="dot" style="background:var(--brand-500)"></div><span>إيرادات</span></div>
-              <div style="display:flex;align-items:center;gap:5px"><div class="dot" style="background:var(--danger-300)"></div><span>مصاريف</span></div>
+              <div style="display:flex;align-items:center;gap:5px"><div class="dot" style="background:var(--success-500)"></div><span>إيرادات</span></div>
+              <div style="display:flex;align-items:center;gap:5px"><div class="dot" style="background:var(--danger-500)"></div><span>مصاريف</span></div>
             </div>
           </div>
         </div>
@@ -591,6 +623,7 @@ function updateKPIs(){
   t('kpi-net-m', net>0 ? '↑ ربح صافي' : '↓ خسارة صافية');
   t('kpi-count-m', Object.keys(LINKED).filter(function(m){ return LINKED[m]; }).length+' برنامج مرتبط');
   updatePL(rev, exp);
+  renderChart();
 }
 
 function sumBy(type, accts){
@@ -764,32 +797,67 @@ window.exportCSV = function(){
       e.time,e.note||'',e.link||''
     ]);
   });
-  var csv=rows.map(function(r){ return r.map(function(c){ return'"'+String(c).replace(/"/g,'""')+'"'; }).join(','); }).join('\r\n');
+  var csv=rows.map(function(r){ return r.map(function(c){ return String(c); }).join('\t'); }).join('\r\n');
   var a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'}));
-  a.download='المحاسبة_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.href=URL.createObjectURL(new Blob(['﻿'+csv],{type:'text/tab-separated-values;charset=utf-8;'}));
+  a.download='المحاسبة_'+new Date().toISOString().slice(0,10)+'.xls';
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   toast('تم تصدير '+allEntries().length+' قيد ✓');
 };
 
 /* ════════════════════════════════════════════════
-   MONTHLY BARS (static sample)
+   MONTHLY BARS + DONUT (live from journal entries)
 ════════════════════════════════════════════════ */
-(function(){
+function renderChart(){
+  /* — bars — */
+  var entries = allEntries();
+  var liveRev = 0, liveExp = 0;
+  entries.forEach(function(e){
+    if(e.amt===0) return;
+    if(e.type==='cr') liveRev += e.amt;
+    else liveExp += e.amt;
+  });
+
+  /* 5 hardcoded past months + current month from live data */
+  /* Scale hardcoded values relative to a notional max of ~25000 SAR */
   var months=[
     {m:'يناير',rev:68,exp:42},{m:'فبراير',rev:72,exp:44},{m:'مارس',rev:85,exp:51},
-    {m:'أبريل',rev:91,exp:55},{m:'مايو',rev:88,exp:53},{m:'يونيو',rev:95,exp:58},
+    {m:'أبريل',rev:91,exp:55},{m:'مايو',rev:88,exp:53},
+    {m:'يونيو',rev:liveRev/100,exp:liveExp/100},
   ];
-  var mx=Math.max.apply(null,months.map(function(m){ return m.rev; }));
-  var w=document.getElementById('bars-wrap'); if(!w) return;
-  w.innerHTML=months.map(function(m){
-    var rh=Math.round(m.rev/mx*88), eh=Math.round(m.exp/mx*88);
-    return '<div class="bar-col"><div style="display:flex;gap:3px;align-items:flex-end;height:88px">'
-      +'<div class="bar rev" style="height:'+rh+'px;width:48%"></div>'
-      +'<div class="bar exp" style="height:'+eh+'px;width:48%"></div>'
-      +'</div><div class="mon">'+m.m+'</div></div>';
-  }).join('');
-})();
+  var mx=Math.max.apply(null,months.map(function(m){ return Math.max(m.rev,m.exp); }));
+  if(mx===0) mx=1;
+  var w=document.getElementById('bars-wrap'); if(w){
+    w.innerHTML=months.map(function(m){
+      var rh=Math.round(m.rev/mx*88), eh=Math.round(m.exp/mx*88);
+      rh=Math.max(rh,2); eh=Math.max(eh,2);
+      return '<div class="bar-col"><div style="display:flex;gap:3px;align-items:flex-end;height:88px">'
+        +'<div class="bar rev" style="height:'+rh+'px;width:48%"></div>'
+        +'<div class="bar exp" style="height:'+eh+'px;width:48%"></div>'
+        +'</div><div class="mon">'+m.m+'</div></div>';
+    }).join('');
+  }
+
+  /* — donut — */
+  var total = liveRev + liveExp;
+  var revDeg = total > 0 ? Math.round(liveRev / total * 360) : 180;
+  var expDeg = 360 - revDeg;
+  var netPct = total > 0 ? Math.round((liveRev - liveExp) / total * 100) : 0;
+
+  var ring = document.getElementById('donut-ring');
+  if(ring){
+    ring.style.background = 'conic-gradient(var(--success-500) 0deg '+revDeg+'deg, var(--danger-500) '+revDeg+'deg 360deg)';
+  }
+  var label = document.getElementById('donut-label');
+  if(label){
+    label.innerHTML = 'NET<br>'+(netPct>=0?'+':'')+netPct+'%';
+    label.style.color = netPct >= 0 ? 'var(--success-700)' : 'var(--danger-700)';
+  }
+  var revVal = document.getElementById('donut-rev-val');
+  if(revVal) revVal.textContent = liveRev.toLocaleString('ar-EG');
+  var expVal = document.getElementById('donut-exp-val');
+  if(expVal) expVal.textContent = liveExp.toLocaleString('ar-EG');
+}
 
 /* ════════════════════════════════════════════════
    TOAST

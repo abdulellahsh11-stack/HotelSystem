@@ -369,6 +369,30 @@ body { background: var(--paper-tint); }
 
       <!-- ═══ TAB 1: Alarms ═══ -->
       <div class="sk-pane active" id="pane-alarms">
+        <!-- Alarm Charts -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr) 1.6fr;gap:12px;margin-bottom:16px" id="alarmChartRow">
+          <div style="background:var(--white);border:1px solid var(--hairline);border-radius:10px;padding:14px 18px;text-align:center">
+            <div style="font-size:10px;color:var(--fg-3);letter-spacing:.06em;margin-bottom:6px">عالية</div>
+            <div id="sc-high" style="font-family:var(--font-en);font-size:32px;font-weight:700;color:#DC2626">—</div>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--hairline);border-radius:10px;padding:14px 18px;text-align:center">
+            <div style="font-size:10px;color:var(--fg-3);letter-spacing:.06em;margin-bottom:6px">متوسطة</div>
+            <div id="sc-med" style="font-family:var(--font-en);font-size:32px;font-weight:700;color:#D97706">—</div>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--hairline);border-radius:10px;padding:14px 18px;text-align:center">
+            <div style="font-size:10px;color:var(--fg-3);letter-spacing:.06em;margin-bottom:6px">منخفضة</div>
+            <div id="sc-low" style="font-family:var(--font-en);font-size:32px;font-weight:700;color:#A16207">—</div>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--hairline);border-radius:10px;padding:14px 18px;text-align:center">
+            <div style="font-size:10px;color:var(--fg-3);letter-spacing:.06em;margin-bottom:6px">معلوماتي</div>
+            <div id="sc-info" style="font-family:var(--font-en);font-size:32px;font-weight:700;color:#2563EB">—</div>
+          </div>
+          <!-- By-program bar chart -->
+          <div style="background:var(--white);border:1px solid var(--hairline);border-radius:10px;padding:14px 18px">
+            <div style="font-size:11px;font-weight:600;color:var(--ink-800);margin-bottom:10px">حسب البرنامج</div>
+            <div id="sk-prog-bars" style="display:flex;flex-direction:column;gap:6px"></div>
+          </div>
+        </div>
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
           <select id="alarmFilter" onchange="renderAlarms()" style="font-family:var(--font-ar);font-size:12px;padding:7px 12px;border:1px solid var(--ink-100);border-radius:7px;background:var(--white);color:var(--ink-900);outline:none;cursor:pointer">
             <option value="active">الإنذارات النشطة</option>
@@ -557,6 +581,25 @@ function updateStats() {
   var tb = document.getElementById('tabAlarmBadge'); if(tb) tb.textContent = active;
   var bm = document.getElementById('bannerAlarmMeta');
   if(bm) bm.textContent = active + ' إنذار' + (active===1?'':' نشط') + ' · ' + (active>0?'تحتاج تدخّل':'كل شيء طبيعي ✓');
+  /* ── Severity counters ── */
+  function sc(id,sev){ var e=document.getElementById(id); if(e) e.textContent=ALARMS.filter(function(a){return a.sev===sev&&a.status==='active';}).length; }
+  sc('sc-high','high'); sc('sc-med','med'); sc('sc-low','low'); sc('sc-info','info');
+  /* ── Program bar chart ── */
+  var progMap = {'01':'الضيوف','06':'المحاسبة','07':'نقاط البيع','09':'الموارد البشرية','10':'القنوات'};
+  var progData = Object.keys(progMap).map(function(p){
+    return {name:progMap[p], n:ALARMS.filter(function(a){return a.program===p&&a.status==='active';}).length};
+  }).filter(function(x){return x.n>0;});
+  var maxN = Math.max.apply(null, progData.map(function(x){return x.n;})) || 1;
+  var pbEl = document.getElementById('sk-prog-bars');
+  if (pbEl) pbEl.innerHTML = (progData.length ? progData : [{name:'لا إنذارات',n:0}]).map(function(p){
+    var pct = Math.round(p.n/maxN*100);
+    return '<div style="display:flex;align-items:center;gap:6px">'
+      +'<span style="font-size:10px;color:var(--ink-700);width:72px;text-align:end;flex-shrink:0">'+p.name+'</span>'
+      +'<div style="flex:1;height:7px;background:var(--paper-tint);border-radius:999px;overflow:hidden">'
+      +'<div style="height:100%;width:'+pct+'%;background:#DC2626;border-radius:999px;transition:width 500ms"></div></div>'
+      +'<span style="font-family:var(--font-en);font-size:10px;font-weight:600;color:var(--ink-800);width:14px">'+p.n+'</span>'
+      +'</div>';
+  }).join('');
   updateWatchGrid();
 }
 
@@ -771,13 +814,13 @@ window.exportLog = function() {
       a.title, a.desc, a.src, a.target,
       {active:'نشط',resolved:'محلول',snoozed:'مؤجّل'}[a.status]||a.status,
       a.time, a.rule
-    ].map(function(v){ return '"'+String(v||'').replace(/"/g,'""')+'"'; }).join(',');
+    ].map(function(v){ return String(v||''); }).join('\t');
   });
-  var csv = bom + headers.map(function(h){ return '"'+h+'"'; }).join(',') + '\r\n' + rows.join('\r\n');
-  var blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+  var tsv = bom + headers.join('\t') + '\r\n' + rows.join('\r\n');
+  var blob = new Blob([tsv], {type:'text/tab-separated-values;charset=utf-8'});
   var url = URL.createObjectURL(blob);
   var a = document.createElement('a'); a.href=url;
-  a.download = 'SmartKey_Log_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.download = 'SmartKey_Log_'+new Date().toISOString().slice(0,10)+'.xls';
   a.click(); URL.revokeObjectURL(url);
   toast('تم تصدير السجل ('+ALARMS.length+' سجل) ✓', 'success');
 };
