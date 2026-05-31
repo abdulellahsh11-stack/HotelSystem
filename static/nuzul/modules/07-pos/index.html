@@ -898,24 +898,33 @@ window.renderTx = function() {
 };
 
 /* ── Excel Export ── */
+/* ════ EXCEL XML HELPER ════════════════════════════════════════════ */
+function toXLS(hdrs,dataRows,sheetName){
+  function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function cell(v,h){ var t=(!h&&v!==''&&!isNaN(+v))?'Number':'String'; return '<Cell'+(h?' ss:StyleID="H"':'')+'><Data ss:Type="'+t+'">'+esc(v)+'</Data></Cell>'; }
+  return '﻿<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?>'
+    +'<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'
+    +'<Styles><Style ss:ID="H"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1B4D3D" ss:Pattern="Solid"/></Style></Styles>'
+    +'<Worksheet ss:Name="'+esc(sheetName||'تقرير')+'"><Table>'
+    +'<Row>'+hdrs.map(function(h){return cell(h,true);}).join('')+'</Row>'
+    +dataRows.map(function(r){return '<Row>'+r.map(function(c){return cell(c,false);}).join('')+'</Row>';}).join('')
+    +'</Table></Worksheet></Workbook>';
+}
+function dlXLS(content,fname){
+  var blob=new Blob([content],{type:'application/vnd.ms-excel;charset=utf-8'});
+  var url=URL.createObjectURL(blob); var a=document.createElement('a');
+  a.href=url; a.download=fname; document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+function todayStr(){ return new Date().toISOString().slice(0,10); }
 window.exportExcel = function() {
-  var bom = '﻿';
   var headers = ['رقم الحركة','المنفذ','الوصف','العميل','رقم الغرفة','طريقة الدفع','المبلغ','الضريبة (VAT)','الإجمالي','الحالة','الوقت'];
-  var rows = TX.map(function(t) {
-    return [
-      t.id, t.outlet, t.desc, t.customer, t.room, t.method,
-      t.amt.toFixed(2), t.vat.toFixed(2), (t.amt + t.vat).toFixed(2),
-      t.status, t.time
-    ].map(function(v){ return String(v); }).join('\t');
+  var rows = TX.map(function(t){
+    return [t.id, t.outlet, t.desc, t.customer, t.room, t.method,
+            t.amt, t.vat, t.amt+t.vat, t.status, t.time];
   });
-  var tsv = bom + headers.join('\t') + '\r\n' + rows.join('\r\n');
-  var blob = new Blob([tsv], {type:'text/tab-separated-values;charset=utf-8'});
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement('a');
-  a.href = url; a.download = 'POS_Payments_' + new Date().toISOString().slice(0,10) + '.xls';
-  a.click();
-  URL.revokeObjectURL(url);
-  toast('تم تصدير ' + TX.length + ' حركة إلى Excel ✓', 'success');
+  dlXLS(toXLS(headers, rows, 'حركات نقاط البيع'), 'POS_Payments_'+todayStr()+'.xls');
+  toast('تم تصدير '+TX.length+' حركة إلى Excel ✓', 'success');
 };
 
 /* ── Report Render ── */
@@ -1001,28 +1010,29 @@ window.renderReport = function() {
 
 window.exportReport = function() {
   var d = PERIOD_DATA[REPORT_PERIOD];
-  var bom = '﻿';
-  var periodLabel = REPORT_PERIOD === 'today' ? 'اليوم' : REPORT_PERIOD === 'week' ? 'الأسبوع' : 'الشهر';
-  var lines = [
-    'تقرير المدفوعات - ' + periodLabel,
-    'إجمالي المبيعات\t' + d.totals.rev + ' ر.س',
-    'عدد الحركات\t' + d.totals.txns,
-    'ضريبة VAT\t' + Math.round(d.totals.rev*0.13) + ' ر.س',
-    '',
-    'المنفذ\tالحركات\tالإيراد ر.س\tالنسبة',
-  ];
-  d.outlets.forEach(function(o){
-    var total = d.outlets.reduce(function(s,x){ return s+x.amt; },0);
-    lines.push(o.name.replace(/\p{Emoji}/gu,'').trim() + '\t' + o.txns + '\t' + o.amt + '\t' + Math.round(o.amt/total*100) + '%');
-  });
-  lines.push('', 'طريقة الدفع\tالإيراد ر.س\tالنسبة');
-  d.methods.forEach(function(m){ lines.push(m.name + '\t' + m.val + '\t' + m.pct + '%'); });
-  var blob = new Blob([bom + lines.join('\r\n')], {type:'text/tab-separated-values;charset=utf-8'});
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement('a'); a.href=url;
-  a.download = 'POS_Report_' + REPORT_PERIOD + '_' + new Date().toISOString().slice(0,10) + '.xls';
-  a.click(); URL.revokeObjectURL(url);
-  toast('تم تصدير التقرير ✓','success');
+  var total = d.outlets.reduce(function(s,x){return s+x.amt;},0);
+  /* Sheet 1: Outlets */
+  var outHdrs = ['المنفذ','عدد الحركات','الإيراد (ر.س)','النسبة %'];
+  var outRows = d.outlets.map(function(o){ return [o.name.replace(/[\u{1F300}-\u{1FFFF}]/gu,'').trim(), o.txns, o.amt, Math.round(o.amt/total*100)]; });
+  /* Sheet 2: Methods — build as second worksheet */
+  var mHdrs = ['طريقة الدفع','الإيراد (ر.س)','النسبة %'];
+  var mRows = d.methods.map(function(m){ return [m.name, m.val, m.pct]; });
+  /* Sheet 3: Transactions */
+  var txHdrs = ['رقم الحركة','المنفذ','الوصف','العميل','رقم الغرفة','طريقة الدفع','المبلغ','VAT','الإجمالي','الحالة','الوقت'];
+  var txRows = TX.map(function(t){ return [t.id,t.outlet,t.desc,t.customer,t.room,t.method,t.amt,t.vat,t.amt+t.vat,t.status,t.time]; });
+  /* Multi-sheet XLS */
+  function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function cell(v,h){ var t=(!h&&v!==''&&!isNaN(+v))?'Number':'String'; return '<Cell'+(h?' ss:StyleID="H"':'')+'><Data ss:Type="'+t+'">'+esc(v)+'</Data></Cell>'; }
+  function sheet(name,hdrs,rows){ return '<Worksheet ss:Name="'+esc(name)+'"><Table><Row>'+hdrs.map(function(h){return cell(h,true);}).join('')+'</Row>'+rows.map(function(r){return '<Row>'+r.map(function(c){return cell(c,false);}).join('')+'</Row>';}).join('')+'</Table></Worksheet>'; }
+  var xml = '﻿<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?>'
+    +'<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'
+    +'<Styles><Style ss:ID="H"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1B4D3D" ss:Pattern="Solid"/></Style></Styles>'
+    +sheet('المنافذ',outHdrs,outRows)
+    +sheet('طرق الدفع',mHdrs,mRows)
+    +sheet('الحركات',txHdrs,txRows)
+    +'</Workbook>';
+  dlXLS(xml, 'POS_Report_'+todayStr()+'.xls');
+  toast('تم تصدير التقرير (٣ أوراق) ✓','success');
 };
 
 window.generateReport = function() {
