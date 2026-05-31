@@ -1,0 +1,412 @@
+/* =========================================================================
+   Dheuof / ضيوف — Foundation tokens
+   Bilingual Arabic-first (RTL) + English (LTR) — luxury hospitality SaaS
+   ========================================================================= */
+
+/* --- Webfonts (Google Fonts — see README "Type substitution" note) ------- */
+@import url("https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@100;200;300;400;500;600;700&family=Cormorant:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap");
+
+:root {
+  /* ── Brand colors ─────────────────────────────────────────────────────── */
+  /* Forest green — primary brand. Deep, calm, dignified. */
+  --brand-900: #0E2A22;
+  --brand-800: #143A2E;
+  --brand-700: #1B4D3D; /* default brand */
+  --brand-600: #266554;
+  --brand-500: #3B8772;
+  --brand-400: #6BAB9A;
+  --brand-300: #9CCBBE;
+  --brand-200: #C7E1D8;
+  --brand-100: #E4F0EB;
+  --brand-50:  #F2F8F5;
+
+  /* Gold — accent. Refined, never gaudy. */
+  --gold-900: #5C4419;
+  --gold-800: #7A5A22;
+  --gold-700: #9A7430; /* default gold */
+  --gold-600: #B68F40;
+  --gold-500: #C9A85F; /* default highlight */
+  --gold-400: #DBC084;
+  --gold-300: #E8D5A8;
+  --gold-200: #F1E6C8;
+  --gold-100: #F8F1DF;
+  --gold-50:  #FBF7EC;
+
+  /* Ink — warm-black text scale */
+  --ink-900: #14110E; /* heading */
+  --ink-800: #1F1A15;
+  --ink-700: #322B23;
+  --ink-600: #4A4137;
+  --ink-500: #6B6052; /* body */
+  --ink-400: #8B8175;
+  --ink-300: #AEA597; /* muted */
+  --ink-200: #CFC8BB;
+  --ink-100: #E6DFD1;
+  --ink-50:  #F2EDE3;
+
+  /* Paper — warm neutral surfaces */
+  --paper:        #FAF7F2;
+  --paper-tint:   #F5F0E6;
+  --sand:         #F2EDE3;
+  --sand-strong:  #E8E1D2;
+
+  /* Pure */
+  --white: #FFFFFF;
+  --black: #000000;
+
+  /* ── Semantic — light surfaces ───────────────────────────────────────── */
+  --success-700: #2F6E54;
+  --success-500: #4A9476;
+  --success-100: #DCEEE6;
+
+  --warning-700: #9A6D14;
+  --warning-500: #C99428;
+  --warning-100: #F6E7C2;
+
+  --danger-700:  #8B3A2A;
+  --danger-500:  #BE5A45;
+  --danger-100:  #F1D8CF;
+
+  --info-700:    #2A4F7A;
+  --info-500:    #4670A0;
+  --info-100:    #D6E1F0;
+
+  /* ── Surfaces & roles ────────────────────────────────────────────────── */
+  --bg:           var(--paper);
+  --surface:      var(--white);
+  --surface-2:    var(--sand);
+  --surface-3:    var(--paper-tint);
+
+  --fg:           var(--ink-900);
+  --fg-1:         var(--ink-700);
+  --fg-2:         var(--ink-500);
+  --fg-3:         var(--ink-400);
+  --fg-muted:     var(--ink-300);
+  --fg-inverse:   var(--paper);
+
+  --border:       var(--ink-100);
+  --border-strong:var(--ink-200);
+  --hairline:     #ECE5D6;
+
+  --brand:        var(--brand-700);
+  --brand-fg:     var(--paper);
+  --accent:       var(--gold-500);
+  --accent-deep:  var(--gold-700);
+
+  /* ── Shadows — soft, warm, lifted-paper feel ────────────────────────── */
+  --shadow-1: 0 1px 0 rgba(20,17,14,0.04), 0 1px 2px rgba(20,17,14,0.04);
+  --shadow-2: 0 2px 4px rgba(20,17,14,0.04), 0 4px 12px rgba(20,17,14,0.06);
+  --shadow-3: 0 6px 16px rgba(20,17,14,0.08), 0 12px 32px rgba(20,17,14,0.06);
+  --shadow-4: 0 14px 40px rgba(20,17,14,0.12), 0 24px 64px rgba(20,17,14,0.08);
+  --shadow-inset: inset 0 1px 0 rgba(255,255,255,0.6), inset 0 -1px 0 rgba(20,17,14,0.05);
+  --shadow-focus: 0 0 0 3px rgba(201,168,95,0.35); /* gold focus ring */
+
+  /* ── Radii — small, restrained. Luxury feels calm, not rounded-soft. ── */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-pill: 999px;
+
+  /* ── Spacing scale ───────────────────────────────────────────────────── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+
+  /* ── Type families ───────────────────────────────────────────────────── */
+  --font-ar-display: "Reem Kufi", "IBM Plex Sans Arabic", system-ui, sans-serif;
+  --font-ar:         "IBM Plex Sans Arabic", "Reem Kufi", system-ui, sans-serif;
+  --font-en-display: "Cormorant", "Times New Roman", Georgia, serif;
+  --font-en:         "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --font-mono:       "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+
+  /* Default bilingual stacks — Arabic-first, Latin falls back gracefully */
+  --font-display: var(--font-ar-display), var(--font-en-display);
+  --font-body:    var(--font-ar), var(--font-en);
+
+  /* ── Type scale (px / line-height) — 1.250 modular ratio ─────────────── */
+  --fs-12: 12px;
+  --fs-13: 13px;
+  --fs-14: 14px;
+  --fs-15: 15px;
+  --fs-16: 16px;
+  --fs-18: 18px;
+  --fs-20: 20px;
+  --fs-24: 24px;
+  --fs-28: 28px;
+  --fs-32: 32px;
+  --fs-40: 40px;
+  --fs-48: 48px;
+  --fs-60: 60px;
+  --fs-72: 72px;
+  --fs-96: 96px;
+
+  /* ── Motion ──────────────────────────────────────────────────────────── */
+  --ease-out:     cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-in-out:  cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-decel:   cubic-bezier(0, 0, 0.2, 1);
+  --dur-fast:   120ms;
+  --dur-med:    220ms;
+  --dur-slow:   400ms;
+
+  /* ── Z-layers ────────────────────────────────────────────────────────── */
+  --z-base: 1;
+  --z-sticky: 100;
+  --z-overlay: 500;
+  --z-modal: 800;
+  --z-toast: 900;
+}
+
+/* =========================================================================
+   Semantic typography — bilingual roles
+   Use these classes (or copy the rules) instead of raw font-size.
+   ========================================================================= */
+
+.t-display-1 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(48px, 6vw, 96px);
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  color: var(--fg);
+}
+.t-display-2 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(36px, 4.4vw, 64px);
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+  color: var(--fg);
+}
+.t-h1 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-40);
+  line-height: 1.14;
+  letter-spacing: -0.01em;
+  color: var(--fg);
+}
+.t-h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-32);
+  line-height: 1.18;
+  letter-spacing: -0.005em;
+  color: var(--fg);
+}
+.t-h3 {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--fs-24);
+  line-height: 1.25;
+  color: var(--fg);
+}
+.t-h4 {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--fs-18);
+  line-height: 1.35;
+  color: var(--fg);
+}
+.t-eyebrow {
+  font-family: var(--font-en);
+  font-weight: 500;
+  font-size: var(--fs-12);
+  line-height: 1;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent-deep);
+}
+.t-eyebrow-ar {
+  font-family: var(--font-ar);
+  font-weight: 500;
+  font-size: var(--fs-13);
+  line-height: 1;
+  letter-spacing: 0.04em;
+  color: var(--accent-deep);
+}
+.t-lead {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: var(--fs-20);
+  line-height: 1.5;
+  color: var(--fg-1);
+}
+.t-body {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: var(--fs-15);
+  line-height: 1.6;
+  color: var(--fg-1);
+}
+.t-body-sm {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: var(--fs-13);
+  line-height: 1.5;
+  color: var(--fg-2);
+}
+.t-caption {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: var(--fs-12);
+  line-height: 1.4;
+  color: var(--fg-3);
+}
+.t-mono {
+  font-family: var(--font-mono);
+  font-size: var(--fs-13);
+  line-height: 1.5;
+  letter-spacing: 0;
+  color: var(--fg-1);
+}
+.t-numeric {
+  font-family: var(--font-en);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* =========================================================================
+   RTL handling — Arabic-first
+   ========================================================================= */
+html[dir="rtl"] {
+  font-family: var(--font-ar);
+}
+html[dir="ltr"] {
+  font-family: var(--font-en);
+}
+
+/* Use `:lang(ar)` to scope Arabic-only inside mixed text */
+:lang(ar) { font-family: var(--font-ar); }
+:lang(en) { font-family: var(--font-en); }
+
+/* =========================================================================
+   Base reset (opt-in — UI kits import this)
+   ========================================================================= */
+.dheuof-base, .dheuof-base * { box-sizing: border-box; }
+.dheuof-base {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: var(--fs-15);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+.dheuof-base ::selection {
+  background: var(--gold-200);
+  color: var(--ink-900);
+}
+
+/* Focus ring — gold, accessible */
+.dheuof-base :focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+  border-radius: var(--radius-sm);
+}
+
+/* =========================================================================
+   Abbreviation tooltip — for F&B, RevPAR, ADR, OCC, GOPPAR, ALOS, KPI, etc.
+   Usage:
+     <abbr class="dh-abbr" data-ar="الأطعمة والمشروبات"
+                            data-en="Food & Beverage"
+                            data-meaning="إيرادات المطاعم والكافي والبار">F&B</abbr>
+   ========================================================================= */
+.dh-abbr {
+  position: relative;
+  display: inline-flex; align-items: center; gap: 4px;
+  text-decoration: none;
+  cursor: help;
+  font-style: normal;
+  border-bottom: 1px dotted currentColor;
+  padding-bottom: 1px;
+}
+/* Up-arrow indicator above the term */
+.dh-abbr::before {
+  content: "▲";
+  position: absolute;
+  inset-block-end: calc(100% + 2px);
+  inset-inline-start: 50%;
+  transform: translateX(-50%) scale(0.85);
+  font-size: 8px;
+  line-height: 1;
+  color: var(--gold-700);
+  opacity: 0;
+  transition: opacity 160ms, inset-block-end 160ms;
+  pointer-events: none;
+}
+.dh-abbr:hover::before,
+.dh-abbr:focus-visible::before {
+  opacity: 1;
+  inset-block-end: calc(100% + 6px);
+}
+
+/* The tooltip card itself */
+.dh-abbr::after {
+  content: attr(data-ar) " · " attr(data-en) " — " attr(data-meaning);
+  position: absolute;
+  inset-block-end: calc(100% + 10px);
+  inset-inline-start: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background: var(--ink-900);
+  color: var(--paper);
+  font-family: var(--font-ar);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.55;
+  white-space: normal;
+  width: max-content;
+  max-width: 280px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  box-shadow: 0 12px 32px -8px rgba(20,17,14,0.4);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 180ms, visibility 180ms, transform 180ms;
+  z-index: 9999;
+  text-align: start;
+  letter-spacing: 0;
+}
+/* Little triangle pointing down toward the term */
+.dh-abbr .dh-abbr-arrow,
+.dh-abbr-arrow {
+  display: none;
+}
+
+.dh-abbr:hover::after,
+.dh-abbr:focus-visible::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* When meaning is empty, fall back to AR · EN only */
+.dh-abbr[data-meaning=""]::after {
+  content: attr(data-ar) " · " attr(data-en);
+}
+
+/* Variant for use on a dark background (inverts colors) */
+.dh-abbr.on-dark {
+  border-bottom-color: currentColor;
+}
+.dh-abbr.on-dark::after {
+  background: var(--paper);
+  color: var(--ink-900);
+  box-shadow: 0 12px 32px -8px rgba(0,0,0,0.6);
+}
+.dh-abbr.on-dark::before {
+  color: var(--gold-400);
+}
+

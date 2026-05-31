@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-screen-label="Onboarding · Manager Signup">
+<head>
+<meta charset="utf-8"/>
+<title>ضيوف · تسجيل منشأة جديدة</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="stylesheet" href="/static/dheuof/colors_and_type.css"/>
+<link rel="stylesheet" href="/static/dheuof/assets/animations.css"/>
+<style>
+  html, body { margin: 0; padding: 0; }
+  body { background: var(--paper); color: var(--ink-900); font-family: var(--font-ar); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+  * { box-sizing: border-box; }
+  a { text-decoration: none; color: inherit; }
+  button, input, select { font: inherit; }
+
+  .top {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 32px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .top .brand { display: inline-flex; align-items: center; gap: 12px; }
+  .top .brand img { width: 36px; height: 36px; }
+  .top .brand .ar { font-family: var(--font-ar-display); font-weight: 600; font-size: 20px; }
+  .top .brand .en { font-family: var(--font-en-display); font-style: italic; font-size: 13px; color: var(--gold-700); margin-inline-start: 4px; }
+  .top .back { font-size: 13px; color: var(--fg-2); }
+  .top .back:hover { color: var(--ink-900); }
+
+  .wrap {
+    max-width: 1080px;
+    margin: 50px auto;
+    padding: 0 32px;
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 56px;
+    align-items: start;
+  }
+
+  /* Form */
+  .form-side .eyebrow { font-family: var(--font-en); font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold-700); font-weight: 600; }
+  .form-side h1 {
+    font-family: var(--font-ar-display); font-weight: 600; font-size: 42px;
+    color: var(--ink-900); margin: 10px 0 10px; line-height: 1.1;
+  }
+  .form-side .lead { font-size: 16px; color: var(--fg-1); line-height: 1.6; margin-bottom: 28px; }
+  .form-side .form {
+    background: var(--white);
+    border: 1px solid var(--hairline);
+    border-radius: 14px;
+    padding: 26px 28px;
+  }
+  .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+  .field label { font-size: 12px; color: var(--ink-800); font-weight: 500; }
+  .field label .req { color: var(--danger-700); }
+  .field input, .field select {
+    font-family: var(--font-ar); font-size: 14px;
+    padding: 12px 14px;
+    border-radius: 8px; border: 1px solid var(--ink-100);
+    background: var(--white); color: var(--ink-900);
+    transition: border-color 160ms, box-shadow 160ms;
+    outline: none;
+  }
+  .field input:focus, .field select:focus { border-color: var(--brand-700); box-shadow: 0 0 0 3px rgba(201,168,95,0.25); }
+  .field input.is-mono { font-family: var(--font-mono); }
+  .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .field-grid .field { margin-bottom: 0; }
+
+  .terms {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: var(--fg-2); margin: 18px 0 18px;
+  }
+  .terms input { width: 14px; height: 14px; accent-color: var(--brand-700); }
+
+  .submit {
+    width: 100%;
+    background: var(--brand-700); color: var(--paper);
+    border: none; padding: 14px;
+    border-radius: 8px;
+    font-family: var(--font-ar); font-size: 15px; font-weight: 600;
+    cursor: pointer;
+  }
+  .submit:hover { background: var(--brand-800); }
+
+  .small-note { font-size: 11px; color: var(--fg-3); margin-top: 10px; text-align: center; }
+
+  /* Right side */
+  .info-side { position: sticky; top: 80px; }
+  .info-card {
+    background: linear-gradient(160deg, var(--brand-800), var(--brand-900));
+    color: var(--paper);
+    border-radius: 16px;
+    padding: 28px 30px;
+    position: relative;
+    overflow: hidden;
+  }
+  .info-card::before { content: ""; position: absolute; top: -50px; inset-inline-end: -50px; width: 180px; height: 180px; border-radius: 999px; background: radial-gradient(circle, rgba(201,168,95,0.25), transparent 60%); }
+  .info-card > * { position: relative; }
+  .info-card .badge {
+    display: inline-block;
+    background: var(--gold-500); color: var(--brand-900);
+    padding: 4px 12px; border-radius: 999px;
+    font-family: var(--font-en); font-size: 10px; font-weight: 700; letter-spacing: 0.14em;
+  }
+  .info-card h3 { font-family: var(--font-ar-display); font-size: 22px; margin: 14px 0 8px; }
+  .info-card .access {
+    background: rgba(0,0,0,0.3);
+    border: 1px dashed rgba(201,168,95,0.4);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-top: 18px;
+  }
+  .info-card .access .l { font-family: var(--font-en); font-size: 10px; letter-spacing: 0.16em; color: var(--gold-400); }
+  .info-card .access .v { font-family: var(--font-mono); font-size: 32px; font-weight: 700; color: var(--gold-400); letter-spacing: 0.06em; margin-top: 4px; }
+  .info-card .access .s { font-size: 11px; color: var(--gold-300); margin-top: 4px; }
+
+  .info-list {
+    margin-top: 18px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .info-list .item {
+    display: grid; grid-template-columns: 24px 1fr; gap: 12px;
+    align-items: flex-start;
+    font-size: 13px; color: var(--gold-200);
+    line-height: 1.55;
+  }
+  .info-list .item .n {
+    width: 22px; height: 22px;
+    background: var(--gold-500); color: var(--brand-900);
+    border-radius: 999px;
+    display: grid; place-items: center;
+    font-family: var(--font-mono); font-weight: 700;
+    font-size: 11px;
+  }
+  .info-list .item strong { color: var(--paper); font-weight: 500; }
+
+  .trial-pill {
+    margin-top: 22px;
+    background: var(--gold-100);
+    color: var(--gold-800);
+    padding: 12px 16px; border-radius: 10px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid var(--gold-300);
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <a class="brand" href="index.html">
+    <img src="/static/dheuof/assets/logo-mark.svg" alt=""/>
+    <div><span class="ar">ضيوف</span><span class="en">Dheuof</span></div>
+  </a>
+  <a class="back" href="index.html">← العودة للواجهة الرئيسية</a>
+</header>
+
+<div class="wrap">
+
+  <!-- LEFT: Form -->
+  <div class="form-side" data-m-rise>
+    <span class="eyebrow">PROPERTY MANAGER SIGN-UP</span>
+    <h1>سجّل منشأتك في دقيقة</h1>
+    <p class="lead">ابدأ تجربتك المجانية لمدة ٣٠ يوم. لا حاجة لبطاقة ائتمان. سيصلك رقم الوصول الخاص بمنشأتك فور التفعيل عبر البريد الإلكتروني.</p>
+
+    <form class="form" data-m-rise>
+      <div class="field-grid">
+        <div class="field">
+          <label>الاسم الكامل <span class="req">*</span></label>
+          <input type="text" placeholder="مثال: سارة أحمد المالكي" />
+        </div>
+        <div class="field">
+          <label>رقم الجوال <span class="req">*</span></label>
+          <input type="tel" class="is-mono" placeholder="+966 5x xxx xxxx" dir="ltr" />
+        </div>
+      </div>
+
+      <div class="field-grid" style="margin-top: 14px">
+        <div class="field">
+          <label>اسم المنشأة <span class="req">*</span></label>
+          <input type="text" placeholder="مثال: فندق الواحة الذهبية" />
+        </div>
+        <div class="field">
+          <label>المدينة <span class="req">*</span></label>
+          <select>
+            <option>الرياض</option>
+            <option>جدة</option>
+            <option>الدمام</option>
+            <option>مكة المكرمة</option>
+            <option>المدينة المنورة</option>
+            <option>أبها</option>
+            <option>الطائف</option>
+            <option>تبوك</option>
+            <option>أخرى</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field" style="margin-top: 14px">
+        <label>البريد الإلكتروني <span class="req">*</span></label>
+        <input type="email" placeholder="manager@hotel.sa" dir="ltr" />
+      </div>
+
+      <label class="terms">
+        <input type="checkbox" checked />
+        <span>أوافق على <a style="color: var(--brand-700); text-decoration: underline;">شروط الاستخدام</a> و<a style="color: var(--brand-700); text-decoration: underline;">سياسة الخصوصية</a></span>
+      </label>
+
+      <button type="submit" class="submit">إنشاء الحساب وبدء التجربة المجانية</button>
+      <div class="small-note">✉ سيصلك رابط التفعيل خلال دقائق. بعد تأكيد البريد، يفتح لك ملف منشأتك تلقائياً.</div>
+    </form>
+  </div>
+
+  <!-- RIGHT: Info card -->
+  <aside class="info-side" data-m-rise>
+    <div class="info-card">
+      <span class="badge">★ معلومة هامة</span>
+      <h3>كل منشأة تحصل على رقم وصول خاص</h3>
+
+      <div class="access">
+        <div class="l">YOUR ACCESS NUMBER</div>
+        <div class="v">00001</div>
+        <div class="s">يُولَّد تلقائياً عند التفعيل · يبدأ من 00001</div>
+      </div>
+
+      <div class="info-list">
+        <div class="item">
+          <div class="n">1</div>
+          <div>تملأ بياناتك الأساسية: <strong>اسم، جوال، مدينة، منشأة، بريد</strong>.</div>
+        </div>
+        <div class="item">
+          <div class="n">2</div>
+          <div>يصلك بريد تفعيل خلال دقائق — أكّد بريدك لتفتح الحساب.</div>
+        </div>
+        <div class="item">
+          <div class="n">3</div>
+          <div>يتم توليد <strong>اسم المستخدم</strong> و<strong>كلمة السر</strong> و<strong>رقم الوصول (٥ خانات)</strong> فور التفعيل.</div>
+        </div>
+        <div class="item">
+          <div class="n">4</div>
+          <div>يفتح لك <strong>ملف برقم المنشأة</strong> لتخزين كل البيانات.</div>
+        </div>
+        <div class="item">
+          <div class="n">5</div>
+          <div>تجرّب <strong>برنامج الضيوف</strong> ٣٠ يوم. عند الترقية، يُربط نفس رقم الاشتراك تلقائياً.</div>
+        </div>
+      </div>
+
+      <div class="trial-pill">🎁 تجربة مجانية ٣٠ يوم · بدون بطاقة ائتمان</div>
+    </div>
+  </aside>
+
+</div>
+
+<script src="/static/dheuof/assets/animations.js"></script>
+<script>
+// Ensure content is always visible — fallback if IntersectionObserver threshold not met
+setTimeout(function(){
+  document.querySelectorAll('[data-m-rise],[data-m-rise-stagger]').forEach(function(el){
+    el.classList.add('is-in');
+  });
+}, 80);
+</script>
+</body>
+</html>

@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-screen-label="10 Channel Marketing">
+<head>
+<meta charset="utf-8"/>
+<title>ضيوف · تسويق القنوات</title>
+<meta name="viewport" content="width=1440, initial-scale=1"/>
+<link rel="stylesheet" href="/static/dheuof/colors_and_type.css"/>
+<link rel="stylesheet" href="/static/dheuof/assets/animations.css"/>
+<link rel="stylesheet" href="/static/dheuof/shared/chrome.css"/>
+<link rel="stylesheet" href="/static/dheuof/shared/module.css"/>
+<style>
+  body { background: var(--paper-tint); }
+
+  /* Channel sync banner */
+  .ch-banner {
+    background: linear-gradient(135deg, var(--brand-700), var(--brand-900));
+    color: var(--paper);
+    border-radius: 12px;
+    padding: 22px 26px;
+    margin-bottom: 22px;
+    display: grid; grid-template-columns: 1fr auto auto; gap: 22px; align-items: center;
+    position: relative; overflow: hidden;
+  }
+  .ch-banner::after { content:""; position:absolute; top:-50px; inset-inline-end: -50px; width: 240px; height: 240px; border-radius: 999px; background: radial-gradient(circle, rgba(201,168,95,0.18), transparent 60%); }
+  .ch-banner > * { position: relative; }
+  .ch-banner .ar { font-family: var(--font-ar-display); font-weight: 600; font-size: 22px; }
+  .ch-banner .en { font-family: var(--font-en); font-style: italic; font-size: 13px; color: var(--gold-300); margin-top: 3px; }
+  .ch-banner .meta { font-size: 13px; color: var(--gold-200); margin-top: 8px; display: flex; align-items: center; gap: 8px; }
+  .ch-banner .dot { width: 7px; height: 7px; background: var(--success-500); border-radius: 999px; box-shadow: 0 0 0 0 rgba(74,148,118,0.5); animation: ch-pulse 1.4s infinite; }
+  @keyframes ch-pulse { 0% { box-shadow: 0 0 0 0 rgba(74,148,118,0.5); } 100% { box-shadow: 0 0 0 8px rgba(74,148,118,0); } }
+  .ch-banner .v { font-family: var(--font-en); font-variant-numeric: tabular-nums; font-size: 48px; font-weight: 600; line-height: 1; color: var(--gold-400); }
+  .ch-banner .v-lbl { font-size: 11px; color: var(--gold-300); margin-top: 4px; font-family: var(--font-en); letter-spacing: 0.04em; text-transform: uppercase; }
+  .ch-banner button {
+    background: var(--gold-500); color: var(--brand-900);
+    border: none; padding: 12px 22px; border-radius: 8px;
+    font-family: var(--font-ar); font-weight: 600; font-size: 13px;
+    cursor: pointer;
+  }
+
+  /* Channel cards */
+  .ch-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .ch-card {
+    background: var(--white);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 20px 22px;
+    transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 180ms;
+  }
+  .ch-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(20,17,14,0.06); }
+  .ch-card.is-off { opacity: 0.6; }
+  .ch-card .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+  .ch-card .logo { font-family: var(--font-en); font-weight: 700; font-size: 18px; padding: 8px 14px; border-radius: 8px; }
+  .ch-card .logo.booking { background: #003580; color: #FFFFFF; }
+  .ch-card .logo.agoda { background: #D72481; color: #FFFFFF; }
+  .ch-card .logo.expedia { background: #FECB00; color: #003463; }
+  .ch-card .logo.airbnb { background: #FF5A5F; color: #FFFFFF; }
+  .ch-card .logo.almosafer { background: #002B5C; color: #C9A85F; }
+  .ch-card .logo.tripcom { background: #2577E3; color: #FFFFFF; }
+  .ch-card .logo.direct { background: var(--gold-500); color: var(--brand-900); }
+  .ch-card .figures { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 14px 0; border-top: 1px solid var(--hairline); border-bottom: 1px solid var(--hairline); margin: 6px 0; }
+  .ch-card .fig { display: flex; flex-direction: column; gap: 2px; }
+  .ch-card .fig .l { font-size: 10px; color: var(--fg-3); text-transform: uppercase; letter-spacing: 0.08em; font-family: var(--font-en); }
+  .ch-card .fig .v { font-family: var(--font-en); font-variant-numeric: tabular-nums; font-weight: 600; font-size: 20px; color: var(--ink-900); line-height: 1; }
+  .ch-card .fig .v .cur { font-size: 11px; color: var(--fg-3); font-family: var(--font-ar); margin-inline-start: 3px; font-weight: 400; }
+  .ch-card .delta { font-family: var(--font-en); font-size: 11px; font-weight: 600; }
+  .ch-card .delta.up { color: var(--success-700); }
+  .ch-card .delta.dn { color: var(--danger-700); }
+  .ch-card .foot-row { display: flex; align-items: center; justify-content: space-between; font-size: 11px; }
+  .ch-card .foot-row .sync { font-family: var(--font-mono); color: var(--fg-3); }
+  .ch-card .commission { font-family: var(--font-en); font-variant-numeric: tabular-nums; color: var(--fg-2); font-weight: 500; }
+
+  /* Rate parity table */
+  .ch-parity { background: var(--white); border: 1px solid var(--hairline); border-radius: 12px; overflow: hidden; }
+  .ch-pr-row {
+    display: grid;
+    grid-template-columns: 2fr repeat(5, 1fr) 0.8fr;
+    gap: 14px;
+    align-items: center;
+    padding: 13px 20px;
+    border-top: 1px solid var(--hairline);
+    font-size: 13px;
+  }
+  .ch-pr-row.is-head { background: var(--surface-2); font-size: 11px; color: var(--fg-3); font-weight: 500; border-top: none; text-align: center; }
+  .ch-pr-row.is-head > :first-child { text-align: start; }
+  .ch-pr-row .room { font-weight: 500; color: var(--ink-900); }
+  .ch-pr-row .sub { font-size: 11px; color: var(--fg-3); margin-top: 1px; }
+  .ch-pr-row .rate {
+    font-family: var(--font-en); font-variant-numeric: tabular-nums;
+    font-weight: 600; text-align: center;
+    padding: 4px 0; border-radius: 4px;
+  }
+  .ch-pr-row .rate.match  { color: var(--ink-900); }
+  .ch-pr-row .rate.lower  { color: var(--success-700); background: #DCEEE6; }
+  .ch-pr-row .rate.higher { color: var(--danger-700); background: #F1D8CF; }
+  .ch-pr-row .rate.na     { color: var(--ink-200); }
+  .ch-pr-row .rate small  { font-size: 10px; opacity: 0.7; font-family: var(--font-ar); }
+  .ch-pr-row .status { text-align: end; }
+</style>
+</head>
+<body>
+<div class="dh-app">
+  <div id="sidebar-slot"></div>
+  <div>
+    <div id="topbar-slot"></div>
+    <main class="dh-main">
+
+      <div class="mod-head" data-m-rise>
+        <div class="left">
+          <div class="num-row">
+            <span class="num">10 · CHANNELS</span>
+            <span class="en-tag">Channel Manager · OTA Sync</span>
+          </div>
+          <h1>تسويق القنوات</h1>
+          <p class="sub">إدارة موحّدة لجميع قنوات الحجز الخارجية — أسعار، إتاحة، عمولات، أداء.</p>
+        </div>
+        <div class="actions">
+          <button onclick="exportCSV()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">📊 Excel</button>
+          <button onclick="exportPDF()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">🖨 تقرير PDF</button>
+          <button style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--brand-700);color:var(--paper);border:none;cursor:pointer">+ ربط قناة جديدة</button>
+        </div>
+      </div>
+
+      <div class="ch-banner" data-m-rise>
+        <div>
+          <div class="ar">٧ قنوات متصلة · ٤٢ قناة متاحة</div>
+          <div class="en">Channels synced — pushed pricing &amp; availability</div>
+          <div class="meta"><span class="dot"></span>آخر مزامنة قبل ٤٢ ثانية · ١٦٤ غرفة محدّثة</div>
+        </div>
+        <div style="text-align: center">
+          <div class="v">٢٢٤</div>
+          <div class="v-lbl">حجوزات هذا الشهر</div>
+        </div>
+        <button>مزامنة فورية</button>
+      </div>
+
+      <div class="mod-stats" style="--cols: 4">
+        <div class="mod-stat"><div class="lbl">حجوزات القنوات (الشهر)</div><div class="v">٢٢٤</div><div class="meta up">+٢٦٪ عن أبريل</div></div>
+        <div class="mod-stat"><div class="lbl">إيرادات القنوات</div><div class="v">٣١٢٬٤٠٠ <span class="cur">ر.س</span></div><div class="meta up">٦٢٪ من إجمالي الحجوزات</div></div>
+        <div class="mod-stat"><div class="lbl">العمولات المدفوعة</div><div class="v">٤٦٬٨٦٠ <span class="cur">ر.س</span></div><div class="meta">١٥٪ متوسط</div></div>
+        <div class="mod-stat"><div class="lbl">تطابق التسعير</div><div class="v is-good">٩٤<span class="cur">٪</span></div><div class="meta">٣ غرف خارج التطابق</div></div>
+      </div>
+
+      <div class="mod-section-head" style="padding-inline: 0">
+        <div>
+          <div class="ttl">القنوات المتصلة</div>
+          <div class="sub">Connected OTAs · this month's performance</div>
+        </div>
+      </div>
+
+      <div class="ch-grid" data-m-rise-stagger>
+        <div class="ch-card">
+          <div class="top">
+            <div class="logo booking">Booking</div>
+            <span class="mod-tag ok"><span class="d"></span>متصل</span>
+          </div>
+          <div class="figures">
+            <div class="fig"><span class="l">Bookings</span><span class="v">٧٢</span></div>
+            <div class="fig"><span class="l">Revenue</span><span class="v">٩٨٬٤٠٠<span class="cur">ر.س</span></span></div>
+          </div>
+          <div class="foot-row">
+            <span class="commission">عمولة: ١٥٪</span>
+            <span class="sync">آخر مزامنة: 14:32</span>
+          </div>
+        </div>
+
+        <div class="ch-card">
+          <div class="top">
+            <div class="logo agoda">agoda</div>
+            <span class="mod-tag ok"><span class="d"></span>متصل</span>
+          </div>
+          <div class="figures">
+            <div class="fig"><span class="l">Bookings</span><span class="v">٤٨</span></div>
+            <div class="fig"><span class="l">Revenue</span><span class="v">٦٢٬٨٠٠<span class="cur">ر.س</span></span></div>
+          </div>
+          <div class="foot-row">
+            <span class="commission">عمولة: ١٧٪</span>
+            <span class="sync">آخر مزامنة: 14:30</span>
+          </div>
+        </div>
+
+        <div class="ch-card">
+          <div class="top">
+            <div class="logo expedia">Expedia</div>
+            <span class="mod-tag ok"><span class="d"></span>متصل</span>
+          </div>
+          <div class="figures">
+            <div class="fig"><span class="l">Bookings</span><span class="v">٢٨</span></div>
+            <div class="fig"><span class="l">Revenue</span><span class="v">٣٨٬٤٠٠<span class="cur">ر.س</span></span></div>
+          </div>
+          <div class="foot-row">
+            <span class="commission">عمولة: ١٨٪</span>
+            <span class="sync">آخر مزامنة: 14:32</span>
+          </div>
+        </div>
+
+        <div class="ch-card">
+          <div class="top">
+            <div class="logo almosafer">Almosafer</div>
+            <span class="mod-tag ok"><span class="d"></span>متصل</span>
+          </div>
+          <div class="figures">
+            <div class="fig"><span class="l">Bookings</span><span class="v">٢٢</span></div>
+            <div class="fig"><span class="l">Revenue</span><span class="v">٢٨٬٢٠٠<span class="cur">ر.س</span></span></div>
+          </div>
+          <div class="foot-row">
+            <span class="commission">عمولة: ١٢٪</span>
+            <span class="sync">آخر مزامنة: 14:31</span>
+          </div>
+        </div>
+
+        <div class="ch-card">
+          <div class="top">
+            <div class="logo tripcom">Trip.com</div>
+            <span class="mod-tag warn"><span class="d"></span>مزامنة بطيئة</span>
+          </div>
+          <div class="figures">
+            <div class="fig"><span class="l">Bookings</span><span class="v">١٤</span></div>
+            <div class="fig"><span class="l">Revenue</span><span class="v">١٨٬٢٠٠<span class="cur">ر.س</span></span></div>
+          </div>
+          <div class="foot-row">
+            <span class="commission">عمولة: ١٦٪</span>
+            <span class="sync">آخر مزامنة: قبل ١٢ د</span>
+          </div>
+        </div>
+
+        <div class="ch-card is-off">
+          <div class="top">
+            <div class="logo airbnb">airbnb</div>
+            <span class="mod-tag neu"><span class="d"></span>غير مفعّل</span>
+          </div>
+          <div class="figures">
+            <div class="fig"><span class="l">Bookings</span><span class="v">—</span></div>
+            <div class="fig"><span class="l">Revenue</span><span class="v">—</span></div>
+          </div>
+          <div class="foot-row">
+            <span class="commission">عمولة: ١٤٪</span>
+            <span class="sync">انقر للتفعيل</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 22px;" data-m-rise>
+        <div class="mod-section-head" style="padding-inline: 0">
+          <div>
+            <div class="ttl">تطابق التسعير عبر القنوات</div>
+            <div class="sub">Rate parity check — flagged when prices differ from direct rate</div>
+          </div>
+          <button class="nz-chip is-on" style="background: var(--brand-800); color: var(--paper); border-color: var(--brand-800); font-family: var(--font-ar); font-size: 12px; padding: 6px 12px; border-radius: 999px; font-weight: 500; border: 1px solid transparent; cursor: pointer">٢٨ مايو</button>
+        </div>
+        <div class="ch-parity">
+          <div class="ch-pr-row is-head">
+            <span>نوع الغرفة</span>
+            <span>الموقع المباشر</span>
+            <span>Booking</span>
+            <span>Agoda</span>
+            <span>Expedia</span>
+            <span>Almosafer</span>
+            <span>الحالة</span>
+          </div>
+          <div class="ch-pr-row">
+            <div><div class="room">ستاندرد</div><div class="sub">24 غرفة</div></div>
+            <span class="rate match">٤٢٠ <small>ر.س</small></span>
+            <span class="rate match">٤٢٠</span>
+            <span class="rate match">٤٢٠</span>
+            <span class="rate match">٤٢٠</span>
+            <span class="rate match">٤٢٠</span>
+            <span class="status"><span class="mod-tag ok"><span class="d"></span>متطابق</span></span>
+          </div>
+          <div class="ch-pr-row">
+            <div><div class="room">ديلوكس</div><div class="sub">18 غرفة</div></div>
+            <span class="rate match">٧٢٠ <small>ر.س</small></span>
+            <span class="rate match">٧٢٠</span>
+            <span class="rate higher">٧٥٠</span>
+            <span class="rate match">٧٢٠</span>
+            <span class="rate match">٧٢٠</span>
+            <span class="status"><span class="mod-tag warn"><span class="d"></span>تنبيه — Agoda</span></span>
+          </div>
+          <div class="ch-pr-row">
+            <div><div class="room">جناح</div><div class="sub">8 أجنحة</div></div>
+            <span class="rate match">١٬٢٠٠ <small>ر.س</small></span>
+            <span class="rate match">١٬٢٠٠</span>
+            <span class="rate match">١٬٢٠٠</span>
+            <span class="rate lower">١٬١٤٠</span>
+            <span class="rate match">١٬٢٠٠</span>
+            <span class="status"><span class="mod-tag ok"><span class="d"></span>سعر تنافسي</span></span>
+          </div>
+          <div class="ch-pr-row">
+            <div><div class="room">ملكي</div><div class="sub">2 أجنحة</div></div>
+            <span class="rate match">٢٬٤٠٠ <small>ر.س</small></span>
+            <span class="rate match">٢٬٤٠٠</span>
+            <span class="rate match">٢٬٤٠٠</span>
+            <span class="rate higher">٢٬٥٢٠</span>
+            <span class="rate na">—</span>
+            <span class="status"><span class="mod-tag warn"><span class="d"></span>تنبيه — Expedia</span></span>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="/static/dheuof/shared/sidebar.js"></script>
+<script>StaticSidebar.mount({ activeId: "10-channel-marketing", placeholder: "بحث في القنوات والحجوزات الخارجية..." });</script>
+<script src="/static/dheuof/assets/animations.js"></script>
+<script>
+// Ensure content is always visible — fallback if IntersectionObserver threshold not met
+setTimeout(function(){
+  document.querySelectorAll('[data-m-rise],[data-m-rise-stagger]').forEach(function(el){
+    el.classList.add('is-in');
+  });
+}, 80);
+
+// ── Export helpers ──────────────────────────────────
+function todayStr(){var d=new Date();return d.getFullYear()+(d.getMonth()+1<10?'0':'')+(d.getMonth()+1)+(d.getDate()<10?'0':'')+d.getDate();}
+function toXLS(headers,rows,name){var s='<Styles><Style ss:ID="H"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1B4D3D" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center"/></Style><Style ss:ID="BAD"><Interior ss:Color="#C0392B" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style><Style ss:ID="WARN"><Interior ss:Color="#D97706" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style><Style ss:ID="OK"><Interior ss:Color="#BBF7D0" ss:Pattern="Solid"/><Font ss:Color="#1B7A56" ss:Bold="1"/></Style><Style ss:ID="EXC"><Interior ss:Color="#1B7A56" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style></Styles>';function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}function cell(v){if(v&&typeof v==='object'&&'s' in v)return '<Cell ss:StyleID="'+v.s+'"><Data ss:Type="String">'+esc(v.v)+'</Data></Cell>';return '<Cell><Data ss:Type="'+(typeof v==='number'?'Number':'String')+'">'+esc(v)+'</Data></Cell>';}var hRow='<Row>'+headers.map(function(h){return '<Cell ss:StyleID="H"><Data ss:Type="String">'+esc(h)+'</Data></Cell>';}).join('')+'</Row>';var dRows=rows.map(function(r){return '<Row>'+r.map(cell).join('')+'</Row>';}).join('');return '<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'+s+'<Worksheet ss:Name="'+esc(name)+'"><Table>'+hRow+dRows+'</Table></Worksheet></Workbook>';}
+function dlXLS(c,fn){var b=new Blob([c],{type:'application/vnd.ms-excel;charset=utf-8'});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download=fn;a.click();setTimeout(function(){URL.revokeObjectURL(u);},1000);}
+function toast(msg,isErr){var old=document.querySelector('.nz-toast');if(old)old.remove();var t=document.createElement('div');t.className='nz-toast';t.style.cssText='position:fixed;bottom:24px;inset-inline-end:24px;background:'+(isErr?'#b91c1c':'#1B4D3D')+';color:#fff;padding:12px 18px;border-radius:8px;font-family:"Tajawal",sans-serif;font-size:13px;z-index:9999;display:flex;gap:8px';t.innerHTML='<span style="color:'+(isErr?'#fca5a5':'#C9A85F')+'">'+(isErr?'✕':'✓')+'</span>'+msg;document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .4s';setTimeout(function(){if(t.parentNode)t.remove();},400);},3000);}
+
+var CHANNELS = [
+  {name:'Booking.com', status:'connected', bookings:72,  revenue:98400,  commission:15},
+  {name:'Agoda',       status:'connected', bookings:48,  revenue:62800,  commission:17},
+  {name:'Expedia',     status:'connected', bookings:28,  revenue:38400,  commission:18},
+  {name:'Almosafer',   status:'connected', bookings:22,  revenue:28200,  commission:12},
+  {name:'Trip.com',    status:'slow',      bookings:14,  revenue:18200,  commission:16},
+  {name:'Airbnb',      status:'inactive',  bookings:0,   revenue:0,      commission:14},
+];
+
+window.exportCSV = function(){
+  var stMap = {connected:{v:'متصل',s:'EXC'}, slow:{v:'مزامنة بطيئة',s:'WARN'}, inactive:{v:'غير مفعّل',s:'BAD'}};
+  var maxRev = Math.max.apply(null, CHANNELS.map(function(c){return c.revenue;}));
+  var headers = ['القناة','الحالة','الحجوزات','الإيرادات (ر.س)','العمولة (%)', 'الأداء'];
+  var rows = CHANNELS.map(function(c){
+    var pct = maxRev > 0 ? Math.round(c.revenue/maxRev*100) : 0;
+    var perfCell = pct>=80?{v:'ممتاز',s:'EXC'}:pct>=50?{v:'جيد',s:'OK'}:pct>=25?{v:'منخفض',s:'WARN'}:{v:'تحت الحد',s:'BAD'};
+    return [c.name, stMap[c.status]||{v:c.status,s:'OK'}, c.bookings, c.revenue, c.commission+'%', c.revenue>0?perfCell:{v:'—',s:'BAD'}];
+  });
+  var connected=CHANNELS.filter(function(c){return c.status==='connected';}).length;
+  var slow     =CHANNELS.filter(function(c){return c.status==='slow';}).length;
+  var inactive =CHANNELS.filter(function(c){return c.status==='inactive';}).length;
+  var maxRev2  =Math.max.apply(null,CHANNELS.map(function(c){return c.revenue;}));
+  var excP=CHANNELS.filter(function(c){return maxRev2>0&&c.revenue/maxRev2>=0.8;}).length;
+  var okP =CHANNELS.filter(function(c){return maxRev2>0&&c.revenue/maxRev2>=0.5&&c.revenue/maxRev2<0.8;}).length;
+  var warnP=CHANNELS.filter(function(c){return maxRev2>0&&c.revenue/maxRev2>=0.25&&c.revenue/maxRev2<0.5;}).length;
+  var badP=CHANNELS.filter(function(c){return !maxRev2||c.revenue/maxRev2<0.25;}).length;
+  var t=CHANNELS.length; function _p(n){return t>0?Math.round(n/t*100):0;}
+  rows.push([]);
+  rows.push([{v:'📊 ملخص القنوات',s:'EXC'},{v:'العدد',s:'EXC'},{v:'النسبة %',s:'EXC'},'','','']);
+  rows.push([{v:'⭐ ممتاز الأداء (≥٨٠٪)',s:'EXC'},{v:excP,s:'EXC'},{v:_p(excP)+'%',s:'EXC'}]);
+  rows.push([{v:'🟢 جيد الأداء (٥٠-٨٠٪)',s:'OK'},{v:okP,s:'OK'},{v:_p(okP)+'%',s:'OK'}]);
+  rows.push([{v:'🟠 منخفض الأداء (٢٥-٥٠٪)',s:'WARN'},{v:warnP,s:'WARN'},{v:_p(warnP)+'%',s:'WARN'}]);
+  rows.push([{v:'🔴 تحت الحد (<٢٥٪)',s:'BAD'},{v:badP,s:'BAD'},{v:_p(badP)+'%',s:'BAD'}]);
+  rows.push([]);
+  rows.push([{v:'حالة الاتصال — متصل',s:'EXC'},{v:connected,s:'EXC'},{v:_p(connected)+'%',s:'EXC'}]);
+  rows.push([{v:'حالة الاتصال — بطيء',s:'WARN'},{v:slow,s:'WARN'},{v:_p(slow)+'%',s:'WARN'}]);
+  rows.push([{v:'حالة الاتصال — غير مفعّل',s:'BAD'},{v:inactive,s:'BAD'},{v:_p(inactive)+'%',s:'BAD'}]);
+  dlXLS(toXLS(headers,rows,'أداء القنوات'),'القنوات_'+todayStr()+'.xls');
+  toast('تم تصدير تقرير القنوات ✓');
+};
+
+window.exportPDF = function(){
+  var totalRev = CHANNELS.reduce(function(s,c){return s+c.revenue;},0);
+  var totalBook = CHANNELS.reduce(function(s,c){return s+c.bookings;},0);
+  var totalComm = Math.round(CHANNELS.reduce(function(s,c){return s+c.revenue*c.commission/100;},0));
+  var maxR=Math.max.apply(null,CHANNELS.map(function(c){return c.revenue;}));
+  var excC=CHANNELS.filter(function(c){return maxR>0&&c.revenue/maxR>=0.8;}).length;
+  var okC =CHANNELS.filter(function(c){return maxR>0&&c.revenue/maxR>=0.5&&c.revenue/maxR<0.8;}).length;
+  var warnC=CHANNELS.filter(function(c){return maxR>0&&c.revenue/maxR>=0.25&&c.revenue/maxR<0.5;}).length;
+  var badC=CHANNELS.filter(function(c){return !maxR||c.revenue/maxR<0.25;}).length;
+  var connected=CHANNELS.filter(function(c){return c.status==='connected';}).length;
+  var inactive=CHANNELS.filter(function(c){return c.status==='inactive';}).length;
+  var t=CHANNELS.length; function _p(n){return t>0?Math.round(n/t*100):0;}
+  var statsHtml='<div style="background:linear-gradient(135deg,#f0f7f4,#f8faf9);border:1px solid #c6ddd7;border-radius:12px;padding:18px 20px;margin-bottom:20px">'
+    +'<div style="font-size:14px;font-weight:700;color:#1B4D3D;margin-bottom:14px">📊 ملخص القنوات · الإجمالي: '+t+' قناة · إيرادات: '+totalRev.toLocaleString('ar-EG')+' ر.س</div>'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#f0f0f0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#333">'+t+'</div><div style="font-size:10px;color:#666;margin-top:4px">إجمالي القنوات</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#D1FAE5;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#1B7A56">'+excC+'</div><div style="font-size:13px;font-weight:700;color:#1B7A56">'+_p(excC)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">ممتاز ≥٨٠٪ ⭐</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#BBF7D0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#059669">'+okC+'</div><div style="font-size:13px;font-weight:700;color:#059669">'+_p(okC)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">جيد ٥٠-٨٠٪ 🟢</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEF3C7;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#D97706">'+warnC+'</div><div style="font-size:13px;font-weight:700;color:#D97706">'+_p(warnC)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">منخفض ٢٥-٥٠٪ 🟠</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEE2E2;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#C0392B">'+badC+'</div><div style="font-size:13px;font-weight:700;color:#C0392B">'+_p(badC)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">تحت الحد <٢٥٪ 🔴</div></div>'
+    +'</div>'
+    +'<div style="background:#e8eceb;border-radius:6px;height:12px;overflow:hidden;display:flex">'
+    +(excC>0?'<div style="width:'+_p(excC)+'%;background:#1B7A56;height:100%"></div>':'')
+    +(okC>0?'<div style="width:'+_p(okC)+'%;background:#22C55E;height:100%"></div>':'')
+    +(warnC>0?'<div style="width:'+_p(warnC)+'%;background:#D97706;height:100%"></div>':'')
+    +(badC>0?'<div style="width:'+_p(badC)+'%;background:#C0392B;height:100%"></div>':'')
+    +'</div>'
+    +'<div style="margin-top:8px;font-size:10px;color:#666;display:flex;gap:14px;flex-wrap:wrap">'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#1B7A56;margin-left:3px"></span>ممتاز '+_p(excC)+'%</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#22C55E;margin-left:3px"></span>جيد '+_p(okC)+'%</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#D97706;margin-left:3px"></span>منخفض '+_p(warnC)+'%</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#C0392B;margin-left:3px"></span>تحت الحد '+_p(badC)+'%</span>'
+    +'<span> · متصل: '+connected+'/'+t+' · غير مفعّل: '+inactive+'</span>'
+    +'</div>'
+    +'</div>';
+  var stStyle = {connected:'color:#1B7A56;font-weight:700', slow:'color:#D97706;font-weight:700', inactive:'color:#C0392B;font-weight:600'};
+  var stLabel = {connected:'✓ متصل', slow:'⚠ بطيء', inactive:'✕ غير مفعّل'};
+  var rows = CHANNELS.map(function(c){
+    return '<tr><td><strong>'+c.name+'</strong></td>'
+      +'<td style="'+stStyle[c.status]+'">'+stLabel[c.status]+'</td>'
+      +'<td style="font-weight:600">'+c.bookings+'</td>'
+      +'<td style="font-weight:600">'+c.revenue.toLocaleString('ar-EG')+'</td>'
+      +'<td>'+c.commission+'%</td>'
+      +'<td style="font-size:11px;color:#999">'+Math.round(c.revenue*c.commission/100).toLocaleString('ar-EG')+'</td>'
+      +'</tr>';
+  }).join('');
+  var win=window.open('','_blank','width=920,height=680');
+  win.document.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"/><title>تقرير القنوات</title>'
+    +'<style>body{font-family:"Tajawal","Segoe UI",sans-serif;margin:32px;color:#1a1a1a;direction:rtl}'
+    +'h1{font-size:22px;margin:0 0 4px}.sub{font-size:12px;color:#666;margin:0 0 18px}'
+    +'.kpis{display:flex;gap:14px;margin-bottom:18px}.kpi{padding:12px 20px;border-radius:10px;min-width:110px}'
+    +'.kpi .v{font-size:24px;font-weight:700}.kpi .l{font-size:11px;color:#666}'
+    +'table{width:100%;border-collapse:collapse;font-size:13px}th{background:#1B4D3D;color:#fff;padding:10px 12px;text-align:right}'
+    +'td{padding:9px 12px;border-bottom:1px solid #eee}tr:nth-child(even){background:#fafafa}'
+    +'.footer{margin-top:18px;font-size:11px;color:#999}@media print{.no-print{display:none}}'
+    +'</style></head><body>'
+    +'<h1>📡 تقرير أداء القنوات</h1>'
+    +'<p class="sub">'+new Date().toLocaleDateString('ar-SA')+' · قنوات الحجز الخارجية</p>'
+    +statsHtml+
+    +'<table><thead><tr><th>القناة</th><th>الحالة</th><th>الحجوزات</th><th>الإيرادات (ر.س)</th><th>العمولة</th><th>العمولة المدفوعة</th></tr></thead>'
+    +'<tbody>'+rows+'</tbody></table>'
+    +'<div class="footer">نظام ضيوف · تقرير القنوات · '+new Date().toLocaleString('ar-SA')+'</div>'
+    +'</body></html>');
+  win.document.close();
+  setTimeout(function(){win.print();},700);
+};
+</script>
+</body>
+</html>

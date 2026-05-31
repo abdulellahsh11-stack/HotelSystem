@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-screen-label="14 Manager Goals">
+<head>
+<meta charset="utf-8"/>
+<title>ضيوف - أهداف المدير</title>
+<meta name="viewport" content="width=1440, initial-scale=1"/>
+<link rel="stylesheet" href="/static/dheuof/colors_and_type.css"/>
+<link rel="stylesheet" href="/static/dheuof/assets/animations.css"/>
+<link rel="stylesheet" href="/static/dheuof/shared/chrome.css"/>
+<link rel="stylesheet" href="/static/dheuof/shared/module.css"/>
+<style>
+  body { background: var(--paper-tint); }
+
+  .gl-hero {
+    background: linear-gradient(135deg, var(--brand-800), var(--brand-900));
+    color: var(--paper);
+    border-radius: 16px;
+    padding: 30px 32px;
+    margin-bottom: 22px;
+    display: grid; grid-template-columns: 1fr auto; gap: 28px; align-items: center;
+    position: relative; overflow: hidden;
+  }
+  .gl-hero::after { content: ""; position: absolute; top: -60px; inset-inline-end: -60px; width: 280px; height: 280px; border-radius: 999px; background: radial-gradient(circle, rgba(201,168,95,0.22), transparent 60%); }
+  .gl-hero > * { position: relative; }
+  .gl-hero .lbl { font-family: var(--font-en); font-size: 11px; letter-spacing: 0.22em; color: var(--gold-400); font-weight: 600; }
+  .gl-hero h2 { font-family: var(--font-ar-display); font-weight: 600; font-size: 28px; margin: 8px 0 6px; }
+  .gl-hero .sub { font-size: 14px; color: var(--gold-200); line-height: 1.55; max-width: 540px; }
+
+  /* Circular progress */
+  .gl-ring { position: relative; width: 160px; height: 160px; }
+  .gl-ring svg { transform: rotate(-90deg); }
+  .gl-ring .center {
+    position: absolute; inset: 0;
+    display: grid; place-items: center;
+    flex-direction: column;
+  }
+  .gl-ring .v {
+    font-family: var(--font-en); font-variant-numeric: tabular-nums;
+    font-size: 44px; font-weight: 700; color: var(--gold-400);
+    line-height: 1;
+  }
+  .gl-ring .label { font-size: 11px; color: var(--gold-300); margin-top: 4px; }
+
+  /* Goal cards */
+  .gl-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .gl-card {
+    background: var(--white);
+    border: 1px solid var(--hairline);
+    border-radius: 14px;
+    padding: 22px 24px 24px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 200ms, box-shadow 200ms;
+  }
+  .gl-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-2); }
+  .gl-card.done { background: linear-gradient(135deg, var(--brand-50), var(--paper)); border-color: var(--brand-300); }
+  .gl-card.behind { background: linear-gradient(135deg, #FDF4F0, var(--paper)); border-color: #E8AC9F; }
+  .gl-card .head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .gl-card .ic { width: 44px; height: 44px; background: var(--paper-tint); border-radius: 10px; display: grid; place-items: center; font-size: 22px; border: 1px solid var(--hairline); }
+  .gl-card .pct { font-family: var(--font-en); font-variant-numeric: tabular-nums; font-size: 28px; font-weight: 700; color: var(--brand-700); }
+  .gl-card.done .pct { color: var(--success-700); }
+  .gl-card.behind .pct { color: var(--danger-700); }
+  .gl-card .nm { font-family: var(--font-ar-display); font-weight: 600; font-size: 16px; color: var(--ink-900); }
+  .gl-card .target { font-size: 12px; color: var(--fg-2); margin-top: 4px; }
+  .gl-card .bar { height: 7px; background: var(--sand); border-radius: 999px; margin: 12px 0 8px; overflow: hidden; }
+  .gl-card .bar div { height: 100%; background: linear-gradient(to left, var(--brand-500), var(--brand-700)); border-radius: 999px; }
+  .gl-card.done .bar div { background: linear-gradient(to left, var(--success-500), var(--success-700)); }
+  .gl-card.behind .bar div { background: linear-gradient(to left, var(--danger-500), var(--danger-700)); }
+  .gl-card .foot-info { display: flex; justify-content: space-between; font-size: 11px; color: var(--fg-3); }
+  .gl-card .foot-info .now { font-family: var(--font-en); font-variant-numeric: tabular-nums; font-weight: 600; color: var(--ink-800); }
+
+  /* Notification feed */
+  .gl-notify {
+    background: var(--white);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 22px 24px;
+    margin-top: 22px;
+  }
+  .gl-notify h4 { font-family: var(--font-ar-display); font-weight: 600; font-size: 16px; color: var(--ink-900); margin: 0 0 14px; display: flex; align-items: center; gap: 10px; }
+  .gl-notify h4 .pulse { width: 8px; height: 8px; background: var(--success-500); border-radius: 999px; box-shadow: 0 0 0 0 rgba(74,148,118,0.5); animation: gl-pulse 1.5s infinite; }
+  @keyframes gl-pulse { 0% { box-shadow: 0 0 0 0 rgba(74,148,118,0.5); } 100% { box-shadow: 0 0 0 8px rgba(74,148,118,0); } }
+  .gl-notify .item { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; padding: 10px 0; border-top: 1px solid var(--hairline); align-items: center; }
+  .gl-notify .item:first-of-type { border-top: none; }
+  .gl-notify .item .ic { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; font-size: 14px; }
+  .gl-notify .item .ic.good { background: #DCEEE6; color: var(--success-700); }
+  .gl-notify .item .ic.warn { background: #F6E7C2; color: var(--warning-700); }
+  .gl-notify .item .ic.info { background: #D6E1F0; color: var(--info-700); }
+  .gl-notify .item .body { font-size: 13px; color: var(--ink-900); line-height: 1.45; }
+  .gl-notify .item .body .sub { font-size: 11px; color: var(--fg-3); margin-top: 2px; }
+  .gl-notify .item .when { font-family: var(--font-mono); font-size: 11px; color: var(--fg-3); }
+</style>
+</head>
+<body>
+<div class="dh-app">
+  <div id="sidebar-slot"></div>
+  <div>
+    <div id="topbar-slot"></div>
+    <main class="dh-main">
+
+      <div class="mod-head" data-m-rise>
+        <div class="left">
+          <div class="num-row">
+            <span class="num">14 - GOALS</span>
+            <span class="en-tag">Manager Goals and Achievements</span>
+          </div>
+          <h1>أهدافي كمدير منشأة</h1>
+          <p class="sub">أهداف شهرية وفصلية مع متابعة فورية. تنبيهات عند تجاوز الهدف أو التأخر عنه، مع معلومات إضافية لكل هدف.</p>
+        </div>
+        <div class="actions">
+          <button onclick="exportCSV()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">📊 Excel</button>
+          <button onclick="exportPDF()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">🖨 تقرير PDF</button>
+          <button style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">سجل الأهداف</button>
+          <button style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--brand-700);color:var(--paper);border:none;cursor:pointer">إضافة هدف جديد</button>
+        </div>
+      </div>
+
+      <div class="gl-hero" data-m-rise>
+        <div>
+          <div class="lbl">MAY 2025 - OVERALL PROGRESS</div>
+          <h2>أداء هذا الشهر</h2>
+          <p class="sub">٤ أهداف من أصل ٦ تم تحقيقها أو تجاوزت المستهدف. الإيرادات تتقدم على الجدول بنسبة ١٢٪. إقامات الموظفين تحتاج اهتمام.</p>
+        </div>
+        <div class="gl-ring">
+          <svg width="160" height="160">
+            <circle cx="80" cy="80" r="68" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="14"/>
+            <circle cx="80" cy="80" r="68" fill="none" stroke="#C9A85F" stroke-width="14"
+                    stroke-dasharray="${0.78 * 2 * Math.PI * 68} ${2 * Math.PI * 68}"
+                    stroke-linecap="round"/>
+          </svg>
+          <div class="center"><div><div class="v">٧٨٪</div><div class="label">إجمالي الأهداف</div></div></div>
+        </div>
+      </div>
+
+      <div class="gl-grid" data-m-rise-stagger>
+
+        <div class="gl-card done">
+          <div class="head">
+            <div class="ic">📈</div>
+            <div class="pct">١١٢٪</div>
+          </div>
+          <div class="nm">إيرادات الشهر</div>
+          <div class="target">المستهدف: ٤٢٠ ألف ر.س</div>
+          <div class="bar"><div style="width: 100%"></div></div>
+          <div class="foot-info"><span>محقق:</span><span class="now">٤٧٠٬٢٤٠ ر.س</span></div>
+        </div>
+
+        <div class="gl-card done">
+          <div class="head">
+            <div class="ic">🛏</div>
+            <div class="pct">١٠٤٪</div>
+          </div>
+          <div class="nm">معدل الإشغال</div>
+          <div class="target">المستهدف: ٨٣٪</div>
+          <div class="bar"><div style="width: 100%"></div></div>
+          <div class="foot-info"><span>محقق:</span><span class="now">٨٧٪</span></div>
+        </div>
+
+        <div class="gl-card">
+          <div class="head">
+            <div class="ic">💎</div>
+            <div class="pct">٨٦٪</div>
+          </div>
+          <div class="nm">حجوزات الجولات</div>
+          <div class="target">المستهدف: ٢٤ جولة</div>
+          <div class="bar"><div style="width: 86%"></div></div>
+          <div class="foot-info"><span>محقق:</span><span class="now">٢٠ جولة</span></div>
+        </div>
+
+        <div class="gl-card">
+          <div class="head">
+            <div class="ic">⭐</div>
+            <div class="pct">٩٦٪</div>
+          </div>
+          <div class="nm">تقييمات النزلاء</div>
+          <div class="target">المستهدف: ٤٫٧ / ٥</div>
+          <div class="bar"><div style="width: 96%"></div></div>
+          <div class="foot-info"><span>المحقق:</span><span class="now">٤٫٨ / ٥</span></div>
+        </div>
+
+        <div class="gl-card behind">
+          <div class="head">
+            <div class="ic">👥</div>
+            <div class="pct">٤٢٪</div>
+          </div>
+          <div class="nm">تجديد إقامات الموظفين</div>
+          <div class="target">المستهدف: ١٠ تجديدات</div>
+          <div class="bar"><div style="width: 42%"></div></div>
+          <div class="foot-info"><span>محقق:</span><span class="now">٤ / ١٠</span></div>
+        </div>
+
+        <div class="gl-card">
+          <div class="head">
+            <div class="ic">💳</div>
+            <div class="pct">٧٢٪</div>
+          </div>
+          <div class="nm">تقليل التكاليف التشغيلية</div>
+          <div class="target">المستهدف: ٨٪ توفير</div>
+          <div class="bar"><div style="width: 72%"></div></div>
+          <div class="foot-info"><span>محقق:</span><span class="now">٥٫٨٪</span></div>
+        </div>
+
+      </div>
+
+      <div class="gl-notify" data-m-rise>
+        <h4><span class="pulse"></span>تنبيهات الأهداف - مباشر</h4>
+        <div class="item">
+          <div class="ic good">✓</div>
+          <div class="body">تجاوزت هدف الإيرادات الشهري قبل ٣ أيام من النهاية - ١١٢٪<div class="sub">يمكن رفع المستهدف للشهر القادم بنسبة ٨٪</div></div>
+          <div class="when">قبل ساعة</div>
+        </div>
+        <div class="item">
+          <div class="ic warn">!</div>
+          <div class="body">٦ إقامات للموظفين تحتاج تجديد - اضغط لفتح قوى<div class="sub">إذا لم تُجدَّد قبل ١٥ يونيو، توقف العمل ل ٣ موظفين</div></div>
+          <div class="when">قبل ٣ ساعات</div>
+        </div>
+        <div class="item">
+          <div class="ic info">i</div>
+          <div class="body">جولات السياحة متأخرة عن الهدف بنسبة ١٤٪ - راجع الكتالوج<div class="sub">جولة "منطاد العلا" لا تحقق حجوزات - فكر في إيقافها</div></div>
+          <div class="when">أمس</div>
+        </div>
+        <div class="item">
+          <div class="ic good">✓</div>
+          <div class="body">معدل تقييمات النزلاء تخطى ٤٫٨ هذا الأسبوع<div class="sub">السبا والمطعم يحصلان على أعلى التقييمات</div></div>
+          <div class="when">قبل يومين</div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="/static/dheuof/shared/sidebar.js"></script>
+<script>StaticSidebar.mount({ activeId: "14-manager-goals", placeholder: "بحث في الأهداف..." });</script>
+<script src="/static/dheuof/assets/animations.js"></script>
+<script>
+// Ensure content is always visible — fallback if IntersectionObserver threshold not met
+setTimeout(function(){
+  document.querySelectorAll('[data-m-rise],[data-m-rise-stagger]').forEach(function(el){
+    el.classList.add('is-in');
+  });
+}, 80);
+
+// ── Export helpers ──────────────────────────────────
+function todayStr(){var d=new Date();return d.getFullYear()+(d.getMonth()+1<10?'0':'')+(d.getMonth()+1)+(d.getDate()<10?'0':'')+d.getDate();}
+function toXLS(headers,rows,name){var s='<Styles><Style ss:ID="H"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1B4D3D" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center"/></Style><Style ss:ID="BAD"><Interior ss:Color="#C0392B" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style><Style ss:ID="WARN"><Interior ss:Color="#D97706" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style><Style ss:ID="OK"><Interior ss:Color="#BBF7D0" ss:Pattern="Solid"/><Font ss:Color="#1B7A56" ss:Bold="1"/></Style><Style ss:ID="EXC"><Interior ss:Color="#1B7A56" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style></Styles>';function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}function cell(v){if(v&&typeof v==='object'&&'s' in v)return '<Cell ss:StyleID="'+v.s+'"><Data ss:Type="String">'+esc(v.v)+'</Data></Cell>';return '<Cell><Data ss:Type="'+(typeof v==='number'?'Number':'String')+'">'+esc(v)+'</Data></Cell>';}var hRow='<Row>'+headers.map(function(h){return '<Cell ss:StyleID="H"><Data ss:Type="String">'+esc(h)+'</Data></Cell>';}).join('')+'</Row>';var dRows=rows.map(function(r){return '<Row>'+r.map(cell).join('')+'</Row>';}).join('');return '<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'+s+'<Worksheet ss:Name="'+esc(name)+'"><Table>'+hRow+dRows+'</Table></Worksheet></Workbook>';}
+function dlXLS(c,fn){var b=new Blob([c],{type:'application/vnd.ms-excel;charset=utf-8'});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download=fn;a.click();setTimeout(function(){URL.revokeObjectURL(u);},1000);}
+function toast(msg,isErr){var old=document.querySelector('.nz-toast');if(old)old.remove();var t=document.createElement('div');t.className='nz-toast';t.style.cssText='position:fixed;bottom:24px;inset-inline-end:24px;background:'+(isErr?'#b91c1c':'#1B4D3D')+';color:#fff;padding:12px 18px;border-radius:8px;font-family:"Tajawal",sans-serif;font-size:13px;z-index:9999;display:flex;gap:8px';t.innerHTML='<span style="color:'+(isErr?'#fca5a5':'#C9A85F')+'">'+(isErr?'✕':'✓')+'</span>'+msg;document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .4s';setTimeout(function(){if(t.parentNode)t.remove();},400);},3000);}
+
+var GOALS = [
+  {name:'إيرادات الشهر',              pct:112, target:'٤٢٠ ألف ر.س',  achieved:'٤٧٠٬٢٤٠ ر.س'},
+  {name:'معدل الإشغال',               pct:104, target:'٨٣٪',          achieved:'٨٧٪'},
+  {name:'حجوزات الجولات',             pct:86,  target:'٢٤ جولة',      achieved:'٢٠ جولة'},
+  {name:'تقييمات النزلاء',            pct:96,  target:'٤٫٧ / ٥',      achieved:'٤٫٨ / ٥'},
+  {name:'تجديد إقامات الموظفين',      pct:42,  target:'١٠ تجديدات',   achieved:'٤ / ١٠'},
+  {name:'تقليل التكاليف التشغيلية',   pct:72,  target:'٨٪ توفير',     achieved:'٥٫٨٪'},
+];
+
+window.exportCSV = function(){
+  var headers = ['الهدف','نسبة الإنجاز (%)','المستهدف','المحقق','التقييم'];
+  var rows = GOALS.map(function(g){
+    var tier = g.pct>=100?{v:'ممتاز',s:'EXC'}:g.pct>=80?{v:'جيد',s:'OK'}:g.pct>=50?{v:'منخفض',s:'WARN'}:{v:'تحت الهدف',s:'BAD'};
+    return [g.name, g.pct, g.target, g.achieved, tier];
+  });
+  var excG =GOALS.filter(function(g){return g.pct>=100;}).length;
+  var okG  =GOALS.filter(function(g){return g.pct>=80&&g.pct<100;}).length;
+  var warnG=GOALS.filter(function(g){return g.pct>=50&&g.pct<80;}).length;
+  var badG =GOALS.filter(function(g){return g.pct<50;}).length;
+  var overall2=Math.round(GOALS.reduce(function(s,g){return s+g.pct;},0)/GOALS.length);
+  var t=GOALS.length; function _p(n){return t>0?Math.round(n/t*100):0;}
+  rows.push([]);
+  rows.push([{v:'📊 ملخص الأهداف',s:'EXC'},{v:'العدد',s:'EXC'},{v:'النسبة %',s:'EXC'},'','']);
+  rows.push([{v:'متوسط الإنجاز الإجمالي',s:overall2>=80?'EXC':overall2>=50?'OK':overall2>=30?'WARN':'BAD'},{v:overall2+'٪',s:overall2>=80?'EXC':overall2>=50?'OK':overall2>=30?'WARN':'BAD'},{v:'',s:overall2>=80?'EXC':overall2>=50?'OK':overall2>=30?'WARN':'BAD'}]);
+  rows.push([{v:'⭐ أهداف محققة (≥١٠٠٪)',s:'EXC'},{v:excG,s:'EXC'},{v:_p(excG)+'%',s:'EXC'}]);
+  rows.push([{v:'🟢 في المسار (٨٠-١٠٠٪)',s:'OK'},{v:okG,s:'OK'},{v:_p(okG)+'%',s:'OK'}]);
+  rows.push([{v:'🟠 منخفض (٥٠-٨٠٪)',s:'WARN'},{v:warnG,s:'WARN'},{v:_p(warnG)+'%',s:'WARN'}]);
+  rows.push([{v:'🔴 تحت الهدف (<٥٠٪)',s:'BAD'},{v:badG,s:'BAD'},{v:_p(badG)+'%',s:'BAD'}]);
+  dlXLS(toXLS(headers,rows,'أهداف المدير'),'أهداف_المدير_'+todayStr()+'.xls');
+  toast('تم تصدير '+GOALS.length+' أهداف ✓');
+};
+
+window.exportPDF = function(){
+  var achieved = GOALS.filter(function(g){return g.pct>=100;}).length;
+  var ontrack  = GOALS.filter(function(g){return g.pct>=80&&g.pct<100;}).length;
+  var behind   = GOALS.filter(function(g){return g.pct<50;}).length;
+  var overall  = Math.round(GOALS.reduce(function(s,g){return s+g.pct;},0)/GOALS.length);
+  var warnG2=GOALS.filter(function(g){return g.pct>=50&&g.pct<80;}).length;
+  var t=GOALS.length; function _p(n){return t>0?Math.round(n/t*100):0;}
+  var overallTier=overall>=100?'EXC':overall>=80?'OK':overall>=50?'WARN':'BAD';
+  var overallColor=overall>=100?'#1B7A56':overall>=80?'#22C55E':overall>=50?'#D97706':'#C0392B';
+  var overallIcon=overall>=100?'⭐':overall>=80?'🟢':overall>=50?'🟠':'🔴';
+  var statsHtml='<div style="background:linear-gradient(135deg,#f0f7f4,#f8faf9);border:1px solid #c6ddd7;border-radius:12px;padding:18px 20px;margin-bottom:20px">'
+    +'<div style="font-size:14px;font-weight:700;color:#1B4D3D;margin-bottom:14px">📊 ملخص الأهداف · الإجمالي: '+t+' هدف · متوسط الإنجاز: '+overall+'٪ '+overallIcon+'</div>'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#f0f0f0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:'+overallColor+'">'+overall+'٪</div><div style="font-size:10px;color:#666;margin-top:4px">متوسط الإنجاز</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#D1FAE5;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#1B7A56">'+achieved+'</div><div style="font-size:13px;font-weight:700;color:#1B7A56">'+_p(achieved)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">محقق ≥١٠٠٪ ⭐</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#BBF7D0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#059669">'+ontrack+'</div><div style="font-size:13px;font-weight:700;color:#059669">'+_p(ontrack)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">في المسار 🟢</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEF3C7;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#D97706">'+warnG2+'</div><div style="font-size:13px;font-weight:700;color:#D97706">'+_p(warnG2)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">منخفض ٥٠-٨٠٪ 🟠</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEE2E2;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#C0392B">'+behind+'</div><div style="font-size:13px;font-weight:700;color:#C0392B">'+_p(behind)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">تحت الهدف 🔴</div></div>'
+    +'</div>'
+    +'<div style="background:#e8eceb;border-radius:6px;height:12px;overflow:hidden;display:flex">'
+    +(achieved>0?'<div style="width:'+_p(achieved)+'%;background:#1B7A56;height:100%"></div>':'')
+    +(ontrack>0?'<div style="width:'+_p(ontrack)+'%;background:#22C55E;height:100%"></div>':'')
+    +(warnG2>0?'<div style="width:'+_p(warnG2)+'%;background:#D97706;height:100%"></div>':'')
+    +(behind>0?'<div style="width:'+_p(behind)+'%;background:#C0392B;height:100%"></div>':'')
+    +'</div>'
+    +'<div style="margin-top:8px;font-size:10px;color:#666;display:flex;gap:14px;flex-wrap:wrap">'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#1B7A56;margin-left:3px"></span>محقق '+_p(achieved)+'%</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#22C55E;margin-left:3px"></span>في المسار '+_p(ontrack)+'%</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#D97706;margin-left:3px"></span>منخفض '+_p(warnG2)+'%</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#C0392B;margin-left:3px"></span>تحت الهدف '+_p(behind)+'%</span>'
+    +'</div>'
+    +'</div>';
+  var rows = GOALS.map(function(g){
+    var tierCls = g.pct>=100?'color:#1B7A56;font-weight:700':g.pct>=80?'color:#22C55E;font-weight:700':g.pct>=50?'color:#D97706;font-weight:700':'color:#C0392B;font-weight:700';
+    var tierLbl = g.pct>=100?'⭐ ممتاز':g.pct>=80?'✓ جيد':g.pct>=50?'⚠ منخفض':'✕ تحت الهدف';
+    var bar = '<div style="background:#e5e7eb;border-radius:999px;height:8px;width:140px;display:inline-block;vertical-align:middle"><div style="background:'+(g.pct>=100?'#1B7A56':g.pct>=80?'#22C55E':g.pct>=50?'#D97706':'#C0392B')+';height:8px;border-radius:999px;width:'+Math.min(g.pct,100)+'%"></div></div>';
+    return '<tr><td>'+g.name+'</td><td style="font-weight:700;text-align:center">'+g.pct+'٪</td>'
+      +'<td>'+g.target+'</td><td style="font-weight:600">'+g.achieved+'</td>'
+      +'<td style="text-align:center">'+bar+'</td>'
+      +'<td style="'+tierCls+'">'+tierLbl+'</td></tr>';
+  }).join('');
+  var win=window.open('','_blank','width=960,height=700');
+  win.document.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"/><title>أهداف المدير</title>'
+    +'<style>body{font-family:"Tajawal","Segoe UI",sans-serif;margin:32px;color:#1a1a1a;direction:rtl}'
+    +'h1{font-size:22px;margin:0 0 4px}.sub{font-size:12px;color:#666;margin:0 0 18px}'
+    +'.kpis{display:flex;gap:14px;margin-bottom:18px}.kpi{padding:12px 20px;border-radius:10px;min-width:100px}'
+    +'.kpi .v{font-size:26px;font-weight:700}.kpi .l{font-size:11px;color:#666}'
+    +'table{width:100%;border-collapse:collapse;font-size:13px}th{background:#1B4D3D;color:#fff;padding:10px 12px;text-align:right}'
+    +'td{padding:9px 12px;border-bottom:1px solid #eee;vertical-align:middle}tr:nth-child(even){background:#fafafa}'
+    +'.footer{margin-top:18px;font-size:11px;color:#999}@media print{.no-print{display:none}}'
+    +'</style></head><body>'
+    +'<h1>🎯 تقرير أهداف المدير</h1>'
+    +'<p class="sub">'+new Date().toLocaleDateString('ar-SA')+' · أداء الشهر الحالي</p>'
+    +statsHtml+
+    +'<table><thead><tr><th>الهدف</th><th>الإنجاز (%)</th><th>المستهدف</th><th>المحقق</th><th>شريط التقدم</th><th>التقييم</th></tr></thead>'
+    +'<tbody>'+rows+'</tbody></table>'
+    +'<div class="footer">نظام ضيوف · أهداف المدير · '+new Date().toLocaleString('ar-SA')+'</div>'
+    +'</body></html>');
+  win.document.close();
+  setTimeout(function(){win.print();},700);
+};
+</script>
+</body>
+</html>

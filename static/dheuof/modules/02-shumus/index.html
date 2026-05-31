@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-screen-label="02 Shumūs MOI Point">
+<head>
+<meta charset="utf-8"/>
+<title>ضيوف · شموس — نقطة التعرّف</title>
+<meta name="viewport" content="width=1440, initial-scale=1"/>
+<link rel="stylesheet" href="/static/dheuof/colors_and_type.css"/>
+<link rel="stylesheet" href="/static/dheuof/assets/animations.css"/>
+<link rel="stylesheet" href="/static/dheuof/shared/chrome.css"/>
+<link rel="stylesheet" href="/static/dheuof/shared/module.css"/>
+<style>
+  body { background: var(--paper-tint); }
+
+  .sh-banner {
+    background: linear-gradient(135deg, #143A2E, #0E2A22);
+    color: var(--paper);
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin-bottom: 22px;
+    display: grid; grid-template-columns: auto 1fr auto; gap: 22px; align-items: center;
+    position: relative; overflow: hidden;
+  }
+  .sh-banner::after { content: ""; position: absolute; top: -40px; inset-inline-end: -40px; width: 200px; height: 200px; border-radius: 999px; background: radial-gradient(circle, rgba(201,168,95,0.22), transparent 60%); }
+  .sh-banner > * { position: relative; }
+  .sh-banner .ic {
+    width: 64px; height: 64px;
+    background: var(--gold-500); color: var(--brand-900);
+    border-radius: 14px; display: grid; place-items: center; font-size: 30px;
+  }
+  .sh-banner .ar { font-family: var(--font-ar-display); font-weight: 600; font-size: 22px; }
+  .sh-banner .en { font-family: var(--font-en); font-style: italic; font-size: 12px; color: var(--gold-300); margin-top: 3px; }
+  .sh-banner .meta { font-size: 13px; color: var(--gold-200); margin-top: 8px; display: inline-flex; align-items: center; gap: 8px; }
+  .sh-banner .dot { width: 7px; height: 7px; background: var(--success-500); border-radius: 999px; box-shadow: 0 0 0 0 rgba(74,148,118,0.5); animation: sh-dot 1.4s infinite; }
+  @keyframes sh-dot { 0% { box-shadow: 0 0 0 0 rgba(74,148,118,0.5); } 100% { box-shadow: 0 0 0 8px rgba(74,148,118,0); } }
+
+  .sh-2col { display: grid; grid-template-columns: 1fr 1.2fr; gap: 16px; align-items: start; }
+
+  /* Identification stage */
+  .sh-stage {
+    background: var(--white);
+    border: 1px solid var(--hairline);
+    border-radius: 14px;
+    padding: 26px 28px;
+    text-align: center;
+    position: sticky; top: 80px;
+  }
+  .sh-stage .lbl { font-family: var(--font-en); font-size: 11px; letter-spacing: 0.22em; color: var(--gold-700); font-weight: 600; }
+  .sh-stage h3 { font-family: var(--font-ar-display); font-weight: 600; font-size: 22px; color: var(--ink-900); margin: 8px 0 18px; }
+  .sh-reader {
+    background: linear-gradient(160deg, var(--paper-tint), var(--sand));
+    border: 1.5px dashed var(--gold-500);
+    border-radius: 12px;
+    padding: 36px 20px;
+    position: relative;
+  }
+  .sh-reader .ring { position: absolute; inset: 8px; border: 1.5px solid rgba(201,168,95,0.4); border-radius: 9px; animation: sh-scan 1.8s ease-in-out infinite; }
+  @keyframes sh-scan { 0%, 100% { opacity: 0.25; transform: scale(0.97); } 50% { opacity: 0.7; transform: scale(1); } }
+  .sh-reader .ic { font-size: 56px; }
+  .sh-reader .body { font-family: var(--font-ar-display); font-weight: 600; font-size: 17px; color: var(--ink-900); margin-top: 10px; }
+  .sh-reader .sub { font-size: 12px; color: var(--fg-2); margin-top: 4px; }
+  .sh-stage .moi {
+    margin-top: 18px; padding: 12px 16px;
+    background: var(--paper-tint); border-radius: 8px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 12px; color: var(--ink-800);
+  }
+  .sh-stage .moi .gov { font-size: 22px; }
+  .sh-stage .moi .nm { font-weight: 600; }
+  .sh-stage .moi .live { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: var(--success-700); margin-inline-start: auto; font-weight: 600; }
+  .sh-stage .moi .live .d { width: 6px; height: 6px; background: var(--success-500); border-radius: 999px; }
+
+  /* Guest snapshot */
+  .sh-guest {
+    background: var(--white);
+    border: 1px solid var(--gold-400);
+    border-radius: 14px;
+    padding: 24px 26px;
+  }
+  .sh-guest .head { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
+  .sh-guest .av { width: 64px; height: 64px; border-radius: 999px; background: var(--gold-200); color: var(--gold-800); display: grid; place-items: center; font-family: var(--font-ar-display); font-weight: 600; font-size: 22px; border: 2px solid var(--gold-500); }
+  .sh-guest .nm { font-family: var(--font-ar-display); font-weight: 600; font-size: 22px; color: var(--ink-900); }
+  .sh-guest .sub { font-size: 12px; color: var(--fg-2); margin-top: 3px; }
+  .sh-guest .badges { display: flex; gap: 6px; margin-top: 6px; }
+
+  .sh-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 24px; padding-top: 16px; border-top: 1px solid var(--hairline); }
+  .sh-grid .cell .l { font-size: 11px; color: var(--fg-3); }
+  .sh-grid .cell .v { font-size: 14px; color: var(--ink-900); font-weight: 500; margin-top: 2px; }
+  .sh-grid .cell .v.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 13px; }
+
+  .sh-moi-status {
+    margin-top: 18px;
+    padding: 14px 16px;
+    background: linear-gradient(135deg, var(--brand-50), var(--brand-100));
+    border-radius: 10px;
+    border: 1px solid var(--brand-300);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .sh-moi-status .ok { width: 36px; height: 36px; background: var(--brand-700); color: var(--paper); border-radius: 999px; display: grid; place-items: center; font-size: 18px; flex-shrink: 0; }
+  .sh-moi-status .t { font-family: var(--font-ar-display); font-weight: 600; font-size: 14px; color: var(--brand-900); }
+  .sh-moi-status .s { font-size: 11px; color: var(--brand-800); margin-top: 2px; }
+
+  /* Recent identifications log */
+  .sh-log { background: var(--white); border: 1px solid var(--hairline); border-radius: 12px; overflow: hidden; }
+  .sh-log-row {
+    display: grid; grid-template-columns: 36px 2fr 1fr 1.4fr 100px 80px;
+    gap: 14px; align-items: center;
+    padding: 12px 20px;
+    border-top: 1px solid var(--hairline);
+    font-size: 13px;
+  }
+  .sh-log-row.is-head { background: var(--surface-2); font-size: 11px; color: var(--fg-3); font-weight: 500; border-top: none; }
+  .sh-log-row .av { width: 32px; height: 32px; border-radius: 999px; background: var(--brand-200); color: var(--brand-800); display: grid; place-items: center; font-family: var(--font-ar); font-size: 11px; font-weight: 600; }
+  .sh-log-row .nm { font-weight: 500; color: var(--ink-900); }
+  .sh-log-row .sub { font-size: 11px; color: var(--fg-3); margin-top: 1px; }
+  .sh-log-row .id { font-family: var(--font-mono); font-size: 11px; color: var(--fg-2); }
+</style>
+</head>
+<body>
+<div class="dh-app">
+  <div id="sidebar-slot"></div>
+  <div>
+    <div id="topbar-slot"></div>
+    <main class="dh-main">
+
+      <div class="mod-head" data-m-rise>
+        <div class="left">
+          <div class="num-row">
+            <span class="num">02 · IDENTIFY</span>
+            <span class="en-tag">MOI Verification Point · Add-on</span>
+          </div>
+          <h1>شموس — نقطة التعرّف على الضيف</h1>
+          <p class="sub">إضافة بسيطة أمام مكتب الاستقبال. تتعرّف على الضيف فوراً عبر الربط مع وزارة الداخلية، وتؤكّد صحّة الهوية قبل إكمال التسجيل.</p>
+        </div>
+        <div class="actions">
+          <a class="gr-btn sec" href="/static/dheuof/modules/01-guests/index.html" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer;text-decoration:none">← الضيوف</a>
+          <button onclick="exportCSV()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">📊 Excel</button>
+          <button onclick="exportPDF()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--brand-700);color:var(--paper);border:none;cursor:pointer">🖨 تقرير PDF</button>
+        </div>
+      </div>
+
+      <div class="sh-banner" data-m-rise>
+        <div class="ic">🛡</div>
+        <div>
+          <div class="ar">متّصل بوزارة الداخلية — أبشر للأعمال</div>
+          <div class="en">Connected to Absher Business · MOI verification API</div>
+          <div class="meta"><span class="dot"></span>الخدمة متاحة · آخر فحص قبل ١٨ ثانية · ٢٤٨ تعرّف اليوم</div>
+        </div>
+        <button style="background: var(--gold-500); color: var(--brand-900); border: none; padding: 10px 18px; border-radius: 6px; font-family: var(--font-ar); font-weight: 600; font-size: 13px; cursor: pointer">سجلّ التحقّق</button>
+      </div>
+
+      <div class="mod-stats" style="--cols: 4">
+        <div class="mod-stat"><div class="lbl">تعرّفات اليوم</div><div class="v">٢٤٨</div><div class="meta up">+١٢ عن أمس</div></div>
+        <div class="mod-stat"><div class="lbl">تحقّق ناجح</div><div class="v is-good">٢٤٦ <span class="cur">٩٩٫٢٪</span></div><div class="meta">مطابقة فورية</div></div>
+        <div class="mod-stat"><div class="lbl">يتطلب مراجعة</div><div class="v is-warn">٢</div><div class="meta">حُوّلت للمسؤول</div></div>
+        <div class="mod-stat"><div class="lbl">متوسط زمن التحقّق</div><div class="v">١٫٤ <span class="cur">ثانية</span></div><div class="meta">عبر API أبشر</div></div>
+      </div>
+
+      <div class="sh-2col">
+
+        <!-- LEFT: Reader stage -->
+        <aside class="sh-stage" data-m-rise>
+          <span class="lbl">SCAN NOW</span>
+          <h3>اقرأ الهوية</h3>
+          <div class="sh-reader">
+            <div class="ring"></div>
+            <div class="ic">📇</div>
+            <div class="body">ضع الهوية على القارئ</div>
+            <div class="sub">National ID · GCC ID · Iqama · Passport</div>
+          </div>
+          <div class="moi">
+            <span class="gov">🛡</span>
+            <div>
+              <div class="nm">وزارة الداخلية</div>
+              <div style="font-size: 11px; color: var(--fg-3); font-family: var(--font-en)">Absher Business API · v3.2</div>
+            </div>
+            <span class="live"><span class="d"></span>متصل</span>
+          </div>
+        </aside>
+
+        <!-- RIGHT: Verified guest snapshot -->
+        <div class="sh-guest" data-m-rise>
+          <div class="head">
+            <div class="av">أس</div>
+            <div style="flex: 1">
+              <div class="nm">أحمد بن سليمان الفهد</div>
+              <div class="sub">Ahmed Bin Sulaiman Al-Fahad · سعودي 🇸🇦</div>
+              <div class="badges">
+                <span class="mod-tag ok"><span class="d"></span>متحقّق · أبشر</span>
+                <span class="mod-tag gold">★ ضيف متكرّر — ٤ زيارات</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="sh-grid">
+            <div class="cell"><div class="l">رقم الهوية</div><div class="v mono">1028456789</div></div>
+            <div class="cell"><div class="l">رقم النسخة</div><div class="v mono">03</div></div>
+            <div class="cell"><div class="l">تاريخ الميلاد</div><div class="v mono">1985-06-12</div></div>
+            <div class="cell"><div class="l">تاريخ انتهاء الهوية</div><div class="v mono">2028-08-14</div></div>
+            <div class="cell"><div class="l">رقم الجوال</div><div class="v mono">+966 50 482 1108</div></div>
+            <div class="cell"><div class="l">الحالة الاجتماعية</div><div class="v">متزوج</div></div>
+          </div>
+
+          <div class="sh-moi-status">
+            <div class="ok">✓</div>
+            <div>
+              <div class="t">تم التحقّق بنجاح — البيانات صحيحة ومحدّثة</div>
+              <div class="s">المصدر: نظام الأحوال المدنية · زمن التحقّق: ١٫٢ ثانية · لا تنبيهات أمنية.</div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 10px; margin-top: 18px;">
+            <button style="flex: 1; background: var(--brand-700); color: var(--paper); border: none; padding: 12px; border-radius: 8px; font-family: var(--font-ar); font-weight: 600; font-size: 14px; cursor: pointer">إكمال التسجيل في برنامج الضيوف →</button>
+            <button style="background: var(--white); border: 1px solid var(--ink-100); padding: 12px 18px; border-radius: 8px; font-family: var(--font-ar); font-size: 13px; color: var(--ink-800); cursor: pointer">قراءة ضيف آخر</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="mod-section-head" style="padding-inline: 0; margin-top: 22px;">
+        <div>
+          <div class="ttl">آخر عمليات التعرّف</div>
+          <div class="sub">Today's recent identifications</div>
+        </div>
+      </div>
+
+      <div class="sh-log" data-m-rise>
+        <div class="sh-log-row is-head">
+          <span>#</span>
+          <span>الضيف</span>
+          <span>نوع الهوية</span>
+          <span>رقم الهوية</span>
+          <span>الحالة</span>
+          <span>الوقت</span>
+        </div>
+        <div class="sh-log-row">
+          <div class="av">أس</div>
+          <div><div class="nm">أحمد الفهد</div><div class="sub">سعودي · ضيف متكرّر</div></div>
+          <div>🇸🇦 وطنية</div>
+          <div class="id">1028456789</div>
+          <div><span class="mod-tag ok"><span class="d"></span>متحقّق</span></div>
+          <div style="font-family: var(--font-mono); font-size: 11px; color: var(--fg-3)">14:32</div>
+        </div>
+        <div class="sh-log-row">
+          <div class="av" style="background: var(--gold-200); color: var(--gold-800)">نم</div>
+          <div><div class="nm">نورة المنصور</div><div class="sub">سعودية</div></div>
+          <div>🇸🇦 وطنية</div>
+          <div class="id">1099287461</div>
+          <div><span class="mod-tag ok"><span class="d"></span>متحقّق</span></div>
+          <div style="font-family: var(--font-mono); font-size: 11px; color: var(--fg-3)">14:18</div>
+        </div>
+        <div class="sh-log-row">
+          <div class="av">LK</div>
+          <div><div class="nm">Layla Karam</div><div class="sub">لبنانية · جواز سفر</div></div>
+          <div>🛂 جواز</div>
+          <div class="id">LB-K829142</div>
+          <div><span class="mod-tag ok"><span class="d"></span>متحقّق</span></div>
+          <div style="font-family: var(--font-mono); font-size: 11px; color: var(--fg-3)">14:05</div>
+        </div>
+        <div class="sh-log-row">
+          <div class="av">عر</div>
+          <div><div class="nm">عبدالعزيز الرشيد</div><div class="sub">إماراتي</div></div>
+          <div>🟢 خليجية</div>
+          <div class="id">784-1985-7461328-4</div>
+          <div><span class="mod-tag warn"><span class="d"></span>مراجعة يدوية</span></div>
+          <div style="font-family: var(--font-mono); font-size: 11px; color: var(--fg-3)">13:48</div>
+        </div>
+        <div class="sh-log-row">
+          <div class="av">RK</div>
+          <div><div class="nm">Rajesh Kumar</div><div class="sub">هندي · إقامة</div></div>
+          <div>🆔 إقامة</div>
+          <div class="id">2354281903</div>
+          <div><span class="mod-tag ok"><span class="d"></span>متحقّق</span></div>
+          <div style="font-family: var(--font-mono); font-size: 11px; color: var(--fg-3)">13:32</div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="/static/dheuof/shared/sidebar.js"></script>
+<script>StaticSidebar.mount({ activeId: "02-shumus", placeholder: "بحث في سجل التعرّف..." });</script>
+<script src="/static/dheuof/assets/animations.js"></script>
+<script>
+// Ensure content is always visible — fallback if IntersectionObserver threshold not met
+setTimeout(function(){
+  document.querySelectorAll('[data-m-rise],[data-m-rise-stagger]').forEach(function(el){
+    el.classList.add('is-in');
+  });
+}, 80);
+
+// ── Export helpers ──────────────────────────────────
+function todayStr(){var d=new Date();return d.getFullYear()+(d.getMonth()+1<10?'0':'')+(d.getMonth()+1)+(d.getDate()<10?'0':'')+d.getDate();}
+function toXLS(headers,rows,name){var s='<Styles><Style ss:ID="H"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1B4D3D" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center"/></Style><Style ss:ID="BAD"><Interior ss:Color="#C0392B" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style><Style ss:ID="WARN"><Interior ss:Color="#D97706" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style><Style ss:ID="OK"><Interior ss:Color="#BBF7D0" ss:Pattern="Solid"/><Font ss:Color="#1B7A56" ss:Bold="1"/></Style><Style ss:ID="EXC"><Interior ss:Color="#1B7A56" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style></Styles>';function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}function cell(v){if(v&&typeof v==='object'&&'s' in v)return '<Cell ss:StyleID="'+v.s+'"><Data ss:Type="String">'+esc(v.v)+'</Data></Cell>';return '<Cell><Data ss:Type="'+(typeof v==='number'?'Number':'String')+'">'+esc(v)+'</Data></Cell>';}var hRow='<Row>'+headers.map(function(h){return '<Cell ss:StyleID="H"><Data ss:Type="String">'+esc(h)+'</Data></Cell>';}).join('')+'</Row>';var dRows=rows.map(function(r){return '<Row>'+r.map(cell).join('')+'</Row>';}).join('');return '<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'+s+'<Worksheet ss:Name="'+esc(name)+'"><Table>'+hRow+dRows+'</Table></Worksheet></Workbook>';}
+function dlXLS(c,fn){var b=new Blob([c],{type:'application/vnd.ms-excel;charset=utf-8'});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download=fn;a.click();setTimeout(function(){URL.revokeObjectURL(u);},1000);}
+function toast(msg,isErr){var old=document.querySelector('.nz-toast');if(old)old.remove();var t=document.createElement('div');t.className='nz-toast';t.style.cssText='position:fixed;bottom:24px;inset-inline-end:24px;background:'+(isErr?'#b91c1c':'#1B4D3D')+';color:#fff;padding:12px 18px;border-radius:8px;font-family:"Tajawal",sans-serif;font-size:13px;z-index:9999;display:flex;gap:8px';t.innerHTML='<span style="color:'+(isErr?'#fca5a5':'#C9A85F')+'">'+(isErr?'✕':'✓')+'</span>'+msg;document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .4s';setTimeout(function(){if(t.parentNode)t.remove();},400);},3000);}
+
+var LOG_DATA = [
+  {name:'أحمد الفهد',         nat:'سعودي',   type:'هوية وطنية',  id:'1028456789',       status:'verified', time:'14:32'},
+  {name:'نورة المنصور',       nat:'سعودية',  type:'هوية وطنية',  id:'1099287461',       status:'verified', time:'14:18'},
+  {name:'Layla Karam',        nat:'لبنانية', type:'جواز سفر',    id:'LB-K829142',       status:'verified', time:'14:05'},
+  {name:'عبدالعزيز الرشيد',   nat:'إماراتي', type:'هوية خليجية', id:'784-1985-7461328-4',status:'review',  time:'13:48'},
+  {name:'Rajesh Kumar',       nat:'هندي',    type:'إقامة',       id:'2354281903',       status:'verified', time:'13:32'},
+];
+
+window.exportCSV = function(){
+  var stMap = {verified:{v:'متحقّق',s:'EXC'}, review:{v:'مراجعة يدوية',s:'WARN'}, failed:{v:'فشل',s:'BAD'}};
+  var headers = ['الاسم','الجنسية','نوع الهوية','رقم الهوية','الحالة','الوقت'];
+  var rows = LOG_DATA.map(function(r){
+    return [r.name, r.nat, r.type, r.id, stMap[r.status]||{v:r.status,s:'OK'}, r.time];
+  });
+  var verified=LOG_DATA.filter(function(r){return r.status==='verified';}).length;
+  var review  =LOG_DATA.filter(function(r){return r.status==='review';}).length;
+  var failed  =LOG_DATA.filter(function(r){return r.status==='failed';}).length;
+  var t=LOG_DATA.length; function _p(n){return t>0?Math.round(n/t*100):0;}
+  rows.push([]);
+  rows.push([{v:'📊 ملخص التحقق',s:'EXC'},{v:'العدد',s:'EXC'},{v:'النسبة %',s:'EXC'},'','','']);
+  rows.push([{v:'⭐ تحقّق ناجح',s:'EXC'},{v:verified,s:'EXC'},{v:_p(verified)+'%',s:'EXC'}]);
+  rows.push([{v:'🟠 مراجعة يدوية',s:'WARN'},{v:review,s:'WARN'},{v:_p(review)+'%',s:'WARN'}]);
+  rows.push([{v:'🔴 فشل التحقق',s:'BAD'},{v:failed,s:'BAD'},{v:_p(failed)+'%',s:'BAD'}]);
+  dlXLS(toXLS(headers,rows,'سجل التعرّف'),'شموس_سجل_'+todayStr()+'.xls');
+  toast('تم تصدير '+LOG_DATA.length+' سجل ✓');
+};
+
+window.exportPDF = function(){
+  var stStyle = {verified:'color:#1B7A56;font-weight:700', review:'color:#D97706;font-weight:700', failed:'color:#C0392B;font-weight:700'};
+  var stLabel = {verified:'✓ متحقّق', review:'⚠ مراجعة يدوية', failed:'✕ فشل'};
+  var verified = LOG_DATA.filter(function(r){return r.status==='verified';}).length;
+  var review   = LOG_DATA.filter(function(r){return r.status==='review';}).length;
+  var failed   = LOG_DATA.filter(function(r){return r.status==='failed';}).length;
+  var t = LOG_DATA.length; function _p(n){return t>0?Math.round(n/t*100):0;}
+  var statsHtml = '<div style="background:linear-gradient(135deg,#f0f7f4,#f8faf9);border:1px solid #c6ddd7;border-radius:12px;padding:18px 20px;margin-bottom:20px">'
+    +'<div style="font-size:14px;font-weight:700;color:#1B4D3D;margin-bottom:14px">📊 ملخص الإحصائيات · إجمالي التعرّفات: '+t+' سجل</div>'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#f0f0f0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#333">'+t+'</div><div style="font-size:10px;color:#666;margin-top:4px">الإجمالي</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#D1FAE5;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#1B7A56">'+verified+'</div><div style="font-size:13px;font-weight:700;color:#1B7A56">'+_p(verified)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">تحقّق ناجح</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEF3C7;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#D97706">'+review+'</div><div style="font-size:13px;font-weight:700;color:#D97706">'+_p(review)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">مراجعة يدوية</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEE2E2;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#C0392B">'+failed+'</div><div style="font-size:13px;font-weight:700;color:#C0392B">'+_p(failed)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">فشل التحقق</div></div>'
+    +'</div>'
+    +'<div style="background:#e8eceb;border-radius:6px;height:12px;overflow:hidden;display:flex">'
+    +(verified>0?'<div style="width:'+_p(verified)+'%;background:#1B7A56;height:100%"></div>':'')
+    +(review>0?'<div style="width:'+_p(review)+'%;background:#D97706;height:100%"></div>':'')
+    +(failed>0?'<div style="width:'+_p(failed)+'%;background:#C0392B;height:100%"></div>':'')
+    +'</div>'
+    +'<div style="margin-top:8px;font-size:10px;color:#666;display:flex;gap:14px;flex-wrap:wrap">'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#1B7A56;margin-left:3px"></span>تحقّق ناجح '+_p(verified)+'%</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#D97706;margin-left:3px"></span>مراجعة يدوية '+_p(review)+'%</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#C0392B;margin-left:3px"></span>فشل التحقق '+_p(failed)+'%</span>'
+    +'</div>'
+    +'</div>';
+  var rows = LOG_DATA.map(function(r){
+    return '<tr><td>'+r.name+'</td><td>'+r.nat+'</td><td>'+r.type+'</td>'
+      +'<td style="font-family:monospace;font-size:11px">'+r.id+'</td>'
+      +'<td style="'+stStyle[r.status]+'">'+stLabel[r.status]+'</td><td>'+r.time+'</td></tr>';
+  }).join('');
+  var win=window.open('','_blank','width=920,height=680');
+  win.document.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"/><title>شموس — سجل التعرّف</title>'
+    +'<style>body{font-family:"Tajawal","Segoe UI",sans-serif;margin:32px;color:#1a1a1a;direction:rtl}'
+    +'h1{font-size:22px;margin:0 0 4px}.sub{font-size:12px;color:#666;margin:0 0 18px}'
+    +'table{width:100%;border-collapse:collapse;font-size:13px}th{background:#1B4D3D;color:#fff;padding:10px 12px;text-align:right}'
+    +'td{padding:9px 12px;border-bottom:1px solid #eee}tr:nth-child(even){background:#fafafa}'
+    +'.footer{margin-top:18px;font-size:11px;color:#999}@media print{.no-print{display:none}}'
+    +'</style></head><body>'
+    +'<h1>🛡 شموس — سجل التعرّف على الضيف</h1>'
+    +'<p class="sub">تقرير يوم '+new Date().toLocaleDateString('ar-SA')+' · نقطة التعرّف — وزارة الداخلية</p>'
+    +statsHtml
+    +'<table><thead><tr><th>الاسم</th><th>الجنسية</th><th>نوع الهوية</th><th>رقم الهوية</th><th>الحالة</th><th>الوقت</th></tr></thead>'
+    +'<tbody>'+rows+'</tbody></table>'
+    +'<div class="footer">نظام ضيوف · شموس نقطة التعرّف · '+new Date().toLocaleString('ar-SA')+'</div>'
+    +'</body></html>');
+  win.document.close();
+  setTimeout(function(){win.print();},700);
+};
+</script>
+</body>
+</html>

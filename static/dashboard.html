@@ -25,26 +25,26 @@
 *{margin:0;padding:0;box-sizing:border-box}html,body{height:100%}
 body{background:var(--paper);color:var(--ink-900);font-family:var(--font-ar);font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased;direction:rtl}
 button{font:inherit;cursor:pointer;border:none}
-.nz-app{display:grid;grid-template-columns:264px 1fr;min-height:100vh;background:var(--paper-tint)}
-.nz-sidebar{background:var(--brand-900);color:var(--gold-100);display:flex;flex-direction:column;padding:18px 14px;position:sticky;top:0;height:100vh;overflow-y:auto}
-.nz-brand{display:flex;align-items:center;gap:12px;padding:6px 8px 18px;border-bottom:1px solid rgba(201,168,95,.18);margin-bottom:14px}
-.nz-mark{width:36px;height:36px;border-radius:8px;background:var(--gold-500);color:var(--brand-900);display:grid;place-items:center;font-family:var(--font-ar-display);font-weight:700;font-size:20px;flex-shrink:0}
-.nz-brand-name .ar{font-family:var(--font-ar-display);font-weight:600;color:var(--paper);font-size:20px;line-height:1}
-.nz-brand-name .en{font-family:var(--font-en-display);font-style:italic;font-size:12px;color:var(--gold-400);margin-top:2px}
-.nz-nav{flex:1;display:flex;flex-direction:column;gap:14px;overflow-y:auto}
-.nz-nav-group{display:flex;flex-direction:column;gap:2px}
-.nz-nav-label{font-family:var(--font-ar);font-size:11px;color:var(--gold-400);padding:8px 10px 4px;font-weight:500}
-.nz-nav-item{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:6px;color:var(--gold-100);font-size:13.5px;cursor:pointer;transition:background var(--dur-fast);position:relative}
-.nz-nav-item .ic{font-size:15px;width:18px;text-align:center;opacity:.78;flex-shrink:0}
-.nz-nav-item:hover{background:rgba(255,255,255,.05)}
-.nz-nav-item.is-active{background:linear-gradient(to left,var(--brand-700),var(--brand-800));color:var(--paper);box-shadow:inset 0 0 0 1px rgba(201,168,95,.15)}
-.nz-nav-item.is-active::before{content:"";position:absolute;inset-inline-end:0;top:8px;bottom:8px;width:3px;background:var(--gold-500);border-radius:2px}
-.nz-side-foot{margin-top:auto;padding:14px 10px 4px;border-top:1px solid rgba(201,168,95,.18);font-size:12px;color:var(--gold-400);text-align:center}
-.nz-topbar{display:flex;align-items:center;gap:16px;padding:0 28px;height:60px;background:var(--paper);border-bottom:1px solid var(--ink-100);position:sticky;top:0;z-index:50}
-.nz-topbar-title{font-family:var(--font-ar-display);font-size:18px;font-weight:600;color:var(--ink-900);flex:1}
-.nz-user{display:flex;align-items:center;gap:10px;padding-inline-start:14px;border-inline-start:1px solid var(--ink-100)}
-.nz-av{width:34px;height:34px;background:var(--brand-700);color:var(--paper);border-radius:999px;display:grid;place-items:center;font-size:12px;font-weight:600;border:1.5px solid var(--gold-400)}
-.nz-main{padding:24px 28px 64px;display:flex;flex-direction:column;gap:20px}
+.dh-app{display:grid;grid-template-columns:264px 1fr;min-height:100vh;background:var(--paper-tint)}
+.dh-sidebar{background:var(--brand-900);color:var(--gold-100);display:flex;flex-direction:column;padding:18px 14px;position:sticky;top:0;height:100vh;overflow-y:auto}
+.dh-brand{display:flex;align-items:center;gap:12px;padding:6px 8px 18px;border-bottom:1px solid rgba(201,168,95,.18);margin-bottom:14px}
+.dh-mark{width:36px;height:36px;border-radius:8px;background:var(--gold-500);color:var(--brand-900);display:grid;place-items:center;font-family:var(--font-ar-display);font-weight:700;font-size:20px;flex-shrink:0}
+.dh-brand-name .ar{font-family:var(--font-ar-display);font-weight:600;color:var(--paper);font-size:20px;line-height:1}
+.dh-brand-name .en{font-family:var(--font-en-display);font-style:italic;font-size:12px;color:var(--gold-400);margin-top:2px}
+.dh-nav{flex:1;display:flex;flex-direction:column;gap:14px;overflow-y:auto}
+.dh-nav-group{display:flex;flex-direction:column;gap:2px}
+.dh-nav-label{font-family:var(--font-ar);font-size:11px;color:var(--gold-400);padding:8px 10px 4px;font-weight:500}
+.dh-nav-item{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:6px;color:var(--gold-100);font-size:13.5px;cursor:pointer;transition:background var(--dur-fast);position:relative}
+.dh-nav-item .ic{font-size:15px;width:18px;text-align:center;opacity:.78;flex-shrink:0}
+.dh-nav-item:hover{background:rgba(255,255,255,.05)}
+.dh-nav-item.is-active{background:linear-gradient(to left,var(--brand-700),var(--brand-800));color:var(--paper);box-shadow:inset 0 0 0 1px rgba(201,168,95,.15)}
+.dh-nav-item.is-active::before{content:"";position:absolute;inset-inline-end:0;top:8px;bottom:8px;width:3px;background:var(--gold-500);border-radius:2px}
+.dh-side-foot{margin-top:auto;padding:14px 10px 4px;border-top:1px solid rgba(201,168,95,.18);font-size:12px;color:var(--gold-400);text-align:center}
+.dh-topbar{display:flex;align-items:center;gap:16px;padding:0 28px;height:60px;background:var(--paper);border-bottom:1px solid var(--ink-100);position:sticky;top:0;z-index:50}
+.dh-topbar-title{font-family:var(--font-ar-display);font-size:18px;font-weight:600;color:var(--ink-900);flex:1}
+.dh-user{display:flex;align-items:center;gap:10px;padding-inline-start:14px;border-inline-start:1px solid var(--ink-100)}
+.dh-av{width:34px;height:34px;background:var(--brand-700);color:var(--paper);border-radius:999px;display:grid;place-items:center;font-size:12px;font-weight:600;border:1.5px solid var(--gold-400)}
+.dh-main{padding:24px 28px 64px;display:flex;flex-direction:column;gap:20px}
 .section{display:none}.section.active{display:flex;flex-direction:column;gap:20px}
 .mod-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px}
 .mod-head .left{display:flex;flex-direction:column;gap:6px}
@@ -120,79 +120,79 @@ button{font:inherit;cursor:pointer;border:none}
 </style>
 </head>
 <body>
-<div class="nz-app">
+<div class="dh-app">
 
 <!-- ═══ SIDEBAR ═══ -->
-<aside class="nz-sidebar">
-  <div class="nz-brand">
+<aside class="dh-sidebar">
+  <div class="dh-brand">
     <div class="nz-icon-shine">
       <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M2 20V8l10-6 10 6v12H14v-5h-4v5H2zm3-2h3v-3H5v3zm0-5h3v-3H5v3zm5 0h3v-3h-3v3zm5 5h3v-3h-3v3zm0-5h3v-3h-3v3z"/></svg>
     </div>
-    <div class="nz-brand-name">
+    <div class="dh-brand-name">
       <div class="ar">ضيوف</div>
       <div class="en">Dheuof SaaS</div>
     </div>
   </div>
-  <nav class="nz-nav">
-    <div class="nz-nav-group">
-      <div class="nz-nav-label">الرئيسية</div>
-      <div class="nz-nav-item is-active" onclick="showSection('home',this)"><span class="ic">🏠</span>لوحة التحكم</div>
+  <nav class="dh-nav">
+    <div class="dh-nav-group">
+      <div class="dh-nav-label">الرئيسية</div>
+      <div class="dh-nav-item is-active" onclick="showSection('home',this)"><span class="ic">🏠</span>لوحة التحكم</div>
     </div>
-    <div class="nz-nav-group">
-      <div class="nz-nav-label">إدارة الضيوف والحجوزات</div>
-      <div class="nz-nav-item" onclick="showSection('m01',this)"><span class="ic">👤</span>إدارة الضيوف</div>
-      <div class="nz-nav-item" onclick="showSection('m02',this)"><span class="ic">🏨</span>الاستقبال</div>
-      <div class="nz-nav-item" onclick="showSection('m03',this)"><span class="ic">📡</span>مدير القنوات</div>
+    <div class="dh-nav-group">
+      <div class="dh-nav-label">إدارة الضيوف والحجوزات</div>
+      <div class="dh-nav-item" onclick="showSection('m01',this)"><span class="ic">👤</span>إدارة الضيوف</div>
+      <div class="dh-nav-item" onclick="showSection('m02',this)"><span class="ic">🏨</span>الاستقبال</div>
+      <div class="dh-nav-item" onclick="showSection('m03',this)"><span class="ic">📡</span>مدير القنوات</div>
     </div>
-    <div class="nz-nav-group">
-      <div class="nz-nav-label">المالية والعمليات</div>
-      <div class="nz-nav-item" onclick="showSection('m04',this)"><span class="ic">💳</span>المحاسبة</div>
-      <div class="nz-nav-item" onclick="showSection('pos',this)"><span class="ic">🛒</span>نقطة البيع POS</div>
-      <div class="nz-nav-item" onclick="showSection('m05',this)"><span class="ic">🛏️</span>حالة الغرف</div>
-      <div class="nz-nav-item" onclick="showSection('m06',this)"><span class="ic">👥</span>الموارد البشرية</div>
+    <div class="dh-nav-group">
+      <div class="dh-nav-label">المالية والعمليات</div>
+      <div class="dh-nav-item" onclick="showSection('m04',this)"><span class="ic">💳</span>المحاسبة</div>
+      <div class="dh-nav-item" onclick="showSection('pos',this)"><span class="ic">🛒</span>نقطة البيع POS</div>
+      <div class="dh-nav-item" onclick="showSection('m05',this)"><span class="ic">🛏️</span>حالة الغرف</div>
+      <div class="dh-nav-item" onclick="showSection('m06',this)"><span class="ic">👥</span>الموارد البشرية</div>
     </div>
-    <div class="nz-nav-group">
-      <div class="nz-nav-label">الخدمات الداخلية</div>
-      <div class="nz-nav-item" onclick="showSection('m07',this)"><span class="ic">🧹</span>الإشراف الداخلي</div>
-      <div class="nz-nav-item" onclick="showSection('m08',this)"><span class="ic">🔧</span>الصيانة</div>
+    <div class="dh-nav-group">
+      <div class="dh-nav-label">الخدمات الداخلية</div>
+      <div class="dh-nav-item" onclick="showSection('m07',this)"><span class="ic">🧹</span>الإشراف الداخلي</div>
+      <div class="dh-nav-item" onclick="showSection('m08',this)"><span class="ic">🔧</span>الصيانة</div>
     </div>
-    <div class="nz-nav-group">
-      <div class="nz-nav-label">المفتاح الذكي</div>
-      <div class="nz-nav-item" onclick="showSection('m09',this)"><span class="ic">🔑</span>المفتاح الذكي</div>
+    <div class="dh-nav-group">
+      <div class="dh-nav-label">المفتاح الذكي</div>
+      <div class="dh-nav-item" onclick="showSection('m09',this)"><span class="ic">🔑</span>المفتاح الذكي</div>
     </div>
-    <div class="nz-nav-group">
-      <div class="nz-nav-label">الذكاء والتحليل</div>
-      <div class="nz-nav-item" onclick="showSection('m10',this)"><span class="ic">💎</span>CRM والولاء</div>
-      <div class="nz-nav-item" onclick="showSection('m11',this)"><span class="ic">📊</span>مؤشرات الأداء KPI</div>
-      <div class="nz-nav-item" onclick="showSection('analytics',this)"><span class="ic">📈</span>تحليل البيانات</div>
-      <div class="nz-nav-item" onclick="showSection('m12',this)"><span class="ic">🤖</span>الرؤى الذكية</div>
+    <div class="dh-nav-group">
+      <div class="dh-nav-label">الذكاء والتحليل</div>
+      <div class="dh-nav-item" onclick="showSection('m10',this)"><span class="ic">💎</span>CRM والولاء</div>
+      <div class="dh-nav-item" onclick="showSection('m11',this)"><span class="ic">📊</span>مؤشرات الأداء KPI</div>
+      <div class="dh-nav-item" onclick="showSection('analytics',this)"><span class="ic">📈</span>تحليل البيانات</div>
+      <div class="dh-nav-item" onclick="showSection('m12',this)"><span class="ic">🤖</span>الرؤى الذكية</div>
     </div>
-    <div class="nz-nav-group">
-      <div class="nz-nav-label">المخزون والسياحة</div>
-      <div class="nz-nav-item" onclick="showSection('m13',this)"><span class="ic">📦</span>المستودعات</div>
-      <div class="nz-nav-item" onclick="showSection('m14',this)"><span class="ic">🗺️</span>الجولات السياحية</div>
-      <div class="nz-nav-item" onclick="showSection('m14b',this)"><span class="ic">🏛️</span>وجهات سياحية</div>
-      <div class="nz-nav-item" onclick="showSection('m15',this)"><span class="ic">📱</span>تطبيق الموظفين</div>
+    <div class="dh-nav-group">
+      <div class="dh-nav-label">المخزون والسياحة</div>
+      <div class="dh-nav-item" onclick="showSection('m13',this)"><span class="ic">📦</span>المستودعات</div>
+      <div class="dh-nav-item" onclick="showSection('m14',this)"><span class="ic">🗺️</span>الجولات السياحية</div>
+      <div class="dh-nav-item" onclick="showSection('m14b',this)"><span class="ic">🏛️</span>وجهات سياحية</div>
+      <div class="dh-nav-item" onclick="showSection('m15',this)"><span class="ic">📱</span>تطبيق الموظفين</div>
     </div>
   </nav>
-  <div class="nz-side-foot">ضيوف v3.0 · جميع الوحدات الـ 16</div>
+  <div class="dh-side-foot">ضيوف v3.0 · جميع الوحدات الـ 16</div>
 </aside>
 
 <!-- ═══ MAIN COLUMN ═══ -->
 <div>
-  <header class="nz-topbar">
-    <div id="topbarTitle" class="nz-topbar-title">لوحة التحكم الرئيسية</div>
+  <header class="dh-topbar">
+    <div id="topbarTitle" class="dh-topbar-title">لوحة التحكم الرئيسية</div>
     <div style="font-size:12px;color:var(--fg-3)" id="topbarDate"></div>
-    <div class="nz-user">
-      <div class="nz-av">م</div>
+    <div class="dh-user">
+      <div class="dh-av">م</div>
       <div>
-        <div class="nz-user-name">مدير الفندق</div>
-        <div class="nz-user-role">Hotel Manager</div>
+        <div class="dh-user-name">مدير الفندق</div>
+        <div class="dh-user-role">Hotel Manager</div>
       </div>
     </div>
   </header>
 
-  <main class="nz-main">
+  <main class="dh-main">
 
   <!-- ═ HOME ═ -->
   <div id="section-home" class="section active">
@@ -622,7 +622,7 @@ button{font:inherit;cursor:pointer;border:none}
 
   </main>
 </div><!-- end main column -->
-</div><!-- end nz-app -->
+</div><!-- end dh-app -->
 
 <!-- ═══ MODALS ═══ -->
 <div class="modal-overlay" id="modal-booking">
@@ -905,7 +905,7 @@ button{font:inherit;cursor:pointer;border:none}
 const API='';
 function showSection(id,el){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.nz-nav-item').forEach(n=>n.classList.remove('is-active'));
+  document.querySelectorAll('.dh-nav-item').forEach(n=>n.classList.remove('is-active'));
   const sec=document.getElementById('section-'+id);
   if(sec)sec.classList.add('active');
   if(el)el.classList.add('is-active');

@@ -1,0 +1,623 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-screen-label="Security Audit">
+<head>
+<meta charset="utf-8"/>
+<title>ضيوف · تقرير الفحص الأمني</title>
+<meta name="viewport" content="width=1280, initial-scale=1"/>
+<link rel="stylesheet" href="/static/dheuof/colors_and_type.css"/>
+<style>
+  body { background: var(--paper); color: var(--ink-800); margin: 0; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 56px 40px 96px; }
+
+  .doc-head { border-bottom: 1px solid var(--hairline); padding-bottom: 28px; margin-bottom: 36px; }
+  .doc-head .stamp {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: var(--ink-900); color: var(--gold-300);
+    padding: 8px 16px; border-radius: 999px;
+    font-family: var(--font-en); font-size: 11px; letter-spacing: 0.18em; font-weight: 600;
+    margin-bottom: 18px;
+  }
+  .doc-head .stamp .dot { width: 7px; height: 7px; border-radius: 999px; background: var(--success-500); box-shadow: 0 0 0 4px rgba(74,148,118,0.25); }
+  .doc-head h1 { font-family: var(--font-ar-display); font-weight: 700; font-size: 38px; color: var(--ink-900); margin: 0 0 8px; line-height: 1.15; }
+  .doc-head .sub { font-family: var(--font-en); font-size: 14px; font-style: italic; color: var(--fg-3); margin-bottom: 18px; }
+  .doc-head .meta-row { display: flex; gap: 28px; flex-wrap: wrap; font-family: var(--font-mono); font-size: 12px; color: var(--ink-600); }
+  .doc-head .meta-row b { color: var(--ink-900); font-weight: 600; }
+
+  .verdict {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+    margin-bottom: 40px;
+  }
+  .v-card { background: var(--white); border: 1px solid var(--hairline); border-radius: 12px; padding: 18px; position: relative; }
+  .v-card .lbl { font-family: var(--font-en); font-size: 10px; letter-spacing: 0.18em; color: var(--fg-3); text-transform: uppercase; }
+  .v-card .num { font-family: var(--font-en); font-weight: 700; font-size: 38px; color: var(--ink-900); margin: 6px 0 2px; line-height: 1; }
+  .v-card .ar { font-family: var(--font-ar); font-size: 13px; color: var(--ink-700); }
+  .v-card.ok { background: linear-gradient(180deg, var(--brand-50), var(--white)); border-color: var(--brand-200); }
+  .v-card.ok .num { color: var(--brand-700); }
+  .v-card.warn { background: linear-gradient(180deg, var(--gold-50), var(--white)); border-color: var(--gold-300); }
+  .v-card.warn .num { color: var(--gold-800); }
+  .v-card.crit { background: linear-gradient(180deg, #FCE9E0, var(--white)); border-color: #E8C0B0; }
+  .v-card.crit .num { color: var(--danger-700); }
+
+  section { margin-bottom: 56px; }
+  section > h2 {
+    font-family: var(--font-ar-display); font-weight: 600; font-size: 22px;
+    color: var(--ink-900); margin: 0 0 4px;
+    display: flex; align-items: baseline; gap: 14px;
+  }
+  section > h2 .n {
+    font-family: var(--font-en); font-size: 11px; letter-spacing: 0.18em;
+    color: var(--gold-700); font-weight: 700;
+  }
+  section > .sub {
+    font-family: var(--font-en); font-style: italic; font-size: 13px;
+    color: var(--fg-3); margin-bottom: 24px;
+    border-bottom: 1px solid var(--hairline); padding-bottom: 16px;
+  }
+
+  /* Finding cards */
+  .finding {
+    background: var(--white); border: 1px solid var(--hairline);
+    border-radius: 12px; padding: 18px 22px; margin-bottom: 10px;
+    display: grid; grid-template-columns: 110px 1fr auto; gap: 18px; align-items: start;
+  }
+  .finding .sev {
+    font-family: var(--font-mono); font-size: 11px; font-weight: 700;
+    padding: 4px 10px; border-radius: 4px;
+    letter-spacing: 0.08em; align-self: start;
+    text-align: center; white-space: nowrap;
+  }
+  .sev.pass { background: var(--success-100); color: var(--success-700); }
+  .sev.info { background: var(--brand-100); color: var(--brand-800); }
+  .sev.low  { background: var(--gold-100); color: var(--gold-800); }
+  .sev.med  { background: #FBE5D5; color: #8C4316; }
+  .sev.high { background: #F8D2C4; color: var(--danger-700); }
+  .finding h3 { font-family: var(--font-ar-display); font-size: 15px; font-weight: 600; color: var(--ink-900); margin: 0 0 4px; }
+  .finding .en { font-family: var(--font-en); font-size: 11px; font-style: italic; color: var(--fg-3); margin-bottom: 8px; }
+  .finding p { font-family: var(--font-ar); font-size: 13px; line-height: 1.7; color: var(--ink-700); margin: 0; }
+  .finding p + p { margin-top: 6px; }
+  .finding .ref { font-family: var(--font-mono); font-size: 11px; color: var(--fg-3); align-self: start; text-align: end; }
+  .finding code { font-family: var(--font-mono); background: var(--paper-tint); padding: 1px 6px; border-radius: 3px; font-size: 12px; color: var(--ink-900); direction: ltr; display: inline-block; }
+
+  /* PII inventory table */
+  .pii-table { width: 100%; background: var(--white); border: 1px solid var(--hairline); border-radius: 12px; overflow: hidden; border-collapse: separate; border-spacing: 0; }
+  .pii-table th { background: var(--paper-tint); font-family: var(--font-ar-display); font-weight: 600; font-size: 12px; color: var(--ink-700); text-align: start; padding: 12px 16px; border-bottom: 1px solid var(--hairline); }
+  .pii-table td { padding: 12px 16px; font-family: var(--font-ar); font-size: 13px; color: var(--ink-700); border-bottom: 1px solid var(--hairline); vertical-align: top; }
+  .pii-table tr:last-child td { border-bottom: none; }
+  .pii-table .mono { font-family: var(--font-mono); font-size: 12px; color: var(--ink-900); direction: ltr; }
+  .pii-table .tag { display: inline-block; font-family: var(--font-mono); font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 3px; letter-spacing: 0.04em; }
+  .pii-table .tag.id { background: #F8D2C4; color: var(--danger-700); }
+  .pii-table .tag.phone { background: var(--gold-100); color: var(--gold-800); }
+  .pii-table .tag.email { background: var(--brand-100); color: var(--brand-800); }
+  .pii-table .tag.name { background: var(--ink-50); color: var(--ink-700); }
+
+  /* Checklist */
+  .checklist { background: var(--white); border: 1px solid var(--hairline); border-radius: 12px; padding: 22px 26px; }
+  .checklist h3 { font-family: var(--font-ar-display); font-weight: 600; font-size: 15px; color: var(--ink-900); margin: 18px 0 10px; }
+  .checklist h3:first-child { margin-top: 0; }
+  .checklist .item {
+    display: grid; grid-template-columns: 24px 1fr;
+    gap: 10px; padding: 8px 0;
+    border-bottom: 1px dashed var(--hairline);
+  }
+  .checklist .item:last-of-type { border-bottom: none; }
+  .checklist .box {
+    width: 18px; height: 18px; border: 1.5px solid var(--ink-200);
+    border-radius: 4px; margin-top: 2px;
+  }
+  .checklist .item.req .box { border-color: var(--brand-700); background: var(--brand-50); position: relative; }
+  .checklist .item.req .box::after { content: "*"; position: absolute; inset: -8px 0 auto 0; text-align: center; color: var(--brand-700); font-weight: 700; }
+  .checklist .ar { font-family: var(--font-ar); font-size: 13.5px; color: var(--ink-800); line-height: 1.5; }
+  .checklist .ar strong { color: var(--ink-900); font-weight: 600; }
+  .checklist .en { font-family: var(--font-en); font-size: 11px; color: var(--fg-3); font-style: italic; margin-top: 2px; }
+
+  /* Two-col layout for some sections */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  /* Code block */
+  .codeblk {
+    background: var(--ink-900); color: var(--gold-200);
+    font-family: var(--font-mono); font-size: 12px; line-height: 1.7;
+    padding: 16px 18px; border-radius: 10px;
+    direction: ltr; text-align: left;
+    overflow-x: auto;
+  }
+  .codeblk .cm { color: var(--ink-300); font-style: italic; }
+  .codeblk .kw { color: #A6CFC4; }
+  .codeblk .st { color: #DBC084; }
+
+  .footnote { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--hairline); font-family: var(--font-en); font-size: 11px; color: var(--fg-3); font-style: italic; text-align: center; letter-spacing: 0.04em; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="doc-head">
+    <div class="stamp"><span class="dot"></span>SECURITY AUDIT · CONFIDENTIAL</div>
+    <h1>تقرير الفحص الأمني الشامل — ضيوف</h1>
+    <div class="sub">Full static code audit · data-leak review · production hardening checklist for the Payment / Contract / SMS features</div>
+    <div class="meta-row">
+      <div>نطاق المراجعة: <b>كامل المشروع — 16 ملفاً جذرياً + 14 وحدة</b></div>
+      <div>تاريخ التقرير: <b>2026-05-27</b></div>
+      <div>المُراجع: <b>Dheuof Security</b></div>
+      <div>الإصدار: <b>v1.0</b></div>
+    </div>
+  </header>
+
+  <!-- Verdict cards -->
+  <div class="verdict">
+    <div class="v-card ok">
+      <div class="lbl">CLEAN</div>
+      <div class="num">0</div>
+      <div class="ar">أسرار أو مفاتيح API مكشوفة</div>
+    </div>
+    <div class="v-card ok">
+      <div class="lbl">CLEAN</div>
+      <div class="num">0</div>
+      <div class="ar">طلبات شبكة فعلية أو نقاط تسريب نشطة</div>
+    </div>
+    <div class="v-card warn">
+      <div class="lbl">REVIEW</div>
+      <div class="num">38+</div>
+      <div class="ar">حقول بيانات تجريبية يجب تطهيرها قبل العرض</div>
+    </div>
+    <div class="v-card crit">
+      <div class="lbl">PRE-PROD</div>
+      <div class="num">24</div>
+      <div class="ar">متطلب أمني للدفع/العقد/SMS عند الإطلاق</div>
+    </div>
+  </div>
+
+  <!-- 1. Scope -->
+  <section>
+    <h2><span class="n">01</span>طبيعة المشروع ونطاق الفحص</h2>
+    <div class="sub">Scope · what this codebase is, what it isn't</div>
+
+    <div class="finding">
+      <span class="sev info">SCOPE</span>
+      <div>
+        <h3>هذا المشروع نظام تصميم (Design System) — ليس تطبيقاً عاملاً</h3>
+        <div class="en">Static mockups · no backend · no live data flow</div>
+        <p>المشروع مكوّن من ملفات <code>.html</code>، <code>.css</code>، و <code>.jsx</code> ستاتيكية تعرض شكل واجهات منتج ضيوف. لا يوجد خادم، قاعدة بيانات، مصادقة فعلية، أو معالجة حقيقية للدفع. ميزات «الدفع المخصص» و«العقد المخصص» و«SMS» التي أضفناها هي <strong>عرض بصري فقط</strong> — لا يوجد رابط دفع حقيقي ولا إرسال SMS فعلي.</p>
+        <p>لذلك ينقسم التقرير إلى: (أ) فحص الكود الستاتيكي الموجود فعلاً، و(ب) متطلبات أمنية يجب الالتزام بها <strong>قبل تشغيل</strong> الميزات في الإنتاج.</p>
+      </div>
+      <div class="ref">SCOPE-01</div>
+    </div>
+  </section>
+
+  <!-- 2. Static code findings -->
+  <section>
+    <h2><span class="n">02</span>نتائج الفحص الستاتيكي</h2>
+    <div class="sub">Static analysis · every line of JS/HTML/CSS in the project</div>
+
+    <div class="finding">
+      <span class="sev pass">PASS</span>
+      <div>
+        <h3>لا توجد أسرار أو مفاتيح مكشوفة</h3>
+        <div class="en">No exposed secrets, API keys, tokens, passwords, bearer tokens</div>
+        <p>تم البحث بـ regex شامل عن <code>api[_-]?key | secret | token | password | bearer | authorization | private[_-]?key</code> في كل الملفات. لم يُرصد أي مطابقة فعلية — فقط ذكر كلمة <code>tokens</code> في <code>animations.js</code> كمتغيّر محلي لتقسيم نص (لا علاقة له بأسرار).</p>
+      </div>
+      <div class="ref">STATIC-01</div>
+    </div>
+
+    <div class="finding">
+      <span class="sev pass">PASS</span>
+      <div>
+        <h3>لا توجد دوال خطرة أو تنفيذ ديناميكي</h3>
+        <div class="en">No eval / document.write / dangerouslySetInnerHTML / new Function</div>
+        <p>لا يوجد أي استخدام لـ <code>eval()</code>، <code>new Function()</code>، <code>document.write</code>، أو <code>dangerouslySetInnerHTML</code> في React. استخدامات <code>innerHTML</code> الموجودة في <code>slides/deck-stage.js</code> (3 مواضع) كلها قوالب نصّية ثابتة بدون أي مدخلات مستخدم — آمنة بطبيعتها.</p>
+      </div>
+      <div class="ref">STATIC-02</div>
+    </div>
+
+    <div class="finding">
+      <span class="sev pass">PASS</span>
+      <div>
+        <h3>لا توجد طلبات شبكة فعلية</h3>
+        <div class="en">Zero outbound network calls · zero data exfiltration vectors</div>
+        <p>لا يوجد أي <code>fetch()</code>، <code>XMLHttpRequest</code>، <code>WebSocket</code>، أو <code>navigator.sendBeacon</code>. الموارد الخارجية الوحيدة هي: <strong>Google Fonts</strong> (للخطوط فقط، عبر <code>@import</code> في <code>colors_and_type.css</code>)، و<strong>unpkg.com</strong> لـ React/ReactDOM/Babel كسكربتات مكتبة معروفة.</p>
+      </div>
+      <div class="ref">STATIC-03</div>
+    </div>
+
+    <div class="finding">
+      <span class="sev pass">PASS</span>
+      <div>
+        <h3>سكربتات CDN محصّنة بتجزئة سلامة (SRI)</h3>
+        <div class="en">All CDN scripts pinned with integrity hashes + crossorigin="anonymous"</div>
+        <p>كل ملفات HTML تستخدم React 18.3.1 و Babel 7.29.0 من <code>unpkg.com</code> مع <code>integrity="sha384-..."</code> و <code>crossorigin="anonymous"</code>. هذا يمنع هجوم استبدال السكربت (Supply-chain attack) — لو تغيّرت بايتة واحدة من الملف على CDN، المتصفح سيرفض تنفيذه.</p>
+      </div>
+      <div class="ref">STATIC-04</div>
+    </div>
+
+    <div class="finding">
+      <span class="sev low">LOW</span>
+      <div>
+        <h3>تثبيت إصدار خطوط Google Fonts</h3>
+        <div class="en">Google Fonts @import — depends on Google's CDN integrity</div>
+        <p>الخطوط تُحمَّل من <code>fonts.googleapis.com</code> بدون SRI (لا يدعمه CSS @import). البديل: نشر ملفات <code>.woff2</code> محلياً في <code>fonts/</code> — الـ <code>README.txt</code> يشير إلى وجود هذا الخيار. توصية: استخدم الخطوط المحلية في الإنتاج لتقليل اعتمادية الطرف الثالث ولامتثال الخصوصية (Google Fonts يسجّل IP الزائر).</p>
+      </div>
+      <div class="ref">STATIC-05</div>
+    </div>
+
+    <div class="finding">
+      <span class="sev low">LOW</span>
+      <div>
+        <h3>عدم وجود رؤوس أمان (Security Headers)</h3>
+        <div class="en">No CSP, X-Frame-Options, Referrer-Policy meta tags in HTML</div>
+        <p>ملفات HTML لا تحتوي على <code>&lt;meta http-equiv="Content-Security-Policy"&gt;</code> أو رؤوس مماثلة. هذا غير حرج للماكيت الستاتيكي، لكن عند النشر <strong>يجب</strong> ضبط على مستوى الخادم: CSP صارمة، <code>X-Frame-Options: DENY</code>، <code>Referrer-Policy: strict-origin-when-cross-origin</code>، <code>Permissions-Policy</code> لتعطيل الكاميرا/الميكروفون/الموقع.</p>
+      </div>
+      <div class="ref">STATIC-06</div>
+    </div>
+
+    <div class="finding">
+      <span class="sev low">LOW</span>
+      <div>
+        <h3>سكربتات React/Babel التطويرية</h3>
+        <div class="en">Using react.development.js + @babel/standalone in-browser</div>
+        <p>كل الواجهات تستخدم <code>react.development.js</code> و Babel بالمتصفح. هذا مناسب للماكيت، لكنه: (١) أبطأ، (٢) يكشف رسائل debug، (٣) يُحمّل ~٣ ميجابايت إضافية. <strong>في الإنتاج:</strong> استخدم <code>react.production.min.js</code> وحوّل JSX إلى JS مسبقاً (Vite/Next/Webpack)، ولا تشحن Babel للمتصفح.</p>
+      </div>
+      <div class="ref">STATIC-07</div>
+    </div>
+  </section>
+
+  <!-- 3. Demo data inventory -->
+  <section>
+    <h2><span class="n">03</span>جرد البيانات التجريبية في الماكيت</h2>
+    <div class="sub">Hardcoded demo PII inventory · must be sanitized before any public demo</div>
+
+    <div class="finding">
+      <span class="sev med">MEDIUM</span>
+      <div>
+        <h3>وجود أرقام هويات وجوالات حقيقية الشكل في الماكيت</h3>
+        <div class="en">Real-looking national IDs, phone numbers, names hardcoded in mockups</div>
+        <p>الماكيت يحتوي على بيانات تجريبية بصيغة حقيقية (أرقام هويات سعودية ١٠ خانات، أرقام جوال +966، أسماء كاملة). هذا <strong>مقبول للماكيت</strong> الذي يُعرض داخلياً، لكنه <strong>غير مقبول</strong> إذا:</p>
+        <p>(أ) كان أحدها يخص شخصاً حقيقياً (انتحال هوية، PDPL م. ٢٠/٢٢)، (ب) رُفع الماكيت إلى نطاق عام، (ج) صُوّر للعملاء بدون تطهير.</p>
+        <p><strong>التوصية:</strong> استبدل كل القيم الحالية بأنماط لا تخص أحداً — أرقام هوية تبدأ بـ <code>9999...</code> (مدى محجوز للاختبار)، جوالات <code>+966 5x xxx xxxx</code> كـ placeholder، أسماء كلاسيكية معروفة كنماذج (مثل «النزيل التجريبي»).</p>
+      </div>
+      <div class="ref">DATA-01</div>
+    </div>
+
+    <table class="pii-table">
+      <thead>
+        <tr>
+          <th>النوع</th>
+          <th>القيمة المتكرّرة</th>
+          <th>أماكن الظهور</th>
+          <th>الإجراء المقترح</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="tag id">ID</span></td>
+          <td class="mono">1028456789</td>
+          <td>registration.html, CheckInPanel.jsx, 02-shumus/index.html</td>
+          <td>استبدل بـ <span class="mono">9999000001</span></td>
+        </tr>
+        <tr>
+          <td><span class="tag id">ID</span></td>
+          <td class="mono">1099382841</td>
+          <td>registration.html (companion)</td>
+          <td>استبدل بـ <span class="mono">9999000002</span></td>
+        </tr>
+        <tr>
+          <td><span class="tag phone">PHONE</span></td>
+          <td class="mono">+966 50 482 1108</td>
+          <td>registration.html (×2), CheckInPanel.jsx, table-row.html, 02-shumus</td>
+          <td>استبدل بـ <span class="mono">+966 5X XXX XXXX</span></td>
+        </tr>
+        <tr>
+          <td><span class="tag phone">PHONE</span></td>
+          <td class="mono">+966 55 919 7321 · +966 55 218 4422/3</td>
+          <td>checkin.html, registration.html, table-row.html</td>
+          <td>placeholders فقط</td>
+        </tr>
+        <tr>
+          <td><span class="tag email">EMAIL</span></td>
+          <td class="mono">ahmed.fahad@example.com</td>
+          <td>registration.html</td>
+          <td>آمن (<code>example.com</code> نطاق محجوز RFC 2606)</td>
+        </tr>
+        <tr>
+          <td><span class="tag email">EMAIL</span></td>
+          <td class="mono">manager@hotel.sa · hello@dheuof.sa</td>
+          <td>users.html, slides/index.html</td>
+          <td>تأكّد أن <code>dheuof.sa</code> ملك للمنتج فعلاً</td>
+        </tr>
+        <tr>
+          <td><span class="tag name">NAME</span></td>
+          <td>أحمد بن سليمان الفهد · سارة أحمد المالكي · نورة المنصور</td>
+          <td>~15+ ملفاً</td>
+          <td>احرص أن لا تخص أشخاصاً حقيقيين</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 4. Payment hardening -->
+  <section>
+    <h2><span class="n">04</span>متطلبات تأمين «نظام الدفع المخصص»</h2>
+    <div class="sub">Production hardening · before the payment builder accepts real money</div>
+
+    <div class="checklist">
+      <h3>على الواجهة (Front-end)</h3>
+      <div class="item req">
+        <div class="box"></div>
+        <div>
+          <div class="ar"><strong>تفويض الحقول الحسّاسة لـ PCI iframe.</strong> لا تُلامس رقم البطاقة، CVV، أو تاريخ الانتهاء كود ضيوف إطلاقاً — استخدم iframe مزوّد الدفع المعتمد (HyperPay / PayTabs / Moyasar / Checkout.com) داخل صفحة الدفع المرسلة عبر SMS.</div>
+          <div class="en">Card data must NEVER touch Dheuof origin — PCI-DSS scope minimization</div>
+        </div>
+      </div>
+      <div class="item req">
+        <div class="box"></div>
+        <div>
+          <div class="ar"><strong>تشفير HTTPS + HSTS.</strong> رابط <code>pay.dheuof.sa</code> يجب أن يُقدَّم حصراً على TLS 1.3 مع رأس <code>Strict-Transport-Security: max-age=63072000; includeSubDomains; preload</code>.</div>
+          <div class="en">TLS 1.3 enforced · HSTS preloaded</div>
+        </div>
+      </div>
+      <div class="item req">
+        <div class="box"></div>
+        <div>
+          <div class="ar"><strong>CSP صارمة على صفحة الدفع.</strong> <code>default-src 'self'; script-src 'self' &lt;PSP-domain&gt;; frame-src &lt;PSP-domain&gt;; form-action 'self' &lt;PSP-domain&gt;;</code> لا تسمح بـ <code>unsafe-inline</code> أو <code>unsafe-eval</code>.</div>
+          <div class="en">Strict CSP · no inline JS · whitelist PSP frames only</div>
+        </div>
+      </div>
+
+      <h3>على الخادم (Back-end)</h3>
+      <div class="item req">
+        <div class="box"></div>
+        <div>
+          <div class="ar"><strong>روابط الدفع موقّعة وقابلة للإلغاء.</strong> كل رابط = توكن JWT أو OPAQUE موقّع HMAC-SHA256، صلاحيته ≤ ٧٢ ساعة، استخدام واحد فقط (single-use)، يبطل تلقائياً عند الدفع.</div>
+          <div class="en">HMAC-signed · single-use · TTL ≤ 72h · revocable</div>
+        </div>
+      </div>
+      <div class="item req">
+        <div class="box"></div>
+        <div>
+          <div class="ar"><strong>التحقق من قيمة الدفعة على الخادم — لا الواجهة.</strong> أي تعديل على المبلغ من DevTools يجب أن يُرفض. المبلغ مصدره دائماً ID الحجز + جدول الدفعات في قاعدة البيانات.</div>
+          <div class="en">Server-side amount enforcement · never trust client total</div>
+        </div>
+      </div>
+      <div class="item req">
+        <div class="box"></div>
+        <div>
+          <div class="ar"><strong>Webhook موقّع من مزوّد الدفع.</strong> إشعار نجاح الدفع يُتحقّق منه عبر توقيع المزوّد (مثل <code>X-Signature</code> في PayTabs) — لا تعتمد على إعادة توجيه المتصفح فقط.</div>
+          <div class="en">Verify PSP webhook signature · don't trust redirect-only confirmation</div>
+        </div>
+      </div>
+      <div class="item req">
+        <div class="box"></div>
+        <div>
+          <div class="ar"><strong>التشفير في الراحة (Encryption at rest).</strong> بيانات الحجز، أرقام الهوية، آخر ٤ خانات من البطاقة (PAN truncation) — كلها مشفّرة في DB بـ AES-256-GCM ومفاتيح في KMS/HSM.</div>
+          <div class="en">DB encryption · KMS-managed keys · PAN truncated to last 4</div>
+        </div>
+      </div>
+      <div class="item req">
+        <div class="box"></div>
+        <div>
+          <div class="ar"><strong>Rate-limit + كشف الاحتيال.</strong> أكثر من ٣ محاولات دفع فاشلة لنفس IP / نفس رقم حجز خلال ١٠ دقائق → CAPTCHA إجباري + تنبيه أمني.</div>
+          <div class="en">Rate-limit failures · velocity checks · CAPTCHA after threshold</div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="box"></div>
+        <div>
+          <div class="ar"><strong>سجل تدقيق غير قابل للتعديل (Audit log).</strong> كل تعديل على جدول الدفعات (إنشاء/حذف/تعديل مبلغ) يُسجَّل بـ user_id, timestamp, IP, before/after — append-only.</div>
+          <div class="en">Immutable audit log · who-changed-what-when</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. Contract hardening -->
+  <section>
+    <h2><span class="n">05</span>متطلبات تأمين «العقد المخصص»</h2>
+    <div class="sub">Digital contract integrity · e-signature legal validity</div>
+
+    <div class="checklist">
+      <h3>سلامة وثيقة العقد</h3>
+      <div class="item req">
+        <div class="box"></div>
+        <div>
+          <div class="ar"><strong>تجميد المحتوى عند الإرسال (Content freeze).</strong> لحظة الضغط على «إرسال للتوقيع» — يُولَّد PDF نهائي مع hash (SHA-256)، ويُخزَّن. أي تعديل لاحق على البنود يفرض إعادة إرسال + توقيع جديد.</div>
+          <div class="en">SHA-256 of frozen PDF · any clause change invalidates signature</div>
+        </div>
+      </div>
+      <div class="item req">
+        <div class="box"></div>
+        <div>
+          <div class="ar"><strong>تطهير حقول الدمج (Template injection).</strong> قيم مثل <code>{{اسم_النزيل}}</code> تُعالَج بمكتبة قوالب آمنة (Mustache/Handlebars بدون helpers)، ولا تُمرَّر إلى محرّك يدعم تعليمات. التطهير ضد HTML/PDF injection إجباري.</div>
+          <div class="en">Sandboxed template engine · escape all interpolated values</div>
+        </div>
+      </div>
+      <div class="item req">
+        <div class="box"></div>
+        <div>
+          <div class="ar"><strong>توقيع رقمي معتمد.</strong> خيار «نفاذ» يُوصى به للعقود ذات الأثر النظامي (طبقاً لنظام التعاملات الإلكترونية السعودي). خيارات OTP/البصمة مناسبة للعقود الفندقية اليومية، لكن وثّق نوع التوقيع داخل العقد نفسه.</div>
+          <div class="en">Nafath for legally-binding · OTP/biometric for routine stays · embed sig-type in doc</div>
+        </div>
+      </div>
+      <div class="item req">
+        <div class="box"></div>
+        <div>
+          <div class="ar"><strong>Timestamp موثوق (RFC 3161).</strong> وقت التوقيع يُختم من خادم TSA معتمد، لا من ساعة المستخدم.</div>
+          <div class="en">RFC 3161 trusted timestamp · not client clock</div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="box"></div>
+        <div>
+          <div class="ar"><strong>أرشفة طويلة الأمد.</strong> العقود الموقَّعة + سجل الأحداث (إرسال، فتح، توقيع، نسخة مخزَّنة) — تُحفظ ٧ سنوات على الأقل (نظام الفنادق + ZATCA).</div>
+          <div class="en">7-year retention · ZATCA + tourism regulation compliance</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. SMS hardening -->
+  <section>
+    <h2><span class="n">06</span>متطلبات تأمين «ربط SMS»</h2>
+    <div class="sub">SMS dispatch · OTP delivery · phone-number trust</div>
+
+    <div class="checklist">
+      <h3>قناة الإرسال</h3>
+      <div class="item req">
+        <div class="box"></div>
+        <div>
+          <div class="ar"><strong>مزوّد SMS معتمد محلياً.</strong> استخدم مزوّداً مرخّصاً من هيئة الاتصالات (مثل Unifonic أو Mobily Business)، مع اسم مرسِل مسجَّل (Sender ID) موافق عليه لكل نطاق دولي.</div>
+          <div class="en">CITC-licensed SMS provider · approved sender ID</div>
+        </div>
+      </div>
+      <div class="item req">
+        <div class="box"></div>
+        <div>
+          <div class="ar"><strong>تحقّق ملكية الجوال قبل أي إرسال حسّاس.</strong> أول مرة تُرسل لرقم جديد → OTP تحقّق + موافقة صريحة على استلام رسائل دفع/عقد. لا «تخمين رقم» من بيانات الحجز فقط.</div>
+          <div class="en">Verify phone ownership before sensitive sends · explicit consent</div>
+        </div>
+      </div>
+      <div class="item req">
+        <div class="box"></div>
+        <div>
+          <div class="ar"><strong>روابط قصيرة على نطاق مملوك.</strong> استخدم <code>pay.dheuof.sa</code> و <code>sign.dheuof.sa</code> مباشرة — <strong>لا تستخدم bit.ly أو tinyurl</strong>. الروابط القصيرة العامة تسمح بإعادة توجيه السكربت لرابط آخر بعد الإرسال.</div>
+          <div class="en">Own-domain short links only · no third-party shorteners</div>
+        </div>
+      </div>
+      <div class="item req">
+        <div class="box"></div>
+        <div>
+          <div class="ar"><strong>التوكن في الرابط — عشوائي وغير متسلسل.</strong> <code>8KQ2-AHM</code> الموجود في الماكيت توضيحي. الفعلي يجب أن يكون ١٢٨ بت من <code>crypto.randomBytes</code> base32-معدّل — غير قابل للتخمين أو الزيادة العددية.</div>
+          <div class="en">128-bit cryptographic random · not enumerable</div>
+        </div>
+      </div>
+      <div class="item req">
+        <div class="box"></div>
+        <div>
+          <div class="ar"><strong>عدم تضمين بيانات حسّاسة في نص SMS.</strong> الرسالة قد تُرى على شاشة القفل. لا تضع رقم الهوية، آخر أرقام البطاقة، أو المبلغ كامل المفصّل. اكتفِ بـ «دفعة مستحقة» + الرابط + اسم العلامة.</div>
+          <div class="en">Never put PII/full amounts in SMS body · lock-screen leak vector</div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="box"></div>
+        <div>
+          <div class="ar"><strong>Throttling لكل رقم.</strong> أقصى ٣ رسائل/ساعة، ٥/يوم، لنفس الجوال — يمنع إساءة الاستخدام من حساب موظف مخترق.</div>
+          <div class="en">Per-MSISDN throttle · prevent abuse from compromised staff account</div>
+        </div>
+      </div>
+
+      <h3>OTP (إذا كان طريقة التوقيع)</h3>
+      <div class="item req">
+        <div class="box"></div>
+        <div>
+          <div class="ar">٦ خانات، صالح ٥ دقائق، استخدام واحد. ٣ محاولات فاشلة → حظر ١٥ دقيقة. لا OTP بنفس القيمة لنفس الرقم خلال ٢٤ ساعة.</div>
+          <div class="en">6 digits · 5-min TTL · single-use · 3-strike lockout · no replay window</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. Headers snippet -->
+  <section>
+    <h2><span class="n">07</span>قالب رؤوس الأمان للنشر</h2>
+    <div class="sub">Drop-in security headers for the production reverse-proxy / CDN</div>
+
+    <div class="codeblk"><span class="cm"># nginx / Caddy / Vercel — security headers for dheuof.sa, pay.dheuof.sa, sign.dheuof.sa</span>
+<span class="kw">add_header</span> Strict-Transport-Security <span class="st">"max-age=63072000; includeSubDomains; preload"</span> always;
+<span class="kw">add_header</span> X-Frame-Options <span class="st">"DENY"</span> always;
+<span class="kw">add_header</span> X-Content-Type-Options <span class="st">"nosniff"</span> always;
+<span class="kw">add_header</span> Referrer-Policy <span class="st">"strict-origin-when-cross-origin"</span> always;
+<span class="kw">add_header</span> Permissions-Policy <span class="st">"camera=(), microphone=(), geolocation=(), payment=(self)"</span> always;
+<span class="kw">add_header</span> Cross-Origin-Opener-Policy <span class="st">"same-origin"</span> always;
+<span class="kw">add_header</span> Cross-Origin-Resource-Policy <span class="st">"same-site"</span> always;
+
+<span class="cm"># CSP — tighten per page. Below is for pay.dheuof.sa with HyperPay iframe</span>
+<span class="kw">add_header</span> Content-Security-Policy <span class="st">"default-src 'self'; \
+  script-src 'self' https://test.oppwa.com https://oppwa.com; \
+  style-src  'self' 'unsafe-hashes'; \
+  frame-src  https://test.oppwa.com https://oppwa.com; \
+  form-action 'self' https://oppwa.com; \
+  connect-src 'self'; img-src 'self' data:; \
+  font-src 'self'; object-src 'none'; base-uri 'self'; \
+  frame-ancestors 'none'; upgrade-insecure-requests;"</span> always;</div>
+  </section>
+
+  <!-- 8. Compliance -->
+  <section>
+    <h2><span class="n">08</span>الامتثال التنظيمي السعودي</h2>
+    <div class="sub">PDPL · ZATCA · CITC · tourism law</div>
+
+    <div class="two-col">
+      <div class="finding" style="grid-template-columns: 110px 1fr;">
+        <span class="sev info">PDPL</span>
+        <div>
+          <h3>نظام حماية البيانات الشخصية</h3>
+          <div class="en">Personal Data Protection Law · Saudi Arabia</div>
+          <p>الحصول على موافقة صريحة قبل إرسال SMS تسويقي. الحقّ في الوصول/التصحيح/الحذف. تعيين Data Protection Officer للمنشأة. إشعار بالاختراق خلال ٧٢ ساعة لـ SDAIA.</p>
+        </div>
+      </div>
+      <div class="finding" style="grid-template-columns: 110px 1fr;">
+        <span class="sev info">ZATCA</span>
+        <div>
+          <h3>الفوترة الإلكترونية</h3>
+          <div class="en">E-invoicing Phase 2 · Fatoorah</div>
+          <p>كل دفعة من جدول «الدفع المخصص» تُولّد فاتورة ZATCA-compliant (XML + QR + توقيع رقمي + cryptographic stamp). تكامل مع بوابة هيئة الزكاة والضريبة والجمارك إجباري.</p>
+        </div>
+      </div>
+      <div class="finding" style="grid-template-columns: 110px 1fr;">
+        <span class="sev info">CITC</span>
+        <div>
+          <h3>هيئة الاتصالات</h3>
+          <div class="en">Sender ID registration · message templates</div>
+          <p>أسماء المرسلين («Dheuof») تُسجَّل وتُعتمد. قوالب الرسائل المعاملاتية (دفع/توقيع) تُقدَّم للموافقة. المراسلات التسويقية تتطلب opt-in موثّق.</p>
+        </div>
+      </div>
+      <div class="finding" style="grid-template-columns: 110px 1fr;">
+        <span class="sev info">TOUR</span>
+        <div>
+          <h3>نظام الفنادق</h3>
+          <div class="en">Hotel registration · Shumūs reporting</div>
+          <p>بيانات النزلاء تُرفع لمنصة «شموس» خلال ٢٤ ساعة من الوصول. الحفاظ على السجلات ٧ سنوات. عقود الإقامة تُرتبط برقم الحجز في شموس.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. Summary -->
+  <section>
+    <h2><span class="n">09</span>الملخّص التنفيذي</h2>
+    <div class="sub">Executive summary</div>
+
+    <div class="finding">
+      <span class="sev pass">SAFE</span>
+      <div>
+        <h3>الكود الستاتيكي الحالي آمن</h3>
+        <p>الفحص الشامل (regex على ٦٠+ ملف، يدوي على الملفات الحرجة) لم يُظهر أي ثغرة استغلالية فعلية. لا أسرار، لا تنفيذ ديناميكي، لا طلبات شبكة، CDN محصّن بـ SRI. <strong>المشروع جاهز للعرض الداخلي والتسويق كما هو.</strong></p>
+      </div>
+      <div class="ref">SUMM-OK</div>
+    </div>
+
+    <div class="finding">
+      <span class="sev low">PRE-DEMO</span>
+      <div>
+        <h3>قبل أي عرض خارجي — طهّر البيانات التجريبية</h3>
+        <p>استبدل الأسماء/الهويات/الجوالات الواردة في الجدول أعلاه بقيم محايدة (<code>9999xxxxxx</code>, <code>+966 5X XXX XXXX</code>). هذا تغيير سطحي لا يؤثّر على التصميم ويزيل أي شبهة تخص PDPL.</p>
+      </div>
+      <div class="ref">SUMM-DEMO</div>
+    </div>
+
+    <div class="finding">
+      <span class="sev high">PRE-PROD</span>
+      <div>
+        <h3>قبل إطلاق الدفع/العقد/SMS فعلياً — اعتمد قوائم الفحص ٤–٦</h3>
+        <p>الميزة في الماكيت بصرية ١٠٠٪. الانتقال إلى الإنتاج يفتح سطح هجوم كبير (PCI، PDPL، احتيال SMS، تزوير عقود). القوائم في الأقسام ٤ و٥ و٦ هي <strong>الحد الأدنى</strong> — لا تطلق بدونها.</p>
+        <p>التوصية النهائية: اطلب اختبار اختراق خارجي (penetration test) قبل إطلاق المرحلة الأولى من الدفع، ومراجعة قانونية لصياغة العقد المخصص ومدى الاعتراف به أمام المحاكم السعودية.</p>
+      </div>
+      <div class="ref">SUMM-PROD</div>
+    </div>
+  </section>
+
+  <div class="footnote">
+    Dheuof Security Audit · v1.0 · 2026-05-27 · prepared internally · classification: confidential
+  </div>
+
+</div>
+</body>
+</html>

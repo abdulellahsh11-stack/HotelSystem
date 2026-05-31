@@ -1051,7 +1051,7 @@ loadHome();
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     # App launcher — all 14 modules visible immediately
-    launcher = os.path.join("static", "nuzul", "index.html")
+    launcher = os.path.join("static", "dheuof", "index.html")
     if os.path.exists(launcher):
         with open(launcher, encoding="utf-8") as f:
             return HTMLResponse(f.read())
@@ -1059,9 +1059,9 @@ async def index(request: Request):
 
 
 @app.get("/app", response_class=HTMLResponse)
-async def nuzul_app(request: Request):
+async def dheuof_app(request: Request):
     # Same launcher (kept for backwards compatibility)
-    launcher = os.path.join("static", "nuzul", "index.html")
+    launcher = os.path.join("static", "dheuof", "index.html")
     if os.path.exists(launcher):
         with open(launcher, encoding="utf-8") as f:
             return HTMLResponse(f.read())
@@ -1071,7 +1071,7 @@ async def nuzul_app(request: Request):
 @app.get("/marketing", response_class=HTMLResponse)
 async def marketing_page(request: Request):
     # Marketing landing page
-    landing = os.path.join("static", "nuzul", "website", "index.html")
+    landing = os.path.join("static", "dheuof", "website", "index.html")
     if os.path.exists(landing):
         with open(landing, encoding="utf-8") as f:
             return HTMLResponse(f.read())
@@ -1126,7 +1126,7 @@ async def bookings_page(request: Request):
 #  Module shortcut routes — dheuof.com/hr, /accounting, etc.
 # ──────────────────────────────────────────────────────────────
 def _serve_module(path: str) -> HTMLResponse:
-    full = os.path.join("static", "nuzul", "modules", path, "index.html")
+    full = os.path.join("static", "dheuof", "modules", path, "index.html")
     if os.path.exists(full):
         with open(full, encoding="utf-8") as f:
             return HTMLResponse(f.read())
