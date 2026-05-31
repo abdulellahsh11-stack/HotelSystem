@@ -228,6 +228,9 @@ body { background: var(--paper-tint); }
 .pay.cash { background:#F8F1DF; color:var(--gold-800); }
 .pay.visa { background:#EBF0FF; color:#3352CC; }
 .pay.room { background:var(--brand-50); color:var(--brand-700); }
+.pay.mastercard { background:#FFF1F2; color:#9F1239; }
+.pay.transfer { background:#EFF6FF; color:#1D4ED8; }
+.pay.allocation { background:#F5F3FF; color:#6D28D9; }
 .ps-tx-row .amt {
   font-family:var(--font-en); font-variant-numeric:tabular-nums;
   font-weight:600; color:var(--ink-900); text-align:end;
@@ -465,7 +468,7 @@ body { background: var(--paper-tint); }
           <div class="ar">المزامنة المباشرة فعّالة</div>
           <div class="en">Live sync active — transactions stream every 30s</div>
           <div class="meta">
-            <span><span class="dot"></span><span id="txCount">١٦٢</span> حركة اليوم · ٥ منافذ متّصلة</span>
+            <span><span class="dot"></span><span id="txCount">١٦٥</span> حركة اليوم · ٥ منافذ متّصلة</span>
             <span>•</span>
             <span id="lastSync">آخر تحديث قبل ١٢ ثانية</span>
             <span>•</span>
@@ -495,26 +498,26 @@ body { background: var(--paper-tint); }
           <div class="delta up">▲ ٨ عن المعدل</div>
         </div>
         <div class="pos-kpi">
-          <div class="lbl">MADA / VISA</div>
-          <div class="val">١٣٬٢٤٠<span class="cur">ر.س</span></div>
-          <div class="delta up">٥٦٪ من الإجمالي</div>
+          <div class="lbl">مدى · فيزا · ماستركارد</div>
+          <div class="val">١٥٬٨٨٠<span class="cur">ر.س</span></div>
+          <div class="delta up">٦٧٪ من الإجمالي</div>
         </div>
         <div class="pos-kpi">
-          <div class="lbl">CASH</div>
-          <div class="val">٣٬١٦٠<span class="cur">ر.س</span></div>
-          <div class="delta dn">▼ ٣٪ عن أمس</div>
+          <div class="lbl">نقدي · تحويل بنكي</div>
+          <div class="val">٢٬٩٦٠<span class="cur">ر.س</span></div>
+          <div class="delta up">▲ ٢٪ عن أمس</div>
         </div>
         <div class="pos-kpi">
-          <div class="lbl">ON ROOM</div>
-          <div class="val">٧٬٤٤٠<span class="cur">ر.س</span></div>
-          <div class="delta up">▲ ٢٠٪ على الفاتورة</div>
+          <div class="lbl">ابل باي · تخصيص</div>
+          <div class="val">٥٬٠٠٠<span class="cur">ر.س</span></div>
+          <div class="delta up">▲ ٥٪ عن أمس</div>
         </div>
       </div>
 
       <!-- Tabs -->
       <div class="pos-tabs" data-m-rise>
         <button class="pos-tab active" onclick="showTab('terminals',this)">🖥️ المنافذ <span class="badge">٦</span></button>
-        <button class="pos-tab" onclick="showTab('transactions',this)">💳 الحركات <span class="badge" id="txBadge">١٢</span></button>
+        <button class="pos-tab" onclick="showTab('transactions',this)">💳 الحركات <span class="badge" id="txBadge">١٥</span></button>
         <button class="pos-tab" onclick="showTab('reports',this)">📈 التقارير</button>
         <button class="pos-tab" onclick="showTab('budget',this)">📅 الموازنة</button>
         <button class="pos-tab" onclick="showTab('settings',this)">🔗 الإعدادات</button>
@@ -580,10 +583,13 @@ body { background: var(--paper-tint); }
           </select>
           <select id="filterMethod" onchange="renderTx()">
             <option value="">جميع طرق الدفع</option>
-            <option>مدى</option>
-            <option>فيزا</option>
-            <option>Apple Pay</option>
             <option>نقدي</option>
+            <option>مدى</option>
+            <option>Apple Pay</option>
+            <option>فيزا</option>
+            <option>ماستركارد</option>
+            <option>تحويل بنكي</option>
+            <option>تخصيص</option>
             <option>على الغرفة</option>
           </select>
           <select id="filterStatus" onchange="renderTx()">
@@ -831,6 +837,9 @@ window.addEventListener('storage', function(ev) {
 });
 
 var TX = [
+  {id:'TX-0251', outlet:'الاستقبال',   icon:'🛎️', desc:'حجز جماعي — شركة النخيل',     customer:'شركة النخيل للاستثمار',  room:'—',    method:'تحويل بنكي', methodKey:'transfer',   amt:8400, vat:1260, status:'مكتملة', time:'07:45'},
+  {id:'TX-0250', outlet:'مطعم الواحة', icon:'🍽', desc:'إفطار إداري × ٦ أشخاص',       customer:'قسم الموارد البشرية',     room:'داخلي',method:'تخصيص',     methodKey:'allocation', amt:960,  vat:144,  status:'مكتملة', time:'07:30'},
+  {id:'TX-0249', outlet:'الاستقبال',   icon:'🛎️', desc:'تسجيل وصول — ماستركارد',      customer:'يوسف الحربي',             room:'٣١٢',  method:'ماستركارد', methodKey:'mastercard', amt:2800, vat:420,  status:'مكتملة', time:'16:10'},
   {id:'TX-0248', outlet:'مطعم الواحة', icon:'🍽', desc:'٤ ضيوف · غداء', customer:'أحمد الفهد', room:'٤٠٢', method:'مدى', methodKey:'mada', amt:1240, vat:186, status:'مكتملة', time:'14:32'},
   {id:'TX-0247', outlet:'مقهى الردهة', icon:'☕', desc:'قهوة + كرواسون', customer:'زائر', room:'—', method:'Apple Pay', methodKey:'apple', amt:48, vat:7.2, status:'مكتملة', time:'14:28'},
   {id:'TX-0246', outlet:'بار الشاطئ', icon:'🌊', desc:'مشروبات × ٣', customer:'كابانا ١٢', room:'٣٠٧', method:'على الغرفة', methodKey:'room', amt:180, vat:27, status:'مكتملة', time:'14:24'},
@@ -895,7 +904,7 @@ window.renderTx = function() {
     html += '<div style="padding:28px;text-align:center;color:var(--fg-3);font-size:13px">لا توجد حركات مطابقة للبحث</div>';
   }
   filtered.forEach(function(t) {
-    var pmCls = {'mada':'mada','visa':'visa','apple':'apple','cash':'cash','room':'room'}[t.methodKey] || '';
+    var pmCls = {'mada':'mada','visa':'visa','apple':'apple','cash':'cash','room':'room','mastercard':'mastercard','transfer':'transfer','allocation':'allocation'}[t.methodKey] || '';
     var stCls = t.status === 'مكتملة' ? 'ok' : t.status === 'معلّقة' ? 'pending' : 'fail';
     html += '<div class="ps-tx-row">'
       + '<span class="id">' + t.id + '</span>'
@@ -960,21 +969,21 @@ window.exportExcel = function() {
 var PERIOD_DATA = {
   today: {
     totals: {rev:23840, txns:162, mada:13240, cash:3160, room:7440},
-    methods: [{name:'مدى / فيزا', val:13240, pct:56, color:'#4A9476'},{name:'Apple Pay',val:6420,pct:27,color:'#374151'},{name:'على الغرفة',val:7440,pct:31,color:'#C9A85F'},{name:'نقدي',val:3160,pct:13,color:'#92400E'}],
+    methods: [{name:'مدى',val:7920,pct:100,color:'#2F6E54'},{name:'فيزا',val:5160,pct:65,color:'#3352CC'},{name:'ابل باي',val:4680,pct:59,color:'#374151'},{name:'ماستركارد',val:2800,pct:35,color:'#9F1239'},{name:'نقدي',val:2480,pct:31,color:'#92400E'},{name:'تحويل بنكي',val:480,pct:6,color:'#1D4ED8'},{name:'تخصيص',val:320,pct:4,color:'#6D28D9'}],
     outlets: [
       {name:'🛎️ الاستقبال',txns:18,amt:8640},{name:'🍽 المطعم',txns:70,amt:8100},{name:'☕ الكافي',txns:38,amt:1240},{name:'🧖 السبا',txns:14,amt:2200},{name:'🌊 بار الشاطئ',txns:22,amt:1840}
     ]
   },
   week: {
     totals: {rev:156800, txns:1080, mada:86240, cash:22140, room:48420},
-    methods: [{name:'مدى / فيزا',val:86240,pct:55,color:'#4A9476'},{name:'Apple Pay',val:43500,pct:28,color:'#374151'},{name:'على الغرفة',val:48420,pct:31,color:'#C9A85F'},{name:'نقدي',val:22140,pct:14,color:'#92400E'}],
+    methods: [{name:'مدى',val:51800,pct:100,color:'#2F6E54'},{name:'فيزا',val:34500,pct:67,color:'#3352CC'},{name:'ابل باي',val:31400,pct:61,color:'#374151'},{name:'ماستركارد',val:18860,pct:36,color:'#9F1239'},{name:'نقدي',val:15680,pct:30,color:'#92400E'},{name:'تحويل بنكي',val:3140,pct:6,color:'#1D4ED8'},{name:'تخصيص',val:1420,pct:3,color:'#6D28D9'}],
     outlets: [
       {name:'🛎️ الاستقبال',txns:120,amt:62800},{name:'🍽 المطعم',txns:480,amt:54100},{name:'☕ الكافي',txns:260,amt:18400},{name:'🧖 السبا',txns:98,amt:16200},{name:'🌊 بار الشاطئ',txns:122,amt:13100}
     ]
   },
   month: {
     totals: {rev:612400, txns:4210, mada:338000, cash:86400, room:188000},
-    methods: [{name:'مدى / فيزا',val:338000,pct:55,color:'#4A9476'},{name:'Apple Pay',val:168600,pct:28,color:'#374151'},{name:'على الغرفة',val:188000,pct:31,color:'#C9A85F'},{name:'نقدي',val:86400,pct:14,color:'#92400E'}],
+    methods: [{name:'مدى',val:202100,pct:100,color:'#2F6E54'},{name:'فيزا',val:134700,pct:67,color:'#3352CC'},{name:'ابل باي',val:122500,pct:61,color:'#374151'},{name:'ماستركارد',val:73500,pct:36,color:'#9F1239'},{name:'نقدي',val:61200,pct:30,color:'#92400E'},{name:'تحويل بنكي',val:12260,pct:6,color:'#1D4ED8'},{name:'تخصيص',val:6140,pct:3,color:'#6D28D9'}],
     outlets: [
       {name:'🛎️ الاستقبال',txns:480,amt:248000},{name:'🍽 المطعم',txns:1900,amt:210000},{name:'☕ الكافي',txns:1020,amt:72000},{name:'🧖 السبا',txns:380,amt:62000},{name:'🌊 بار الشاطئ',txns:430,amt:51000}
     ]
@@ -1035,7 +1044,7 @@ window.renderReport = function() {
   document.getElementById('detailReport').innerHTML = '<div class="ps-tx" id="detailTxTable"></div>';
   var html = '<div class="ps-tx-row is-head"><span>#</span><span>المنفذ</span><span>العميل / الوصف</span><span>طريقة الدفع</span><span style="text-align:end">المبلغ</span><span>VAT</span><span>الحالة</span></div>';
   TX.forEach(function(t){
-    var pmCls = {'mada':'mada','visa':'visa','apple':'apple','cash':'cash','room':'room'}[t.methodKey] || '';
+    var pmCls = {'mada':'mada','visa':'visa','apple':'apple','cash':'cash','room':'room','mastercard':'mastercard','transfer':'transfer','allocation':'allocation'}[t.methodKey] || '';
     var stCls = t.status === 'مكتملة' ? 'ok' : t.status === 'معلّقة' ? 'pending' : 'fail';
     html += '<div class="ps-tx-row">'
       + '<span class="id">' + t.id + '</span>'
@@ -1100,19 +1109,19 @@ window.generateReport = function() {
 var MONTHLY_RPT = {
   'live': null,
   '2026-05': {label:'مايو ٢٠٢٦', totals:{rev:612400,txns:4210,mada:338000,cash:86400,room:188000},
-    methods:[{name:'مدى / فيزا',val:338000,pct:55},{name:'Apple Pay',val:168600,pct:28},{name:'على الغرفة',val:188000,pct:31},{name:'نقدي',val:86400,pct:14}],
+    methods:[{name:'مدى',val:202100,pct:100,color:'#2F6E54'},{name:'فيزا',val:134700,pct:67,color:'#3352CC'},{name:'ابل باي',val:122500,pct:61,color:'#374151'},{name:'ماستركارد',val:73500,pct:36,color:'#9F1239'},{name:'نقدي',val:61200,pct:30,color:'#92400E'},{name:'تحويل بنكي',val:12260,pct:6,color:'#1D4ED8'},{name:'تخصيص',val:6140,pct:3,color:'#6D28D9'}],
     outlets:[{name:'الاستقبال',txns:480,amt:248000},{name:'المطعم',txns:1900,amt:210000},{name:'الكافي',txns:1020,amt:72000},{name:'السبا',txns:380,amt:62000},{name:'بار الشاطئ',txns:430,amt:51000}]},
   '2026-04': {label:'أبريل ٢٠٢٦', totals:{rev:638200,txns:4380,mada:351000,cash:89600,room:197600},
-    methods:[{name:'مدى / فيزا',val:351000,pct:55},{name:'Apple Pay',val:178500,pct:28},{name:'على الغرفة',val:197600,pct:31},{name:'نقدي',val:89600,pct:14}],
+    methods:[{name:'مدى',val:210600,pct:100,color:'#2F6E54'},{name:'فيزا',val:140400,pct:67,color:'#3352CC'},{name:'ابل باي',val:127600,pct:61,color:'#374151'},{name:'ماستركارد',val:44700,pct:21,color:'#9F1239'},{name:'نقدي',val:63800,pct:30,color:'#92400E'},{name:'تحويل بنكي',val:25600,pct:12,color:'#1D4ED8'},{name:'تخصيص',val:25500,pct:12,color:'#6D28D9'}],
     outlets:[{name:'الاستقبال',txns:500,amt:258000},{name:'المطعم',txns:1980,amt:220000},{name:'الكافي',txns:1060,amt:75000},{name:'السبا',txns:400,amt:64000},{name:'بار الشاطئ',txns:440,amt:52000}]},
   '2026-03': {label:'مارس ٢٠٢٦', totals:{rev:595000,txns:4050,mada:327000,cash:83300,room:184700},
-    methods:[{name:'مدى / فيزا',val:327000,pct:55},{name:'Apple Pay',val:165000,pct:28},{name:'على الغرفة',val:184700,pct:31},{name:'نقدي',val:83300,pct:14}],
+    methods:[{name:'مدى',val:196400,pct:100,color:'#2F6E54'},{name:'فيزا',val:130900,pct:67,color:'#3352CC'},{name:'ابل باي',val:119000,pct:61,color:'#374151'},{name:'ماستركارد',val:41600,pct:21,color:'#9F1239'},{name:'نقدي',val:59500,pct:30,color:'#92400E'},{name:'تحويل بنكي',val:23800,pct:12,color:'#1D4ED8'},{name:'تخصيص',val:23800,pct:12,color:'#6D28D9'}],
     outlets:[{name:'الاستقبال',txns:460,amt:238000},{name:'المطعم',txns:1850,amt:205000},{name:'الكافي',txns:990,amt:70000},{name:'السبا',txns:360,amt:60000},{name:'بار الشاطئ',txns:390,amt:47000}]},
   '2026-02': {label:'فبراير ٢٠٢٦', totals:{rev:504000,txns:3420,mada:277000,cash:70500,room:156500},
-    methods:[{name:'مدى / فيزا',val:277000,pct:55},{name:'Apple Pay',val:140000,pct:28},{name:'على الغرفة',val:156500,pct:31},{name:'نقدي',val:70500,pct:14}],
+    methods:[{name:'مدى',val:166300,pct:100,color:'#2F6E54'},{name:'فيزا',val:110900,pct:67,color:'#3352CC'},{name:'ابل باي',val:100800,pct:61,color:'#374151'},{name:'ماستركارد',val:35300,pct:21,color:'#9F1239'},{name:'نقدي',val:50400,pct:30,color:'#92400E'},{name:'تحويل بنكي',val:20200,pct:12,color:'#1D4ED8'},{name:'تخصيص',val:20100,pct:12,color:'#6D28D9'}],
     outlets:[{name:'الاستقبال',txns:390,amt:200000},{name:'المطعم',txns:1560,amt:173000},{name:'الكافي',txns:840,amt:59000},{name:'السبا',txns:310,amt:51000},{name:'بار الشاطئ',txns:320,amt:40000}]},
   '2026-01': {label:'يناير ٢٠٢٦', totals:{rev:476000,txns:3230,mada:261800,cash:66600,room:147600},
-    methods:[{name:'مدى / فيزا',val:261800,pct:55},{name:'Apple Pay',val:132000,pct:28},{name:'على الغرفة',val:147600,pct:31},{name:'نقدي',val:66600,pct:14}],
+    methods:[{name:'مدى',val:157100,pct:100,color:'#2F6E54'},{name:'فيزا',val:104700,pct:67,color:'#3352CC'},{name:'ابل باي',val:95200,pct:61,color:'#374151'},{name:'ماستركارد',val:33300,pct:21,color:'#9F1239'},{name:'نقدي',val:47600,pct:30,color:'#92400E'},{name:'تحويل بنكي',val:19000,pct:12,color:'#1D4ED8'},{name:'تخصيص',val:19100,pct:12,color:'#6D28D9'}],
     outlets:[{name:'الاستقبال',txns:370,amt:190000},{name:'المطعم',txns:1470,amt:164000},{name:'الكافي',txns:790,amt:55000},{name:'السبا',txns:290,amt:48000},{name:'بار الشاطئ',txns:310,amt:38000}]},
 };
 
@@ -1129,8 +1138,8 @@ window.onRptMonthChange = function() {
     {label:'متوسط الحركة', val: Math.round(m.totals.rev/m.totals.txns).toLocaleString('ar-SA')+' <span style="font-size:10px;font-family:var(--font-ar);color:var(--fg-3);font-weight:400">ر.س</span>'},
   ].map(function(s){ return '<div class="rstat"><div class="rv">'+s.val+'</div><div class="rl">'+s.label+'</div></div>'; }).join('');
   document.getElementById('methodBars').innerHTML = m.methods.map(function(mt){
-    var colors = ['#4A9476','#374151','#C9A85F','#92400E'];
-    var c = colors[m.methods.indexOf(mt)] || '#4A9476';
+    var colors = ['#2F6E54','#3352CC','#374151','#9F1239','#92400E','#1D4ED8','#6D28D9'];
+    var c = mt.color || colors[m.methods.indexOf(mt)] || '#4A9476';
     return '<div class="method-bar"><span class="label">'+mt.name+'</span>'
       +'<div class="track"><div class="fill" style="width:'+mt.pct+'%;background:'+c+'"></div></div>'
       +'<span class="val">'+mt.val.toLocaleString('ar-SA')+' <small style="font-size:9px;color:var(--fg-3)">ر.س</small></span></div>';

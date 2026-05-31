@@ -456,6 +456,18 @@
         <div class="form-field"><label>هل يشمل VAT ١٥٪؟</label>
           <select id="f-vat"><option value="no">لا يشمل</option><option value="yes">يشمل ١٥٪</option></select>
         </div>
+        <div class="form-field"><label>طريقة الدفع</label>
+          <select id="f-method">
+            <option value="">— غير محدد —</option>
+            <option value="نقد">💵 نقد</option>
+            <option value="مدى">💳 مدى</option>
+            <option value="ابل باي">📱 ابل باي</option>
+            <option value="فيزا">💳 فيزا</option>
+            <option value="ماستركارد">💳 ماستركارد</option>
+            <option value="تحويل بنكي">🏦 تحويل بنكي</option>
+            <option value="تخصيص">📋 تخصيص</option>
+          </select>
+        </div>
         <div class="form-field"><label>الوقت</label><input id="f-time" type="time" dir="ltr"/></div>
         <div class="form-field form-full"><label>ملاحظة</label><input id="f-note" placeholder="تفاصيل إضافية..."/></div>
       </div>
@@ -515,9 +527,13 @@ var MOD_ENTRIES = {
     {id:5002, type:'dr', desc:'مواد تنظيف — كيمياء وأدوات',       acct:'مصاريف صيانة',  src:'المستودع',amt:320,  vat:false, time:'10:00', note:'',                       link:'WH-1021'},
   ],
   '07': [
-    {id:7001, type:'cr', desc:'عشاء مطعم الواحة — ٨ ضيوف',       acct:'إيراد F&B',     src:'POS',     amt:1240, vat:true,  time:'14:18', note:'MADA',                   link:'POS-8841'},
-    {id:7002, type:'cr', desc:'جلسة سبا — حمام مغربي',            acct:'إيراد السبا',   src:'POS',     amt:420,  vat:true,  time:'13:30', note:'غرفة ٢١٨',               link:'POS-8839'},
-    {id:7003, type:'cr', desc:'كافيه الردهة — مشروبات',            acct:'إيراد F&B',     src:'POS',     amt:310,  vat:true,  time:'11:45', note:'',                       link:'POS-8835'},
+    {id:7001, type:'cr', desc:'عشاء مطعم الواحة — ٨ ضيوف',       acct:'إيراد F&B',     src:'POS',     amt:1240, vat:true,  time:'14:18', note:'💳 مدى',                 link:'POS-8841'},
+    {id:7002, type:'cr', desc:'جلسة سبا — حمام مغربي',            acct:'إيراد السبا',   src:'POS',     amt:420,  vat:true,  time:'13:30', note:'🏠 على الغرفة ٢١٨',      link:'POS-8839'},
+    {id:7003, type:'cr', desc:'كافيه الردهة — مشروبات',            acct:'إيراد F&B',     src:'POS',     amt:310,  vat:true,  time:'11:45', note:'📱 ابل باي',             link:'POS-8835'},
+    {id:7004, type:'cr', desc:'تسجيل وصول — استقبال الفندق',       acct:'إيراد الغرف',   src:'POS',     amt:3200, vat:false, time:'10:20', note:'💳 فيزا',                link:'POS-8828'},
+    {id:7005, type:'cr', desc:'حجز جماعي — شركة النخيل',           acct:'إيراد الغرف',   src:'POS',     amt:8400, vat:false, time:'08:00', note:'🏦 تحويل بنكي',          link:'POS-8820'},
+    {id:7006, type:'cr', desc:'إفطار إداري — تخصيص داخلي',        acct:'إيراد F&B',     src:'POS',     amt:960,  vat:true,  time:'07:30', note:'📋 تخصيص قسم',           link:'POS-8815'},
+    {id:7007, type:'cr', desc:'متجر الهدايا — مستلزمات سياحية',    acct:'إيراد متنوع',   src:'POS',     amt:580,  vat:true,  time:'15:10', note:'💳 ماستركارد',           link:'POS-8810'},
   ],
   '08': [
     {id:8001, type:'dr', desc:'اشتراك منصة المفاتيح الذكية',      acct:'مصاريف إدارية', src:'المفتاح', amt:450,  vat:false, time:'00:01', note:'رسوم شهرية',             link:'SK-0060'},
@@ -778,8 +794,9 @@ window.showAddEntry = function(){
   entryType = 'cr';
   document.getElementById('modal-ttl').textContent = '+ إدخال يدوي جديد';
   ['f-desc','f-amt','f-note'].forEach(function(id){ var e=document.getElementById(id); if(e) e.value=''; });
-  document.getElementById('f-acct').value = 'إيراد الغرف';
-  document.getElementById('f-vat').value  = 'no';
+  document.getElementById('f-acct').value   = 'إيراد الغرف';
+  document.getElementById('f-vat').value    = 'no';
+  document.getElementById('f-method').value = '';
   var now = new Date();
   document.getElementById('f-time').value = ('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2);
   setType('cr');
@@ -790,12 +807,13 @@ window.editEntry = function(id){
   if(!e) return;
   editingId = id; entryType = e.type;
   document.getElementById('modal-ttl').textContent = '✏ تعديل قيد #JE-'+String(id).padStart(4,'0');
-  document.getElementById('f-desc').value = e.desc;
-  document.getElementById('f-acct').value = e.acct;
-  document.getElementById('f-amt').value  = e.amt;
-  document.getElementById('f-vat').value  = e.vat?'yes':'no';
-  document.getElementById('f-time').value = e.time;
-  document.getElementById('f-note').value = e.note||'';
+  document.getElementById('f-desc').value   = e.desc;
+  document.getElementById('f-acct').value   = e.acct;
+  document.getElementById('f-amt').value    = e.amt;
+  document.getElementById('f-vat').value    = e.vat?'yes':'no';
+  document.getElementById('f-time').value   = e.time;
+  document.getElementById('f-method').value = '';
+  document.getElementById('f-note').value   = e.note||'';
   setType(e.type);
   document.getElementById('entry-modal').style.display = 'flex';
 };
@@ -803,10 +821,13 @@ window.saveEntry = function(){
   var get = function(id){ return (document.getElementById(id)||{value:''}).value.trim(); };
   var desc = get('f-desc'); if(!desc){ toast('أدخل وصف الحركة',true); return; }
   var amt  = parseFloat(get('f-amt'))||0; if(amt<=0){ toast('أدخل مبلغاً صحيحاً',true); return; }
+  var method = get('f-method');
+  var noteVal = get('f-note');
   var data = {
     type:entryType, desc:desc, acct:get('f-acct')||'إيراد الغرف',
     src:'يدوي', amt:amt, vat:get('f-vat')==='yes',
-    time:get('f-time')||'--:--', note:get('f-note'),
+    time:get('f-time')||'--:--',
+    note: method ? (method + (noteVal ? ' · ' + noteVal : '')) : noteVal,
   };
   if(editingId){
     var idx = MANUAL.findIndex(function(x){ return x.id===editingId; });
