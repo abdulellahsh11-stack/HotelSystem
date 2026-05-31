@@ -1123,6 +1123,60 @@ async def bookings_page(request: Request):
 
 
 # ──────────────────────────────────────────────────────────────
+#  Module shortcut routes — dheuof.com/hr, /accounting, etc.
+# ──────────────────────────────────────────────────────────────
+def _serve_module(path: str) -> HTMLResponse:
+    full = os.path.join("static", "nuzul", "modules", path, "index.html")
+    if os.path.exists(full):
+        with open(full, encoding="utf-8") as f:
+            return HTMLResponse(f.read())
+    return RedirectResponse("/")
+
+@app.get("/dheuof",   response_class=HTMLResponse)
+@app.get("/guests-module", response_class=HTMLResponse)
+async def mod_guests():    return _serve_module("01-guests")
+
+@app.get("/shumus",   response_class=HTMLResponse)
+async def mod_shumus():    return _serve_module("02-shumus")
+
+@app.get("/tourism",  response_class=HTMLResponse)
+async def mod_tourism():   return _serve_module("03-tourism")
+
+@app.get("/inventory",response_class=HTMLResponse)
+async def mod_inv():       return _serve_module("04-inventory")
+
+@app.get("/warehouse",response_class=HTMLResponse)
+async def mod_wh():        return _serve_module("05-warehouse")
+
+@app.get("/account",  response_class=HTMLResponse)
+@app.get("/accounting",response_class=HTMLResponse)
+async def mod_acc():       return _serve_module("06-accounting")
+
+@app.get("/pos",      response_class=HTMLResponse)
+async def mod_pos():       return _serve_module("07-pos")
+
+@app.get("/key",      response_class=HTMLResponse)
+@app.get("/smart-key",response_class=HTMLResponse)
+async def mod_key():       return _serve_module("08-smart-key")
+
+@app.get("/hr",       response_class=HTMLResponse)
+async def mod_hr():        return _serve_module("09-hr")
+
+@app.get("/channels", response_class=HTMLResponse)
+@app.get("/marketing-channels", response_class=HTMLResponse)
+async def mod_ch():        return _serve_module("10-channel-marketing")
+
+@app.get("/analytics",response_class=HTMLResponse)
+async def mod_an():        return _serve_module("12-analytics")
+
+@app.get("/staff",    response_class=HTMLResponse)
+async def mod_st():        return _serve_module("13-staff-tracker")
+
+@app.get("/goals",    response_class=HTMLResponse)
+async def mod_go():        return _serve_module("14-manager-goals")
+
+
+# ──────────────────────────────────────────────────────────────
 #  Health & Status
 # ──────────────────────────────────────────────────────────────
 @app.get("/api/health")

@@ -295,9 +295,27 @@
   </nav>
   <div class="actions">
     <a class="lang">EN</a>
-    <a class="cta">احجز عرضاً تجريبياً</a>
+    <a class="cta" style="cursor:pointer" onclick="openCustomize()">⚙ تخصيص اللوحة</a>
+    <a class="cta" style="margin-inline-start:8px">احجز عرضاً تجريبياً</a>
   </div>
 </header>
+
+<!-- ═══ Customize Drawer ═══════════════════════════════════════ -->
+<div id="cust-overlay" onclick="closeCustomize()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200"></div>
+<div id="cust-drawer" style="display:none;position:fixed;top:0;inset-inline-end:0;width:380px;height:100vh;background:var(--white);border-inline-start:1px solid var(--hairline);z-index:201;overflow-y:auto;padding:28px 24px;box-shadow:-8px 0 32px rgba(0,0,0,.12)">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px">
+    <div>
+      <div style="font-family:var(--font-ar-display);font-size:20px;font-weight:600;color:var(--ink-900)">⚙ تخصيص اللوحة</div>
+      <div style="font-size:12px;color:var(--fg-3);margin-top:3px">أظهر أو أخفِ البرامج · يُحفظ تلقائياً</div>
+    </div>
+    <button onclick="closeCustomize()" style="background:var(--surface-2);border:none;border-radius:8px;padding:8px 12px;font-size:14px;cursor:pointer;color:var(--ink-700)">✕ إغلاق</button>
+  </div>
+  <div style="margin-bottom:16px;display:flex;gap:8px">
+    <button onclick="showAll()" style="flex:1;padding:8px;border-radius:8px;background:var(--brand-50);color:var(--brand-700);border:1px solid var(--brand-200);font-size:12px;font-weight:600;cursor:pointer">إظهار الكل</button>
+    <button onclick="resetCustomize()" style="flex:1;padding:8px;border-radius:8px;background:var(--surface-2);color:var(--fg-2);border:1px solid var(--hairline);font-size:12px;cursor:pointer">إعادة الضبط</button>
+  </div>
+  <div id="cust-list"></div>
+</div>
 
 <section class="hero">
   <span class="eyebrow" data-m-rise>منصة إدارة الضيافة الكاملة</span>
@@ -321,7 +339,7 @@
 <div class="grid-wrap">
   <div class="grid" data-m-rise-stagger>
 
-    <a class="tile featured" href="/static/nuzul/modules/01-guests/checkin.html">
+    <a class="tile featured" href="/static/nuzul/modules/01-guests/checkin.html" data-module-id="01-guests">
       <span class="num">01</span>
       <div class="ic">🛏</div>
       <div class="ar-name">الضيوف</div>
@@ -333,7 +351,7 @@
       </div>
     </a>
 
-    <a class="tile" href="/static/nuzul/modules/02-shumus/index.html">
+    <a class="tile" href="/static/nuzul/modules/02-shumus/index.html" data-module-id="02-shumus">
       <span class="num">02</span>
       <div class="ic">🛡</div>
       <div class="ar-name">شموس</div>
@@ -345,7 +363,7 @@
       </div>
     </a>
 
-    <a class="tile" href="/static/nuzul/modules/03-tourism/index.html">
+    <a class="tile" href="/static/nuzul/modules/03-tourism/index.html" data-module-id="03-tourism">
       <span class="num">03</span>
       <div class="ic">📋</div>
       <div class="ar-name">المستندات والاشتراكات</div>
@@ -357,7 +375,7 @@
       </div>
     </a>
 
-    <a class="tile" href="/static/nuzul/modules/04-inventory/index.html">
+    <a class="tile" href="/static/nuzul/modules/04-inventory/index.html" data-module-id="04-inventory">
       <span class="num">04</span>
       <div class="ic">🛏</div>
       <div class="ar-name">المخزون والضيافة</div>
@@ -369,7 +387,7 @@
       </div>
     </a>
 
-    <a class="tile" href="/static/nuzul/modules/05-warehouse/index.html">
+    <a class="tile" href="/static/nuzul/modules/05-warehouse/index.html" data-module-id="05-warehouse">
       <span class="num">05</span>
       <div class="ic">🔧</div>
       <div class="ar-name">مستودع الصيانة</div>
@@ -381,7 +399,7 @@
       </div>
     </a>
 
-    <a class="tile" href="/static/nuzul/modules/06-accounting/index.html">
+    <a class="tile" href="/static/nuzul/modules/06-accounting/index.html" data-module-id="06-accounting">
       <span class="num">06</span>
       <div class="ic">💳</div>
       <div class="ar-name">المحاسبة</div>
@@ -393,7 +411,7 @@
       </div>
     </a>
 
-    <a class="tile" href="/static/nuzul/modules/07-pos/index.html">
+    <a class="tile" href="/static/nuzul/modules/07-pos/index.html" data-module-id="07-pos">
       <span class="num">07</span>
       <div class="ic">🏧</div>
       <div class="ar-name">نقاط البيع</div>
@@ -405,7 +423,7 @@
       </div>
     </a>
 
-    <a class="tile" href="/static/nuzul/modules/08-smart-key/index.html">
+    <a class="tile" href="/static/nuzul/modules/08-smart-key/index.html" data-module-id="08-smart-key">
       <span class="num">08</span>
       <div class="ic">🔐</div>
       <div class="ar-name">المفتاح الذكي</div>
@@ -417,7 +435,7 @@
       </div>
     </a>
 
-    <a class="tile" href="/static/nuzul/modules/09-hr/index.html">
+    <a class="tile" href="/static/nuzul/modules/09-hr/index.html" data-module-id="09-hr">
       <span class="num">09</span>
       <div class="ic">👥</div>
       <div class="ar-name">الموارد البشرية</div>
@@ -429,7 +447,7 @@
       </div>
     </a>
 
-    <a class="tile" href="/static/nuzul/modules/10-channel-marketing/index.html">
+    <a class="tile" href="/static/nuzul/modules/10-channel-marketing/index.html" data-module-id="10-channel-marketing">
       <span class="num">10</span>
       <div class="ic">🌐</div>
       <div class="ar-name">تسويق القنوات</div>
@@ -441,7 +459,7 @@
       </div>
     </a>
 
-    <a class="tile" href="/static/nuzul/modules/11-kpis/index.html">
+    <a class="tile" href="/static/nuzul/modules/11-kpis/index.html" data-module-id="11-kpis">
       <span class="num">11</span>
       <div class="ic">📈</div>
       <div class="ar-name">مؤشرات الأداء</div>
@@ -453,7 +471,7 @@
       </div>
     </a>
 
-    <a class="tile" href="/static/nuzul/modules/12-analytics/index.html">
+    <a class="tile" href="/static/nuzul/modules/12-analytics/index.html" data-module-id="12-analytics">
       <span class="num">12</span>
       <div class="ic">🧠</div>
       <div class="ar-name">تحليل البيانات</div>
@@ -465,7 +483,7 @@
       </div>
     </a>
 
-    <a class="tile" href="/static/nuzul/modules/13-staff-tracker/index.html">
+    <a class="tile" href="/static/nuzul/modules/13-staff-tracker/index.html" data-module-id="13-staff-tracker">
       <span class="num">13</span>
       <div class="ic">⏰</div>
       <div class="ar-name">أداء الموظفين</div>
@@ -477,7 +495,7 @@
       </div>
     </a>
 
-    <a class="tile" href="/static/nuzul/modules/14-manager-goals/index.html">
+    <a class="tile" href="/static/nuzul/modules/14-manager-goals/index.html" data-module-id="14-manager-goals">
       <span class="num">14</span>
       <div class="ic">🎯</div>
       <div class="ar-name">أهداف المدير</div>
@@ -489,7 +507,7 @@
       </div>
     </a>
 
-    <a class="tile" href="/static/nuzul/modules/15-tourism-trips/index.html">
+    <a class="tile" href="/static/nuzul/modules/15-tourism-trips/index.html" data-module-id="15-tourism-trips">
       <span class="num">15</span>
       <div class="ic">🗺</div>
       <div class="ar-name">رسلات سياحية</div>
@@ -501,7 +519,7 @@
       </div>
     </a>
 
-    <a class="tile" href="/static/nuzul/modules/16-staff-app/index.html">
+    <a class="tile" href="/static/nuzul/modules/16-staff-app/index.html" data-module-id="16-staff-app">
       <span class="num">16</span>
       <div class="ic">📱</div>
       <div class="ar-name">تطبيق الموظفين</div>
@@ -592,6 +610,116 @@ setTimeout(function(){
     el.classList.add('is-in');
   });
 }, 80);
+</script>
+<script>
+(function(){
+  var STORAGE_KEY = 'dheuof_visible_modules';
+  var MODULES = [
+    {id:'01-guests',           ar:'الضيوف',                 en:'Guest Management'},
+    {id:'02-shumus',           ar:'شموس',                   en:'Identity · MOI'},
+    {id:'03-tourism',          ar:'المستندات والاشتراكات',   en:'Government Docs'},
+    {id:'04-inventory',        ar:'المخزون والضيافة',        en:'Hospitality Inventory'},
+    {id:'05-warehouse',        ar:'مستودع الصيانة',          en:'Maintenance Warehouse'},
+    {id:'06-accounting',       ar:'المحاسبة',               en:'Accounting'},
+    {id:'07-pos',              ar:'نقاط البيع',              en:'POS Sync'},
+    {id:'08-smart-key',        ar:'المفتاح الذكي',          en:'Smart Key'},
+    {id:'09-hr',               ar:'الموارد البشرية',         en:'HR & Payroll'},
+    {id:'10-channel-marketing',ar:'تسويق القنوات',           en:'Channel Marketing'},
+    {id:'11-kpis',             ar:'مؤشرات الأداء',          en:'KPIs'},
+    {id:'12-analytics',        ar:'تحليل البيانات',          en:'Analytics'},
+    {id:'13-staff-tracker',    ar:'أداء الموظفين',           en:'Staff Performance'},
+    {id:'14-manager-goals',    ar:'أهداف المدير',            en:'Manager Goals'},
+    {id:'15-tourism-trips',    ar:'رحلات سياحية',            en:'Tourism Trips'},
+    {id:'16-staff-app',        ar:'تطبيق الموظفين',          en:'Staff App'}
+  ];
+
+  function getAllIds() { return MODULES.map(function(m){ return m.id; }); }
+
+  function getVisible() {
+    try {
+      var stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) return JSON.parse(stored);
+    } catch(e){}
+    return getAllIds();
+  }
+
+  function saveVisible(ids) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(ids)); } catch(e){}
+  }
+
+  function applyVisibility(visible) {
+    document.querySelectorAll('.tile[data-module-id]').forEach(function(tile){
+      var id = tile.getAttribute('data-module-id');
+      tile.style.display = visible.indexOf(id) > -1 ? '' : 'none';
+    });
+  }
+
+  function renderList(visible) {
+    var list = document.getElementById('cust-list');
+    if (!list) return;
+    list.innerHTML = MODULES.map(function(m){
+      var on = visible.indexOf(m.id) > -1;
+      var bg = on ? 'var(--brand-700)' : '#e5e7eb';
+      var knobPos = on ? 'inset-inline-end:2px' : 'inset-inline-start:2px';
+      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--hairline)">' +
+        '<div>' +
+          '<div style="font-size:14px;font-weight:600;color:var(--ink-900)">' + m.ar + '</div>' +
+          '<div style="font-size:11px;color:var(--fg-3);font-family:var(--font-en);margin-top:2px">' + m.en + '</div>' +
+        '</div>' +
+        '<label style="position:relative;display:inline-block;width:44px;height:24px;flex-shrink:0;cursor:pointer">' +
+          '<input type="checkbox" data-mid="' + m.id + '" ' + (on ? 'checked' : '') +
+            ' onchange="window._dhCustomToggle(this)"' +
+            ' style="opacity:0;position:absolute;width:0;height:0">' +
+          '<span style="display:block;border-radius:999px;width:44px;height:24px;background:' + bg +
+            ';transition:background 200ms;position:relative">' +
+            '<span style="position:absolute;width:18px;height:18px;background:#fff;border-radius:999px;top:3px;' + knobPos +
+              ';transition:all 200ms;box-shadow:0 1px 4px rgba(0,0,0,.25)"></span>' +
+          '</span>' +
+        '</label>' +
+      '</div>';
+    }).join('');
+  }
+
+  window._dhCustomToggle = function(cb) {
+    var mid = cb.getAttribute('data-mid');
+    var visible = getVisible();
+    var idx = visible.indexOf(mid);
+    if (cb.checked && idx === -1) visible.push(mid);
+    else if (!cb.checked && idx > -1) visible.splice(idx, 1);
+    saveVisible(visible);
+    applyVisibility(visible);
+    renderList(visible);
+  };
+
+  window.openCustomize = function() {
+    var visible = getVisible();
+    renderList(visible);
+    document.getElementById('cust-overlay').style.display = 'block';
+    document.getElementById('cust-drawer').style.display = 'block';
+  };
+
+  window.closeCustomize = function() {
+    document.getElementById('cust-overlay').style.display = 'none';
+    document.getElementById('cust-drawer').style.display = 'none';
+  };
+
+  window.showAll = function() {
+    var all = getAllIds();
+    saveVisible(all);
+    applyVisibility(all);
+    renderList(all);
+  };
+
+  window.resetCustomize = function() {
+    try { localStorage.removeItem(STORAGE_KEY); } catch(e){}
+    var all = getAllIds();
+    applyVisibility(all);
+    renderList(all);
+  };
+
+  // Apply saved preferences immediately on load
+  applyVisibility(getVisible());
+})();
 </script>
 </body>
 </html>
