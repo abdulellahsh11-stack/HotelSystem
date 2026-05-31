@@ -142,6 +142,16 @@
 .type-toggle button{flex:1;padding:9px;border:none;background:transparent;font-family:var(--font-ar);font-size:13px;cursor:pointer;transition:background .12s}
 .type-toggle button.on{background:var(--brand-700);color:var(--paper);font-weight:600}
 
+/* ── 4-tier color tiers ──────────────────────────────────────── */
+.tier-critical{color:#C0392B!important;font-weight:700}
+.tier-low{color:#D97706!important;font-weight:600}
+.tier-good{color:#22C55E!important;font-weight:600}
+.tier-excellent{color:#1B7A56!important;font-weight:700}
+/* ── Rev/Exp progress bar ────────────────────────────────────── */
+.rev-exp-bar{display:flex;height:8px;border-radius:999px;overflow:hidden;margin-bottom:6px}
+.rev-exp-bar .rb{background:#1B7A56;transition:width .5s}
+.rev-exp-bar .eb{background:#C0392B;flex:1}
+.rev-exp-row{display:flex;justify-content:space-between;font-size:10px;color:var(--fg-3);margin-bottom:14px}
 /* ── Toast ───────────────────────────────────────────────────── */
 .nz-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--brand-800);color:var(--paper);padding:12px 24px;border-radius:10px;font-family:var(--font-ar);font-size:13px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.28);z-index:9999;white-space:nowrap;display:flex;align-items:center;gap:10px;direction:rtl}
 
@@ -171,6 +181,7 @@
         </div>
         <div class="actions">
           <button class="btn-sec" onclick="exportCSV()">⬇ تصدير Excel</button>
+          <button class="btn-sec" onclick="exportPDF()" style="background:var(--brand-700);color:var(--white);border-color:var(--brand-700)">🖨 تصدير PDF</button>
           <button class="btn-green" onclick="showAddEntry()">+ إدخال يدوي</button>
         </div>
       </div>
@@ -349,10 +360,25 @@
         <div style="display:flex;flex-direction:column;gap:16px">
           <div class="pl-card">
             <div class="pl-head">
-              <div class="ttl">الأرباح والخسائر</div>
-              <div class="sub">P&amp;L — live from journal entries</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+                <div>
+                  <div class="ttl">الأرباح والخسائر</div>
+                  <div class="sub">P&amp;L — live from journal entries</div>
+                </div>
+                <select id="pl-month" onchange="onMonthChange()" style="font-size:11px;border:1px solid var(--hairline);border-radius:6px;padding:4px 8px;font-family:var(--font-ar);background:var(--white);cursor:pointer;color:var(--ink-900);outline:none">
+                  <option value="live">الشهر الحالي</option>
+                  <option value="2026-05">مايو ٢٠٢٦</option>
+                  <option value="2026-04">أبريل ٢٠٢٦</option>
+                  <option value="2026-03">مارس ٢٠٢٦</option>
+                  <option value="2026-02">فبراير ٢٠٢٦</option>
+                  <option value="2026-01">يناير ٢٠٢٦</option>
+                </select>
+              </div>
             </div>
             <div id="pl-body"></div>
+            <div style="padding:10px 16px;border-top:1px solid var(--hairline);display:flex;justify-content:flex-end">
+              <button onclick="exportPDF()" style="font-size:11px;padding:5px 12px;border-radius:6px;background:var(--brand-700);color:var(--white);border:none;cursor:pointer;font-family:var(--font-ar)">🖨 تصدير PDF</button>
+            </div>
           </div>
 
           <div class="donut-card" id="donut-card">
@@ -618,9 +644,17 @@ function updateKPIs(){
   s('kpi-net', net.toLocaleString('ar-EG'));
   s('kpi-vat', vatSum.toFixed(2));
   s('kpi-count', total);
-  t('kpi-rev-m', rev>0 ? 'هامش '+Math.round(net/rev*100)+'٪' : '—');
+  /* — Dynamic tier coloring for Net KPI — */
+  var margin = rev>0 ? net/rev*100 : 0;
+  var netEl = document.getElementById('kpi-net');
+  if(netEl){
+    netEl.className = 'v'+(margin<0?' bad': margin<10?' warn': margin<30?' ok':' ok');
+    var tierCls = margin<0?'tier-critical': margin<10?'tier-low': margin<30?'tier-good':'tier-excellent';
+    netEl.className = 'v '+tierCls;
+  }
+  t('kpi-rev-m', rev>0 ? 'هامش '+Math.round(margin)+'٪' : '—');
   t('kpi-exp-m', rev>0 ? Math.round(exp/rev*100)+'٪ من الإيرادات' : '—');
-  t('kpi-net-m', net>0 ? '↑ ربح صافي' : '↓ خسارة صافية');
+  t('kpi-net-m', net>0 ? '↑ ربح صافي '+(margin>=30?'⭐':'') : net<0?'↓ خسارة صافية':'— توازن');
   t('kpi-count-m', Object.keys(LINKED).filter(function(m){ return LINKED[m]; }).length+' برنامج مرتبط');
   updatePL(rev, exp);
   renderChart();
@@ -634,12 +668,19 @@ function sumBy(type, accts){
 function updatePL(rev, exp){
   var rows = '';
   function fv(n){ return n?n.toLocaleString('ar-EG'):'—'; }
-  function row(nm, v, cls, sec, tot, net){
+  function pct(v, total){ return total>0?Math.round(v/total*100):0; }
+  function row(nm, v, cls, sec, tot, net, pctVal){
+    var pctBadge = pctVal!==undefined ? '<span style="font-size:10px;font-family:var(--font-en);color:var(--fg-3);margin-inline-start:6px;font-weight:400">'+pctVal+'٪</span>' : '';
     return '<div class="pl-row'+(sec?' sec':'')+(tot?' tot':'')+(net?' net':'')+'">'
       +'<span class="pl-nm">'+nm+'</span>'
-      +'<span class="pl-v '+cls+'">'+fv(v)+'</span>'
+      +'<span class="pl-v '+cls+'">'+fv(v)+pctBadge+'</span>'
       +'</div>';
   }
+  /* Revenue/expense bar */
+  var total = rev + exp || 1;
+  var revPct = Math.round(rev/total*100);
+  rows += '<div class="rev-exp-bar"><div class="rb" style="width:'+revPct+'%"></div><div class="eb"></div></div>'
+    +'<div class="rev-exp-row"><span style="color:#1B7A56;font-weight:600">إيرادات '+revPct+'٪</span><span style="color:#C0392B;font-weight:600">مصاريف '+(100-revPct)+'٪</span></div>';
   var rooms  = sumBy('cr',['إيراد الغرف']);
   var fb     = sumBy('cr',['إيراد F&B']);
   var spa    = sumBy('cr',['إيراد السبا']);
@@ -653,23 +694,28 @@ function updatePL(rev, exp){
   var admin  = sumBy('dr',['مصاريف إدارية','مصاريف متنوعة']);
 
   rows += row('الإيرادات','','','sec');
-  if(rooms)  rows += row('إيراد الغرف',  rooms, 'cr');
-  if(fb)     rows += row('إيراد F&B',    fb,    'cr');
-  if(spa)    rows += row('إيراد السبا',   spa,   'cr');
-  if(tours)  rows += row('إيراد الجولات', tours, 'cr');
-  if(misc)   rows += row('إيراد متنوع',   misc,  'cr');
-  rows += row('إجمالي الإيرادات', rev, 'cr','','tot');
+  if(rooms)  rows += row('إيراد الغرف',  rooms, 'cr', false,false,false, pct(rooms,rev));
+  if(fb)     rows += row('إيراد F&B',    fb,    'cr', false,false,false, pct(fb,rev));
+  if(spa)    rows += row('إيراد السبا',   spa,   'cr', false,false,false, pct(spa,rev));
+  if(tours)  rows += row('إيراد الجولات', tours, 'cr', false,false,false, pct(tours,rev));
+  if(misc)   rows += row('إيراد متنوع',   misc,  'cr', false,false,false, pct(misc,rev));
+  rows += row('إجمالي الإيرادات', rev, 'cr',false,true);
   rows += row('المصاريف','','','sec');
-  if(sal)    rows += row('الرواتب',    sal,   'dr');
-  if(maint)  rows += row('الصيانة',    maint, 'dr');
-  if(fbC)    rows += row('F&B تكلفة', fbC,   'dr');
-  if(util)   rows += row('المرافق',    util,  'dr');
-  if(mktg)   rows += row('التسويق',    mktg,  'dr');
-  if(admin)  rows += row('إدارية وأخرى', admin,'dr');
-  rows += row('إجمالي المصاريف', exp, 'dr','','tot');
+  if(sal)    rows += row('الرواتب',    sal,   'dr', false,false,false, pct(sal,exp));
+  if(maint)  rows += row('الصيانة',    maint, 'dr', false,false,false, pct(maint,exp));
+  if(fbC)    rows += row('F&B تكلفة', fbC,   'dr', false,false,false, pct(fbC,exp));
+  if(util)   rows += row('المرافق',    util,  'dr', false,false,false, pct(util,exp));
+  if(mktg)   rows += row('التسويق',    mktg,  'dr', false,false,false, pct(mktg,exp));
+  if(admin)  rows += row('إدارية وأخرى', admin,'dr', false,false,false, pct(admin,exp));
+  rows += row('إجمالي المصاريف', exp, 'dr',false,true);
   var net = rev-exp;
-  rows += '<div class="pl-row net"><span class="pl-nm" style="font-weight:700">الربح الصافي</span>'
-    +'<span class="pl-v '+(net>=0?'gold':'dr')+'" style="font-size:15px">'+(net>=0?'+':'')+fv(Math.abs(net))+'</span></div>';
+  var netMargin = rev>0?Math.round(net/rev*100):0;
+  var netTierCls = net<0?'tier-critical': netMargin<10?'tier-low': netMargin<30?'tier-good':'tier-excellent';
+  var netIcon = net<0?'🔴': netMargin<10?'🟠': netMargin<30?'🟢':'⭐';
+  rows += '<div class="pl-row net"><span class="pl-nm" style="font-weight:700">'+netIcon+' الربح الصافي</span>'
+    +'<span class="pl-v '+(net>=0?'gold':'dr')+' '+netTierCls+'" style="font-size:15px">'+(net>=0?'+':'')+fv(Math.abs(net))
+    +'<span style="font-size:10px;font-weight:400;margin-inline-start:4px">'+netMargin+'٪</span>'
+    +'</span></div>';
   document.getElementById('pl-body').innerHTML = rows;
 }
 
@@ -789,10 +835,16 @@ window.setType = function(t){
 /* ════ EXCEL XML HELPER ════════════════════════════════════════════ */
 function toXLS(hdrs,dataRows,sheetName){
   function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-  function cell(v,h){ var t=(!h&&v!==''&&!isNaN(+v))?'Number':'String'; return '<Cell'+(h?' ss:StyleID="H"':'')+'><Data ss:Type="'+t+'">'+esc(v)+'</Data></Cell>'; }
+  function cell(v,h){ var sid=null,val=v; if(v&&typeof v==='object'&&'v' in v){val=v.v;sid=v.s;} var t=(!h&&val!==''&&!isNaN(+val))?'Number':'String'; var style=h?'H':sid||''; return '<Cell'+(style?' ss:StyleID="'+style+'"':'')+'><Data ss:Type="'+t+'">'+esc(val)+'</Data></Cell>'; }
   return '﻿<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?>'
     +'<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'
-    +'<Styles><Style ss:ID="H"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1B4D3D" ss:Pattern="Solid"/></Style></Styles>'
+    +'<Styles>'
+    +'<Style ss:ID="H"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1B4D3D" ss:Pattern="Solid"/></Style>'
+    +'<Style ss:ID="BAD"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#C0392B" ss:Pattern="Solid"/></Style>'
+    +'<Style ss:ID="WARN"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#D97706" ss:Pattern="Solid"/></Style>'
+    +'<Style ss:ID="OK"><Font ss:Bold="1" ss:Color="#064E3B"/><Interior ss:Color="#BBF7D0" ss:Pattern="Solid"/></Style>'
+    +'<Style ss:ID="EXC"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1B7A56" ss:Pattern="Solid"/></Style>'
+    +'</Styles>'
     +'<Worksheet ss:Name="'+esc(sheetName||'تقرير')+'"><Table>'
     +'<Row>'+hdrs.map(function(h){return cell(h,true);}).join('')+'</Row>'
     +dataRows.map(function(r){return '<Row>'+r.map(function(c){return cell(c,false);}).join('')+'</Row>';}).join('')
@@ -808,12 +860,154 @@ function todayStr(){ return new Date().toISOString().slice(0,10); }
 window.exportCSV = function(){
   var headers = ['#','النوع','الوصف','الحساب','المصدر','المبلغ','VAT','الوقت','ملاحظة','مصدر الربط'];
   var rows = allEntries().map(function(e){
-    return ['JE-'+String(e.id).padStart(4,'0'), e.type==='cr'?'إيراد':'مصروف',
+    var typeCell = e.type==='cr' ? {v:'إيراد',s:'EXC'} : {v:'مصروف',s:'BAD'};
+    return ['JE-'+String(e.id).padStart(4,'0'), typeCell,
             e.desc, e.acct, e.src, e.amt, e.vat?Math.round(e.amt*.15):'',
             e.time, e.note||'', e.link||''];
   });
   dlXLS(toXLS(headers, rows, 'دفتر المحاسبة'), 'المحاسبة_'+todayStr()+'.xls');
   toast('تم تصدير '+allEntries().length+' قيد ✓');
+};
+
+/* ════════════════════════════════════════════════
+   MONTHLY P&L PRESETS + MONTH SELECTOR
+════════════════════════════════════════════════ */
+var PL_PRESETS = {
+  'live': null,
+  '2026-05': {rev:88000,exp:53000,label:'مايو ٢٠٢٦',
+    items:{rooms:42000,fb:18000,spa:14000,tours:8000,misc:6000,sal:22000,maint:9000,fbC:7000,util:6000,mktg:5000,admin:4000}},
+  '2026-04': {rev:91000,exp:55000,label:'أبريل ٢٠٢٦',
+    items:{rooms:44000,fb:19000,spa:14000,tours:8000,misc:6000,sal:22000,maint:10000,fbC:8000,util:6000,mktg:5000,admin:4000}},
+  '2026-03': {rev:85000,exp:51000,label:'مارس ٢٠٢٦',
+    items:{rooms:40000,fb:17000,spa:13000,tours:9000,misc:6000,sal:21000,maint:8000,fbC:7000,util:7000,mktg:4000,admin:4000}},
+  '2026-02': {rev:72000,exp:44000,label:'فبراير ٢٠٢٦',
+    items:{rooms:34000,fb:14000,spa:12000,tours:7000,misc:5000,sal:19000,maint:8000,fbC:6000,util:5000,mktg:3000,admin:3000}},
+  '2026-01': {rev:68000,exp:42000,label:'يناير ٢٠٢٦',
+    items:{rooms:32000,fb:13000,spa:11000,tours:7000,misc:5000,sal:18000,maint:7000,fbC:6000,util:5000,mktg:3000,admin:3000}},
+};
+
+window.onMonthChange = function() {
+  var sel = document.getElementById('pl-month').value;
+  if (sel === 'live') { updateKPIs(); return; }
+  var p = PL_PRESETS[sel]; if (!p) return;
+  var it = p.items;
+  var fv = function(n){ return n ? n.toLocaleString('ar-EG') : '—'; };
+  var row = function(nm, v, cls, sec, tot, net){
+    return '<div class="pl-row'+(sec?' sec':'')+(tot?' tot':'')+(net?' net':'')+'">'
+      +'<span class="pl-nm">'+nm+'</span>'
+      +'<span class="pl-v '+cls+'">'+fv(v)+'</span></div>';
+  };
+  var rows = row('الإيرادات','','','sec');
+  if(it.rooms) rows += row('إيراد الغرف',  it.rooms, 'cr');
+  if(it.fb)    rows += row('إيراد F&B',    it.fb,    'cr');
+  if(it.spa)   rows += row('إيراد السبا',   it.spa,   'cr');
+  if(it.tours) rows += row('إيراد الجولات', it.tours, 'cr');
+  if(it.misc)  rows += row('إيراد متنوع',   it.misc,  'cr');
+  rows += row('إجمالي الإيرادات', p.rev, 'cr','','tot');
+  rows += row('المصاريف','','','sec');
+  if(it.sal)   rows += row('الرواتب',    it.sal,   'dr');
+  if(it.maint) rows += row('الصيانة',    it.maint, 'dr');
+  if(it.fbC)   rows += row('F&B تكلفة', it.fbC,   'dr');
+  if(it.util)  rows += row('المرافق',    it.util,  'dr');
+  if(it.mktg)  rows += row('التسويق',    it.mktg,  'dr');
+  if(it.admin) rows += row('إدارية وأخرى', it.admin,'dr');
+  rows += row('إجمالي المصاريف', p.exp, 'dr','','tot');
+  var net = p.rev - p.exp;
+  rows += '<div class="pl-row net"><span class="pl-nm" style="font-weight:700">الربح الصافي</span>'
+    +'<span class="pl-v '+(net>=0?'gold':'dr')+'" style="font-size:15px">'+(net>=0?'+':'')+fv(Math.abs(net))+'</span></div>';
+  document.getElementById('pl-body').innerHTML = rows;
+  toast('تم تحميل تقرير '+p.label+' ✓');
+};
+
+/* ════════════════════════════════════════════════
+   PDF EXPORT
+════════════════════════════════════════════════ */
+function printPDF(title, bodyHTML) {
+  var w = window.open('', '_blank');
+  if (!w) { toast('تعذّر فتح نافذة الطباعة — تأكد من السماح بالنوافذ المنبثقة', true); return; }
+  var css = 'body{font-family:"Segoe UI",Arial,sans-serif;background:#fff;color:#111;direction:rtl;padding:32px 40px;font-size:13px;line-height:1.6}'
+    + 'h1{font-size:20px;color:#1B4D3D;margin:0 0 4px}'
+    + 'h2{font-size:15px;color:#1B4D3D;margin:24px 0 10px;border-bottom:2px solid #C9A85F;padding-bottom:4px}'
+    + '.meta{font-size:11px;color:#888;margin-bottom:24px}'
+    + 'table{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:12px}'
+    + 'th{background:#1B4D3D;color:#fff;padding:8px 12px;text-align:right;font-weight:600}'
+    + 'td{padding:7px 12px;border-bottom:1px solid #eee;text-align:right}'
+    + 'tr:nth-child(even) td{background:#f7faf8}'
+    + '.cr{color:#1B7A56;font-weight:600}.dr{color:#C0392B;font-weight:600}'
+    + '.gold{color:#B8860B;font-weight:700}'
+    + '.tier-excellent{color:#1B7A56;font-weight:700}.tier-good{color:#22C55E;font-weight:600}.tier-low{color:#D97706;font-weight:600}.tier-critical{color:#C0392B;font-weight:700}'
+    + '.rev-bar{background:#e8f5ee;padding:4px 8px;border-radius:4px;font-size:11px;color:#1B7A56;display:inline-block;margin-bottom:8px}'
+    + '.sec td{background:#f0f4f2!important;font-weight:700;font-size:13px}'
+    + '.tot td{background:#e4ede7!important;font-weight:700}'
+    + '.net td{background:#fefbef!important;font-weight:700;font-size:14px}'
+    + '.footer{font-size:10px;color:#bbb;margin-top:32px;border-top:1px solid #eee;padding-top:12px;text-align:center}'
+    + '@media print{@page{margin:15mm}}';
+  w.document.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"/><title>'+title+'</title><style>'+css+'</style></head><body>'
+    + '<h1>'+title+'</h1>'
+    + '<div class="meta">تاريخ الإصدار: '+new Date().toLocaleDateString('ar-SA',{year:'numeric',month:'long',day:'numeric'})+' &nbsp;·&nbsp; نظام ضيوف — Dheuof Hotel</div>'
+    + bodyHTML
+    + '<div class="footer">صدر بواسطة نظام ضيوف — Dheuof Hotel Management System &nbsp;|&nbsp; '+new Date().toISOString()+'</div>'
+    + '</body></html>');
+  w.document.close();
+  w.focus();
+  setTimeout(function(){ w.print(); }, 700);
+}
+
+window.exportPDF = function() {
+  var sel = document.getElementById('pl-month').value;
+  var entries = allEntries();
+  var rev = 0, exp = 0;
+  entries.forEach(function(e){ if(e.amt===0)return; if(e.type==='cr') rev+=e.amt; else exp+=e.amt; });
+  var net = rev - exp;
+  var margin = rev > 0 ? Math.round(net/rev*100) : 0;
+  var tierCls = margin < 0 ? 'tier-critical' : margin < 10 ? 'tier-low' : margin < 30 ? 'tier-good' : 'tier-excellent';
+  var tierIcon = margin < 0 ? '🔴' : margin < 10 ? '🟠' : margin < 30 ? '🟢' : '⭐';
+
+  /* journal table */
+  var journalRows = entries.map(function(e,i){
+    var typeCls = e.type==='cr' ? 'cr' : 'dr';
+    return '<tr><td>JE-'+String(e.id).padStart(4,'0')+'</td>'
+      +'<td class="'+typeCls+'">'+(e.type==='cr'?'إيراد':'مصروف')+'</td>'
+      +'<td>'+e.desc+'</td><td>'+e.acct+'</td><td>'+e.src+'</td>'
+      +'<td class="'+typeCls+'">'+e.amt.toLocaleString('ar-EG')+'</td>'
+      +'<td>'+(e.vat?Math.round(e.amt*.15).toLocaleString('ar-EG'):'—')+'</td>'
+      +'<td>'+e.time+'</td></tr>';
+  }).join('');
+
+  var plRows = '<tr class="sec"><td colspan="2">الإيرادات</td></tr>'
+    +'<tr><td>إجمالي الإيرادات</td><td class="cr">'+rev.toLocaleString('ar-EG')+' ر.س</td></tr>'
+    +'<tr class="sec"><td colspan="2">المصاريف</td></tr>'
+    +'<tr><td>إجمالي المصاريف</td><td class="dr">'+exp.toLocaleString('ar-EG')+' ر.س</td></tr>'
+    +'<tr class="net"><td>الربح / الخسارة الصافية</td><td class="'+tierCls+'">'+tierIcon+' '+(net>=0?'+':'')+net.toLocaleString('ar-EG')+' ر.س &nbsp;<small>('+margin+'%)</small></td></tr>';
+
+  if (sel !== 'live' && PL_PRESETS[sel]) {
+    var p = PL_PRESETS[sel]; var it = p.items; var net2 = p.rev - p.exp;
+    var m2 = p.rev>0?Math.round(net2/p.rev*100):0;
+    var tc2 = m2<0?'tier-critical':m2<10?'tier-low':m2<30?'tier-good':'tier-excellent';
+    var ti2 = m2<0?'🔴':m2<10?'🟠':m2<30?'🟢':'⭐';
+    plRows = '<tr class="sec"><td colspan="2">الإيرادات — '+p.label+'</td></tr>'
+      +'<tr><td>إيراد الغرف</td><td class="cr">'+it.rooms.toLocaleString('ar-EG')+' ر.س</td></tr>'
+      +'<tr><td>إيراد F&amp;B</td><td class="cr">'+it.fb.toLocaleString('ar-EG')+' ر.س</td></tr>'
+      +'<tr><td>إيراد السبا</td><td class="cr">'+it.spa.toLocaleString('ar-EG')+' ر.س</td></tr>'
+      +'<tr><td>إيراد الجولات</td><td class="cr">'+it.tours.toLocaleString('ar-EG')+' ر.س</td></tr>'
+      +'<tr class="tot"><td>إجمالي الإيرادات</td><td class="cr">'+p.rev.toLocaleString('ar-EG')+' ر.س</td></tr>'
+      +'<tr class="sec"><td colspan="2">المصاريف</td></tr>'
+      +'<tr><td>الرواتب</td><td class="dr">'+it.sal.toLocaleString('ar-EG')+' ر.س</td></tr>'
+      +'<tr><td>الصيانة</td><td class="dr">'+it.maint.toLocaleString('ar-EG')+' ر.س</td></tr>'
+      +'<tr><td>F&amp;B تكلفة</td><td class="dr">'+it.fbC.toLocaleString('ar-EG')+' ر.س</td></tr>'
+      +'<tr><td>المرافق</td><td class="dr">'+it.util.toLocaleString('ar-EG')+' ر.س</td></tr>'
+      +'<tr class="tot"><td>إجمالي المصاريف</td><td class="dr">'+p.exp.toLocaleString('ar-EG')+' ر.س</td></tr>'
+      +'<tr class="net"><td>الربح الصافي</td><td class="'+tc2+'">'+ti2+' '+(net2>=0?'+':'')+net2.toLocaleString('ar-EG')+' ر.س &nbsp;<small>('+m2+'%)</small></td></tr>';
+  }
+
+  var html = '<h2>ملخص الأرباح والخسائر (P&amp;L)</h2>'
+    +'<table><thead><tr><th>البيان</th><th>القيمة</th></tr></thead><tbody>'+plRows+'</tbody></table>'
+    +'<h2>دفتر اليومية — جميع القيود</h2>'
+    +'<table><thead><tr><th>#</th><th>النوع</th><th>الوصف</th><th>الحساب</th><th>المصدر</th><th>المبلغ</th><th>VAT</th><th>الوقت</th></tr></thead><tbody>'
+    +journalRows+'</tbody></table>';
+
+  printPDF('دفتر المحاسبة', html);
+  toast('جارٍ فتح نافذة الطباعة… ✓');
 };
 
 /* ════════════════════════════════════════════════

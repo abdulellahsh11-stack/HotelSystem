@@ -610,7 +610,16 @@ body { background: var(--paper-tint); }
               <button class="period-btn" onclick="setPeriod('week',this)">الأسبوع</button>
               <button class="period-btn" onclick="setPeriod('month',this)">الشهر</button>
             </div>
-            <button class="btn-xl" style="border:1px solid var(--ink-100);font-family:var(--font-ar);font-size:12px;padding:8px 14px;border-radius:7px;cursor:pointer" onclick="exportReport()">📄 تصدير التقرير</button>
+            <select id="rpt-month" onchange="onRptMonthChange()" style="font-size:12px;border:1px solid var(--hairline);border-radius:7px;padding:6px 10px;font-family:var(--font-ar);background:var(--white);cursor:pointer;color:var(--ink-900);outline:none">
+              <option value="live">الشهر الحالي ★</option>
+              <option value="2026-05">مايو ٢٠٢٦</option>
+              <option value="2026-04">أبريل ٢٠٢٦</option>
+              <option value="2026-03">مارس ٢٠٢٦</option>
+              <option value="2026-02">فبراير ٢٠٢٦</option>
+              <option value="2026-01">يناير ٢٠٢٦</option>
+            </select>
+            <button class="btn-xl" style="border:1px solid var(--ink-100);font-family:var(--font-ar);font-size:12px;padding:8px 14px;border-radius:7px;cursor:pointer" onclick="exportReport()">📊 تصدير Excel</button>
+            <button style="font-family:var(--font-ar);font-size:12px;padding:8px 14px;border-radius:7px;cursor:pointer;background:var(--brand-700);color:var(--white);border:none" onclick="exportPDFReport()">🖨 تصدير PDF</button>
           </div>
         </div>
 
@@ -901,10 +910,16 @@ window.renderTx = function() {
 /* ════ EXCEL XML HELPER ════════════════════════════════════════════ */
 function toXLS(hdrs,dataRows,sheetName){
   function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-  function cell(v,h){ var t=(!h&&v!==''&&!isNaN(+v))?'Number':'String'; return '<Cell'+(h?' ss:StyleID="H"':'')+'><Data ss:Type="'+t+'">'+esc(v)+'</Data></Cell>'; }
+  function cell(v,h){ var sid=null,val=v; if(v&&typeof v==='object'&&'v' in v){val=v.v;sid=v.s;} var t=(!h&&val!==''&&!isNaN(+val))?'Number':'String'; var style=h?'H':sid||''; return '<Cell'+(style?' ss:StyleID="'+style+'"':'')+'><Data ss:Type="'+t+'">'+esc(val)+'</Data></Cell>'; }
   return '﻿<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?>'
     +'<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'
-    +'<Styles><Style ss:ID="H"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1B4D3D" ss:Pattern="Solid"/></Style></Styles>'
+    +'<Styles>'
+    +'<Style ss:ID="H"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1B4D3D" ss:Pattern="Solid"/></Style>'
+    +'<Style ss:ID="BAD"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#C0392B" ss:Pattern="Solid"/></Style>'
+    +'<Style ss:ID="WARN"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#D97706" ss:Pattern="Solid"/></Style>'
+    +'<Style ss:ID="OK"><Font ss:Bold="1" ss:Color="#064E3B"/><Interior ss:Color="#BBF7D0" ss:Pattern="Solid"/></Style>'
+    +'<Style ss:ID="EXC"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1B7A56" ss:Pattern="Solid"/></Style>'
+    +'</Styles>'
     +'<Worksheet ss:Name="'+esc(sheetName||'تقرير')+'"><Table>'
     +'<Row>'+hdrs.map(function(h){return cell(h,true);}).join('')+'</Row>'
     +dataRows.map(function(r){return '<Row>'+r.map(function(c){return cell(c,false);}).join('')+'</Row>';}).join('')
@@ -920,8 +935,9 @@ function todayStr(){ return new Date().toISOString().slice(0,10); }
 window.exportExcel = function() {
   var headers = ['رقم الحركة','المنفذ','الوصف','العميل','رقم الغرفة','طريقة الدفع','المبلغ','الضريبة (VAT)','الإجمالي','الحالة','الوقت'];
   var rows = TX.map(function(t){
+    var stCell = t.status==='مكتملة' ? {v:t.status,s:'EXC'} : t.status==='معلّقة' ? {v:t.status,s:'WARN'} : {v:t.status,s:'BAD'};
     return [t.id, t.outlet, t.desc, t.customer, t.room, t.method,
-            t.amt, t.vat, t.amt+t.vat, t.status, t.time];
+            t.amt, t.vat, t.amt+t.vat, stCell, t.time];
   });
   dlXLS(toXLS(headers, rows, 'حركات نقاط البيع'), 'POS_Payments_'+todayStr()+'.xls');
   toast('تم تصدير '+TX.length+' حركة إلى Excel ✓', 'success');
@@ -963,11 +979,18 @@ window.renderReport = function() {
   var d = PERIOD_DATA[REPORT_PERIOD];
   // Stats
   var totalVat = Math.round(d.totals.rev * 0.13);
+  var avgTxn = Math.round(d.totals.rev / d.totals.txns);
+  /* tier color for revenue vs period target */
+  var revTargets = {today:20000, week:140000, month:550000};
+  var target = revTargets[REPORT_PERIOD] || 20000;
+  var revRatio = d.totals.rev / target;
+  var revColor = revRatio < 0.7 ? '#C0392B' : revRatio < 0.85 ? '#D97706' : revRatio < 1.0 ? '#22C55E' : '#1B7A56';
+  var revIcon  = revRatio < 0.7 ? '🔴' : revRatio < 0.85 ? '🟠' : revRatio < 1.0 ? '🟢' : '⭐';
   document.getElementById('reportStats').innerHTML = [
-    {label:'إجمالي المبيعات', val: d.totals.rev.toLocaleString('ar-SA') + ' <span style="font-size:10px;font-family:var(--font-ar);color:var(--fg-3);font-weight:400">ر.س</span>'},
+    {label:'إجمالي المبيعات', val: '<span style="color:'+revColor+';font-weight:700">'+revIcon+' '+d.totals.rev.toLocaleString('ar-SA')+'</span> <span style="font-size:10px;font-family:var(--font-ar);color:var(--fg-3);font-weight:400">ر.س</span>'},
     {label:'عدد الحركات', val: d.totals.txns.toLocaleString('ar-SA')},
-    {label:'ضريبة VAT', val: totalVat.toLocaleString('ar-SA') + ' <span style="font-size:10px;font-family:var(--font-ar);color:var(--fg-3);font-weight:400">ر.س</span>'},
-    {label:'متوسط الحركة', val: Math.round(d.totals.rev / d.totals.txns).toLocaleString('ar-SA') + ' <span style="font-size:10px;font-family:var(--font-ar);color:var(--fg-3);font-weight:400">ر.س</span>'},
+    {label:'ضريبة VAT ١٣٪', val: totalVat.toLocaleString('ar-SA') + ' <span style="font-size:10px;font-family:var(--font-ar);color:var(--fg-3);font-weight:400">ر.س</span>'},
+    {label:'متوسط الحركة', val: avgTxn.toLocaleString('ar-SA') + ' <span style="font-size:10px;font-family:var(--font-ar);color:var(--fg-3);font-weight:400">ر.س</span>'},
   ].map(function(s){
     return '<div class="rstat"><div class="rv">' + s.val + '</div><div class="rl">' + s.label + '</div></div>';
   }).join('');
@@ -981,11 +1004,17 @@ window.renderReport = function() {
 
   // Outlets table
   var totalAmt = d.outlets.reduce(function(s,o){ return s + o.amt; }, 0);
-  var thead = '<thead><tr><th>المنفذ</th><th>الحركات</th><th style="text-align:end">الإيراد</th><th style="text-align:end">النسبة</th></tr></thead>';
+  var thead = '<thead><tr><th>المنفذ</th><th>الحركات</th><th style="text-align:end">الإيراد</th><th style="text-align:end">النسبة</th><th>المستوى</th></tr></thead>';
+  var maxAmt = Math.max.apply(null, d.outlets.map(function(o){ return o.amt; })) || 1;
   var tbody = '<tbody>' + d.outlets.map(function(o){
+    var ratio = o.amt / maxAmt;
+    var tierColor = ratio < 0.3 ? '#C0392B' : ratio < 0.5 ? '#D97706' : ratio < 0.8 ? '#22C55E' : '#1B7A56';
+    var tierIcon  = ratio < 0.3 ? '🔴' : ratio < 0.5 ? '🟠' : ratio < 0.8 ? '🟢' : '⭐';
+    var barW = Math.round(ratio * 100);
     return '<tr><td>' + o.name + '</td><td>' + o.txns + '</td>'
-      + '<td class="amt">' + o.amt.toLocaleString('ar-SA') + ' <small>ر.س</small></td>'
-      + '<td class="pct" style="text-align:end">' + Math.round(o.amt/totalAmt*100) + '٪</td></tr>';
+      + '<td class="amt" style="color:'+tierColor+';font-weight:600">' + o.amt.toLocaleString('ar-SA') + ' <small>ر.س</small></td>'
+      + '<td class="pct" style="text-align:end">' + Math.round(o.amt/totalAmt*100) + '٪</td>'
+      + '<td><div style="display:flex;align-items:center;gap:6px"><div style="width:60px;height:6px;background:#f0f0f0;border-radius:3px;overflow:hidden"><div style="width:'+barW+'%;height:100%;background:'+tierColor+';border-radius:3px"></div></div><span>'+tierIcon+'</span></div></td></tr>';
   }).join('') + '</tbody>';
   document.getElementById('outletTable').innerHTML = thead + tbody;
 
@@ -1011,22 +1040,37 @@ window.renderReport = function() {
 window.exportReport = function() {
   var d = PERIOD_DATA[REPORT_PERIOD];
   var total = d.outlets.reduce(function(s,x){return s+x.amt;},0);
-  /* Sheet 1: Outlets */
-  var outHdrs = ['المنفذ','عدد الحركات','الإيراد (ر.س)','النسبة %'];
-  var outRows = d.outlets.map(function(o){ return [o.name.replace(/[\u{1F300}-\u{1FFFF}]/gu,'').trim(), o.txns, o.amt, Math.round(o.amt/total*100)]; });
-  /* Sheet 2: Methods — build as second worksheet */
+  var maxAmt = Math.max.apply(null, d.outlets.map(function(o){ return o.amt; })) || 1;
+  /* Sheet 1: Outlets — with tier coloring on revenue cell */
+  var outHdrs = ['المنفذ','عدد الحركات','الإيراد (ر.س)','النسبة %','المستوى'];
+  var outRows = d.outlets.map(function(o){
+    var r=o.amt/maxAmt;
+    var tier=r<0.3?{v:'تحت الحد',s:'BAD'}:r<0.5?{v:'منخفض',s:'WARN'}:r<0.8?{v:'جيد',s:'OK'}:{v:'ممتاز',s:'EXC'};
+    var revCell=r<0.3?{v:o.amt,s:'BAD'}:r<0.5?{v:o.amt,s:'WARN'}:r<0.8?{v:o.amt,s:'OK'}:{v:o.amt,s:'EXC'};
+    return [o.name.replace(/[\u{1F300}-\u{1FFFF}]/gu,'').trim(), o.txns, revCell, Math.round(o.amt/total*100), tier];
+  });
+  /* Sheet 2: Methods */
   var mHdrs = ['طريقة الدفع','الإيراد (ر.س)','النسبة %'];
   var mRows = d.methods.map(function(m){ return [m.name, m.val, m.pct]; });
-  /* Sheet 3: Transactions */
+  /* Sheet 3: Transactions — with tier-colored status */
   var txHdrs = ['رقم الحركة','المنفذ','الوصف','العميل','رقم الغرفة','طريقة الدفع','المبلغ','VAT','الإجمالي','الحالة','الوقت'];
-  var txRows = TX.map(function(t){ return [t.id,t.outlet,t.desc,t.customer,t.room,t.method,t.amt,t.vat,t.amt+t.vat,t.status,t.time]; });
+  var txRows = TX.map(function(t){
+    var stCell=t.status==='مكتملة'?{v:t.status,s:'EXC'}:t.status==='معلّقة'?{v:t.status,s:'WARN'}:{v:t.status,s:'BAD'};
+    return [t.id,t.outlet,t.desc,t.customer,t.room,t.method,t.amt,t.vat,t.amt+t.vat,stCell,t.time];
+  });
   /* Multi-sheet XLS */
   function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-  function cell(v,h){ var t=(!h&&v!==''&&!isNaN(+v))?'Number':'String'; return '<Cell'+(h?' ss:StyleID="H"':'')+'><Data ss:Type="'+t+'">'+esc(v)+'</Data></Cell>'; }
+  function cell(v,h){ var sid=null,val=v; if(v&&typeof v==='object'&&'v' in v){val=v.v;sid=v.s;} var t=(!h&&val!==''&&!isNaN(+val))?'Number':'String'; var style=h?'H':sid||''; return '<Cell'+(style?' ss:StyleID="'+style+'"':'')+'><Data ss:Type="'+t+'">'+esc(val)+'</Data></Cell>'; }
   function sheet(name,hdrs,rows){ return '<Worksheet ss:Name="'+esc(name)+'"><Table><Row>'+hdrs.map(function(h){return cell(h,true);}).join('')+'</Row>'+rows.map(function(r){return '<Row>'+r.map(function(c){return cell(c,false);}).join('')+'</Row>';}).join('')+'</Table></Worksheet>'; }
   var xml = '﻿<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?>'
     +'<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'
-    +'<Styles><Style ss:ID="H"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1B4D3D" ss:Pattern="Solid"/></Style></Styles>'
+    +'<Styles>'
+    +'<Style ss:ID="H"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1B4D3D" ss:Pattern="Solid"/></Style>'
+    +'<Style ss:ID="BAD"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#C0392B" ss:Pattern="Solid"/></Style>'
+    +'<Style ss:ID="WARN"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#D97706" ss:Pattern="Solid"/></Style>'
+    +'<Style ss:ID="OK"><Font ss:Bold="1" ss:Color="#064E3B"/><Interior ss:Color="#BBF7D0" ss:Pattern="Solid"/></Style>'
+    +'<Style ss:ID="EXC"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1B7A56" ss:Pattern="Solid"/></Style>'
+    +'</Styles>'
     +sheet('المنافذ',outHdrs,outRows)
     +sheet('طرق الدفع',mHdrs,mRows)
     +sheet('الحركات',txHdrs,txRows)
@@ -1037,6 +1081,121 @@ window.exportReport = function() {
 
 window.generateReport = function() {
   document.querySelectorAll('.pos-tab')[2].click();
+};
+
+/* ── Monthly Report Data ── */
+var MONTHLY_RPT = {
+  'live': null,
+  '2026-05': {label:'مايو ٢٠٢٦', totals:{rev:612400,txns:4210,mada:338000,cash:86400,room:188000},
+    methods:[{name:'مدى / فيزا',val:338000,pct:55},{name:'Apple Pay',val:168600,pct:28},{name:'على الغرفة',val:188000,pct:31},{name:'نقدي',val:86400,pct:14}],
+    outlets:[{name:'الاستقبال',txns:480,amt:248000},{name:'المطعم',txns:1900,amt:210000},{name:'الكافي',txns:1020,amt:72000},{name:'السبا',txns:380,amt:62000},{name:'بار الشاطئ',txns:430,amt:51000}]},
+  '2026-04': {label:'أبريل ٢٠٢٦', totals:{rev:638200,txns:4380,mada:351000,cash:89600,room:197600},
+    methods:[{name:'مدى / فيزا',val:351000,pct:55},{name:'Apple Pay',val:178500,pct:28},{name:'على الغرفة',val:197600,pct:31},{name:'نقدي',val:89600,pct:14}],
+    outlets:[{name:'الاستقبال',txns:500,amt:258000},{name:'المطعم',txns:1980,amt:220000},{name:'الكافي',txns:1060,amt:75000},{name:'السبا',txns:400,amt:64000},{name:'بار الشاطئ',txns:440,amt:52000}]},
+  '2026-03': {label:'مارس ٢٠٢٦', totals:{rev:595000,txns:4050,mada:327000,cash:83300,room:184700},
+    methods:[{name:'مدى / فيزا',val:327000,pct:55},{name:'Apple Pay',val:165000,pct:28},{name:'على الغرفة',val:184700,pct:31},{name:'نقدي',val:83300,pct:14}],
+    outlets:[{name:'الاستقبال',txns:460,amt:238000},{name:'المطعم',txns:1850,amt:205000},{name:'الكافي',txns:990,amt:70000},{name:'السبا',txns:360,amt:60000},{name:'بار الشاطئ',txns:390,amt:47000}]},
+  '2026-02': {label:'فبراير ٢٠٢٦', totals:{rev:504000,txns:3420,mada:277000,cash:70500,room:156500},
+    methods:[{name:'مدى / فيزا',val:277000,pct:55},{name:'Apple Pay',val:140000,pct:28},{name:'على الغرفة',val:156500,pct:31},{name:'نقدي',val:70500,pct:14}],
+    outlets:[{name:'الاستقبال',txns:390,amt:200000},{name:'المطعم',txns:1560,amt:173000},{name:'الكافي',txns:840,amt:59000},{name:'السبا',txns:310,amt:51000},{name:'بار الشاطئ',txns:320,amt:40000}]},
+  '2026-01': {label:'يناير ٢٠٢٦', totals:{rev:476000,txns:3230,mada:261800,cash:66600,room:147600},
+    methods:[{name:'مدى / فيزا',val:261800,pct:55},{name:'Apple Pay',val:132000,pct:28},{name:'على الغرفة',val:147600,pct:31},{name:'نقدي',val:66600,pct:14}],
+    outlets:[{name:'الاستقبال',txns:370,amt:190000},{name:'المطعم',txns:1470,amt:164000},{name:'الكافي',txns:790,amt:55000},{name:'السبا',txns:290,amt:48000},{name:'بار الشاطئ',txns:310,amt:38000}]},
+};
+
+window.onRptMonthChange = function() {
+  var sel = document.getElementById('rpt-month').value;
+  if (sel === 'live') { renderReport(); return; }
+  var m = MONTHLY_RPT[sel]; if (!m) return;
+  var total = m.outlets.reduce(function(s,o){ return s+o.amt; }, 0);
+  var totalVat = Math.round(m.totals.rev * 0.13);
+  document.getElementById('reportStats').innerHTML = [
+    {label:'إجمالي المبيعات', val: m.totals.rev.toLocaleString('ar-SA')+' <span style="font-size:10px;font-family:var(--font-ar);color:var(--fg-3);font-weight:400">ر.س</span>'},
+    {label:'عدد الحركات', val: m.totals.txns.toLocaleString('ar-SA')},
+    {label:'ضريبة VAT', val: totalVat.toLocaleString('ar-SA')+' <span style="font-size:10px;font-family:var(--font-ar);color:var(--fg-3);font-weight:400">ر.س</span>'},
+    {label:'متوسط الحركة', val: Math.round(m.totals.rev/m.totals.txns).toLocaleString('ar-SA')+' <span style="font-size:10px;font-family:var(--font-ar);color:var(--fg-3);font-weight:400">ر.س</span>'},
+  ].map(function(s){ return '<div class="rstat"><div class="rv">'+s.val+'</div><div class="rl">'+s.label+'</div></div>'; }).join('');
+  document.getElementById('methodBars').innerHTML = m.methods.map(function(mt){
+    var colors = ['#4A9476','#374151','#C9A85F','#92400E'];
+    var c = colors[m.methods.indexOf(mt)] || '#4A9476';
+    return '<div class="method-bar"><span class="label">'+mt.name+'</span>'
+      +'<div class="track"><div class="fill" style="width:'+mt.pct+'%;background:'+c+'"></div></div>'
+      +'<span class="val">'+mt.val.toLocaleString('ar-SA')+' <small style="font-size:9px;color:var(--fg-3)">ر.س</small></span></div>';
+  }).join('');
+  var thead = '<thead><tr><th>المنفذ</th><th>الحركات</th><th style="text-align:end">الإيراد</th><th style="text-align:end">النسبة</th><th>المستوى</th></tr></thead>';
+  var maxAmtM = Math.max.apply(null, m.outlets.map(function(o){ return o.amt; })) || 1;
+  var tbody = '<tbody>'+m.outlets.map(function(o){
+    var ratio = o.amt / maxAmtM;
+    var tColor = ratio<0.3?'#C0392B': ratio<0.5?'#D97706': ratio<0.8?'#22C55E':'#1B7A56';
+    var tIcon  = ratio<0.3?'🔴': ratio<0.5?'🟠': ratio<0.8?'🟢':'⭐';
+    return '<tr><td>'+o.name+'</td><td>'+o.txns+'</td>'
+      +'<td class="amt" style="color:'+tColor+';font-weight:600">'+o.amt.toLocaleString('ar-SA')+' <small>ر.س</small></td>'
+      +'<td class="pct" style="text-align:end">'+Math.round(o.amt/total*100)+'٪</td>'
+      +'<td><div style="display:flex;align-items:center;gap:6px"><div style="width:60px;height:6px;background:#f0f0f0;border-radius:3px;overflow:hidden"><div style="width:'+Math.round(ratio*100)+'%;height:100%;background:'+tColor+';border-radius:3px"></div></div><span>'+tIcon+'</span></div></td></tr>';
+  }).join('')+'</tbody>';
+  document.getElementById('outletTable').innerHTML = thead+tbody;
+  document.getElementById('detailReport').innerHTML = '<div style="padding:20px;text-align:center;color:var(--fg-3);font-size:13px">البيانات التفصيلية تُعرض للشهر الحالي فقط · للتقارير الأرشيفية استخدم التصدير</div>';
+  toast('تم تحميل تقرير '+m.label+' ✓');
+};
+
+/* ── PDF Export ── */
+function printPDF(title, bodyHTML) {
+  var w = window.open('', '_blank');
+  if (!w) { toast('تعذّر فتح نافذة الطباعة — تأكد من السماح بالنوافذ المنبثقة'); return; }
+  var css = 'body{font-family:"Segoe UI",Arial,sans-serif;background:#fff;color:#111;direction:rtl;padding:32px 40px;font-size:13px;line-height:1.6}'
+    +'h1{font-size:20px;color:#1B4D3D;margin:0 0 4px}'
+    +'h2{font-size:15px;color:#1B4D3D;margin:24px 0 10px;border-bottom:2px solid #C9A85F;padding-bottom:4px}'
+    +'.meta{font-size:11px;color:#888;margin-bottom:24px}'
+    +'table{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:12px}'
+    +'th{background:#1B4D3D;color:#fff;padding:8px 12px;text-align:right;font-weight:600}'
+    +'td{padding:7px 12px;border-bottom:1px solid #eee;text-align:right}'
+    +'tr:nth-child(even) td{background:#f7faf8}'
+    +'.cr{color:#1B7A56;font-weight:600}.dr{color:#C0392B;font-weight:600}'
+    +'.gold{color:#B8860B;font-weight:700}'
+    +'.tier-excellent{color:#1B7A56;font-weight:700}.tier-good{color:#22C55E;font-weight:600}.tier-low{color:#D97706;font-weight:600}.tier-critical{color:#C0392B;font-weight:700}'
+    +'.footer{font-size:10px;color:#bbb;margin-top:32px;border-top:1px solid #eee;padding-top:12px;text-align:center}'
+    +'@media print{@page{margin:15mm}}';
+  w.document.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"/><title>'+title+'</title><style>'+css+'</style></head><body>'
+    +'<h1>'+title+'</h1>'
+    +'<div class="meta">تاريخ الإصدار: '+new Date().toLocaleDateString('ar-SA',{year:'numeric',month:'long',day:'numeric'})+' &nbsp;·&nbsp; نظام ضيوف — Dheuof Hotel</div>'
+    +bodyHTML
+    +'<div class="footer">صدر بواسطة نظام ضيوف — Dheuof Hotel Management System</div>'
+    +'</body></html>');
+  w.document.close(); w.focus();
+  setTimeout(function(){ w.print(); }, 700);
+}
+
+window.exportPDFReport = function() {
+  var sel = document.getElementById('rpt-month').value;
+  var isMonth = sel !== 'live' && MONTHLY_RPT[sel];
+  var d = isMonth ? MONTHLY_RPT[sel] : PERIOD_DATA[REPORT_PERIOD];
+  var label = isMonth ? d.label : {today:'اليوم',week:'الأسبوع',month:'الشهر'}[REPORT_PERIOD];
+  var total = d.outlets.reduce(function(s,x){ return s+x.amt; }, 0);
+  var totalVat = Math.round(d.totals.rev * 0.13);
+
+  var summaryRows = '<tr><td>الفترة</td><td>'+label+'</td></tr>'
+    +'<tr><td>إجمالي المبيعات</td><td class="cr">'+d.totals.rev.toLocaleString('ar-SA')+' ر.س</td></tr>'
+    +'<tr><td>عدد الحركات</td><td>'+d.totals.txns.toLocaleString('ar-SA')+'</td></tr>'
+    +'<tr><td>ضريبة VAT ١٥٪</td><td>'+totalVat.toLocaleString('ar-SA')+' ر.س</td></tr>'
+    +'<tr><td>متوسط الحركة</td><td>'+Math.round(d.totals.rev/d.totals.txns).toLocaleString('ar-SA')+' ر.س</td></tr>';
+
+  var maxAmt2 = Math.max.apply(null, d.outlets.map(function(o){ return o.amt; })) || 1;
+  var outRows = d.outlets.map(function(o){
+    var r = o.amt/maxAmt2;
+    var tc = r<0.3?'tier-critical': r<0.5?'tier-low': r<0.8?'tier-good':'tier-excellent';
+    return '<tr><td>'+o.name+'</td><td>'+o.txns+'</td><td class="'+tc+'">'+o.amt.toLocaleString('ar-SA')+' ر.س</td><td>'+Math.round(o.amt/total*100)+'٪</td></tr>';
+  }).join('');
+
+  var txRows = TX.map(function(t){
+    return '<tr><td>'+t.id+'</td><td>'+t.outlet+'</td><td>'+t.customer+'</td><td>'+t.method+'</td><td>'+t.amt.toLocaleString('ar-SA')+' ر.س</td><td>'+t.status+'</td><td>'+t.time+'</td></tr>';
+  }).join('');
+
+  var html = '<h2>ملخص المبيعات</h2><table><thead><tr><th>البيان</th><th>القيمة</th></tr></thead><tbody>'+summaryRows+'</tbody></table>'
+    +'<h2>أداء المنافذ</h2><table><thead><tr><th>المنفذ</th><th>الحركات</th><th>الإيراد</th><th>النسبة</th></tr></thead><tbody>'+outRows+'</tbody></table>'
+    +(isMonth ? '' : '<h2>سجل الحركات التفصيلي</h2><table><thead><tr><th>#</th><th>المنفذ</th><th>العميل</th><th>طريقة الدفع</th><th>المبلغ</th><th>الحالة</th><th>الوقت</th></tr></thead><tbody>'+txRows+'</tbody></table>');
+
+  printPDF('تقرير نقاط البيع — '+label, html);
+  toast('جارٍ فتح نافذة الطباعة… ✓');
 };
 
 /* ── Accounting Link ── */
