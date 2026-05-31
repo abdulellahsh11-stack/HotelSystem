@@ -138,6 +138,33 @@
         <div class="hi-kpi"><div class="lbl">تحت الحد الأدنى</div><div class="v bad" id="kpi-low">—</div><div class="meta">تحتاج تعبئة</div></div>
       </div>
 
+      <!-- Stock Chart Row -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px" data-m-rise>
+        <!-- Status donut -->
+        <div style="background:var(--white);border:1px solid var(--hairline);border-radius:12px;padding:18px 22px;display:flex;align-items:center;gap:24px">
+          <div style="flex-shrink:0">
+            <div id="inv-donut" style="width:100px;height:100px;border-radius:50%;background:conic-gradient(var(--success-500) 0deg 300deg,var(--warning-500) 300deg 340deg,var(--danger-500) 340deg 360deg)">
+              <div style="margin:12px;background:var(--white);border-radius:50%;height:76px;display:grid;place-items:center;font-size:10px;font-weight:700;color:var(--ink-900);text-align:center;line-height:1.4">
+                <div id="inv-donut-lbl">—</div>
+              </div>
+            </div>
+          </div>
+          <div style="flex:1">
+            <div style="font-family:var(--font-ar-display);font-size:13px;font-weight:700;color:var(--ink-900);margin-bottom:12px">توزيع المخزون</div>
+            <div style="display:flex;flex-direction:column;gap:8px" id="inv-status-legend">
+              <div style="display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:2px;background:var(--success-500);flex-shrink:0"></span><span style="font-size:12px;color:var(--ink-700);flex:1">متوفر</span><span id="leg-ok" style="font-family:var(--font-en);font-size:12px;font-weight:600;color:var(--success-700)">—</span></div>
+              <div style="display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:2px;background:var(--warning-500);flex-shrink:0"></span><span style="font-size:12px;color:var(--ink-700);flex:1">منخفض</span><span id="leg-warn" style="font-family:var(--font-en);font-size:12px;font-weight:600;color:var(--warning-700)">—</span></div>
+              <div style="display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:2px;background:var(--danger-500);flex-shrink:0"></span><span style="font-size:12px;color:var(--ink-700);flex:1">ناقص</span><span id="leg-bad" style="font-family:var(--font-en);font-size:12px;font-weight:600;color:var(--danger-700)">—</span></div>
+            </div>
+          </div>
+        </div>
+        <!-- Category bar chart -->
+        <div style="background:var(--white);border:1px solid var(--hairline);border-radius:12px;padding:18px 22px">
+          <div style="font-family:var(--font-ar-display);font-size:13px;font-weight:700;color:var(--ink-900);margin-bottom:14px">الكميات حسب الفئة</div>
+          <div id="inv-cat-bars" style="display:flex;flex-direction:column;gap:8px"></div>
+        </div>
+      </div>
+
       <!-- Main layout: rail + table -->
       <div class="hi-wrap" data-m-rise>
 
@@ -383,6 +410,35 @@ function updateKPIs(){
   set('kpi-linen', linen);
   set('kpi-care',  care);
   set('kpi-low',   low);
+  /* ── Charts ── */
+  var nOk   = ITEMS.filter(function(it){ return statusOf(it)==='ok'; }).length;
+  var nWarn = ITEMS.filter(function(it){ return statusOf(it)==='warn'; }).length;
+  var nBad  = ITEMS.filter(function(it){ return statusOf(it)==='bad'; }).length;
+  var total = ITEMS.length || 1;
+  var okDeg   = Math.round(nOk/total*360);
+  var warnDeg = Math.round(nWarn/total*360);
+  var badDeg  = 360 - okDeg - warnDeg;
+  var donut = document.getElementById('inv-donut');
+  if (donut) donut.style.background = 'conic-gradient(var(--success-500) 0deg '+okDeg+'deg,var(--warning-500) '+okDeg+'deg '+(okDeg+warnDeg)+'deg,var(--danger-500) '+(okDeg+warnDeg)+'deg 360deg)';
+  var lbl = document.getElementById('inv-donut-lbl');
+  if (lbl) lbl.innerHTML = Math.round(nOk/total*100)+'%<br><span style="font-weight:400;color:var(--fg-3)">متوفر</span>';
+  set('leg-ok',   nOk);
+  set('leg-warn', nWarn);
+  set('leg-bad',  nBad);
+  /* Category bars */
+  var cats = ['لحف','مفارش','مخدات','أغطية مخدات','عناية شخصية','صابون ونظافة','عطور','سكر','نسكافيه','ماء'];
+  var catData = cats.map(function(c){ return {name:c, qty:ITEMS.filter(function(it){ return it.cat===c; }).reduce(function(s,it){ return s+it.qty; },0)}; }).filter(function(x){ return x.qty>0; });
+  var maxQty = Math.max.apply(null, catData.map(function(x){ return x.qty; })) || 1;
+  var barsEl = document.getElementById('inv-cat-bars');
+  if (barsEl) barsEl.innerHTML = catData.slice(0,6).map(function(c){
+    var pct = Math.round(c.qty/maxQty*100);
+    return '<div style="display:flex;align-items:center;gap:8px">'
+      +'<span style="font-size:11px;color:var(--ink-700);width:80px;text-align:end;flex-shrink:0">'+c.name+'</span>'
+      +'<div style="flex:1;height:8px;background:var(--paper-tint);border-radius:999px;overflow:hidden">'
+      +'<div style="height:100%;width:'+pct+'%;background:var(--brand-500);border-radius:999px;transition:width 600ms"></div></div>'
+      +'<span style="font-family:var(--font-en);font-size:11px;font-weight:600;color:var(--ink-800);width:28px">'+c.qty+'</span>'
+      +'</div>';
+  }).join('');
   // Rail counts
   var cats=['لحف','مفارش','مخدات','أغطية مخدات','عناية شخصية','صابون ونظافة','عطور','سكر','نسكافيه','ماء'];
   cats.forEach(function(c){

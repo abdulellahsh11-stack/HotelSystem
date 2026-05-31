@@ -287,6 +287,31 @@
         <div class="inv-kpi"><div class="lbl">تحت الحد الأدنى</div><div class="v bad" id="kpi-low2">—</div><div class="meta">تحتاج تعبئة</div></div>
       </div>
 
+      <!-- Warehouse Chart Row -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px" data-m-rise>
+        <div style="background:var(--white);border:1px solid var(--hairline);border-radius:12px;padding:18px 22px;display:flex;align-items:center;gap:24px">
+          <div style="flex-shrink:0">
+            <div id="wh-donut" style="width:100px;height:100px;border-radius:50%;background:conic-gradient(var(--success-500) 0deg 270deg,var(--warning-500) 270deg 330deg,var(--danger-500) 330deg 360deg)">
+              <div style="margin:12px;background:var(--white);border-radius:50%;height:76px;display:grid;place-items:center;font-size:10px;font-weight:700;color:var(--ink-900);text-align:center;line-height:1.4">
+                <div id="wh-donut-lbl">—</div>
+              </div>
+            </div>
+          </div>
+          <div style="flex:1">
+            <div style="font-family:var(--font-ar-display);font-size:13px;font-weight:700;color:var(--ink-900);margin-bottom:12px">حالة المخزون</div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:2px;background:var(--success-500);flex-shrink:0"></span><span style="font-size:12px;color:var(--ink-700);flex:1">جيدة</span><span id="wh-leg-ok" style="font-family:var(--font-en);font-size:12px;font-weight:600;color:var(--success-700)">—</span></div>
+              <div style="display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:2px;background:var(--warning-500);flex-shrink:0"></span><span style="font-size:12px;color:var(--ink-700);flex:1">تحت الحد</span><span id="wh-leg-warn" style="font-family:var(--font-en);font-size:12px;font-weight:600;color:var(--warning-700)">—</span></div>
+              <div style="display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:2px;background:var(--danger-500);flex-shrink:0"></span><span style="font-size:12px;color:var(--ink-700);flex:1">ناقص</span><span id="wh-leg-bad" style="font-family:var(--font-en);font-size:12px;font-weight:600;color:var(--danger-700)">—</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="background:var(--white);border:1px solid var(--hairline);border-radius:12px;padding:18px 22px">
+          <div style="font-family:var(--font-ar-display);font-size:13px;font-weight:700;color:var(--ink-900);margin-bottom:14px">الكميات حسب الفئة</div>
+          <div id="wh-cat-bars" style="display:flex;flex-direction:column;gap:8px"></div>
+        </div>
+      </div>
+
       <!-- Toolbar: search + category chips -->
       <div class="inv-toolbar" data-m-rise>
         <div class="inv-search">
@@ -491,6 +516,33 @@ function updateKPIs(){
   set('kpi-low',   low);
   var al = document.getElementById('inv-alert-txt');
   if(al) al.textContent = low+' '+(low===1?'صنف':'أصناف')+' وصلت للحد الأدنى أو أقل — يلزم التوريد';
+  /* ── Warehouse Charts ── */
+  var nOk   = ITEMS.filter(function(it){ return statusOf(it)==='ok'; }).length;
+  var nWarn = ITEMS.filter(function(it){ return statusOf(it)==='warn'; }).length;
+  var nBad  = ITEMS.filter(function(it){ return statusOf(it)==='bad'; }).length;
+  var total = ITEMS.length || 1;
+  var okDeg   = Math.round(nOk/total*360);
+  var warnDeg = Math.round(nWarn/total*360);
+  var donut = document.getElementById('wh-donut');
+  if (donut) donut.style.background = 'conic-gradient(var(--success-500) 0deg '+okDeg+'deg,var(--warning-500) '+okDeg+'deg '+(okDeg+warnDeg)+'deg,var(--danger-500) '+(okDeg+warnDeg)+'deg 360deg)';
+  var lbl = document.getElementById('wh-donut-lbl');
+  if (lbl) lbl.innerHTML = Math.round(nOk/total*100)+'%<br><span style="font-weight:400;color:var(--fg-3)">جيدة</span>';
+  set('wh-leg-ok',   nOk);
+  set('wh-leg-warn', nWarn);
+  set('wh-leg-bad',  nBad);
+  var cats = ['إضافة','أصباغ','كيمياء','أدوات','سباكة'];
+  var catData = cats.map(function(c){ return {name:c, qty:ITEMS.filter(function(it){ return it.cat===c; }).reduce(function(s,it){ return s+it.qty; },0)}; });
+  var maxQty = Math.max.apply(null, catData.map(function(x){ return x.qty; })) || 1;
+  var wbEl = document.getElementById('wh-cat-bars');
+  if (wbEl) wbEl.innerHTML = catData.map(function(c){
+    var pct = Math.round(c.qty/maxQty*100);
+    return '<div style="display:flex;align-items:center;gap:8px">'
+      +'<span style="font-size:11px;color:var(--ink-700);width:60px;text-align:end;flex-shrink:0">'+c.name+'</span>'
+      +'<div style="flex:1;height:8px;background:var(--paper-tint);border-radius:999px;overflow:hidden">'
+      +'<div style="height:100%;width:'+pct+'%;background:var(--brand-500);border-radius:999px;transition:width 600ms"></div></div>'
+      +'<span style="font-family:var(--font-en);font-size:11px;font-weight:600;color:var(--ink-800);width:28px">'+c.qty+'</span>'
+      +'</div>';
+  }).join('');
 }
 
 /* ════════════════════════════════════════
