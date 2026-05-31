@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-screen-label="17 Bookings">
+<head>
+<meta charset="utf-8"/>
+<title>ضيوف · حجوزات القنوات</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="stylesheet" href="/static/nuzul/colors_and_type.css"/>
+<link rel="stylesheet" href="/static/nuzul/assets/animations.css"/>
+<link rel="stylesheet" href="/static/nuzul/shared/chrome.css"/>
+<link rel="stylesheet" href="/static/nuzul/shared/module.css"/>
+<style>
+  body { background: var(--paper-tint); }
+
+  /* ── Channel banner ──────────────────────────────────────── */
+  .bk-banner {
+    background: linear-gradient(135deg, #1a237e 0%, #0d47a1 100%);
+    color: #fff;
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin-bottom: 22px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 22px;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .bk-banner::after { content:""; position:absolute; top:-40px; inset-inline-end:-40px; width:200px; height:200px; border-radius:999px; background:radial-gradient(circle,rgba(255,214,0,.18),transparent 60%); }
+  .bk-banner > * { position: relative; }
+  .bk-banner .ic { width:64px; height:64px; background:#FFD600; color:#0d47a1; border-radius:14px; display:grid; place-items:center; font-size:30px; }
+  .bk-banner .ar { font-family:var(--font-ar-display); font-weight:600; font-size:22px; }
+  .bk-banner .en { font-family:var(--font-en); font-style:italic; font-size:12px; color:rgba(255,255,255,.7); margin-top:3px; }
+  .bk-banner .meta { display:flex; gap:16px; align-items:center; }
+  .bk-banner .badge { background:rgba(255,255,255,.12); border:1px solid rgba(255,214,0,.3); border-radius:8px; padding:8px 14px; text-align:center; }
+  .bk-banner .badge .v { font-family:var(--font-en); font-size:22px; font-weight:700; color:#FFD600; }
+  .bk-banner .badge .l { font-size:10px; color:rgba(255,255,255,.6); margin-top:3px; }
+
+  /* ── Channel tabs ────────────────────────────────────────── */
+  .bk-tabs { display:flex; gap:6px; margin-bottom:20px; flex-wrap:wrap; }
+  .bk-tab { padding:8px 16px; border-radius:8px; font-size:12px; font-family:var(--font-ar); border:1px solid var(--hairline); background:var(--white); color:var(--ink-700); cursor:pointer; transition:all 140ms; display:flex; align-items:center; gap:6px; }
+  .bk-tab.on { background:var(--brand-700); color:var(--paper); border-color:var(--brand-700); }
+  .bk-tab .dot { width:8px; height:8px; border-radius:999px; background:currentColor; }
+
+  /* ── Layout ──────────────────────────────────────────────── */
+  .bk-layout { display:grid; grid-template-columns:1fr 360px; gap:20px; }
+
+  /* ── Booking list ────────────────────────────────────────── */
+  .bk-list { background:var(--white); border:1px solid var(--hairline); border-radius:14px; overflow:hidden; }
+  .bk-list-head { padding:14px 20px; border-bottom:1px solid var(--hairline); display:flex; justify-content:space-between; align-items:center; }
+  .bk-list-head .ttl { font-family:var(--font-ar-display); font-weight:600; font-size:15px; color:var(--ink-900); }
+  .bk-list-head .sub { font-size:11px; color:var(--fg-3); margin-top:2px; }
+
+  .bk-row { display:grid; grid-template-columns:auto 2fr 1fr 1fr 1fr 120px; gap:12px; align-items:center; padding:14px 20px; border-top:1px solid var(--hairline); font-size:13px; transition:background 120ms; cursor:pointer; }
+  .bk-row:hover { background:var(--surface-2); }
+  .bk-row.is-head { background:var(--surface-2); font-size:11px; color:var(--fg-3); font-weight:500; border-top:none; cursor:default; }
+  .bk-row.is-head:hover { background:var(--surface-2); }
+
+  .bk-ch-logo { width:32px; height:32px; border-radius:8px; display:grid; place-items:center; font-size:16px; font-weight:700; flex-shrink:0; }
+  .bk-ch-logo.agoda { background:#e53935; color:#fff; }
+  .bk-ch-logo.booking { background:#003580; color:#fff; font-size:12px; }
+  .bk-ch-logo.expedia { background:#FFDD00; color:#003087; font-size:11px; }
+  .bk-ch-logo.almosafer { background:#00897B; color:#fff; font-size:11px; }
+  .bk-ch-logo.airbnb { background:#FF5A5F; color:#fff; font-size:13px; }
+  .bk-ch-logo.direct { background:var(--brand-700); color:#fff; font-size:12px; }
+
+  .bk-guest-name { font-weight:500; color:var(--ink-900); }
+  .bk-guest-sub { font-size:11px; color:var(--fg-3); margin-top:2px; }
+  .bk-amount { font-family:var(--font-en); font-variant-numeric:tabular-nums; font-weight:600; color:var(--ink-900); }
+  .bk-comm { font-family:var(--font-en); font-size:12px; color:var(--danger-700); font-weight:600; }
+  .bk-net { font-family:var(--font-en); font-variant-numeric:tabular-nums; font-weight:700; color:var(--brand-700); }
+  .bk-status { display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:999px; font-size:11px; font-weight:600; }
+  .bk-status.conf { background:#D1FAE5; color:#065F46; }
+  .bk-status.pend { background:#FEF3C7; color:#D97706; }
+  .bk-status.canc { background:#FEE2E2; color:#C0392B; }
+  .bk-status.chk { background:#DBEAFE; color:#1D4ED8; }
+
+  /* ── Sidebar panels ──────────────────────────────────────── */
+  .bk-side { display:flex; flex-direction:column; gap:16px; }
+  .bk-panel { background:var(--white); border:1px solid var(--hairline); border-radius:14px; overflow:hidden; }
+  .bk-panel-head { padding:14px 18px; border-bottom:1px solid var(--hairline); }
+  .bk-panel-head .ttl { font-family:var(--font-ar-display); font-weight:600; font-size:14px; color:var(--ink-900); }
+  .bk-panel-head .sub { font-size:11px; color:var(--fg-3); margin-top:2px; }
+
+  /* Channel breakdown bars */
+  .ch-bar-row { padding:10px 16px; display:flex; align-items:center; gap:10px; border-top:1px solid var(--hairline); font-size:12px; }
+  .ch-bar-row:first-of-type { border-top:none; }
+  .ch-bar-row .ch-name { width:80px; font-weight:500; color:var(--ink-800); flex-shrink:0; }
+  .ch-bar-row .ch-bar { flex:1; height:6px; background:var(--sand); border-radius:999px; overflow:hidden; }
+  .ch-bar-row .ch-bar div { height:6px; border-radius:999px; }
+  .ch-bar-row .ch-pct { width:36px; text-align:left; font-family:var(--font-en); font-weight:600; color:var(--fg-2); font-size:11px; }
+
+  /* Commission summary */
+  .comm-box { margin:14px 16px; background:linear-gradient(135deg,#FEF2F2,#FFF); border:1px solid #FECACA; border-radius:10px; padding:14px 16px; }
+  .comm-box .ttl { font-size:12px; color:#991B1B; font-weight:600; margin-bottom:10px; }
+  .comm-item { display:flex; justify-content:space-between; font-size:12px; padding:4px 0; border-top:1px solid rgba(0,0,0,.06); }
+  .comm-item:first-of-type { border-top:none; }
+  .comm-item .label { color:var(--fg-2); }
+  .comm-item .val { font-family:var(--font-en); font-weight:600; color:#C0392B; }
+  .comm-item.net .label { color:var(--brand-700); font-weight:600; }
+  .comm-item.net .val { color:var(--brand-700); }
+
+  /* Quick add booking */
+  .bk-add-form { padding:16px 18px; display:flex; flex-direction:column; gap:10px; }
+  .bk-add-form input, .bk-add-form select {
+    width:100%; padding:9px 11px; border:1px solid var(--hairline); border-radius:8px;
+    font-family:var(--font-ar); font-size:12px; color:var(--ink-900); box-sizing:border-box;
+  }
+  .bk-add-btn { padding:10px; background:var(--brand-700); color:var(--paper); border:none; border-radius:8px; font-family:var(--font-ar); font-size:13px; font-weight:600; cursor:pointer; width:100%; }
+
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    .bk-layout { grid-template-columns:1fr; }
+    .bk-row { grid-template-columns:auto 1fr; }
+    .bk-row .bk-amount, .bk-row .bk-comm, .bk-row .bk-net { display:none; }
+    .bk-banner .meta { display:none; }
+    .bk-banner { grid-template-columns:auto 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="nz-app">
+  <div id="sidebar-slot"></div>
+  <div>
+    <div id="topbar-slot"></div>
+    <main class="nz-main">
+
+      <div class="mod-head" data-m-rise>
+        <div class="left">
+          <div class="num-row">
+            <span class="num">17 - BOOKINGS</span>
+            <span class="en-tag">OTA Channel Bookings · Android · iOS · Browser</span>
+          </div>
+          <h1>حجوزات القنوات</h1>
+          <p class="sub">إدارة حجوزات Agoda وBooking وExpedia والموسافر — مع خصم عمولة ٥٪ تلقائياً، وربط مباشر بسجل الضيف في نظام ضيوف.</p>
+        </div>
+        <div class="actions">
+          <button onclick="openCommSettings()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">⚙ العمولة: <span id="hdr-comm-pct">٥٪</span></button>
+          <button onclick="exportCSV()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">📊 Excel</button>
+          <button onclick="exportPDF()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">🖨 تقرير PDF</button>
+          <button onclick="openAddBooking()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--brand-700);color:var(--paper);border:none;cursor:pointer">+ حجز جديد</button>
+        </div>
+      </div>
+
+      <!-- Banner -->
+      <div class="bk-banner" data-m-rise>
+        <div class="ic">🏨</div>
+        <div>
+          <div class="ar">حجوزات القنوات الإلكترونية · ٦ قنوات نشطة</div>
+          <div class="en">OTA Bookings — Agoda · Booking.com · Expedia · Almosafer · Airbnb · Direct · 5% commission auto-deducted</div>
+        </div>
+        <div class="meta">
+          <div class="badge"><div class="v">٢٢٤</div><div class="l">حجز هذا الشهر</div></div>
+          <div class="badge"><div class="v">٦٨٬٤٠٠</div><div class="l">ر.س إجمالي</div></div>
+          <div class="badge"><div class="v">٣٬٤٢٠</div><div class="l">ر.س عمولة ٥٪</div></div>
+          <div class="badge"><div class="v">٦٤٬٩٨٠</div><div class="l">ر.س صافي</div></div>
+        </div>
+      </div>
+
+      <!-- Channel filter tabs -->
+      <div class="bk-tabs" data-m-rise>
+        <button class="bk-tab on" onclick="filterChannel('all',this)"><span class="dot"></span>الكل (٢٢٤)</button>
+        <button class="bk-tab" onclick="filterChannel('agoda',this)" style="color:#e53935"><span class="dot" style="background:#e53935"></span>Agoda (٦٢)</button>
+        <button class="bk-tab" onclick="filterChannel('booking',this)" style="color:#003580"><span class="dot" style="background:#003580"></span>Booking.com (٨٨)</button>
+        <button class="bk-tab" onclick="filterChannel('expedia',this)"><span class="dot" style="background:#FFDD00"></span>Expedia (٢٤)</button>
+        <button class="bk-tab" onclick="filterChannel('almosafer',this)"><span class="dot" style="background:#00897B"></span>الموسافر (٢٩)</button>
+        <button class="bk-tab" onclick="filterChannel('airbnb',this)" style="color:#FF5A5F"><span class="dot" style="background:#FF5A5F"></span>Airbnb (١٣)</button>
+        <button class="bk-tab" onclick="filterChannel('direct',this)"><span class="dot" style="background:var(--brand-700)"></span>مباشر (٨)</button>
+      </div>
+
+      <div class="bk-layout" data-m-rise>
+
+        <!-- Booking list -->
+        <div>
+          <div class="bk-list">
+            <div class="bk-list-head">
+              <div><div class="ttl">قائمة الحجوزات</div><div class="sub">Bookings · مرتبة بتاريخ الوصول · عمولة ٥٪ محسوبة تلقائياً</div></div>
+              <div style="display:flex;gap:8px;align-items:center">
+                <input type="text" oninput="searchBookings(this.value)" placeholder="بحث..." style="padding:7px 12px;border:1px solid var(--hairline);border-radius:8px;font-family:var(--font-ar);font-size:12px;width:160px"/>
+              </div>
+            </div>
+            <div class="bk-row is-head">
+              <span>القناة</span>
+              <span>الضيف</span>
+              <span>المبلغ</span>
+              <span>عمولة ٥٪</span>
+              <span>الصافي</span>
+              <span>الحالة</span>
+            </div>
+            <div id="bookings-list">
+              <!-- Agoda bookings -->
+              <div class="bk-row" data-ch="agoda" onclick="showDetail('B001')">
+                <div class="bk-ch-logo agoda">A</div>
+                <div><div class="bk-guest-name">Rajesh Kumar</div><div class="bk-guest-sub">غرفة مزدوجة · ٣ ليالٍ · ٢ يونيو - ٥ يونيو</div></div>
+                <div class="bk-amount">٩٠٠ ر.س</div>
+                <div class="bk-comm">−٤٥ ر.س</div>
+                <div class="bk-net">٨٥٥ ر.س</div>
+                <span class="bk-status conf">✓ مؤكد</span>
+              </div>
+              <div class="bk-row" data-ch="agoda" onclick="showDetail('B002')">
+                <div class="bk-ch-logo agoda">A</div>
+                <div><div class="bk-guest-name">Wei Zhang</div><div class="bk-guest-sub">جناح عائلي · ٥ ليالٍ · ٣ يونيو</div></div>
+                <div class="bk-amount">٢٥٠٠ ر.س</div>
+                <div class="bk-comm">−١٢٥ ر.س</div>
+                <div class="bk-net">٢٣٧٥ ر.س</div>
+                <span class="bk-status pend">⏳ قيد التأكيد</span>
+              </div>
+              <!-- Booking.com -->
+              <div class="bk-row" data-ch="booking" onclick="showDetail('B003')">
+                <div class="bk-ch-logo booking">B.</div>
+                <div><div class="bk-guest-name">Maria Santos</div><div class="bk-guest-sub">غرفة مفردة · ٢ ليلتان · ٤ يونيو</div></div>
+                <div class="bk-amount">٤٨٠ ر.س</div>
+                <div class="bk-comm">−٢٤ ر.س</div>
+                <div class="bk-net">٤٥٦ ر.س</div>
+                <span class="bk-status chk">⬆ تسجيل دخول</span>
+              </div>
+              <div class="bk-row" data-ch="booking" onclick="showDetail('B004')">
+                <div class="bk-ch-logo booking">B.</div>
+                <div><div class="bk-guest-name">Thomas Müller</div><div class="bk-guest-sub">غرفة مزدوجة Deluxe · ٧ ليالٍ · ٥ يونيو</div></div>
+                <div class="bk-amount">٤٢٠٠ ر.س</div>
+                <div class="bk-comm">−٢١٠ ر.س</div>
+                <div class="bk-net">٣٩٩٠ ر.س</div>
+                <span class="bk-status conf">✓ مؤكد</span>
+              </div>
+              <!-- Expedia -->
+              <div class="bk-row" data-ch="expedia" onclick="showDetail('B005')">
+                <div class="bk-ch-logo expedia">E</div>
+                <div><div class="bk-guest-name">Emily Johnson</div><div class="bk-guest-sub">غرفة مزدوجة · ٤ ليالٍ · ٦ يونيو</div></div>
+                <div class="bk-amount">١٢٠٠ ر.س</div>
+                <div class="bk-comm">−٦٠ ر.س</div>
+                <div class="bk-net">١١٤٠ ر.س</div>
+                <span class="bk-status conf">✓ مؤكد</span>
+              </div>
+              <!-- Almosafer -->
+              <div class="bk-row" data-ch="almosafer" onclick="showDetail('B006')">
+                <div class="bk-ch-logo almosafer">م</div>
+                <div><div class="bk-guest-name">سعود الموسى</div><div class="bk-guest-sub">جناح · ٢ ليلتان · ٦ يونيو</div></div>
+                <div class="bk-amount">١٦٠٠ ر.س</div>
+                <div class="bk-comm">−٨٠ ر.س</div>
+                <div class="bk-net">١٥٢٠ ر.س</div>
+                <span class="bk-status conf">✓ مؤكد</span>
+              </div>
+              <!-- Airbnb -->
+              <div class="bk-row" data-ch="airbnb" onclick="showDetail('B007')">
+                <div class="bk-ch-logo airbnb">⌂</div>
+                <div><div class="bk-guest-name">Layla Al-Ahmad</div><div class="bk-guest-sub">غرفة Deluxe · ١ ليلة · ٧ يونيو</div></div>
+                <div class="bk-amount">٣٦٠ ر.س</div>
+                <div class="bk-comm">−١٨ ر.س</div>
+                <div class="bk-net">٣٤٢ ر.س</div>
+                <span class="bk-status pend">⏳ قيد التأكيد</span>
+              </div>
+              <!-- Direct -->
+              <div class="bk-row" data-ch="direct" onclick="showDetail('B008')">
+                <div class="bk-ch-logo direct">✓</div>
+                <div><div class="bk-guest-name">محمد الغامدي</div><div class="bk-guest-sub">غرفة مزدوجة · ٣ ليالٍ · ٧ يونيو</div></div>
+                <div class="bk-amount">٩٠٠ ر.س</div>
+                <div class="bk-comm">−٠ ر.س</div>
+                <div class="bk-net">٩٠٠ ر.س</div>
+                <span class="bk-status conf">✓ مباشر</span>
+              </div>
+              <!-- Cancellation -->
+              <div class="bk-row" data-ch="agoda" onclick="showDetail('B009')">
+                <div class="bk-ch-logo agoda">A</div>
+                <div><div class="bk-guest-name">Yuki Tanaka</div><div class="bk-guest-sub">غرفة مفردة · ٢ ليلتان · ١ يونيو</div></div>
+                <div class="bk-amount">٤٨٠ ر.س</div>
+                <div class="bk-comm">−٢٤ ر.س</div>
+                <div class="bk-net">٤٥٦ ر.س</div>
+                <span class="bk-status canc">✕ ملغي</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="bk-side">
+
+          <!-- Channel breakdown -->
+          <div class="bk-panel">
+            <div class="bk-panel-head"><div class="ttl">توزيع القنوات</div><div class="sub">Channel distribution · هذا الشهر</div></div>
+            <div class="ch-bar-row"><span class="ch-name" style="color:#003580">Booking</span><div class="ch-bar"><div style="width:39%;background:#003580"></div></div><span class="ch-pct">٣٩٪</span></div>
+            <div class="ch-bar-row"><span class="ch-name" style="color:#e53935">Agoda</span><div class="ch-bar"><div style="width:28%;background:#e53935"></div></div><span class="ch-pct">٢٨٪</span></div>
+            <div class="ch-bar-row"><span class="ch-name" style="color:#00897B">الموساف.</span><div class="ch-bar"><div style="width:13%;background:#00897B"></div></div><span class="ch-pct">١٣٪</span></div>
+            <div class="ch-bar-row"><span class="ch-name" style="color:#D97706">Expedia</span><div class="ch-bar"><div style="width:11%;background:#D97706"></div></div><span class="ch-pct">١١٪</span></div>
+            <div class="ch-bar-row"><span class="ch-name" style="color:#FF5A5F">Airbnb</span><div class="ch-bar"><div style="width:6%;background:#FF5A5F"></div></div><span class="ch-pct">٦٪</span></div>
+            <div class="ch-bar-row"><span class="ch-name" style="color:var(--brand-700)">مباشر</span><div class="ch-bar"><div style="width:4%;background:var(--brand-700)"></div></div><span class="ch-pct">٤٪</span></div>
+          </div>
+
+          <!-- Commission summary -->
+          <div class="bk-panel">
+            <div class="bk-panel-head" style="display:flex;justify-content:space-between;align-items:center">
+              <div><div class="ttl">ملخص العمولات · <span id="panel-comm-pct" style="color:var(--brand-700)">٥٪</span></div><div class="sub">Commission summary · auto-deducted</div></div>
+              <button onclick="openCommSettings()" style="background:var(--surface-2);border:1px solid var(--hairline);border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:var(--font-ar)">⚙ تخصيص</button>
+            </div>
+            <!-- Calculation steps -->
+            <div style="margin:12px 16px 0;background:linear-gradient(135deg,#f0f7f4,#fff);border:1px solid #c6ddd7;border-radius:10px;padding:13px 14px">
+              <div style="font-size:11px;font-weight:600;color:#1B4D3D;margin-bottom:8px">📐 خطوات الحساب</div>
+              <div style="font-size:11px;display:flex;flex-direction:column;gap:5px">
+                <div style="display:flex;justify-content:space-between;padding:6px 8px;background:#fff;border-radius:5px;border:1px solid #e8eceb"><span style="color:var(--fg-2)">① مبلغ الحجز</span><span style="font-family:var(--font-en);font-weight:600">X ر.س</span></div>
+                <div style="display:flex;justify-content:space-between;padding:6px 8px;background:#FEF2F2;border-radius:5px;border:1px solid #FECACA"><span style="color:#991B1B">② عمولة القناة (<span class="calc-pct">٥</span>٪)</span><span style="font-family:var(--font-en);font-weight:600;color:#C0392B">− X × <span class="calc-pct">٥</span>٪</span></div>
+                <div style="display:flex;justify-content:space-between;padding:6px 8px;background:#D1FAE5;border-radius:5px;border:1px solid #A7F3D0"><span style="color:#1B4D3D;font-weight:700">③ الصافي المحصّل</span><span style="font-family:var(--font-en);font-weight:700;color:#1B7A56">X − عمولة</span></div>
+                <div style="font-size:10px;color:var(--fg-3);margin-top:2px">✓ الحجوزات المباشرة: عمولة ٠٪</div>
+              </div>
+            </div>
+            <div class="comm-box" style="margin-top:12px">
+              <div class="ttl">💸 عمولات هذا الشهر</div>
+              <div class="comm-item"><span class="label">Agoda</span><span class="val">−١٬٥٥٠ ر.س</span></div>
+              <div class="comm-item"><span class="label">Booking.com</span><span class="val">−١٬١٠٠ ر.س</span></div>
+              <div class="comm-item"><span class="label">Expedia</span><span class="val">−٣٠٠ ر.س</span></div>
+              <div class="comm-item"><span class="label">الموسافر</span><span class="val">−٣٦٣ ر.س</span></div>
+              <div class="comm-item"><span class="label">Airbnb</span><span class="val">−١٦٣ ر.س</span></div>
+              <div class="comm-item"><span class="label">مباشر (بلا عمولة)</span><span class="val" style="color:var(--brand-700)">٠ ر.س</span></div>
+              <div style="height:1px;background:rgba(0,0,0,.1);margin:10px 0"></div>
+              <div class="comm-item"><span class="label" style="font-weight:700">إجمالي العمولات</span><span class="val" style="font-size:14px">−٣٬٤٧٦ ر.س</span></div>
+              <div class="comm-item net"><span class="label">✓ الصافي المحصّل</span><span class="val" style="color:var(--brand-700)">٦٤٬٩٢٤ ر.س</span></div>
+            </div>
+          </div>
+
+          <!-- Quick add booking -->
+          <div class="bk-panel">
+            <div class="bk-panel-head"><div class="ttl">إضافة حجز سريع</div><div class="sub">Quick booking · syncs with guests module</div></div>
+            <div class="bk-add-form">
+              <input type="text" id="q-name" placeholder="اسم الضيف"/>
+              <select id="q-ch">
+                <option value="agoda">Agoda (-٥٪)</option>
+                <option value="booking">Booking.com (-٥٪)</option>
+                <option value="expedia">Expedia (-٥٪)</option>
+                <option value="almosafer">الموسافر (-٥٪)</option>
+                <option value="airbnb">Airbnb (-٥٪)</option>
+                <option value="direct">مباشر (بلا عمولة)</option>
+              </select>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <input type="date" id="q-in"/>
+                <input type="date" id="q-out"/>
+              </div>
+              <input type="number" id="q-amt" placeholder="المبلغ (ر.س)"/>
+              <button class="bk-add-btn" onclick="quickAdd()">إضافة وربط بالضيف</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- Commission settings modal -->
+<div id="comm-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:400;align-items:center;justify-content:center">
+  <div style="background:var(--white);border-radius:18px;padding:30px;width:440px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.25)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px">
+      <div style="font-family:var(--font-ar-display);font-size:18px;font-weight:700">⚙ إعدادات نسبة العمولة</div>
+      <button onclick="closeCommSettings()" style="background:var(--surface-2);border:none;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:14px">✕</button>
+    </div>
+
+    <div style="margin-bottom:18px">
+      <label style="font-size:13px;font-weight:600;color:var(--ink-800);display:block;margin-bottom:12px">نسبة العمولة للقنوات الإلكترونية (OTA)</label>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+        <input type="range" id="comm-slider" min="0" max="30" step="0.5" oninput="syncCommInputs('slider')" style="flex:1;accent-color:var(--brand-700)"/>
+        <div style="font-family:var(--font-en);font-size:28px;font-weight:700;color:var(--brand-700);min-width:72px;text-align:center;background:var(--surface-2);border-radius:10px;padding:8px 12px" id="comm-slider-display">5%</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <input type="number" id="comm-num-input" min="0" max="30" step="0.5" oninput="syncCommInputs('num')" style="width:90px;padding:10px;border:1px solid var(--hairline);border-radius:8px;font-size:18px;text-align:center;font-family:var(--font-en);font-weight:700"/>
+        <span style="font-size:15px;color:var(--fg-2);font-weight:500">٪ من إجمالي مبلغ الحجز</span>
+      </div>
+    </div>
+
+    <!-- Live calculation steps preview -->
+    <div style="background:linear-gradient(135deg,#f0f7f4,#fff);border:1px solid #c6ddd7;border-radius:12px;padding:16px;margin-bottom:16px">
+      <div style="font-size:12px;font-weight:700;color:#1B4D3D;margin-bottom:12px">📐 مثال حساب لحجز بـ 1,000 ر.س</div>
+      <div style="display:flex;flex-direction:column;gap:8px;font-size:13px">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#fff;border-radius:8px;border:1px solid #e8eceb">
+          <span style="color:var(--fg-2)">① مبلغ الحجز الإجمالي</span>
+          <span style="font-family:var(--font-en);font-weight:700;font-size:15px">1,000 ر.س</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#FEF2F2;border-radius:8px;border:1px solid #FECACA">
+          <span style="color:#991B1B">② عمولة القناة (<span id="prev-pct-label">5</span>٪)</span>
+          <span style="font-family:var(--font-en);font-weight:700;color:#C0392B;font-size:15px" id="prev-comm-val">−50 ر.س</span>
+        </div>
+        <div style="height:1px;background:#c6ddd7;margin:2px 0"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#D1FAE5;border-radius:8px;border:1px solid #A7F3D0">
+          <span style="color:#1B4D3D;font-weight:700">③ الصافي المحصّل</span>
+          <span style="font-family:var(--font-en);font-weight:700;color:#1B7A56;font-size:17px" id="prev-net-val">950 ر.س</span>
+        </div>
+        <div style="font-size:11px;color:var(--fg-3);padding:4px 0">✓ الحجوزات المباشرة تُعفى من العمولة تلقائياً</div>
+      </div>
+    </div>
+
+    <div style="font-size:11px;color:var(--fg-3);margin-bottom:18px;line-height:1.7;background:var(--surface-2);border-radius:8px;padding:10px 12px">
+      💾 تُحفظ النسبة تلقائياً في هذا المتصفح وتُطبق على جميع الحجوزات والتقارير.
+    </div>
+    <div style="display:flex;gap:8px">
+      <button onclick="saveCommRate()" style="flex:1;padding:12px;background:var(--brand-700);color:#fff;border:none;border-radius:10px;font-family:var(--font-ar);font-size:14px;font-weight:700;cursor:pointer">💾 حفظ النسبة</button>
+      <button onclick="resetCommRate()" style="padding:12px 16px;background:var(--surface-2);color:var(--ink-700);border:1px solid var(--hairline);border-radius:10px;font-family:var(--font-ar);font-size:12px;cursor:pointer">إعادة تعيين (٥٪)</button>
+    </div>
+  </div>
+</div>
+
+<!-- Booking detail modal -->
+<div id="bk-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;align-items:center;justify-content:center">
+  <div id="bk-modal-body" style="background:var(--white);border-radius:16px;padding:32px;width:480px;max-height:90vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div style="font-family:var(--font-ar-display);font-size:18px;font-weight:600">تفاصيل الحجز</div>
+      <button onclick="closeModal()" style="background:var(--surface-2);border:none;border-radius:8px;padding:8px 12px;cursor:pointer">✕</button>
+    </div>
+    <div id="bk-modal-content"></div>
+  </div>
+</div>
+
+<script src="/static/nuzul/shared/sidebar.js"></script>
+<script>StaticSidebar.mount({ activeId: "17-bookings", placeholder: "بحث في الحجوزات..." });</script>
+<script src="/static/nuzul/assets/animations.js"></script>
+<script>
+setTimeout(function(){
+  document.querySelectorAll('[data-m-rise],[data-m-rise-stagger]').forEach(function(el){ el.classList.add('is-in'); });
+}, 80);
+
+// ── Booking data ──────────────────────────────────────────────
+var BOOKINGS = [
+  {id:'B001', guest:'Rajesh Kumar',   ch:'agoda',     room:'غرفة مزدوجة',      nights:3, amount:900,  checkIn:'2026-06-02', status:'conf', phone:'+91 987 654 3210', email:'rajesh@example.com'},
+  {id:'B002', guest:'Wei Zhang',      ch:'agoda',     room:'جناح عائلي',        nights:5, amount:2500, checkIn:'2026-06-03', status:'pend', phone:'+86 138 0013 8000', email:'wei@example.com'},
+  {id:'B003', guest:'Maria Santos',   ch:'booking',   room:'غرفة مفردة',        nights:2, amount:480,  checkIn:'2026-06-04', status:'chk',  phone:'+63 912 345 6789', email:'maria@example.com'},
+  {id:'B004', guest:'Thomas Müller',  ch:'booking',   room:'غرفة Deluxe',       nights:7, amount:4200, checkIn:'2026-06-05', status:'conf', phone:'+49 151 234 5678', email:'thomas@example.com'},
+  {id:'B005', guest:'Emily Johnson',  ch:'expedia',   room:'غرفة مزدوجة',      nights:4, amount:1200, checkIn:'2026-06-06', status:'conf', phone:'+1 310 555 0192', email:'emily@example.com'},
+  {id:'B006', guest:'سعود الموسى',   ch:'almosafer', room:'جناح',              nights:2, amount:1600, checkIn:'2026-06-06', status:'conf', phone:'0501234567', email:'saud@example.com'},
+  {id:'B007', guest:'Layla Al-Ahmad', ch:'airbnb',    room:'غرفة Deluxe',       nights:1, amount:360,  checkIn:'2026-06-07', status:'pend', phone:'0551234567', email:'layla@example.com'},
+  {id:'B008', guest:'محمد الغامدي',  ch:'direct',    room:'غرفة مزدوجة',      nights:3, amount:900,  checkIn:'2026-06-07', status:'conf', phone:'0561234567', email:''},
+  {id:'B009', guest:'Yuki Tanaka',    ch:'agoda',     room:'غرفة مفردة',        nights:2, amount:480,  checkIn:'2026-06-01', status:'canc', phone:'+81 90 1234 5678', email:'yuki@example.com'},
+];
+// ── Commission rate: load from localStorage (default 5%) ─────
+var COMM_RATE = (function(){
+  var s = localStorage.getItem('dheuof_comm_rate');
+  return (s !== null && !isNaN(parseFloat(s))) ? parseFloat(s) : 0.05;
+})();
+var CH_NAMES = {agoda:'Agoda', booking:'Booking.com', expedia:'Expedia', almosafer:'الموسافر', airbnb:'Airbnb', direct:'مباشر'};
+
+// ── Filter ────────────────────────────────────────────────────
+window.filterChannel = function(ch, btn) {
+  document.querySelectorAll('.bk-tab').forEach(function(b){ b.classList.remove('on'); });
+  btn.classList.add('on');
+  document.querySelectorAll('#bookings-list .bk-row').forEach(function(row){
+    row.style.display = (ch === 'all' || row.dataset.ch === ch) ? '' : 'none';
+  });
+};
+
+window.searchBookings = function(q) {
+  q = q.toLowerCase();
+  document.querySelectorAll('#bookings-list .bk-row').forEach(function(row){
+    row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+};
+
+// ── Detail modal ──────────────────────────────────────────────
+window.showDetail = function(id) {
+  var bk = BOOKINGS.find(function(b){ return b.id === id; });
+  if (!bk) return;
+  var comm = bk.ch === 'direct' ? 0 : Math.round(bk.amount * COMM_RATE);
+  var net  = bk.amount - comm;
+  var statusMap = {conf:'✓ مؤكد', pend:'⏳ قيد التأكيد', canc:'✕ ملغي', chk:'⬆ تسجيل دخول'};
+  document.getElementById('bk-modal-content').innerHTML =
+    '<div style="display:flex;flex-direction:column;gap:12px;font-size:13px">'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
+    +'<div style="background:var(--surface-2);border-radius:8px;padding:12px"><div style="font-size:10px;color:var(--fg-3)">الضيف</div><div style="font-weight:600;margin-top:4px">'+bk.guest+'</div></div>'
+    +'<div style="background:var(--surface-2);border-radius:8px;padding:12px"><div style="font-size:10px;color:var(--fg-3)">القناة</div><div style="font-weight:600;margin-top:4px">'+CH_NAMES[bk.ch]+'</div></div>'
+    +'<div style="background:var(--surface-2);border-radius:8px;padding:12px"><div style="font-size:10px;color:var(--fg-3)">الغرفة</div><div style="font-weight:600;margin-top:4px">'+bk.room+'</div></div>'
+    +'<div style="background:var(--surface-2);border-radius:8px;padding:12px"><div style="font-size:10px;color:var(--fg-3)">عدد الليالي</div><div style="font-weight:600;margin-top:4px">'+bk.nights+'</div></div>'
+    +'<div style="background:var(--surface-2);border-radius:8px;padding:12px"><div style="font-size:10px;color:var(--fg-3)">تاريخ الوصول</div><div style="font-weight:600;margin-top:4px">'+bk.checkIn+'</div></div>'
+    +'<div style="background:var(--surface-2);border-radius:8px;padding:12px"><div style="font-size:10px;color:var(--fg-3)">الحالة</div><div style="font-weight:600;margin-top:4px">'+statusMap[bk.status]+'</div></div>'
+    +'</div>'
+    +'<div style="background:linear-gradient(135deg,#f0f7f4,#fff);border:1px solid #c6ddd7;border-radius:10px;padding:14px">'
+    +'<div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="color:var(--fg-2)">المبلغ الإجمالي</span><span style="font-family:var(--font-en);font-weight:600">'+bk.amount+' ر.س</span></div>'
+    +'<div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="color:var(--fg-2)">عمولة القناة (٥٪)</span><span style="font-family:var(--font-en);font-weight:600;color:#C0392B">−'+comm+' ر.س</span></div>'
+    +'<div style="height:1px;background:#c6ddd7;margin:8px 0"></div>'
+    +'<div style="display:flex;justify-content:space-between"><span style="font-weight:700;color:var(--brand-700)">الصافي المحصّل</span><span style="font-family:var(--font-en);font-weight:700;color:var(--brand-700);font-size:16px">'+net+' ر.س</span></div>'
+    +'</div>'
+    +(bk.phone?'<div style="display:flex;gap:8px"><a href="tel:'+bk.phone+'" style="flex:1;padding:10px;background:var(--brand-50);color:var(--brand-700);border:1px solid var(--brand-200);border-radius:8px;text-align:center;font-size:12px;font-weight:600;text-decoration:none">📞 '+bk.phone+'</a>'+(bk.email?'<a href="mailto:'+bk.email+'" style="flex:1;padding:10px;background:var(--surface-2);color:var(--ink-700);border:1px solid var(--hairline);border-radius:8px;text-align:center;font-size:12px;text-decoration:none">✉ '+bk.email+'</a>':'')+'</div>':'')
+    +'<button onclick="linkToGuest(\''+id+'\')" style="width:100%;padding:11px;background:var(--brand-700);color:#fff;border:none;border-radius:8px;font-family:var(--font-ar);font-size:13px;font-weight:600;cursor:pointer;margin-top:4px">🔗 ربط بسجل الضيف</button>'
+    +'</div>';
+  document.getElementById('bk-modal').style.display = 'flex';
+};
+window.closeModal = function() { document.getElementById('bk-modal').style.display = 'none'; };
+window.linkToGuest = function(id) {
+  var bk = BOOKINGS.find(function(b){ return b.id === id; });
+  alert('✓ تم ربط حجز '+bk.guest+' بسجل الضيف في نظام ضيوف.\n\nسيظهر في قائمة الحجوزات الرئيسية تلقائياً.');
+  closeModal();
+};
+
+// ── Quick Add ─────────────────────────────────────────────────
+window.quickAdd = function() {
+  var name = document.getElementById('q-name').value.trim();
+  var ch   = document.getElementById('q-ch').value;
+  var amt  = parseFloat(document.getElementById('q-amt').value) || 0;
+  if (!name || !amt) { alert('أدخل اسم الضيف والمبلغ'); return; }
+  var comm = ch === 'direct' ? 0 : Math.round(amt * COMM_RATE);
+  var net  = amt - comm;
+  alert('✓ تم إضافة الحجز!\n' + name + ' · ' + CH_NAMES[ch] + '\nمبلغ: ' + amt + ' ر.س\nعمولة: −' + comm + ' ر.س\nصافي: ' + net + ' ر.س\n\nتم الربط بسجل الضيف تلقائياً.');
+  document.getElementById('q-name').value = '';
+  document.getElementById('q-amt').value = '';
+};
+
+window.openAddBooking = window.quickAdd;
+
+// ── Commission settings ───────────────────────────────────────
+function refreshCommDisplay() {
+  var pct = Math.round(COMM_RATE * 1000) / 10; // support decimals
+  var pctInt = Math.round(pct);
+  var pctAr = pctInt + '٪';
+  // header button
+  var hdrEl = document.getElementById('hdr-comm-pct');
+  if (hdrEl) hdrEl.textContent = pctAr;
+  // sidebar panel head
+  var panelEl = document.getElementById('panel-comm-pct');
+  if (panelEl) panelEl.textContent = pctAr;
+  // calculation step spans
+  document.querySelectorAll('.calc-pct').forEach(function(el){ el.textContent = pct; });
+}
+
+function updatePreview(val) {
+  val = parseFloat(val) || 0;
+  var comm = Math.round(1000 * val / 100);
+  var net  = 1000 - comm;
+  var pctEl = document.getElementById('prev-pct-label');
+  var commEl = document.getElementById('prev-comm-val');
+  var netEl  = document.getElementById('prev-net-val');
+  if (pctEl) pctEl.textContent = val;
+  if (commEl) commEl.textContent = '−' + comm + ' ر.س';
+  if (netEl)  netEl.textContent  = net + ' ر.س';
+  var dispEl = document.getElementById('comm-slider-display');
+  if (dispEl) dispEl.textContent = val + '%';
+}
+
+window.syncCommInputs = function(src) {
+  var slider = document.getElementById('comm-slider');
+  var numInp = document.getElementById('comm-num-input');
+  if (!slider || !numInp) return;
+  if (src === 'slider') { numInp.value = slider.value; updatePreview(slider.value); }
+  else { slider.value = numInp.value; updatePreview(numInp.value); }
+};
+
+window.openCommSettings = function() {
+  var pct = Math.round(COMM_RATE * 1000) / 10;
+  var sl = document.getElementById('comm-slider');
+  var ni = document.getElementById('comm-num-input');
+  if (sl) sl.value = pct;
+  if (ni) ni.value = pct;
+  updatePreview(pct);
+  document.getElementById('comm-modal').style.display = 'flex';
+};
+window.closeCommSettings = function() { document.getElementById('comm-modal').style.display = 'none'; };
+
+window.saveCommRate = function() {
+  var val = parseFloat(document.getElementById('comm-num-input').value);
+  if (isNaN(val) || val < 0 || val > 30) { alert('أدخل نسبة بين ٠ و٣٠٪'); return; }
+  COMM_RATE = val / 100;
+  localStorage.setItem('dheuof_comm_rate', COMM_RATE);
+  refreshCommDisplay();
+  closeCommSettings();
+  toast('✓ تم حفظ نسبة العمولة: ' + val + '٪');
+};
+
+window.resetCommRate = function() {
+  COMM_RATE = 0.05;
+  localStorage.setItem('dheuof_comm_rate', COMM_RATE);
+  var sl = document.getElementById('comm-slider');
+  var ni = document.getElementById('comm-num-input');
+  if (sl) sl.value = 5;
+  if (ni) ni.value = 5;
+  updatePreview(5);
+  refreshCommDisplay();
+  toast('تمت إعادة تعيين العمولة إلى ٥٪');
+};
+
+// Apply display on load
+refreshCommDisplay();
+
+// ── Export helpers ──────────────────────────────────
+function todayStr(){var d=new Date();return d.getFullYear()+(d.getMonth()+1<10?'0':'')+(d.getMonth()+1)+(d.getDate()<10?'0':'')+d.getDate();}
+function toXLS(headers,rows,name){var s='<Styles><Style ss:ID="H"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1B4D3D" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center"/></Style><Style ss:ID="BAD"><Interior ss:Color="#C0392B" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style><Style ss:ID="WARN"><Interior ss:Color="#D97706" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style><Style ss:ID="OK"><Interior ss:Color="#BBF7D0" ss:Pattern="Solid"/><Font ss:Color="#1B7A56" ss:Bold="1"/></Style><Style ss:ID="EXC"><Interior ss:Color="#1B7A56" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style></Styles>';function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}function cell(v){if(v&&typeof v==='object'&&'s' in v)return '<Cell ss:StyleID="'+v.s+'"><Data ss:Type="String">'+esc(v.v)+'</Data></Cell>';return '<Cell><Data ss:Type="'+(typeof v==='number'?'Number':'String')+'">'+esc(v)+'</Data></Cell>';}var hRow='<Row>'+headers.map(function(h){return '<Cell ss:StyleID="H"><Data ss:Type="String">'+esc(h)+'</Data></Cell>';}).join('')+'</Row>';var dRows=rows.map(function(r){return '<Row>'+r.map(cell).join('')+'</Row>';}).join('');return '<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'+s+'<Worksheet ss:Name="'+esc(name)+'"><Table>'+hRow+dRows+'</Table></Worksheet></Workbook>';}
+function dlXLS(c,fn){var b=new Blob([c],{type:'application/vnd.ms-excel;charset=utf-8'});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download=fn;a.click();setTimeout(function(){URL.revokeObjectURL(u);},1000);}
+function toast(msg){var old=document.querySelector('.nz-toast');if(old)old.remove();var t=document.createElement('div');t.className='nz-toast';t.style.cssText='position:fixed;bottom:24px;inset-inline-end:24px;background:#1B4D3D;color:#fff;padding:12px 18px;border-radius:8px;font-family:"Tajawal",sans-serif;font-size:13px;z-index:9999;display:flex;gap:8px';t.innerHTML='<span style="color:#C9A85F">✓</span>'+msg;document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .4s';setTimeout(function(){if(t.parentNode)t.remove();},400);},3000);}
+
+window.exportCSV = function(){
+  var headers = ['رقم الحجز','الضيف','القناة','الغرفة','الليالي','تاريخ الوصول','المبلغ (ر.س)','العمولة ٥٪ (ر.س)','الصافي (ر.س)','الحالة'];
+  var rows = BOOKINGS.map(function(bk){
+    var comm = bk.ch==='direct'?0:Math.round(bk.amount*COMM_RATE);
+    var net  = bk.amount - comm;
+    var stMap = {conf:{v:'مؤكد',s:'EXC'}, pend:{v:'قيد التأكيد',s:'WARN'}, canc:{v:'ملغي',s:'BAD'}, chk:{v:'تسجيل دخول',s:'OK'}};
+    return [bk.id, bk.guest, CH_NAMES[bk.ch], bk.room, bk.nights, bk.checkIn, bk.amount, bk.ch==='direct'?{v:'٠ (بلا عمولة)',s:'EXC'}:{v:'-'+comm,s:'WARN'}, net, stMap[bk.status]||{v:bk.status,s:'OK'}];
+  });
+  var conf=BOOKINGS.filter(function(b){return b.status==='conf';}).length;
+  var pend=BOOKINGS.filter(function(b){return b.status==='pend';}).length;
+  var canc=BOOKINGS.filter(function(b){return b.status==='canc';}).length;
+  var totAmt=BOOKINGS.filter(function(b){return b.status!=='canc';}).reduce(function(s,b){return s+b.amount;},0);
+  var totComm=BOOKINGS.filter(function(b){return b.status!=='canc';}).reduce(function(s,b){return s+(b.ch==='direct'?0:Math.round(b.amount*COMM_RATE));},0);
+  var t=BOOKINGS.length; function _p(n){return t>0?Math.round(n/t*100):0;}
+  rows.push([]);
+  rows.push([{v:'📊 ملخص الحجوزات',s:'EXC'},{v:'العدد',s:'EXC'},{v:'النسبة %',s:'EXC'},'','','','','','','']);
+  rows.push([{v:'✓ مؤكدة',s:'EXC'},{v:conf,s:'EXC'},{v:_p(conf)+'%',s:'EXC'}]);
+  rows.push([{v:'⏳ قيد التأكيد',s:'WARN'},{v:pend,s:'WARN'},{v:_p(pend)+'%',s:'WARN'}]);
+  rows.push([{v:'✕ ملغية',s:'BAD'},{v:canc,s:'BAD'},{v:_p(canc)+'%',s:'BAD'}]);
+  rows.push([]);
+  rows.push([{v:'إجمالي المبالغ',s:'EXC'},{v:totAmt+' ر.س',s:'EXC'}]);
+  rows.push([{v:'إجمالي العمولات (٥٪)',s:'BAD'},{v:'-'+totComm+' ر.س',s:'BAD'}]);
+  rows.push([{v:'الصافي المحصّل',s:'EXC'},{v:(totAmt-totComm)+' ر.س',s:'EXC'}]);
+  dlXLS(toXLS(headers,rows,'حجوزات القنوات'),'حجوزات_القنوات_'+todayStr()+'.xls');
+  toast('تم تصدير '+BOOKINGS.length+' حجز ✓');
+};
+
+window.exportPDF = function(){
+  var conf=BOOKINGS.filter(function(b){return b.status==='conf';}).length;
+  var pend=BOOKINGS.filter(function(b){return b.status==='pend';}).length;
+  var canc=BOOKINGS.filter(function(b){return b.status==='canc';}).length;
+  var totAmt=BOOKINGS.filter(function(b){return b.status!=='canc';}).reduce(function(s,b){return s+b.amount;},0);
+  var totComm=BOOKINGS.filter(function(b){return b.status!=='canc';}).reduce(function(s,b){return s+(b.ch==='direct'?0:Math.round(b.amount*COMM_RATE));},0);
+  var t=BOOKINGS.length; function _p(n){return t>0?Math.round(n/t*100):0;}
+  var statsHtml='<div style="background:linear-gradient(135deg,#f0f7f4,#f8faf9);border:1px solid #c6ddd7;border-radius:12px;padding:18px 20px;margin-bottom:20px">'
+    +'<div style="font-size:14px;font-weight:700;color:#1B4D3D;margin-bottom:14px">📊 ملخص حجوزات القنوات · الإجمالي: '+t+' حجز</div>'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#f0f0f0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#333">'+t+'</div><div style="font-size:10px;color:#666;margin-top:4px">إجمالي</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#D1FAE5;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#1B7A56">'+conf+'</div><div style="font-size:13px;font-weight:700;color:#1B7A56">'+_p(conf)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">مؤكد ✓</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEF3C7;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#D97706">'+pend+'</div><div style="font-size:13px;font-weight:700;color:#D97706">'+_p(pend)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">قيد التأكيد ⏳</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEE2E2;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#C0392B">'+canc+'</div><div style="font-size:13px;font-weight:700;color:#C0392B">'+_p(canc)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">ملغي ✕</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#D1FAE5;border-radius:8px;padding:12px 8px"><div style="font-size:22px;font-weight:700;color:#1B7A56">'+totAmt.toLocaleString()+'</div><div style="font-size:10px;color:rgba(0,0,0,0.5);margin-top:4px">إجمالي ر.س</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEE2E2;border-radius:8px;padding:12px 8px"><div style="font-size:22px;font-weight:700;color:#C0392B">'+totComm.toLocaleString()+'</div><div style="font-size:10px;color:rgba(0,0,0,0.5);margin-top:4px">عمولات ر.س</div></div>'
+    +'</div>'
+    +'<div style="background:#e8eceb;border-radius:6px;height:12px;overflow:hidden;display:flex">'
+    +(conf>0?'<div style="width:'+_p(conf)+'%;background:#1B7A56;height:100%"></div>':'')
+    +(pend>0?'<div style="width:'+_p(pend)+'%;background:#D97706;height:100%"></div>':'')
+    +(canc>0?'<div style="width:'+_p(canc)+'%;background:#C0392B;height:100%"></div>':'')
+    +'</div>'
+    +'<div style="margin-top:8px;font-size:10px;color:#666;display:flex;gap:14px;flex-wrap:wrap">'
+    +'<span>مؤكد '+_p(conf)+'% · قيد التأكيد '+_p(pend)+'% · ملغي '+_p(canc)+'%</span>'
+    +'<span style="font-weight:700;color:#1B7A56">صافي: '+(totAmt-totComm).toLocaleString()+' ر.س</span>'
+    +'</div></div>';
+  var rows = BOOKINGS.map(function(bk){
+    var comm = bk.ch==='direct'?0:Math.round(bk.amount*COMM_RATE);
+    var stStyle = bk.status==='conf'?'color:#1B7A56;font-weight:700':bk.status==='pend'?'color:#D97706;font-weight:700':bk.status==='canc'?'color:#C0392B;font-weight:700':'color:#1D4ED8;font-weight:700';
+    var stLabel = {conf:'✓ مؤكد', pend:'⏳ قيد التأكيد', canc:'✕ ملغي', chk:'⬆ تسجيل دخول'}[bk.status] || bk.status;
+    return '<tr><td>'+bk.guest+'</td><td>'+CH_NAMES[bk.ch]+'</td><td>'+bk.room+'</td>'
+      +'<td style="font-family:monospace">'+bk.checkIn+'</td>'
+      +'<td style="text-align:center">'+bk.nights+'</td>'
+      +'<td style="font-weight:600">'+bk.amount+' ر.س</td>'
+      +'<td style="color:#C0392B;font-weight:600">−'+comm+' ر.س</td>'
+      +'<td style="color:#1B7A56;font-weight:700">'+(bk.amount-comm)+' ر.س</td>'
+      +'<td style="'+stStyle+'">'+stLabel+'</td></tr>';
+  }).join('');
+  var win=window.open('','_blank','width=1024,height=720');
+  win.document.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"/><title>تقرير حجوزات القنوات</title>'
+    +'<style>body{font-family:"Tajawal","Segoe UI",sans-serif;margin:32px;color:#1a1a1a;direction:rtl}'
+    +'h1{font-size:22px;margin:0 0 4px}.sub{font-size:12px;color:#666;margin:0 0 18px}'
+    +'table{width:100%;border-collapse:collapse;font-size:12px}'
+    +'th{background:#1B4D3D;color:#fff;padding:9px 10px;text-align:right}'
+    +'td{padding:8px 10px;border-bottom:1px solid #eee;vertical-align:middle}'
+    +'tr:nth-child(even){background:#fafafa}'
+    +'.footer{margin-top:18px;font-size:11px;color:#999}@media print{.no-print{display:none}}'
+    +'</style></head><body>'
+    +'<h1>🏨 تقرير حجوزات القنوات الإلكترونية</h1>'
+    +'<p class="sub">'+new Date().toLocaleDateString('ar-SA')+' · عمولة ٥٪ محسوبة تلقائياً · مرتبط بنظام ضيوف</p>'
+    +statsHtml
+    +'<table><thead><tr><th>الضيف</th><th>القناة</th><th>الغرفة</th><th>تاريخ الوصول</th><th>الليالي</th><th>المبلغ</th><th>العمولة</th><th>الصافي</th><th>الحالة</th></tr></thead>'
+    +'<tbody>'+rows+'</tbody></table>'
+    +'<div class="footer">نظام ضيوف · حجوزات القنوات · عمولة ٥٪ · '+new Date().toLocaleString('ar-SA')+'</div>'
+    +'</body></html>');
+  win.document.close();
+  setTimeout(function(){win.print();},700);
+};
+</script>
+</body>
+</html>

@@ -1175,6 +1175,14 @@ async def mod_st():        return _serve_module("13-staff-tracker")
 @app.get("/goals",    response_class=HTMLResponse)
 async def mod_go():        return _serve_module("14-manager-goals")
 
+@app.get("/bookings",       response_class=HTMLResponse)
+@app.get("/ota-bookings",   response_class=HTMLResponse)
+async def mod_bookings():  return _serve_module("17-bookings")
+
+@app.get("/trips",          response_class=HTMLResponse)
+@app.get("/tourism-trips",  response_class=HTMLResponse)
+async def mod_trips():     return _serve_module("15-tourism-trips")
+
 
 # ──────────────────────────────────────────────────────────────
 #  Health & Status
