@@ -8,7 +8,7 @@ function CheckInPanel() {
 
   return (
     <div className="fd-panel">
-      <div className="nz-card-head">
+      <div className="dh-card-head">
         <div>
           <div className="ttl">تسجيل دخول سريع</div>
           <div className="sub">Quick check-in · 3 steps</div>
@@ -30,7 +30,7 @@ function CheckInPanel() {
               <div className="sub">Insert ID / Iqama into the reader</div>
             </div>
             <div className="fd-or">— أو —</div>
-            <div className="nz-field" style={{flex: 1}}>
+            <div className="dh-field" style={{flex: 1}}>
               <label>إدخال يدوي</label>
               <input placeholder="رقم الهوية / جواز / إقامة"/>
               <span className="hint">يدعم القارئ الذكي صور الهوية والمسح الضوئي تلقائياً.</span>
@@ -53,8 +53,8 @@ function CheckInPanel() {
                   <div className="cell"><div className="k">الجوال</div><div className="v en-num">+966 50 482 1108</div></div>
                 </div>
                 <div className="fd-trust">
-                  <span className="nz-pill gold">✦ ضيف متكرر — ٤ إقامات سابقة</span>
-                  <span className="nz-pill ok"><NzIcon.shield/>تم التحقق</span>
+                  <span className="dh-pill gold">✦ ضيف متكرر — ٤ إقامات سابقة</span>
+                  <span className="dh-pill ok"><NzIcon.shield/>تم التحقق</span>
                 </div>
               </div>
             </div>
@@ -66,9 +66,9 @@ function CheckInPanel() {
             <div className="fd-rooms-head">
               <span>غرف متاحة — جناح ملكي</span>
               <div className="fd-filters">
-                <button className="nz-chip is-on">ملكي</button>
-                <button className="nz-chip">جناح</button>
-                <button className="nz-chip">ديلوكس</button>
+                <button className="dh-chip is-on">ملكي</button>
+                <button className="dh-chip">جناح</button>
+                <button className="dh-chip">ديلوكس</button>
               </div>
             </div>
             <div className="fd-room-grid">
@@ -94,10 +94,10 @@ function CheckInPanel() {
       </div>
 
       <div className="fd-foot">
-        {step > 1 ? <button className="nz-btn is-ghost" onClick={() => setStep(step - 1)}>السابق</button> : <span/>}
+        {step > 1 ? <button className="dh-btn is-ghost" onClick={() => setStep(step - 1)}>السابق</button> : <span/>}
         {step < 3
-          ? <button className="nz-btn is-primary" onClick={() => setStep(step + 1)}>التالي ←</button>
-          : <button className="nz-btn is-gold"><NzIcon.key/>إصدار المفتاح وتسجيل الدخول</button>}
+          ? <button className="dh-btn is-primary" onClick={() => setStep(step + 1)}>التالي ←</button>
+          : <button className="dh-btn is-gold"><NzIcon.key/>إصدار المفتاح وتسجيل الدخول</button>}
       </div>
     </div>
   );

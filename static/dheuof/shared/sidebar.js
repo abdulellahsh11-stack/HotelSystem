@@ -49,7 +49,7 @@ ${MODULES.map(m => {
     </div>
   </nav>
   <div class="dh-side-foot">
-    <div class="nz-property">
+    <div class="dh-property">
       <div class="ar">${property.ar}</div>
       <div class="en">${property.en}</div>
     </div>
@@ -61,17 +61,17 @@ ${MODULES.map(m => {
     const placeholder = opts.placeholder || "بحث...";
     return `
 <header class="dh-topbar">
-  <div class="nz-search">
+  <div class="dh-search">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
     <input placeholder="${placeholder}"/>
     <span class="kbd">⌘K</span>
   </div>
-  <div class="nz-top-actions">
-    <button class="nz-pill-btn">
+  <div class="dh-top-actions">
+    <button class="dh-pill-btn">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
       <span>EN</span>
     </button>
-    <button class="nz-icon-btn nz-bell">
+    <button class="dh-icon-btn dh-bell">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
       <span class="dot"></span>
     </button>

@@ -117,12 +117,12 @@
 .room-legend .dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
 
 /* ── Modals ────────────────────────────────────────────────────── */
-.nz-modal-bd{position:fixed;inset:0;background:rgba(14,42,34,.65);backdrop-filter:blur(4px);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px}
-.nz-modal{background:var(--white);border-radius:16px;width:min(560px,95vw);max-height:88vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 64px -16px rgba(14,42,34,.45)}
-.nz-modal .modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;border-bottom:1px solid var(--hairline);background:var(--paper-tint)}
-.nz-modal .modal-head .ttl{font-family:var(--font-ar-display);font-size:16px;font-weight:700}
-.nz-modal .modal-body{padding:20px 22px;overflow-y:auto}
-.nz-modal .modal-foot{padding:14px 22px;border-top:1px solid var(--hairline);display:flex;gap:8px;background:var(--paper-tint)}
+.dh-modal-bd{position:fixed;inset:0;background:rgba(14,42,34,.65);backdrop-filter:blur(4px);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px}
+.dh-modal{background:var(--white);border-radius:16px;width:min(560px,95vw);max-height:88vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 64px -16px rgba(14,42,34,.45)}
+.dh-modal .modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;border-bottom:1px solid var(--hairline);background:var(--paper-tint)}
+.dh-modal .modal-head .ttl{font-family:var(--font-ar-display);font-size:16px;font-weight:700}
+.dh-modal .modal-body{padding:20px 22px;overflow-y:auto}
+.dh-modal .modal-foot{padding:14px 22px;border-top:1px solid var(--hairline);display:flex;gap:8px;background:var(--paper-tint)}
 .close-btn{background:transparent;border:1px solid var(--ink-100);color:var(--fg-3);border-radius:6px;padding:5px 14px;cursor:pointer;font-family:var(--font-ar);font-size:12px}
 .detail-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--hairline);font-size:13px}
 .detail-row:last-child{border-bottom:none}
@@ -133,7 +133,7 @@
 .checkin-btn:disabled{background:var(--success-600);cursor:default}
 
 /* ── Toast ─────────────────────────────────────────────────────── */
-.nz-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--brand-800);color:var(--paper);padding:12px 24px;border-radius:10px;font-family:var(--font-ar);font-size:13.5px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.28);z-index:9999;white-space:nowrap;display:flex;align-items:center;gap:10px;direction:rtl}
+.dh-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--brand-800);color:var(--paper);padding:12px 24px;border-radius:10px;font-family:var(--font-ar);font-size:13.5px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.28);z-index:9999;white-space:nowrap;display:flex;align-items:center;gap:10px;direction:rtl}
 
 /* ── Alert modal ───────────────────────────────────────────────── */
 .alert-form{display:flex;flex-direction:column;gap:12px}
@@ -549,8 +549,8 @@ var currentRole = "reception";
    UTILITIES
 ═══════════════════════════════════════════════ */
 function toast(msg, isErr){
-  var old = document.querySelector('.nz-toast'); if(old) old.remove();
-  var t = document.createElement('div'); t.className='nz-toast';
+  var old = document.querySelector('.dh-toast'); if(old) old.remove();
+  var t = document.createElement('div'); t.className='dh-toast';
   t.style.background = isErr ? 'var(--danger-700)' : 'var(--brand-800)';
   t.innerHTML = '<span style="color:var(--gold-400)">'+(isErr?'✕':'✓')+'</span> '+msg;
   document.body.appendChild(t);
@@ -558,12 +558,12 @@ function toast(msg, isErr){
 }
 
 function modal(title, html, footHtml){
-  var old = document.querySelector('.nz-modal-bd'); if(old) old.remove();
-  var bd = document.createElement('div'); bd.className='nz-modal-bd';
+  var old = document.querySelector('.dh-modal-bd'); if(old) old.remove();
+  var bd = document.createElement('div'); bd.className='dh-modal-bd';
   bd.addEventListener('click',function(e){ if(e.target===bd) bd.remove(); });
-  bd.innerHTML = '<div class="nz-modal" dir="rtl">'
+  bd.innerHTML = '<div class="dh-modal" dir="rtl">'
     +'<div class="modal-head"><div class="ttl">'+title+'</div>'
-    +'<button class="close-btn" onclick="document.querySelector(\'.nz-modal-bd\').remove()">✕ إغلاق</button></div>'
+    +'<button class="close-btn" onclick="document.querySelector(\'.dh-modal-bd\').remove()">✕ إغلاق</button></div>'
     +'<div class="modal-body">'+html+'</div>'
     +(footHtml?'<div class="modal-foot">'+footHtml+'</div>':'')
     +'</div>';
@@ -672,8 +672,8 @@ window.showResDetail = function(rid){
     {l:'حالة الدفع',v:r.payment},
   ].map(function(row){ return '<div class="detail-row"><span class="lbl">'+row.l+'</span><span class="val">'+row.v+'</span></div>'; }).join('');
   modal('تفاصيل الحجز — '+rid, html,
-    '<button class="btn-primary" onclick="var b=document.getElementById(\'ci-'+rid+'\');if(b)doCheckin(b);document.querySelector(\'.nz-modal-bd\').remove()">تسجيل دخول الآن</button>'
-    +'<button class="close-btn" onclick="document.querySelector(\'.nz-modal-bd\').remove()">إغلاق</button>'
+    '<button class="btn-primary" onclick="var b=document.getElementById(\'ci-'+rid+'\');if(b)doCheckin(b);document.querySelector(\'.dh-modal-bd\').remove()">تسجيل دخول الآن</button>'
+    +'<button class="close-btn" onclick="document.querySelector(\'.dh-modal-bd\').remove()">إغلاق</button>'
   );
 };
 
@@ -788,7 +788,7 @@ window.showAddAlert = function(gid){
     +'</div></div></div>';
   modal('إضافة تنبيه — '+g.name, html,
     '<button class="btn-primary" onclick="saveAlert('+JSON.stringify(gid)+')">حفظ</button>'
-    +'<button class="close-btn" onclick="document.querySelector(\'.nz-modal-bd\').remove()">إلغاء</button>'
+    +'<button class="close-btn" onclick="document.querySelector(\'.dh-modal-bd\').remove()">إلغاء</button>'
   );
 };
 
@@ -806,7 +806,7 @@ window.saveAlert = function(gid){
   if(!g) return;
   alertCounter++;
   g.alerts.push({text:txt, color:window._alertColor||'amber', id:alertCounter});
-  var bd = document.querySelector('.nz-modal-bd'); if(bd) bd.remove();
+  var bd = document.querySelector('.dh-modal-bd'); if(bd) bd.remove();
   filterAndRenderGuests();
   updateBadges();
   toast('تم إضافة التنبيه ✓');
@@ -920,7 +920,7 @@ window.showRoomDetail = function(fi,ri){
   if(rm.status==='hk-needed')   act='<button class="btn-primary" onclick="markRoomClean('+fi+','+ri+')">✓ تم التنظيف — تحويل لمتاحة</button>';
   else if(rm.status==='available') act='<button class="btn-sec" onclick="markRoomMaint('+fi+','+ri+')">🔧 تحويل لصيانة</button>';
   else if(rm.status==='maintenance') act='<button class="btn-primary" onclick="markRoomClean('+fi+','+ri+')">✓ انتهت الصيانة — تحويل لمتاحة</button>';
-  act += '<button class="close-btn" onclick="document.querySelector(\'.nz-modal-bd\').remove()">إغلاق</button>';
+  act += '<button class="close-btn" onclick="document.querySelector(\'.dh-modal-bd\').remove()">إغلاق</button>';
 
   modal('غرفة '+rm.num+' — '+statusLabel(rm.status), html.join(''), act);
 };
@@ -929,7 +929,7 @@ window.markRoomClean = function(fi,ri){
   var num = FLOORS[fi].rooms[ri].num;
   FLOORS[fi].rooms[ri].status = 'available';
   FLOORS[fi].rooms[ri].guest  = null;
-  var bd = document.querySelector('.nz-modal-bd'); if(bd) bd.remove();
+  var bd = document.querySelector('.dh-modal-bd'); if(bd) bd.remove();
   renderFloors(); updateBadges();
   toast('غرفة '+num+' — تم التحويل إلى متاحة ✓');
 };
@@ -937,7 +937,7 @@ window.markRoomClean = function(fi,ri){
 window.markRoomMaint = function(fi,ri){
   var num = FLOORS[fi].rooms[ri].num;
   FLOORS[fi].rooms[ri].status = 'maintenance';
-  var bd = document.querySelector('.nz-modal-bd'); if(bd) bd.remove();
+  var bd = document.querySelector('.dh-modal-bd'); if(bd) bd.remove();
   renderFloors(); updateBadges();
   toast('غرفة '+num+' — تم التحويل إلى صيانة');
 };
@@ -1063,7 +1063,7 @@ window.editStaff = function(sid){
     +'</div>';
   modal('تعديل — '+s.name, html,
     '<button class="btn-primary" onclick="saveEditStaff('+sid+')">حفظ التعديلات</button>'
-    +'<button class="close-btn" onclick="document.querySelector(\'.nz-modal-bd\').remove()">إلغاء</button>'
+    +'<button class="close-btn" onclick="document.querySelector(\'.dh-modal-bd\').remove()">إلغاء</button>'
   );
 };
 
@@ -1078,7 +1078,7 @@ window.saveEditStaff = function(sid){
   s.roleKey = rk;
   s.role    = roleLabels[rk]||rk;
   s.perms   = (ROLE_PERMS[rk]||[]).slice();
-  var bd = document.querySelector('.nz-modal-bd'); if(bd) bd.remove();
+  var bd = document.querySelector('.dh-modal-bd'); if(bd) bd.remove();
   renderStaff();
   toast('تم حفظ تعديلات '+s.name+' ✓');
 };

@@ -96,8 +96,8 @@
 .extract-badge.warn{background:var(--warning-50);color:var(--warning-700);border-color:var(--warning-200)}
 
 /* ── Modal ─────────────────────────────────────────────────────── */
-.nz-modal-bd{position:fixed;inset:0;background:rgba(14,42,34,.6);backdrop-filter:blur(4px);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px}
-.nz-modal{background:var(--white);border-radius:16px;width:min(580px,95vw);max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 64px -16px rgba(14,42,34,.45)}
+.dh-modal-bd{position:fixed;inset:0;background:rgba(14,42,34,.6);backdrop-filter:blur(4px);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px}
+.dh-modal{background:var(--white);border-radius:16px;width:min(580px,95vw);max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 64px -16px rgba(14,42,34,.45)}
 .modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;border-bottom:1px solid var(--hairline);background:var(--paper-tint)}
 .modal-head .ttl{font-family:var(--font-ar-display);font-size:16px;font-weight:700}
 .modal-body{padding:20px 22px;overflow-y:auto}
@@ -114,7 +114,7 @@
 .detail-row .val{font-weight:600;color:var(--ink-900)}
 
 /* ── Toast ─────────────────────────────────────────────────────── */
-.nz-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--brand-800);color:var(--paper);padding:12px 24px;border-radius:10px;font-family:var(--font-ar);font-size:13.5px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.28);z-index:9999;white-space:nowrap;display:flex;align-items:center;gap:10px;direction:rtl}
+.dh-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--brand-800);color:var(--paper);padding:12px 24px;border-radius:10px;font-family:var(--font-ar);font-size:13.5px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.28);z-index:9999;white-space:nowrap;display:flex;align-items:center;gap:10px;direction:rtl}
 </style>
 </head>
 <body>
@@ -312,8 +312,8 @@ function relativeIssued(issuedStr){
 }
 
 function toast(msg, isErr){
-  var old = document.querySelector('.nz-toast'); if(old) old.remove();
-  var t = document.createElement('div'); t.className='nz-toast';
+  var old = document.querySelector('.dh-toast'); if(old) old.remove();
+  var t = document.createElement('div'); t.className='dh-toast';
   t.style.background = isErr ? 'var(--danger-700)' : 'var(--brand-800)';
   t.innerHTML = '<span style="color:var(--gold-400)">'+(isErr?'✕':'✓')+'</span> '+msg;
   document.body.appendChild(t);
@@ -321,12 +321,12 @@ function toast(msg, isErr){
 }
 
 function modal(title, html, footHtml){
-  var old = document.querySelector('.nz-modal-bd'); if(old) old.remove();
-  var bd = document.createElement('div'); bd.className='nz-modal-bd';
+  var old = document.querySelector('.dh-modal-bd'); if(old) old.remove();
+  var bd = document.createElement('div'); bd.className='dh-modal-bd';
   bd.addEventListener('click',function(e){ if(e.target===bd) bd.remove(); });
-  bd.innerHTML = '<div class="nz-modal" dir="rtl">'
+  bd.innerHTML = '<div class="dh-modal" dir="rtl">'
     +'<div class="modal-head"><div class="ttl">'+title+'</div>'
-    +'<button class="close-btn" onclick="document.querySelector(\'.nz-modal-bd\').remove()">✕ إغلاق</button></div>'
+    +'<button class="close-btn" onclick="document.querySelector(\'.dh-modal-bd\').remove()">✕ إغلاق</button></div>'
     +'<div class="modal-body">'+html+'</div>'
     +(footHtml?'<div class="modal-foot">'+footHtml+'</div>':'')
     +'</div>';
@@ -485,7 +485,7 @@ window.showAddDoc = function(prefill){
     +'</div>';
   modal('إضافة مستند جديد', html,
     '<button class="btn-primary" onclick="saveDoc()">+ إضافة للقائمة</button>'
-    +'<button class="close-btn" onclick="document.querySelector(\'.nz-modal-bd\').remove()">إلغاء</button>'
+    +'<button class="close-btn" onclick="document.querySelector(\'.dh-modal-bd\').remove()">إلغاء</button>'
   );
 };
 
@@ -498,7 +498,7 @@ window.saveDoc = function(){
   if(!name.trim()){ toast('أدخل اسم المستند',true); return; }
   if(!expires){ toast('أدخل تاريخ الانتهاء',true); return; }
   DOCS.push({id:docCounter++, icon:guessIcon(name), name:name.trim(), num:num.trim(), authority:auth, issued:issued||new Date().toISOString().split('T')[0], expires:expires});
-  var bd = document.querySelector('.nz-modal-bd'); if(bd) bd.remove();
+  var bd = document.querySelector('.dh-modal-bd'); if(bd) bd.remove();
   refresh();
   toast('تم إضافة المستند ✓');
 };
@@ -525,10 +525,10 @@ window.showDocDetail = function(id){
   }).join('');
 
   var renewBtn = (cls==='err'||cls==='over')
-    ? '<button class="btn-primary" onclick="showRenew('+id+');document.querySelector(\'.nz-modal-bd\').remove()">🔄 تجديد المستند</button>'
+    ? '<button class="btn-primary" onclick="showRenew('+id+');document.querySelector(\'.dh-modal-bd\').remove()">🔄 تجديد المستند</button>'
     : '';
   modal(d.icon+' '+d.name, html,
-    renewBtn+'<button class="close-btn" onclick="document.querySelector(\'.nz-modal-bd\').remove()">إغلاق</button>'
+    renewBtn+'<button class="close-btn" onclick="document.querySelector(\'.dh-modal-bd\').remove()">إغلاق</button>'
   );
 };
 
@@ -540,7 +540,7 @@ window.showRenew = function(id){
     +'<div class="form-field"><label>ملاحظة (اختياري)</label><input id="r-note" placeholder="رقم العقد الجديد، ملاحظة..."/></div>';
   modal('تجديد — '+d.name, html,
     '<button class="btn-primary" onclick="saveRenew('+id+')">✓ حفظ التجديد</button>'
-    +'<button class="close-btn" onclick="document.querySelector(\'.nz-modal-bd\').remove()">إلغاء</button>'
+    +'<button class="close-btn" onclick="document.querySelector(\'.dh-modal-bd\').remove()">إلغاء</button>'
   );
 };
 
@@ -552,7 +552,7 @@ window.saveRenew = function(id){
   if(!newExpires){ toast('أدخل تاريخ الانتهاء الجديد',true); return; }
   if(newIssued)  d.issued  = newIssued;
   d.expires = newExpires;
-  var bd = document.querySelector('.nz-modal-bd'); if(bd) bd.remove();
+  var bd = document.querySelector('.dh-modal-bd'); if(bd) bd.remove();
   refresh();
   toast('تم تجديد '+d.name+' ✓');
 };
@@ -577,7 +577,7 @@ window.showUrgent = function(){
     return '<div class="detail-row"><span class="lbl">'+d.icon+' '+d.name+'</span><span class="val" style="color:var(--danger-700)">'+daysLabel(days)+'</span></div>';
   }).join('');
   modal('المستندات العاجلة', html,
-    '<button class="close-btn" onclick="document.querySelector(\'.nz-modal-bd\').remove()">إغلاق</button>'
+    '<button class="close-btn" onclick="document.querySelector(\'.dh-modal-bd\').remove()">إغلاق</button>'
   );
 };
 

@@ -99,8 +99,8 @@ function ItemsTable({ items }) {
               <div className={"d " + (it.dir === "in" ? "in" : "out")}>{it.dir === "in" ? "+" : "−"}{it.move}</div>
               <div className="sub">{it.when}</div>
             </div>
-            <span className={"nz-pill " + status.cls}><span className="d"></span>{status.ar}</span>
-            <button className="nz-icon-btn" style={{background: "transparent", border: "none", color: "var(--fg-3)"}}><NzIcon.dots/></button>
+            <span className={"dh-pill " + status.cls}><span className="d"></span>{status.ar}</span>
+            <button className="dh-icon-btn" style={{background: "transparent", border: "none", color: "var(--fg-3)"}}><NzIcon.dots/></button>
           </div>
         );
       })}

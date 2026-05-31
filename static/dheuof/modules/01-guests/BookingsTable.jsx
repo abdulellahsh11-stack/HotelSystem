@@ -19,22 +19,22 @@ function BookingsTable() {
   };
 
   return (
-    <div className="nz-tbl-card">
-      <div className="nz-card-head">
+    <div className="dh-tbl-card">
+      <div className="dh-card-head">
         <div>
           <div className="ttl">آخر الحجوزات</div>
           <div className="sub">Recent reservations · today</div>
         </div>
-        <div className="nz-card-actions">
-          <button className="nz-chip is-on">الكل</button>
-          <button className="nz-chip">قادم</button>
-          <button className="nz-chip">مغادر</button>
-          <button className="nz-icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg></button>
+        <div className="dh-card-actions">
+          <button className="dh-chip is-on">الكل</button>
+          <button className="dh-chip">قادم</button>
+          <button className="dh-chip">مغادر</button>
+          <button className="dh-icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg></button>
         </div>
       </div>
 
-      <div className="nz-tbl">
-        <div className="nz-tr nz-th">
+      <div className="dh-tbl">
+        <div className="dh-tr dh-th">
           <span>#</span>
           <span>النزيل</span>
           <span>الفترة</span>
@@ -47,7 +47,7 @@ function BookingsTable() {
         {rows.map(r => {
           const s = status[r.status];
           return (
-            <div className="nz-tr" key={r.id}>
+            <div className="dh-tr" key={r.id}>
               <span className="num">{r.id}</span>
               <div className="guest">
                 <div className={"av " + (r.vip ? "is-vip" : "")}>{r.initials}</div>
@@ -64,9 +64,9 @@ function BookingsTable() {
                 <div className="sub">{r.roomType}</div>
               </div>
               <div className="ch">{r.channel}</div>
-              <div><span className={"nz-pill " + s.cls}><span className="d"></span>{s.ar}</span></div>
+              <div><span className={"dh-pill " + s.cls}><span className="d"></span>{s.ar}</span></div>
               <span className="amt">{r.amt === "—" ? "—" : <><span className="v">{r.amt}</span> <span className="cur">ر.س</span></>}</span>
-              <button className="nz-icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>
+              <button className="dh-icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>
             </div>
           );
         })}

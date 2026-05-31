@@ -62,20 +62,20 @@ function NzSidebar({ active = "dashboard", onChange, hotel = { ar: "فندق ا�
     ]},
   ];
   return (
-    <aside className="nz-sidebar">
-      <div className="nz-brand">
-        <img className="nz-mark" src="/static/nuzul/assets/logo-mark.svg" alt="ضيوف"/>
-        <div className="nz-brand-name"><div className="ar">ضيوف</div><div className="en">Dheuof</div></div>
+    <aside className="dh-sidebar">
+      <div className="dh-brand">
+        <img className="dh-mark" src="/static/dheuof/assets/logo-mark.svg" alt="ضيوف"/>
+        <div className="dh-brand-name"><div className="ar">ضيوف</div><div className="en">Dheuof</div></div>
       </div>
-      <nav className="nz-nav">
+      <nav className="dh-nav">
         {nav.map(g => (
-          <div className="nz-nav-group" key={g.group}>
-            <div className="nz-nav-label">{g.group}</div>
+          <div className="dh-nav-group" key={g.group}>
+            <div className="dh-nav-label">{g.group}</div>
             {g.items.map(it => {
               const C = NzIcon[it.ic];
               const isActive = active === it.id;
               return (
-                <a key={it.id} className={"nz-nav-item " + (isActive ? "is-active" : "")} onClick={() => onChange && onChange(it.id)}>
+                <a key={it.id} className={"dh-nav-item " + (isActive ? "is-active" : "")} onClick={() => onChange && onChange(it.id)}>
                   <span className="ic"><C/></span>
                   <span className="lbl">{it.ar}</span>
                   {it.count ? <span className="ct">{it.count}</span> : null}
@@ -85,9 +85,9 @@ function NzSidebar({ active = "dashboard", onChange, hotel = { ar: "فندق ا�
           </div>
         ))}
       </nav>
-      <div className="nz-side-foot">
-        <div className="nz-property"><div className="ar">{hotel.ar}</div><div className="en">{hotel.en}</div></div>
-        <button className="nz-icon-btn"><NzIcon.cog/></button>
+      <div className="dh-side-foot">
+        <div className="dh-property"><div className="ar">{hotel.ar}</div><div className="en">{hotel.en}</div></div>
+        <button className="dh-icon-btn"><NzIcon.cog/></button>
       </div>
     </aside>
   );
@@ -95,16 +95,16 @@ function NzSidebar({ active = "dashboard", onChange, hotel = { ar: "فندق ا�
 
 function NzTopBar({ placeholder = "بحث عن نزيل، حجز، رقم غرفة..." }) {
   return (
-    <header className="nz-topbar">
-      <div className="nz-search">
+    <header className="dh-topbar">
+      <div className="dh-search">
         <NzIcon.search/>
         <input placeholder={placeholder}/>
         <span className="kbd">⌘K</span>
       </div>
-      <div className="nz-top-actions">
-        <button className="nz-pill-btn"><NzIcon.globe/><span>EN</span></button>
-        <button className="nz-icon-btn nz-bell"><NzIcon.bell/><span className="dot"></span></button>
-        <div className="nz-user">
+      <div className="dh-top-actions">
+        <button className="dh-pill-btn"><NzIcon.globe/><span>EN</span></button>
+        <button className="dh-icon-btn dh-bell"><NzIcon.bell/><span className="dot"></span></button>
+        <div className="dh-user">
           <div className="av">س‬أ</div>
           <div className="nm"><div className="ar">سارة أحمد</div><div className="role">مدير المنشأة</div></div>
         </div>
@@ -115,13 +115,13 @@ function NzTopBar({ placeholder = "بحث عن نزيل، حجز، رقم غرف
 
 function NzPageHead({ eyebrow, title, sub, actions }) {
   return (
-    <div className="nz-page-head">
+    <div className="dh-page-head">
       <div className="ttl-grp">
-        {eyebrow ? <span className="nz-eyebrow">{eyebrow}</span> : null}
-        <h1 className="nz-page-title">{title}</h1>
-        {sub ? <div className="nz-page-sub">{sub}</div> : null}
+        {eyebrow ? <span className="dh-eyebrow">{eyebrow}</span> : null}
+        <h1 className="dh-page-title">{title}</h1>
+        {sub ? <div className="dh-page-sub">{sub}</div> : null}
       </div>
-      {actions ? <div className="nz-page-actions">{actions}</div> : null}
+      {actions ? <div className="dh-page-actions">{actions}</div> : null}
     </div>
   );
 }

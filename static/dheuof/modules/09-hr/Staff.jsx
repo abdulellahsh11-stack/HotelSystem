@@ -41,10 +41,10 @@ function StaffRow({ s }) {
       </div>
       <div className="qiwa">
         {s.qiwa
-          ? <span className="nz-pill ok"><span className="d"></span>متصل قوى</span>
-          : <span className="nz-pill warn"><span className="d"></span>بانتظار</span>}
+          ? <span className="dh-pill ok"><span className="d"></span>متصل قوى</span>
+          : <span className="dh-pill warn"><span className="d"></span>بانتظار</span>}
       </div>
-      <button className="nz-icon-btn" style={{background:"transparent",border:"none",color:"var(--fg-3)"}}><NzIcon.dots/></button>
+      <button className="dh-icon-btn" style={{background:"transparent",border:"none",color:"var(--fg-3)"}}><NzIcon.dots/></button>
     </div>
   );
 }

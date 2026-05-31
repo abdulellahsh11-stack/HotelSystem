@@ -140,7 +140,7 @@
 .legend-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
 
 /* ── Toast ──────────────────────────────────────────────────────── */
-.nz-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--brand-800);color:var(--paper);padding:12px 24px;border-radius:10px;font-family:var(--font-ar);font-size:13.5px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.28);z-index:9999;white-space:nowrap;display:flex;align-items:center;gap:10px;direction:rtl}
+.dh-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--brand-800);color:var(--paper);padding:12px 24px;border-radius:10px;font-family:var(--font-ar);font-size:13.5px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.28);z-index:9999;white-space:nowrap;display:flex;align-items:center;gap:10px;direction:rtl}
 
 /* ── Room Settings Drawer ──────────────────────────────────────── */
 .cfg-overlay{position:fixed;inset:0;background:rgba(10,30,22,.55);backdrop-filter:blur(3px);z-index:8000;display:none;justify-content:flex-end}
@@ -240,11 +240,11 @@
     </div>
   </nav>
   <div class="dh-side-foot">
-    <div class="nz-property">
+    <div class="dh-property">
       <div class="ar">فندق الواحة الذهبية</div>
       <div class="en">Golden Oasis · Riyadh</div>
     </div>
-    <button class="nz-icon-btn" onclick="window.location.href='/static/dheuof/index.html'" title="الرئيسية">
+    <button class="dh-icon-btn" onclick="window.location.href='/static/dheuof/index.html'" title="الرئيسية">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
     </button>
   </div>
@@ -253,17 +253,17 @@
 <!-- ═══ MAIN ════════════════════════════════════════════════════== -->
 <div>
   <header class="dh-topbar">
-    <div class="nz-search">
+    <div class="dh-search">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
       <input id="global-search" placeholder="بحث عن نزيل، حجز، رقم غرفة..." oninput="onGlobalSearch(this.value)"/>
       <span class="kbd">⌘K</span>
     </div>
-    <div class="nz-top-actions">
-      <button class="nz-pill-btn">
+    <div class="dh-top-actions">
+      <button class="dh-pill-btn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
         <span>EN</span>
       </button>
-      <button class="nz-icon-btn nz-bell">
+      <button class="dh-icon-btn dh-bell">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
         <span class="dot"></span>
       </button>
@@ -333,8 +333,8 @@
       </div>
 
       <!-- Activity feed -->
-      <div class="nz-card">
-        <div class="nz-card-head">
+      <div class="dh-card">
+        <div class="dh-card-head">
           <div><div class="ttl">آخر الأنشطة</div><div class="sub">Recent activity — live</div></div>
         </div>
         <div id="activity-feed" style="padding:0 20px 16px">
@@ -629,8 +629,8 @@ window.onGlobalSearch = onGlobalSearch;
    TOAST
 ════════════════════════════════════════ */
 function toast(msg, isErr){
-  var old = document.querySelector('.nz-toast'); if(old) old.remove();
-  var t = document.createElement('div'); t.className='nz-toast';
+  var old = document.querySelector('.dh-toast'); if(old) old.remove();
+  var t = document.createElement('div'); t.className='dh-toast';
   t.style.background = isErr ? 'var(--danger-700)' : 'var(--brand-800)';
   t.innerHTML = '<span style="color:var(--gold-400)">'+(isErr?'✕':'✓')+'</span> '+msg;
   document.body.appendChild(t);

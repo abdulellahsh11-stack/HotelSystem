@@ -24,8 +24,8 @@ function ArrivalCard({ guest, room, eta, note, vip, channel, onCheckIn }) {
       </div>
       <div className="act">
         {done
-          ? <span className="nz-pill ok"><NzIcon.check/>تم</span>
-          : <button className="nz-btn is-primary" onClick={() => { setDone(true); onCheckIn && onCheckIn(); }}><NzIcon.key/>تسجيل دخول</button>}
+          ? <span className="dh-pill ok"><NzIcon.check/>تم</span>
+          : <button className="dh-btn is-primary" onClick={() => { setDone(true); onCheckIn && onCheckIn(); }}><NzIcon.key/>تسجيل دخول</button>}
       </div>
     </div>
   );
@@ -41,12 +41,12 @@ function DepartureRow({ guest, room, time, balance, vip }) {
       </div>
       <div className="bal">
         {balance > 0 ? (
-          <span className="nz-pill warn">رصيد متبقٍ: {balance.toLocaleString("ar-EG")} ر.س</span>
+          <span className="dh-pill warn">رصيد متبقٍ: {balance.toLocaleString("ar-EG")} ر.س</span>
         ) : (
-          <span className="nz-pill ok"><NzIcon.check/>مسوّى</span>
+          <span className="dh-pill ok"><NzIcon.check/>مسوّى</span>
         )}
       </div>
-      <button className="nz-btn is-secondary">إنهاء الإقامة</button>
+      <button className="dh-btn is-secondary">إنهاء الإقامة</button>
     </div>
   );
 }

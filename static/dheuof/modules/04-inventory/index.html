@@ -90,8 +90,8 @@
 .hi-alert .act{margin-inline-start:auto;background:var(--paper);color:#9A6D14;border:none;padding:7px 14px;border-radius:6px;font-family:var(--font-ar);font-weight:600;font-size:12px;cursor:pointer;flex-shrink:0}
 
 /* ── Modal ──────────────────────────────────────────────────────── */
-.nz-modal-bd{position:fixed;inset:0;background:rgba(14,42,34,.6);backdrop-filter:blur(4px);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px}
-.nz-modal{background:var(--white);border-radius:16px;width:min(580px,95vw);max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 64px -16px rgba(14,42,34,.45)}
+.dh-modal-bd{position:fixed;inset:0;background:rgba(14,42,34,.6);backdrop-filter:blur(4px);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px}
+.dh-modal{background:var(--white);border-radius:16px;width:min(580px,95vw);max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 64px -16px rgba(14,42,34,.45)}
 .modal-head{display:flex;align-items:center;justify-content:space-between;padding:15px 20px;border-bottom:1px solid var(--hairline);background:var(--paper-tint)}
 .modal-head .ttl{font-family:var(--font-ar-display);font-size:15px;font-weight:700}
 .modal-body{padding:20px;overflow-y:auto}
@@ -105,7 +105,7 @@
 .form-full{grid-column:1/-1}
 
 /* ── Toast ──────────────────────────────────────────────────────── */
-.nz-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--brand-800);color:var(--paper);padding:11px 22px;border-radius:10px;font-family:var(--font-ar);font-size:13px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.28);z-index:9999;white-space:nowrap;display:flex;align-items:center;gap:9px;direction:rtl}
+.dh-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--brand-800);color:var(--paper);padding:11px 22px;border-radius:10px;font-family:var(--font-ar);font-size:13px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.28);z-index:9999;white-space:nowrap;display:flex;align-items:center;gap:9px;direction:rtl}
 </style>
 </head>
 <body>
@@ -264,8 +264,8 @@
 </div>
 
 <!-- Modal -->
-<div id="add-modal" style="display:none" class="nz-modal-bd" onclick="if(event.target===this)closeModal()">
-  <div class="nz-modal" dir="rtl">
+<div id="add-modal" style="display:none" class="dh-modal-bd" onclick="if(event.target===this)closeModal()">
+  <div class="dh-modal" dir="rtl">
     <div class="modal-head">
       <div class="ttl" id="modal-ttl">+ إضافة صنف ضيافة</div>
       <button class="close-btn" onclick="closeModal()">✕ إغلاق</button>
@@ -681,8 +681,8 @@ function dlXLS(content,fname){
 function todayStr(){ return new Date().toISOString().slice(0,10); }
 /* ════ TOAST ═════════════════════════════════════════════════════════ */
 function toast(msg,isErr){
-  var old=document.querySelector('.nz-toast'); if(old) old.remove();
-  var t=document.createElement('div'); t.className='nz-toast';
+  var old=document.querySelector('.dh-toast'); if(old) old.remove();
+  var t=document.createElement('div'); t.className='dh-toast';
   t.style.background=isErr?'var(--danger-700)':'var(--brand-800)';
   t.innerHTML='<span style="color:var(--gold-400)">'+(isErr?'✕':'✓')+'</span> '+msg;
   document.body.appendChild(t);

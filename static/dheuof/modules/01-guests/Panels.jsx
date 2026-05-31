@@ -16,15 +16,15 @@ function ChannelMix() {
   let offset = 0;
 
   return (
-    <div className="nz-mix">
-      <div className="nz-card-head">
+    <div className="dh-mix">
+      <div className="dh-card-head">
         <div>
           <div className="ttl">مزيج القنوات</div>
           <div className="sub">Channel mix · this month</div>
         </div>
       </div>
 
-      <div className="nz-mix-body">
+      <div className="dh-mix-body">
         <svg viewBox="0 0 200 200" width="180" height="180" style={{direction: "ltr"}}>
           <circle cx="100" cy="100" r={R} fill="none" stroke="var(--hairline)" strokeWidth={sw}/>
           {segs.map((s,i) => {
@@ -42,7 +42,7 @@ function ChannelMix() {
           <text x="100" y="118" textAnchor="middle" fontSize="22" fill="var(--ink-900)" fontFamily="var(--font-en)" fontWeight="600">١٢٤٢</text>
         </svg>
 
-        <div className="nz-mix-legend">
+        <div className="dh-mix-legend">
           {segs.map(s => (
             <div className="row" key={s.lbl}>
               <span className="dot" style={{background: s.color}}></span>
@@ -66,17 +66,17 @@ function ActionsFeed() {
   ];
 
   return (
-    <div className="nz-feed">
-      <div className="nz-card-head">
+    <div className="dh-feed">
+      <div className="dh-card-head">
         <div>
           <div className="ttl">نشاط مباشر</div>
           <div className="sub">Live activity</div>
         </div>
-        <span className="nz-live"><span className="d"></span>مباشر</span>
+        <span className="dh-live"><span className="d"></span>مباشر</span>
       </div>
-      <div className="nz-feed-list" data-m-rise-stagger>
+      <div className="dh-feed-list" data-m-rise-stagger>
         {items.map((it,i) => (
-          <div className="nz-feed-row" key={i}>
+          <div className="dh-feed-row" key={i}>
             <span className="ic" style={{color: it.color, background: "color-mix(in oklch, " + it.color + " 12%, white)"}}>{it.ic}</span>
             <div className="body">
               <div className="ttl"><span className="ar">{it.ar}</span><span className="sep">·</span><span className="who">{it.who}</span></div>

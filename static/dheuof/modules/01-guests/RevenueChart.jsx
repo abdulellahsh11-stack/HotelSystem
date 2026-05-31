@@ -13,13 +13,13 @@ function RevenueChart() {
   const W = 720, H = 200, P = 24;
   const bw = (W - P*2) / data.length;
   return (
-    <div className="nz-rev-card">
-      <div className="nz-card-head">
+    <div className="dh-rev-card">
+      <div className="dh-card-head">
         <div>
           <div className="ttl">الإيرادات اليومية</div>
           <div className="sub">Daily revenue · last 14 days <span className="rev-unit">(ألف ر.س)</span></div>
         </div>
-        <div className="nz-card-stats">
+        <div className="dh-card-stats">
           <div className="stat">
             <span className="lab">الإجمالي</span>
             <span className="v">٤٧٠٬٢٤٠ <span className="cur">ر.س</span></span>

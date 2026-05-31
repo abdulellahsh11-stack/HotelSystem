@@ -863,8 +863,8 @@ setTimeout(function(){
 
   /* ── TOAST ─────────────────────────────────────────────────────── */
   function toast(msg, isErr) {
-    var old = q('.nz-toast'); if(old) old.remove();
-    var t = document.createElement('div'); t.className = 'nz-toast';
+    var old = q('.dh-toast'); if(old) old.remove();
+    var t = document.createElement('div'); t.className = 'dh-toast';
     t.style.cssText = 'position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:'+(isErr?'var(--danger-700)':'var(--brand-800)')+';color:var(--paper);padding:12px 24px;border-radius:10px;font-family:var(--font-ar);font-size:13.5px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,0.28);z-index:9999;white-space:nowrap;display:flex;align-items:center;gap:10px;direction:rtl';
     t.innerHTML = '<span style="color:var(--gold-400)">'+(isErr?'✕':'✓')+'</span> '+msg;
     document.body.appendChild(t);
@@ -874,15 +874,15 @@ setTimeout(function(){
 
   /* ── MODAL ─────────────────────────────────────────────────────── */
   function modal(title, html, wide) {
-    var old = q('.nz-modal-bd'); if(old) old.remove();
-    var bd = document.createElement('div'); bd.className='nz-modal-bd';
+    var old = q('.dh-modal-bd'); if(old) old.remove();
+    var bd = document.createElement('div'); bd.className='dh-modal-bd';
     bd.style.cssText='position:fixed;inset:0;background:rgba(14,42,34,0.65);backdrop-filter:blur(4px);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px';
     bd.addEventListener('click',function(e){ if(e.target===bd)bd.remove(); });
     var w = wide?'min(820px,96vw)':'min(600px,95vw)';
     bd.innerHTML='<div dir="rtl" style="background:var(--white);border-radius:16px;width:'+w+';max-height:88vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 64px -16px rgba(14,42,34,0.45)">'
       +'<div style="display:flex;align-items:center;justify-content:space-between;padding:16px 22px;border-bottom:1px solid var(--hairline);background:var(--paper-tint)">'
         +'<div style="font-family:var(--font-ar-display);font-weight:700;font-size:16px;color:var(--ink-900)">'+title+'</div>'
-        +'<button onclick="document.querySelector(\'.nz-modal-bd\').remove()" style="background:transparent;border:1px solid var(--ink-100);color:var(--fg-3);border-radius:6px;padding:5px 14px;cursor:pointer;font-family:var(--font-ar);font-size:12px">✕ إغلاق</button>'
+        +'<button onclick="document.querySelector(\'.dh-modal-bd\').remove()" style="background:transparent;border:1px solid var(--ink-100);color:var(--fg-3);border-radius:6px;padding:5px 14px;cursor:pointer;font-family:var(--font-ar);font-size:12px">✕ إغلاق</button>'
       +'</div>'
       +'<div style="padding:22px;overflow-y:auto;direction:rtl">'+html+'</div>'
     +'</div>';
@@ -992,7 +992,7 @@ setTimeout(function(){
           +'<label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:8px"><input type="checkbox" checked style="accent-color:var(--brand-700)"/> السماح بالدخول المبكر عند توفر الغرفة (بدون رسوم)</label>'
           +'<label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" style="accent-color:var(--brand-700)"/> تأخير الخروج بمقابل إضافي — <input type="text" value="٢٠٠ ر.س" style="width:100px;padding:4px 8px;border:1px solid var(--ink-100);border-radius:4px;font-size:12px"/> لكل ٣ ساعات</label>'
         +'</div>'
-        +'<button onclick="document.querySelector(\'.nz-modal-bd\').remove();window.GR.toast(\'تم حفظ سياسة الدخول والخروج\')" style="font-family:var(--font-ar);font-size:13px;font-weight:600;padding:10px;border-radius:8px;background:var(--brand-700);color:var(--paper);border:none;cursor:pointer;width:100%">حفظ السياسة</button>'
+        +'<button onclick="document.querySelector(\'.dh-modal-bd\').remove();window.GR.toast(\'تم حفظ سياسة الدخول والخروج\')" style="font-family:var(--font-ar);font-size:13px;font-weight:600;padding:10px;border-radius:8px;background:var(--brand-700);color:var(--paper);border:none;cursor:pointer;width:100%">حفظ السياسة</button>'
       );
     });
   }
@@ -1040,7 +1040,7 @@ setTimeout(function(){
     card.querySelector('.dr-name').textContent=d.name;
     card.querySelector('.dr-meta').innerHTML='<span>سائق معتمد · '+d.exp+'</span><span class="dot">·</span><span class="rate">★ '+d.rate+'</span><span class="dot">·</span><span class="mono">'+d.car+' · '+d.plate+'</span>';
     card.querySelector('.dr-status').innerHTML='<span class="dt"></span>متاح · '+d.dist+' من المطار';
-    var m=q('.nz-modal-bd'); if(m)m.remove();
+    var m=q('.dh-modal-bd'); if(m)m.remove();
     toast('تم اختيار السائق: '+d.name);
   };
 
@@ -1261,7 +1261,7 @@ setTimeout(function(){
       +'</div>'
       +'<div style="display:flex;gap:10px;margin-top:14px">'
         +'<button onclick="window.GR.toast(\'جاري إنشاء PDF...\')" style="flex:1;font-family:var(--font-ar);font-size:13px;padding:10px;border-radius:8px;background:var(--white);border:1px solid var(--ink-100);cursor:pointer">↧ PDF</button>'
-        +'<button onclick="document.querySelector(\'.nz-modal-bd\').remove()" style="flex:2;font-family:var(--font-ar);font-size:13px;font-weight:600;padding:10px;border-radius:8px;background:var(--brand-700);border:none;cursor:pointer;color:var(--paper)">إغلاق المعاينة</button>'
+        +'<button onclick="document.querySelector(\'.dh-modal-bd\').remove()" style="flex:2;font-family:var(--font-ar);font-size:13px;font-weight:600;padding:10px;border-radius:8px;background:var(--brand-700);border:none;cursor:pointer;color:var(--paper)">إغلاق المعاينة</button>'
       +'</div>'
     , true);
   }

@@ -5,7 +5,7 @@ function MarketingNav() {
   return (
     <header className="mk-nav">
       <a className="mk-brand" href="/">
-        <img src="/static/nuzul/assets/logo-mark.svg" alt="" style={{width: 32, height: 32}}/>
+        <img src="/static/dheuof/assets/logo-mark.svg" alt="" style={{width: 32, height: 32}}/>
         <div className="mk-brand-text">
           <span className="ar">ضيوف</span>
           <span className="en">Dheuof</span>
@@ -76,14 +76,14 @@ function Hero() {
 
 function ModuleGrid() {
   const modules = [
-    { ic: "🛏",  ar: "إدارة الضيوف",     en: "Guest management",    d: "حجوزات، توزيع غرف، تسعير ديناميكي حسب الموسم والإشغال.",         href: "/static/nuzul/modules/01-guests/index.html" },
-    { ic: "💳",  ar: "محاسبة وPOS",       en: "Accounting + POS",    d: "ربط مباشر بنقاط البيع، إقفال يومي تلقائي، تقارير ZATCA جاهزة.", href: "/static/nuzul/modules/06-accounting/index.html" },
-    { ic: "📦",  ar: "المخزون والمستودع", en: "Inventory & warehouse",d: "متابعة لُحف، عناية شخصية، أصباغ وقطع الصيانة في موقع واحد.",   href: "/static/nuzul/modules/04-inventory/index.html" },
-    { ic: "👥",  ar: "الموارد البشرية",   en: "HR & payroll",        d: "رواتب، إقامات، رخص عمل، قوى، GOSI، تأمين طبي.",                href: "/static/nuzul/modules/09-hr/index.html" },
-    { ic: "🌐",  ar: "تكامل القنوات",     en: "Channel sync",        d: "Booking, Agoda، Expedia، Almosafer وأكثر من ٤٠ قناة.",         href: "/static/nuzul/modules/10-channel-marketing/index.html" },
-    { ic: "🔐",  ar: "المفتاح الذكي",     en: "Smart Key",           d: "تحقّق آلي من هوية الضيف، حماية من الاحتيال، مفتاح رقمي.",      href: "/static/nuzul/modules/08-smart-key/index.html" },
-    { ic: "📈",  ar: "مؤشرات الأداء",     en: "KPIs & analytics",    d: "RevPAR، ADR، GOPPAR — مع توصيات ذكية تطبيقية.",               href: "/static/nuzul/modules/11-kpis/index.html" },
-    { ic: "🧠",  ar: "تحليل البيانات",    en: "Data insights",       d: "نقاط القوة، نقاط الضعف، توصيات شهرية مُلهمة وقابلة للتنفيذ.",  href: "/static/nuzul/modules/12-analytics/index.html" },
+    { ic: "🛏",  ar: "إدارة الضيوف",     en: "Guest management",    d: "حجوزات، توزيع غرف، تسعير ديناميكي حسب الموسم والإشغال.",         href: "/static/dheuof/modules/01-guests/index.html" },
+    { ic: "💳",  ar: "محاسبة وPOS",       en: "Accounting + POS",    d: "ربط مباشر بنقاط البيع، إقفال يومي تلقائي، تقارير ZATCA جاهزة.", href: "/static/dheuof/modules/06-accounting/index.html" },
+    { ic: "📦",  ar: "المخزون والمستودع", en: "Inventory & warehouse",d: "متابعة لُحف، عناية شخصية، أصباغ وقطع الصيانة في موقع واحد.",   href: "/static/dheuof/modules/04-inventory/index.html" },
+    { ic: "👥",  ar: "الموارد البشرية",   en: "HR & payroll",        d: "رواتب، إقامات، رخص عمل، قوى، GOSI، تأمين طبي.",                href: "/static/dheuof/modules/09-hr/index.html" },
+    { ic: "🌐",  ar: "تكامل القنوات",     en: "Channel sync",        d: "Booking, Agoda، Expedia، Almosafer وأكثر من ٤٠ قناة.",         href: "/static/dheuof/modules/10-channel-marketing/index.html" },
+    { ic: "🔐",  ar: "المفتاح الذكي",     en: "Smart Key",           d: "تحقّق آلي من هوية الضيف، حماية من الاحتيال، مفتاح رقمي.",      href: "/static/dheuof/modules/08-smart-key/index.html" },
+    { ic: "📈",  ar: "مؤشرات الأداء",     en: "KPIs & analytics",    d: "RevPAR، ADR، GOPPAR — مع توصيات ذكية تطبيقية.",               href: "/static/dheuof/modules/11-kpis/index.html" },
+    { ic: "🧠",  ar: "تحليل البيانات",    en: "Data insights",       d: "نقاط القوة، نقاط الضعف، توصيات شهرية مُلهمة وقابلة للتنفيذ.",  href: "/static/dheuof/modules/12-analytics/index.html" },
   ];
   return (
     <section className="mk-modules" id="modules">
@@ -199,7 +199,7 @@ function Footer() {
       <div className="mk-foot-grid">
         <div className="col col-brand">
           <div className="mk-brand">
-            <img src="/static/nuzul/assets/logo-mark.svg" alt="" style={{width: 28, height: 28}}/>
+            <img src="/static/dheuof/assets/logo-mark.svg" alt="" style={{width: 28, height: 28}}/>
             <span className="ar">ضيوف</span>
           </div>
           <p>منصة إدارة الضيافة الكاملة للسوق السعودي والخليجي.</p>
@@ -209,14 +209,14 @@ function Footer() {
           <a href="#modules">الوحدات</a>
           <a href="#pricing">الأسعار</a>
           <a href="#integrations">التكاملات</a>
-          <a href="/static/nuzul/modules/08-smart-key/index.html">المفتاح الذكي</a>
+          <a href="/static/dheuof/modules/08-smart-key/index.html">المفتاح الذكي</a>
         </div>
         <div className="col">
           <div className="hd">الدخول</div>
           <a href="/app">لوحة البرامج</a>
           <a href="/dashboard">تسجيل الدخول</a>
-          <a href="/static/nuzul/packages.html">الباقات</a>
-          <a href="/static/nuzul/onboarding.html">البداية السريعة</a>
+          <a href="/static/dheuof/packages.html">الباقات</a>
+          <a href="/static/dheuof/onboarding.html">البداية السريعة</a>
         </div>
         <div className="col">
           <div className="hd">قانوني</div>

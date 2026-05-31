@@ -34,12 +34,12 @@ function ReportsList() {
   ];
   return (
     <div className="rp-list">
-      <div className="nz-card-head">
+      <div className="dh-card-head">
         <div>
           <div className="ttl">التقارير المجدولة</div>
           <div className="sub">Scheduled reports · auto-delivered</div>
         </div>
-        <button className="nz-chip is-on">+ جدولة تقرير</button>
+        <button className="dh-chip is-on">+ جدولة تقرير</button>
       </div>
       <div className="rp-list-body">
         {list.map((r,i) => (
@@ -51,7 +51,7 @@ function ReportsList() {
             </div>
             <div className="when">{r.when}</div>
             <div className="fmt">{r.fmt}</div>
-            <button className="nz-btn is-secondary">تنزيل آخر نسخة</button>
+            <button className="dh-btn is-secondary">تنزيل آخر نسخة</button>
           </div>
         ))}
       </div>

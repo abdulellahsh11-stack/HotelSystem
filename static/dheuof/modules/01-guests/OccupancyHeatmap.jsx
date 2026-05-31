@@ -28,13 +28,13 @@ function OccupancyHeatmap() {
   const cellFg = (v) => v >= 70 ? "#FFFFFFE0" : "#322B23";
 
   return (
-    <div className="nz-occ">
-      <div className="nz-card-head">
+    <div className="dh-occ">
+      <div className="dh-card-head">
         <div>
           <div className="ttl">إشغال الأسبوعين القادمين</div>
           <div className="sub">Occupancy forecast · next 14 days</div>
         </div>
-        <div className="nz-legend">
+        <div className="dh-legend">
           <span>منخفض</span>
           <span className="sw" style={{background: "var(--sand-strong)"}}></span>
           <span className="sw" style={{background: "var(--gold-200)"}}></span>
@@ -46,10 +46,10 @@ function OccupancyHeatmap() {
         </div>
       </div>
 
-      <div className="nz-occ-grid">
-        <div className="nz-occ-rowhd"></div>
+      <div className="dh-occ-grid">
+        <div className="dh-occ-rowhd"></div>
         {days.map((d,i) => (
-          <div className="nz-occ-dayhd" key={i}>
+          <div className="dh-occ-dayhd" key={i}>
             <div className="d">{d.d}</div>
             <div className="n">{d.n}</div>
           </div>
@@ -57,12 +57,12 @@ function OccupancyHeatmap() {
 
         {rooms.map((r,ri) => (
           <React.Fragment key={r.name}>
-            <div className="nz-occ-rowhd">
+            <div className="dh-occ-rowhd">
               <div className="nm">{r.name}</div>
               <div className="ct">{r.count} غرفة</div>
             </div>
             {r.vals.map((v,ci) => (
-              <div className="nz-occ-cell" key={ci} style={{background: cellColor(v), color: cellFg(v)}}>
+              <div className="dh-occ-cell" key={ci} style={{background: cellColor(v), color: cellFg(v)}}>
                 <span>{v === 0 ? "—" : v + "٪"}</span>
               </div>
             ))}

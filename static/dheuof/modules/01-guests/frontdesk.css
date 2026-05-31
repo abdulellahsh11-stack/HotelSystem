@@ -46,7 +46,7 @@
 .fd-arr .eta svg { width: 11px; height: 11px; }
 .fd-arr .note { background: var(--gold-100); color: var(--gold-800); font-size: 12px; padding: 6px 10px; border-radius: 6px; margin-top: 8px; display: inline-block; }
 .fd-arr .act, .fd-dep .bal { display: flex; align-items: center; gap: 8px; }
-.fd-arr .act .nz-pill svg { width: 11px; height: 11px; margin-inline-end: 2px; }
+.fd-arr .act .dh-pill svg { width: 11px; height: 11px; margin-inline-end: 2px; }
 .fd-dep { grid-template-columns: 40px 1fr auto auto; }
 .fd-dep .bal { margin-inline-end: 8px; }
 
@@ -105,7 +105,7 @@
 .meta-grid .v { font-size: 13px; color: var(--ink-800); font-weight: 500; }
 .meta-grid .v.en-num { font-family: var(--font-mono); }
 .fd-trust { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
-.fd-trust .nz-pill { padding: 4px 10px; font-size: 11.5px; }
+.fd-trust .dh-pill { padding: 4px 10px; font-size: 11.5px; }
 .fd-trust svg { width: 11px; height: 11px; margin-inline-end: 2px; }
 
 /* Step 3 — Room grid */

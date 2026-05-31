@@ -15,15 +15,15 @@ function LineChart() {
 
   return (
     <div className="rp-line">
-      <div className="nz-card-head">
+      <div className="dh-card-head">
         <div>
           <div className="ttl">منحنى الإيرادات اليومية</div>
           <div className="sub">Daily revenue trend · April 2025 (SAR thousands)</div>
         </div>
         <div className="rp-period">
-          <button className="nz-chip">يومي</button>
-          <button className="nz-chip is-on">أسبوعي</button>
-          <button className="nz-chip">شهري</button>
+          <button className="dh-chip">يومي</button>
+          <button className="dh-chip is-on">أسبوعي</button>
+          <button className="dh-chip">شهري</button>
         </div>
       </div>
       <svg viewBox={"0 0 " + W + " " + H} preserveAspectRatio="none" style={{width: "100%", height: 260, direction: "ltr"}}>
@@ -60,7 +60,7 @@ function ChannelBars() {
   ];
   return (
     <div className="rp-ch">
-      <div className="nz-card-head">
+      <div className="dh-card-head">
         <div>
           <div className="ttl">أداء قنوات الحجز</div>
           <div className="sub">Channel performance · this month</div>

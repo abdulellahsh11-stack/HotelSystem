@@ -45,26 +45,26 @@ function Sidebar({ active, onChange }) {
   ];
 
   return (
-    <aside className="nz-sidebar">
-      <div className="nz-brand">
-        <span className="nz-mark">ض</span>
-        <div className="nz-brand-name">
+    <aside className="dh-sidebar">
+      <div className="dh-brand">
+        <span className="dh-mark">ض</span>
+        <div className="dh-brand-name">
           <div className="ar">ضيوف</div>
           <div className="en">Dheuof</div>
         </div>
       </div>
 
-      <nav className="nz-nav">
+      <nav className="dh-nav">
         {nav.map(g => (
-          <div className="nz-nav-group" key={g.group}>
-            <div className="nz-nav-label">{g.group}</div>
+          <div className="dh-nav-group" key={g.group}>
+            <div className="dh-nav-label">{g.group}</div>
             {g.items.map(it => {
               const C = Icon[it.ic];
               const isActive = active === it.id;
               return (
                 <a
                   key={it.id}
-                  className={"nz-nav-item " + (isActive ? "is-active" : "")}
+                  className={"dh-nav-item " + (isActive ? "is-active" : "")}
                   onClick={() => onChange && onChange(it.id)}
                 >
                   <span className="ic"><C/></span>
@@ -77,12 +77,12 @@ function Sidebar({ active, onChange }) {
         ))}
       </nav>
 
-      <div className="nz-side-foot">
-        <div className="nz-property">
+      <div className="dh-side-foot">
+        <div className="dh-property">
           <div className="ar">فندق الواحة الذهبية</div>
           <div className="en">Golden Oasis Hotel · Riyadh</div>
         </div>
-        <button className="nz-icon-btn"><Icon.cog/></button>
+        <button className="dh-icon-btn"><Icon.cog/></button>
       </div>
     </aside>
   );
