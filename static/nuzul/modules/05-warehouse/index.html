@@ -78,6 +78,7 @@
 .stat-ok{background:#DCFCE7;color:#166534}
 .stat-warn{background:#FEF3C7;color:#92400E}
 .stat-bad{background:#FEE2E2;color:#991B1B}
+.stat-excellent{background:#BBF7D0;color:#064E3B}
 
 /* ── Row actions ────────────────────────────────────────────────────── */
 .acts-cell{display:flex;gap:4px}
@@ -301,9 +302,9 @@
           <div style="flex:1">
             <div style="font-family:var(--font-ar-display);font-size:13px;font-weight:700;color:var(--ink-900);margin-bottom:12px">حالة المخزون</div>
             <div style="display:flex;flex-direction:column;gap:8px">
-              <div style="display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:2px;background:var(--success-500);flex-shrink:0"></span><span style="font-size:12px;color:var(--ink-700);flex:1">جيدة</span><span id="wh-leg-ok" style="font-family:var(--font-en);font-size:12px;font-weight:600;color:var(--success-700)">—</span></div>
-              <div style="display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:2px;background:var(--warning-500);flex-shrink:0"></span><span style="font-size:12px;color:var(--ink-700);flex:1">تحت الحد</span><span id="wh-leg-warn" style="font-family:var(--font-en);font-size:12px;font-weight:600;color:var(--warning-700)">—</span></div>
-              <div style="display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:2px;background:var(--danger-500);flex-shrink:0"></span><span style="font-size:12px;color:var(--ink-700);flex:1">ناقص</span><span id="wh-leg-bad" style="font-family:var(--font-en);font-size:12px;font-weight:600;color:var(--danger-700)">—</span></div>
+              <div style="display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:2px;background:#1B7A56;flex-shrink:0"></span><span style="font-size:12px;color:var(--ink-700);flex:1">ممتاز+جيد</span><span id="wh-leg-ok" style="font-family:var(--font-en);font-size:12px;font-weight:600;color:#1B7A56">—</span></div>
+              <div style="display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:2px;background:var(--warning-500);flex-shrink:0"></span><span style="font-size:12px;color:var(--ink-700);flex:1">منخفض</span><span id="wh-leg-warn" style="font-family:var(--font-en);font-size:12px;font-weight:600;color:var(--warning-700)">—</span></div>
+              <div style="display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:2px;background:var(--danger-500);flex-shrink:0"></span><span style="font-size:12px;color:var(--ink-700);flex:1">تحت الحد</span><span id="wh-leg-bad" style="font-family:var(--font-en);font-size:12px;font-weight:600;color:var(--danger-700)">—</span></div>
             </div>
           </div>
         </div>
@@ -434,21 +435,22 @@ var editingId   = null;
    STATUS HELPERS
 ════════════════════════════════════════ */
 function statusOf(item){
-  if(item.qty <= 0)              return 'bad';
-  if(item.qty < item.par * 0.25) return 'bad';
-  if(item.qty < item.par * 0.5)  return 'warn';
-  return 'ok';
+  if(item.qty<=0||item.qty<item.par*.25) return 'bad';
+  if(item.qty<item.par*.5)  return 'warn';
+  if(item.qty<item.par*.8)  return 'ok';
+  return 'excellent';
 }
 function statusLabel(item){
-  var s = statusOf(item);
-  if(s==='bad')  return '<span class="stat-pill stat-bad">🔴 نفد / ناقص جداً</span>';
-  if(s==='warn') return '<span class="stat-pill stat-warn">🟡 تحت الحد</span>';
-  return '<span class="stat-pill stat-ok">✓ جيدة</span>';
+  var s=statusOf(item);
+  if(s==='bad')       return '<span class="stat-pill stat-bad">🔴 تحت الحد</span>';
+  if(s==='warn')      return '<span class="stat-pill stat-warn">🟠 منخفض</span>';
+  if(s==='ok')        return '<span class="stat-pill stat-ok">🟢 جيدة</span>';
+  return '<span class="stat-pill stat-excellent">⭐ ممتاز</span>';
 }
 function pct(item){ return Math.min(100, Math.max(3, Math.round(item.qty / item.par * 100))); }
 function fillColor(item){
-  var s = statusOf(item);
-  return s==='bad' ? '#EF4444' : s==='warn' ? '#F59E0B' : '#22C55E';
+  var s=statusOf(item);
+  return s==='bad'?'#C0392B': s==='warn'?'#D97706': s==='ok'?'#22C55E':'#1B7A56';
 }
 
 /* ════════════════════════════════════════
@@ -504,7 +506,7 @@ function renderInv(){
 }
 
 function updateKPIs(){
-  var low   = ITEMS.filter(function(it){ return statusOf(it)!=='ok'; }).length;
+  var low   = ITEMS.filter(function(it){ return statusOf(it)==='bad'||statusOf(it)==='warn'; }).length;
   var elec  = ITEMS.filter(function(it){ return it.cat==='إضافة'; }).length;
   var paint = ITEMS.filter(function(it){ return it.cat==='أصباغ'||it.cat==='كيمياء'; }).length;
   var tools = ITEMS.filter(function(it){ return it.cat==='أدوات'||it.cat==='سباكة'; }).length;
@@ -518,17 +520,19 @@ function updateKPIs(){
   var al = document.getElementById('inv-alert-txt');
   if(al) al.textContent = low+' '+(low===1?'صنف':'أصناف')+' وصلت للحد الأدنى أو أقل — يلزم التوريد';
   /* ── Warehouse Charts ── */
+  var nExc  = ITEMS.filter(function(it){ return statusOf(it)==='excellent'; }).length;
   var nOk   = ITEMS.filter(function(it){ return statusOf(it)==='ok'; }).length;
   var nWarn = ITEMS.filter(function(it){ return statusOf(it)==='warn'; }).length;
   var nBad  = ITEMS.filter(function(it){ return statusOf(it)==='bad'; }).length;
   var total = ITEMS.length || 1;
+  var excDeg  = Math.round(nExc/total*360);
   var okDeg   = Math.round(nOk/total*360);
   var warnDeg = Math.round(nWarn/total*360);
   var donut = document.getElementById('wh-donut');
-  if (donut) donut.style.background = 'conic-gradient(var(--success-500) 0deg '+okDeg+'deg,var(--warning-500) '+okDeg+'deg '+(okDeg+warnDeg)+'deg,var(--danger-500) '+(okDeg+warnDeg)+'deg 360deg)';
+  if (donut) donut.style.background = 'conic-gradient(#1B7A56 0deg '+excDeg+'deg,var(--success-500) '+excDeg+'deg '+(excDeg+okDeg)+'deg,var(--warning-500) '+(excDeg+okDeg)+'deg '+(excDeg+okDeg+warnDeg)+'deg,var(--danger-500) '+(excDeg+okDeg+warnDeg)+'deg 360deg)';
   var lbl = document.getElementById('wh-donut-lbl');
-  if (lbl) lbl.innerHTML = Math.round(nOk/total*100)+'%<br><span style="font-weight:400;color:var(--fg-3)">جيدة</span>';
-  set('wh-leg-ok',   nOk);
+  if (lbl) lbl.innerHTML = Math.round((nExc+nOk)/total*100)+'%<br><span style="font-weight:400;color:var(--fg-3)">جيد+ممتاز</span>';
+  set('wh-leg-ok',   nOk+nExc);
   set('wh-leg-warn', nWarn);
   set('wh-leg-bad',  nBad);
   var cats = ['إضافة','أصباغ','كيمياء','أدوات','سباكة'];
@@ -688,10 +692,16 @@ window.closeAddModal = function(){
 /* ════ EXCEL XML HELPER ════════════════════════════════════════════ */
 function toXLS(hdrs,dataRows,sheetName){
   function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-  function cell(v,h){ var t=(!h&&v!==''&&!isNaN(+v))?'Number':'String'; return '<Cell'+(h?' ss:StyleID="H"':'')+'><Data ss:Type="'+t+'">'+esc(v)+'</Data></Cell>'; }
+  function cell(v,h){ var sid=null,val=v; if(v&&typeof v==='object'&&'v' in v){val=v.v;sid=v.s;} var t=(!h&&val!==''&&!isNaN(+val))?'Number':'String'; var style=h?'H':sid||''; return '<Cell'+(style?' ss:StyleID="'+style+'"':'')+'><Data ss:Type="'+t+'">'+esc(val)+'</Data></Cell>'; }
   return '﻿<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?>'
     +'<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'
-    +'<Styles><Style ss:ID="H"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1B4D3D" ss:Pattern="Solid"/></Style></Styles>'
+    +'<Styles>'
+    +'<Style ss:ID="H"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1B4D3D" ss:Pattern="Solid"/></Style>'
+    +'<Style ss:ID="BAD"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#C0392B" ss:Pattern="Solid"/></Style>'
+    +'<Style ss:ID="WARN"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#D97706" ss:Pattern="Solid"/></Style>'
+    +'<Style ss:ID="OK"><Font ss:Bold="1" ss:Color="#064E3B"/><Interior ss:Color="#BBF7D0" ss:Pattern="Solid"/></Style>'
+    +'<Style ss:ID="EXC"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1B7A56" ss:Pattern="Solid"/></Style>'
+    +'</Styles>'
     +'<Worksheet ss:Name="'+esc(sheetName||'تقرير')+'"><Table>'
     +'<Row>'+hdrs.map(function(h){return cell(h,true);}).join('')+'</Row>'
     +dataRows.map(function(r){return '<Row>'+r.map(function(c){return cell(c,false);}).join('')+'</Row>';}).join('')
@@ -706,9 +716,9 @@ function dlXLS(content,fname){
 function todayStr(){ return new Date().toISOString().slice(0,10); }
 window.exportCSV = function(){
   var headers = ['الصنف','الفئة','العلامة التجارية','اللون','المقاس','الكمية','حد الطلب','الوحدة','SKU','الحالة'];
+  var sMap = {bad:{v:'تحت الحد',s:'BAD'},warn:{v:'منخفض',s:'WARN'},ok:{v:'جيدة',s:'OK'},excellent:{v:'ممتاز',s:'EXC'}};
   var rows = ITEMS.map(function(it){
-    return [it.name, it.cat, it.brand, it.color, it.spec, it.qty, it.par, it.unit, it.sku,
-            {ok:'جيدة',warn:'تحت الحد',bad:'ناقص'}[statusOf(it)]||''];
+    return [it.name, it.cat, it.brand, it.color, it.spec, it.qty, it.par, it.unit, it.sku, sMap[statusOf(it)]||''];
   });
   dlXLS(toXLS(headers, rows, 'مستودع الصيانة'), 'مستودع_الصيانة_'+todayStr()+'.xls');
   toast('تم تصدير '+ITEMS.length+' صنف إلى Excel ✓');
@@ -725,7 +735,7 @@ function printPDF(title, bodyHTML) {
     +'th{background:#1B4D3D;color:#fff;padding:8px 12px;text-align:right;font-weight:600}'
     +'td{padding:7px 12px;border-bottom:1px solid #eee;text-align:right}'
     +'tr:nth-child(even) td{background:#f7faf8}'
-    +'.ok{color:#1B7A56;font-weight:600}.warn{color:#B45309;font-weight:600}.bad{color:#C0392B;font-weight:600}'
+    +'.excellent{color:#1B7A56;font-weight:700}.ok{color:#22C55E;font-weight:600}.warn{color:#D97706;font-weight:600}.bad{color:#C0392B;font-weight:700}'
     +'.footer{font-size:10px;color:#bbb;margin-top:32px;border-top:1px solid #eee;padding-top:12px;text-align:center}'
     +'@media print{@page{margin:15mm}}';
   w.document.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"/><title>'+title+'</title><style>'+css+'</style></head><body>'
@@ -739,17 +749,18 @@ function printPDF(title, bodyHTML) {
 }
 
 window.exportPDF = function(){
-  var ok=0,warn=0,bad=0,totalVal=0;
-  ITEMS.forEach(function(it){ var s=statusOf(it); if(s==='ok')ok++; else if(s==='warn')warn++; else bad++; totalVal+=it.qty*(it.cost||0); });
+  var excellent=0,ok=0,warn=0,bad=0,totalVal=0;
+  ITEMS.forEach(function(it){ var s=statusOf(it); if(s==='excellent')excellent++; else if(s==='ok')ok++; else if(s==='warn')warn++; else bad++; totalVal+=it.qty*(it.cost||0); });
   var summaryRows = '<tr><td>إجمالي الأصناف</td><td>'+ITEMS.length+'</td></tr>'
-    +'<tr><td class="ok">جيدة</td><td>'+ok+'</td></tr>'
-    +'<tr><td class="warn">تحت الحد</td><td>'+warn+'</td></tr>'
-    +'<tr><td class="bad">ناقص</td><td>'+bad+'</td></tr>'
+    +'<tr><td class="excellent">⭐ ممتاز</td><td>'+excellent+'</td></tr>'
+    +'<tr><td class="ok">🟢 جيدة</td><td>'+ok+'</td></tr>'
+    +'<tr><td class="warn">🟠 منخفض</td><td>'+warn+'</td></tr>'
+    +'<tr><td class="bad">🔴 تحت الحد</td><td>'+bad+'</td></tr>'
     +'<tr><td>القيمة الإجمالية التقديرية</td><td>'+totalVal.toLocaleString('ar-EG')+' ر.س</td></tr>';
   var itemRows = ITEMS.map(function(it){
     var s = statusOf(it);
-    var sCls = {ok:'ok',warn:'warn',bad:'bad'}[s]||'';
-    var sLabel = {ok:'جيدة',warn:'تحت الحد',bad:'ناقص'}[s]||'';
+    var sCls = {bad:'bad',warn:'warn',ok:'ok',excellent:'excellent'}[s]||'';
+    var sLabel = {bad:'تحت الحد',warn:'منخفض',ok:'جيدة',excellent:'ممتاز'}[s]||'';
     return '<tr><td>'+it.name+'</td><td>'+it.cat+'</td><td>'+it.brand+'</td><td>'+it.color+'</td>'
       +'<td>'+it.qty+' '+it.unit+'</td><td>'+it.par+'</td><td>'+it.sku+'</td>'
       +'<td class="'+sCls+'">'+sLabel+'</td></tr>';

@@ -109,10 +109,10 @@ body { background: var(--paper-tint); }
   width:44px; height:44px; border-radius:10px;
   display:grid; place-items:center; font-size:20px; flex-shrink:0;
 }
-.high .sk-sev { background:#FEE2E2; color:#DC2626; }
+.high .sk-sev { background:#FEE2E2; color:#C0392B; }
 .med .sk-sev { background:#FEF3C7; color:#D97706; animation:sk-pulse 2s ease-in-out infinite; }
-.low .sk-sev { background:#FEF9C3; color:#A16207; }
-.info .sk-sev { background:#EFF6FF; color:#2563EB; }
+.low .sk-sev { background:#DCFCE7; color:#22C55E; }
+.info .sk-sev { background:#D1FAE5; color:#1B7A56; }
 @keyframes sk-pulse { 0%,100%{opacity:1} 50%{opacity:.6} }
 .sk-alarm .body .ttl { font-weight:600; color:var(--ink-900); font-size:14px; }
 .sk-alarm .body .sub { font-size:12px; color:var(--fg-2); margin-top:3px; line-height:1.5; }
@@ -240,10 +240,10 @@ body { background: var(--paper-tint); }
   display:inline-flex; align-items:center; gap:5px; font-size:11px;
   font-family:var(--font-ar); padding:3px 9px; border-radius:6px; font-weight:500;
 }
-.log-sev.high { background:#FEE2E2; color:#DC2626; }
+.log-sev.high { background:#FEE2E2; color:#C0392B; }
 .log-sev.med { background:#FEF3C7; color:#D97706; }
-.log-sev.low { background:#FEF9C3; color:#A16207; }
-.log-sev.info { background:#EFF6FF; color:#2563EB; }
+.log-sev.low { background:#DCFCE7; color:#22C55E; }
+.log-sev.info { background:#D1FAE5; color:#1B7A56; }
 .log-status {
   display:inline-flex; align-items:center; gap:5px; font-size:11px;
   font-family:var(--font-ar); padding:3px 9px; border-radius:6px;
@@ -381,12 +381,12 @@ body { background: var(--paper-tint); }
             <div id="sc-med" style="font-family:var(--font-en);font-size:32px;font-weight:700;color:#D97706">—</div>
           </div>
           <div style="background:var(--white);border:1px solid var(--hairline);border-radius:10px;padding:14px 18px;text-align:center">
-            <div style="font-size:10px;color:var(--fg-3);letter-spacing:.06em;margin-bottom:6px">منخفضة</div>
-            <div id="sc-low" style="font-family:var(--font-en);font-size:32px;font-weight:700;color:#A16207">—</div>
+            <div style="font-size:10px;color:var(--fg-3);letter-spacing:.06em;margin-bottom:6px">🟢 جيد</div>
+            <div id="sc-low" style="font-family:var(--font-en);font-size:32px;font-weight:700;color:#22C55E">—</div>
           </div>
           <div style="background:var(--white);border:1px solid var(--hairline);border-radius:10px;padding:14px 18px;text-align:center">
-            <div style="font-size:10px;color:var(--fg-3);letter-spacing:.06em;margin-bottom:6px">معلوماتي</div>
-            <div id="sc-info" style="font-family:var(--font-en);font-size:32px;font-weight:700;color:#2563EB">—</div>
+            <div style="font-size:10px;color:var(--fg-3);letter-spacing:.06em;margin-bottom:6px">⭐ معلوماتي</div>
+            <div id="sc-info" style="font-family:var(--font-en);font-size:32px;font-weight:700;color:#1B7A56">—</div>
           </div>
           <!-- By-program bar chart -->
           <div style="background:var(--white);border:1px solid var(--hairline);border-radius:10px;padding:14px 18px">
@@ -810,10 +810,16 @@ function renderLog() {
 /* ════ EXCEL XML HELPER ════════════════════════════════════════════ */
 function toXLS(hdrs,dataRows,sheetName){
   function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-  function cell(v,h){ var t=(!h&&v!==''&&!isNaN(+v))?'Number':'String'; return '<Cell'+(h?' ss:StyleID="H"':'')+'><Data ss:Type="'+t+'">'+esc(v)+'</Data></Cell>'; }
+  function cell(v,h){ var sid=null,val=v; if(v&&typeof v==='object'&&'v' in v){val=v.v;sid=v.s;} var t=(!h&&val!==''&&!isNaN(+val))?'Number':'String'; var style=h?'H':sid||''; return '<Cell'+(style?' ss:StyleID="'+style+'"':'')+'><Data ss:Type="'+t+'">'+esc(val)+'</Data></Cell>'; }
   return '﻿<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?>'
     +'<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'
-    +'<Styles><Style ss:ID="H"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1B4D3D" ss:Pattern="Solid"/></Style></Styles>'
+    +'<Styles>'
+    +'<Style ss:ID="H"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#7C2D12" ss:Pattern="Solid"/></Style>'
+    +'<Style ss:ID="BAD"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#C0392B" ss:Pattern="Solid"/></Style>'
+    +'<Style ss:ID="WARN"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#D97706" ss:Pattern="Solid"/></Style>'
+    +'<Style ss:ID="OK"><Font ss:Bold="1" ss:Color="#064E3B"/><Interior ss:Color="#BBF7D0" ss:Pattern="Solid"/></Style>'
+    +'<Style ss:ID="EXC"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1B7A56" ss:Pattern="Solid"/></Style>'
+    +'</Styles>'
     +'<Worksheet ss:Name="'+esc(sheetName||'تقرير')+'"><Table>'
     +'<Row>'+hdrs.map(function(h){return cell(h,true);}).join('')+'</Row>'
     +dataRows.map(function(r){return '<Row>'+r.map(function(c){return cell(c,false);}).join('')+'</Row>';}).join('')
@@ -828,10 +834,14 @@ function dlXLS(content,fname){
 function todayStr(){ return new Date().toISOString().slice(0,10); }
 window.exportLog = function() {
   var headers = ['الأولوية','عنوان الإنذار','الوصف','المصدر','الجهة المستهدفة','الحالة','الوقت','القاعدة'];
+  var sevStyle = {high:'BAD', med:'WARN', low:'OK', info:'EXC'};
+  var stStyle  = {active:'BAD', snoozed:'WARN', resolved:'EXC'};
+  var sevLabel = {high:'عالية',med:'متوسطة',low:'منخفضة',info:'معلوماتي'};
+  var stLabel  = {active:'نشط',resolved:'محلول',snoozed:'مؤجّل'};
   var rows = ALARMS.map(function(a){
-    return [{high:'عالية',med:'متوسطة',low:'منخفضة',info:'معلوماتي'}[a.sev]||a.sev,
+    return [{v:sevLabel[a.sev]||a.sev, s:sevStyle[a.sev]||''},
             a.title, a.desc, a.src, a.target,
-            {active:'نشط',resolved:'محلول',snoozed:'مؤجّل'}[a.status]||a.status,
+            {v:stLabel[a.status]||a.status, s:stStyle[a.status]||''},
             a.time, a.rule];
   });
   dlXLS(toXLS(headers, rows, 'سجل الإنذارات'), 'SmartKey_Log_'+todayStr()+'.xls');
@@ -849,8 +859,11 @@ function printPDF(title, bodyHTML) {
     +'th{background:#1B4D3D;color:#fff;padding:8px 12px;text-align:right;font-weight:600}'
     +'td{padding:7px 12px;border-bottom:1px solid #eee;text-align:right}'
     +'tr:nth-child(even) td{background:#f7faf8}'
-    +'.high{color:#C0392B;font-weight:700}.med{color:#B45309;font-weight:600}.low{color:#1B7A56;font-weight:600}.info{color:#1e40af;font-weight:600}'
-    +'.active{color:#C0392B}.resolved{color:#1B7A56}.snoozed{color:#B45309}'
+    +'.high{color:#C0392B;font-weight:700;background:#FEE2E2;padding:2px 7px;border-radius:4px}'
+    +'.med{color:#D97706;font-weight:600;background:#FEF3C7;padding:2px 7px;border-radius:4px}'
+    +'.low{color:#22C55E;font-weight:600;background:#DCFCE7;padding:2px 7px;border-radius:4px}'
+    +'.info{color:#1B7A56;font-weight:600;background:#D1FAE5;padding:2px 7px;border-radius:4px}'
+    +'.active{color:#C0392B;font-weight:600}.resolved{color:#1B7A56;font-weight:600}.snoozed{color:#D97706;font-weight:600}'
     +'.footer{font-size:10px;color:#bbb;margin-top:32px;border-top:1px solid #eee;padding-top:12px;text-align:center}'
     +'@media print{@page{margin:15mm}}';
   w.document.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"/><title>'+title+'</title><style>'+css+'</style></head><body>'
@@ -869,10 +882,10 @@ window.exportPDF = function() {
   var high=0,med=0,low=0,info=0;
   ALARMS.forEach(function(a){ if(a.sev==='high')high++; else if(a.sev==='med')med++; else if(a.sev==='low')low++; else info++; });
   var summaryRows = '<tr><td>إجمالي التنبيهات</td><td>'+ALARMS.length+'</td></tr>'
-    +'<tr><td class="high">عالية الخطورة</td><td>'+high+'</td></tr>'
-    +'<tr><td class="med">متوسطة</td><td>'+med+'</td></tr>'
-    +'<tr><td class="low">منخفضة</td><td>'+low+'</td></tr>'
-    +'<tr><td class="info">معلوماتية</td><td>'+info+'</td></tr>';
+    +'<tr><td><span class="high">🔴 عالية الخطورة — تحت الحد</span></td><td>'+high+'</td></tr>'
+    +'<tr><td><span class="med">🟠 متوسطة — منخفض</span></td><td>'+med+'</td></tr>'
+    +'<tr><td><span class="low">🟢 منخفضة — جيد</span></td><td>'+low+'</td></tr>'
+    +'<tr><td><span class="info">⭐ معلوماتية — ممتاز</span></td><td>'+info+'</td></tr>';
   var alarmRows = ALARMS.map(function(a){
     var sevCls = a.sev; var stCls = a.status;
     return '<tr><td class="'+sevCls+'">'+(sevMap[a.sev]||a.sev)+'</td>'
