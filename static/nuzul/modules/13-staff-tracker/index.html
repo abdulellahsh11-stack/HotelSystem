@@ -61,6 +61,8 @@
         </div>
         <div class="actions">
           <button style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">جدول الراحات</button>
+          <button onclick="exportCSV()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">📊 Excel</button>
+          <button onclick="exportPDF()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">🖨 تقرير PDF</button>
           <button style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--brand-700);color:var(--paper);border:none;cursor:pointer">منح حافز</button>
         </div>
       </div>
@@ -187,6 +189,70 @@ setTimeout(function(){
     el.classList.add('is-in');
   });
 }, 80);
+
+// ── Export helpers ──────────────────────────────────
+function todayStr(){var d=new Date();return d.getFullYear()+(d.getMonth()+1<10?'0':'')+(d.getMonth()+1)+(d.getDate()<10?'0':'')+d.getDate();}
+function toXLS(headers,rows,name){var s='<Styles><Style ss:ID="H"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1B4D3D" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center"/></Style><Style ss:ID="BAD"><Interior ss:Color="#C0392B" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style><Style ss:ID="WARN"><Interior ss:Color="#D97706" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style><Style ss:ID="OK"><Interior ss:Color="#BBF7D0" ss:Pattern="Solid"/><Font ss:Color="#1B7A56" ss:Bold="1"/></Style><Style ss:ID="EXC"><Interior ss:Color="#1B7A56" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style></Styles>';function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}function cell(v){if(v&&typeof v==='object'&&'s' in v)return '<Cell ss:StyleID="'+v.s+'"><Data ss:Type="String">'+esc(v.v)+'</Data></Cell>';return '<Cell><Data ss:Type="'+(typeof v==='number'?'Number':'String')+'">'+esc(v)+'</Data></Cell>';}var hRow='<Row>'+headers.map(function(h){return '<Cell ss:StyleID="H"><Data ss:Type="String">'+esc(h)+'</Data></Cell>';}).join('')+'</Row>';var dRows=rows.map(function(r){return '<Row>'+r.map(cell).join('')+'</Row>';}).join('');return '<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'+s+'<Worksheet ss:Name="'+esc(name)+'"><Table>'+hRow+dRows+'</Table></Worksheet></Workbook>';}
+function dlXLS(c,fn){var b=new Blob([c],{type:'application/vnd.ms-excel;charset=utf-8'});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download=fn;a.click();setTimeout(function(){URL.revokeObjectURL(u);},1000);}
+function toast(msg,isErr){var old=document.querySelector('.nz-toast');if(old)old.remove();var t=document.createElement('div');t.className='nz-toast';t.style.cssText='position:fixed;bottom:24px;inset-inline-end:24px;background:'+(isErr?'#b91c1c':'#1B4D3D')+';color:#fff;padding:12px 18px;border-radius:8px;font-family:"Tajawal",sans-serif;font-size:13px;z-index:9999;display:flex;gap:8px';t.innerHTML='<span style="color:'+(isErr?'#fca5a5':'#C9A85F')+'">'+(isErr?'✕':'✓')+'</span>'+msg;document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .4s';setTimeout(function(){if(t.parentNode)t.remove();},400);},3000);}
+
+var ATTENDANCE = [
+  {name:'Rajesh Kumar',    role:'رئيس الاستقبال', scheduled:'07:00', actual:'06:54', status:'early',    bonus:240},
+  {name:'سارة أحمد',      role:'مدير المنشأة',    scheduled:'08:00', actual:'07:58', status:'ontime',   bonus:0},
+  {name:'Maria Santos',   role:'مشرفة الإسكان',  scheduled:'07:00', actual:'07:24', status:'late24',   bonus:120},
+  {name:'محمد العتيبي',   role:'رئيس الأمن',      scheduled:'14:00', actual:'13:48', status:'early',    bonus:200},
+  {name:'جمال المتروك',   role:'فني صيانة',       scheduled:'08:00', actual:'08:42', status:'late42',   bonus:0},
+  {name:'فاطمة السعيدي',  role:'محاسبة',          scheduled:'09:00', actual:'08:50', status:'early',    bonus:240},
+];
+
+window.exportCSV = function(){
+  var stMap = {
+    early:{v:'مبكر',s:'EXC'}, ontime:{v:'في الوقت',s:'OK'},
+    late24:{v:'تأخر ٢٤ د',s:'WARN'}, late42:{v:'تأخر ٤٢ د',s:'BAD'}
+  };
+  var headers = ['الاسم','المنصب','الموعد المحدد','الدخول الفعلي','الحالة','حافز الأسبوع (ر.س)'];
+  var rows = ATTENDANCE.map(function(r){
+    return [r.name, r.role, r.scheduled, r.actual, stMap[r.status]||{v:r.status,s:'OK'}, r.bonus||'-'];
+  });
+  dlXLS(toXLS(headers,rows,'حضور الموظفين'),'حضور_الموظفين_'+todayStr()+'.xls');
+  toast('تم تصدير '+ATTENDANCE.length+' موظف ✓');
+};
+
+window.exportPDF = function(){
+  var stStyle = {early:'color:#1B7A56;font-weight:700', ontime:'color:#22C55E;font-weight:700', late24:'color:#D97706;font-weight:700', late42:'color:#C0392B;font-weight:700'};
+  var stLabel = {early:'⭐ مبكر', ontime:'✓ في الوقت', late24:'⚠ تأخر ٢٤ د', late42:'✕ تأخر ٤٢ د'};
+  var totalBonus = ATTENDANCE.reduce(function(s,r){return s+r.bonus;},0);
+  var present = ATTENDANCE.filter(function(r){return r.status!=='absent';}).length;
+  var rows = ATTENDANCE.map(function(r){
+    return '<tr><td>'+r.name+'</td><td>'+r.role+'</td><td style="font-family:monospace">'+r.scheduled+'</td>'
+      +'<td style="font-family:monospace">'+r.actual+'</td>'
+      +'<td style="'+stStyle[r.status]+'">'+stLabel[r.status]+'</td>'
+      +'<td style="font-weight:600;color:#C9A85F">'+(r.bonus?r.bonus+' ر.س':'-')+'</td></tr>';
+  }).join('');
+  var win=window.open('','_blank','width=920,height=680');
+  win.document.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"/><title>تقرير الحضور</title>'
+    +'<style>body{font-family:"Tajawal","Segoe UI",sans-serif;margin:32px;color:#1a1a1a;direction:rtl}'
+    +'h1{font-size:22px;margin:0 0 4px}.sub{font-size:12px;color:#666;margin:0 0 18px}'
+    +'.kpis{display:flex;gap:14px;margin-bottom:18px}.kpi{padding:12px 20px;border-radius:10px;min-width:110px}'
+    +'.kpi .v{font-size:26px;font-weight:700}.kpi .l{font-size:11px;color:#666}'
+    +'table{width:100%;border-collapse:collapse;font-size:13px}th{background:#1B4D3D;color:#fff;padding:10px 12px;text-align:right}'
+    +'td{padding:9px 12px;border-bottom:1px solid #eee}tr:nth-child(even){background:#fafafa}'
+    +'.footer{margin-top:18px;font-size:11px;color:#999}@media print{.no-print{display:none}}'
+    +'</style></head><body>'
+    +'<h1>👥 تقرير حضور الموظفين</h1>'
+    +'<p class="sub">يوم '+new Date().toLocaleDateString('ar-SA')+' · نظام أداء الموظفين</p>'
+    +'<div class="kpis">'
+    +'<div class="kpi" style="background:#D1FAE5"><div class="v" style="color:#1B7A56">'+present+'</div><div class="l">حاضرون</div></div>'
+    +'<div class="kpi" style="background:#FEF3C7"><div class="v" style="color:#D97706">'+ATTENDANCE.filter(function(r){return r.status.startsWith('late');}).length+'</div><div class="l">متأخرون</div></div>'
+    +'<div class="kpi" style="background:#FEF9C3"><div class="v" style="color:#C9A85F">'+totalBonus+'</div><div class="l">إجمالي الحوافز (ر.س)</div></div>'
+    +'</div>'
+    +'<table><thead><tr><th>الاسم</th><th>المنصب</th><th>الموعد</th><th>الدخول الفعلي</th><th>الحالة</th><th>الحافز</th></tr></thead>'
+    +'<tbody>'+rows+'</tbody></table>'
+    +'<div class="footer">نظام نزل · تقرير أداء الموظفين · '+new Date().toLocaleString('ar-SA')+'</div>'
+    +'</body></html>');
+  win.document.close();
+  setTimeout(function(){win.print();},700);
+};
 </script>
 </body>
 </html>

@@ -28,7 +28,8 @@
           <p class="sub">محرّك التحليل يجمع البيانات من كل برامجك المشترَكة ويُولّد رؤى وتوصيات تنفيذية. كل برنامج له تقاريره الخاصة، وعند الاشتراك ترتبط تلقائياً وتُغذّي هذه الصفحة.</p>
         </div>
         <div class="actions">
-          <button class="an-btn sec">📥 تقرير شهري كامل</button>
+          <button class="an-btn sec" onclick="exportAnalyticsExcel()">📊 Excel</button>
+          <button class="an-btn sec" onclick="exportAnalyticsPDF()">🖨 تقرير PDF</button>
           <button class="an-btn pr">⚡ تشغيل تحليل جديد</button>
         </div>
       </div>
@@ -526,6 +527,98 @@ setTimeout(function(){
     el.classList.add('is-in');
   });
 }, 80);
+</script>
+
+<script>
+// ── Analytics Export ─────────────────────────────────────────
+(function(){
+  var KPI_DATA = [
+    {name:'REVPAR',   ar:'الإيراد لكل غرفة متاحة', val:626,  unit:'ر.س',  change:7,   period:'شهر/شهر'},
+    {name:'ADR',      ar:'متوسط سعر الغرفة',         val:720,  unit:'ر.س',  change:12,  period:'عن العام'},
+    {name:'OCC',      ar:'نسبة الإشغال',              val:87,   unit:'٪',    change:4,   period:'عن الموسم'},
+    {name:'GOPPAR',   ar:'الربح التشغيلي للغرفة',    val:424,  unit:'ر.س',  change:-2,  period:'شهر/شهر'},
+    {name:'ALOS',     ar:'متوسط ليالي الإقامة',       val:2.4,  unit:'ليالٍ',change:0.3, period:'عن أبريل ٢٤'},
+  ];
+  var INSIGHTS = [
+    {type:'strength',title:'جناح ٤٠٢ — الأعلى أداءً',value:'٢٬٤٠٠ ر.س',change:'+٣٨٪',rec:'رفع سعر الجناح ٤٠٢ بنسبة ١٠٪ في عطلات نهاية الأسبوع'},
+    {type:'strength',title:'Booking.com — نمو متسارع',value:'٢٢٤ ضيف',   change:'+٢٦٪',rec:'زيادة الميزانية الإعلانية على Booking.com بنسبة ١٥٪'},
+    {type:'weakness',title:'ليالي الإقامة الفردية',   value:'٤٢٪',        change:'—',   rec:'حزمة ليلتان بسعر ١٫٧× للقنوات المباشرة'},
+    {type:'weakness',title:'فجوة إشغال الأحد والإثنين',value:'٦١٪',       change:'−٢٦٪',rec:'تعرفة منتصف الأسبوع للأعمال بخصم ١٥٪'},
+  ];
+
+  function todayStr(){var d=new Date();return d.getFullYear()+(d.getMonth()+1<10?'0':'')+(d.getMonth()+1)+(d.getDate()<10?'0':'')+d.getDate();}
+  function toXLS(headers,rows,name){var s='<Styles><Style ss:ID="H"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1B4D3D" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center"/></Style><Style ss:ID="BAD"><Interior ss:Color="#C0392B" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style><Style ss:ID="WARN"><Interior ss:Color="#D97706" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style><Style ss:ID="OK"><Interior ss:Color="#BBF7D0" ss:Pattern="Solid"/><Font ss:Color="#1B7A56" ss:Bold="1"/></Style><Style ss:ID="EXC"><Interior ss:Color="#1B7A56" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style></Styles>';function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}function cell(v){if(v&&typeof v==='object'&&'s' in v)return '<Cell ss:StyleID="'+v.s+'"><Data ss:Type="String">'+esc(v.v)+'</Data></Cell>';return '<Cell><Data ss:Type="'+(typeof v==='number'?'Number':'String')+'">'+esc(v)+'</Data></Cell>';}var hRow='<Row>'+headers.map(function(h){return '<Cell ss:StyleID="H"><Data ss:Type="String">'+esc(h)+'</Data></Cell>';}).join('')+'</Row>';var dRows=rows.map(function(r){return '<Row>'+r.map(cell).join('')+'</Row>';}).join('');return '<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'+s+'<Worksheet ss:Name="'+esc(name)+'"><Table>'+hRow+dRows+'</Table></Worksheet></Workbook>';}
+  function dlXLS(c,fn){var b=new Blob([c],{type:'application/vnd.ms-excel;charset=utf-8'});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download=fn;a.click();setTimeout(function(){URL.revokeObjectURL(u);},1000);}
+  function toast(msg){var old=document.querySelector('.nz-an-toast');if(old)old.remove();var t=document.createElement('div');t.className='nz-an-toast';t.style.cssText='position:fixed;bottom:24px;inset-inline-end:24px;background:#1B4D3D;color:#fff;padding:12px 18px;border-radius:8px;font-family:"Tajawal",sans-serif;font-size:13px;z-index:9999;display:flex;gap:8px';t.innerHTML='<span style="color:#C9A85F">✓</span>'+msg;document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .4s';setTimeout(function(){if(t.parentNode)t.remove();},400);},3000);}
+
+  window.exportAnalyticsExcel = function(){
+    var kpiHeaders = ['المؤشر','الوصف','القيمة','الوحدة','التغيير (%)','الفترة','التقييم'];
+    var kpiRows = KPI_DATA.map(function(k){
+      var tier = k.change>5?{v:'ممتاز',s:'EXC'}:k.change>0?{v:'جيد',s:'OK'}:k.change>-5?{v:'منخفض',s:'WARN'}:{v:'تحت الهدف',s:'BAD'};
+      return [k.name, k.ar, k.val, k.unit, k.change, k.period, tier];
+    });
+    var insHeaders = ['النوع','العنوان','القيمة','التغيير','التوصية'];
+    var insRows = INSIGHTS.map(function(i){
+      var typeCell = i.type==='strength'?{v:'نقطة قوة',s:'EXC'}:{v:'نقطة ضعف',s:'BAD'};
+      return [typeCell, i.title, i.value, i.change, i.rec];
+    });
+    var xml = '<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?>'
+      +'<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'
+      +'<Styles><Style ss:ID="H"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1B4D3D" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center"/></Style>'
+      +'<Style ss:ID="BAD"><Interior ss:Color="#C0392B" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style>'
+      +'<Style ss:ID="WARN"><Interior ss:Color="#D97706" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style>'
+      +'<Style ss:ID="OK"><Interior ss:Color="#BBF7D0" ss:Pattern="Solid"/><Font ss:Color="#1B7A56" ss:Bold="1"/></Style>'
+      +'<Style ss:ID="EXC"><Interior ss:Color="#1B7A56" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style>'
+      +'</Styles>';
+    function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+    function cell(v){if(v&&typeof v==='object'&&'s' in v)return '<Cell ss:StyleID="'+v.s+'"><Data ss:Type="String">'+esc(v.v)+'</Data></Cell>';return '<Cell><Data ss:Type="'+(typeof v==='number'?'Number':'String')+'">'+esc(v)+'</Data></Cell>';}
+    function sheet(name,headers,rows){return '<Worksheet ss:Name="'+esc(name)+'"><Table><Row>'+headers.map(function(h){return '<Cell ss:StyleID="H"><Data ss:Type="String">'+esc(h)+'</Data></Cell>';}).join('')+'</Row>'+rows.map(function(r){return '<Row>'+r.map(cell).join('')+'</Row>';}).join('')+'</Table></Worksheet>';}
+    xml += sheet('المؤشرات الرئيسية',kpiHeaders,kpiRows);
+    xml += sheet('الرؤى والتوصيات',insHeaders,insRows);
+    xml += '</Workbook>';
+    dlXLS(xml,'تحليلات_أبريل_'+todayStr()+'.xls');
+    toast('تم تصدير تقرير التحليلات ✓');
+  };
+
+  window.exportAnalyticsPDF = function(){
+    var kpiRows = KPI_DATA.map(function(k){
+      var cls = k.change>5?'color:#1B7A56':k.change>0?'color:#22C55E':k.change>-5?'color:#D97706':'color:#C0392B';
+      var arrow = k.change>0?'↑':'↓';
+      return '<tr><td><strong>'+k.name+'</strong></td><td>'+k.ar+'</td>'
+        +'<td style="font-weight:700;font-size:18px">'+k.val+' '+k.unit+'</td>'
+        +'<td style="'+cls+';font-weight:700">'+arrow+' '+Math.abs(k.change)+(typeof k.change==='number'&&k.unit!=='٪'?'٪':'')+' <small style="font-weight:400;color:#666">'+k.period+'</small></td></tr>';
+    }).join('');
+    var insRows = INSIGHTS.map(function(i){
+      var badge = i.type==='strength'
+        ?'<span style="background:#D1FAE5;color:#1B7A56;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700">نقطة قوة ✓</span>'
+        :'<span style="background:#FEE2E2;color:#C0392B;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700">نقطة ضعف ✕</span>';
+      return '<tr><td>'+badge+'</td><td><strong>'+i.title+'</strong></td><td style="font-weight:600">'+i.value+'</td><td style="font-weight:600">'+i.change+'</td><td style="font-size:11px;color:#666">'+i.rec+'</td></tr>';
+    }).join('');
+    var win=window.open('','_blank','width=1020,height=760');
+    win.document.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"/><title>تقرير التحليلات</title>'
+      +'<style>body{font-family:"Tajawal","Segoe UI",sans-serif;margin:32px;color:#1a1a1a;direction:rtl}'
+      +'h1{font-size:22px;margin:0 0 4px}h2{font-size:16px;margin:22px 0 10px;color:#1B4D3D}'
+      +'.sub{font-size:12px;color:#666;margin:0 0 18px}'
+      +'table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:24px}'
+      +'th{background:#1B4D3D;color:#fff;padding:9px 12px;text-align:right}'
+      +'td{padding:8px 12px;border-bottom:1px solid #eee;vertical-align:middle}'
+      +'tr:nth-child(even){background:#fafafa}'
+      +'.footer{margin-top:18px;font-size:11px;color:#999}@media print{.no-print{display:none}}'
+      +'</style></head><body>'
+      +'<h1>📊 تقرير التحليلات والمؤشرات</h1>'
+      +'<p class="sub">'+new Date().toLocaleDateString('ar-SA')+' · تحليل الأداء بالذكاء الاصطناعي · أبريل ٢٠٢٥</p>'
+      +'<h2>المؤشرات الرئيسية (KPIs)</h2>'
+      +'<table><thead><tr><th>المؤشر</th><th>الوصف</th><th>القيمة</th><th>التغيير</th></tr></thead>'
+      +'<tbody>'+kpiRows+'</tbody></table>'
+      +'<h2>الرؤى والتوصيات</h2>'
+      +'<table><thead><tr><th>النوع</th><th>العنوان</th><th>القيمة</th><th>التغيير</th><th>التوصية</th></tr></thead>'
+      +'<tbody>'+insRows+'</tbody></table>'
+      +'<div class="footer">نظام نزل · تحليل البيانات بالذكاء الاصطناعي · '+new Date().toLocaleString('ar-SA')+'</div>'
+      +'</body></html>');
+    win.document.close();
+    setTimeout(function(){win.print();},700);
+  };
+})();
 </script>
 </body>
 </html>

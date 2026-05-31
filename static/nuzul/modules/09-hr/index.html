@@ -96,5 +96,98 @@ function App() {
 ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 </script>
 
+<script>
+// ── HR Export (Excel + PDF) ─────────────────────────────
+(function(){
+  var HR_STAFF = [
+    {name:'سارة أحمد المالكي',  role:'مدير المنشأة',    dept:'إدارة',     nat:'السعودية', iqama:'1098273461', expires:'2027-04-12', daysLeft:730,  salary:18500, qiwa:true},
+    {name:'Rajesh Kumar',       role:'رئيس الاستقبال',  dept:'الاستقبال', nat:'الهند',    iqama:'2354281903', expires:'2025-06-14', daysLeft:63,   salary:6800,  qiwa:true},
+    {name:'محمد العتيبي',       role:'رئيس الأمن',      dept:'الأمن',     nat:'السعودية', iqama:'1067392841', expires:'2028-01-22', daysLeft:1018, salary:9200,  qiwa:true},
+    {name:'Maria Santos',       role:'مشرفة الإسكان',   dept:'التدبير',   nat:'الفلبين',  iqama:'2841029384', expires:'2025-04-28', daysLeft:16,   salary:4200,  qiwa:false},
+    {name:'أحمد حسن إبراهيم',   role:'شيف تنفيذي',      dept:'المطبخ',    nat:'مصر',      iqama:'2738492810', expires:'2026-09-08', daysLeft:514,  salary:11800, qiwa:true},
+    {name:'Boris Petrov',       role:'مدير المطعم',      dept:'الأغذية',  nat:'روسيا',    iqama:'2920381746', expires:'2025-07-30', daysLeft:109,  salary:9600,  qiwa:true},
+    {name:'Kanya Sripa',        role:'معالجة سبا',       dept:'السبا',     nat:'تايلاند',  iqama:'2918374650', expires:'2025-12-04', daysLeft:236,  salary:5400,  qiwa:true},
+    {name:'فاطمة السعيدي',      role:'محاسبة',           dept:'المالية',  nat:'السعودية', iqama:'1089467238', expires:'2029-03-15', daysLeft:1437, salary:14000, qiwa:true},
+  ];
+
+  function todayStr(){var d=new Date();return d.getFullYear()+(d.getMonth()+1<10?'0':'')+(d.getMonth()+1)+(d.getDate()<10?'0':'')+d.getDate();}
+  function toXLS(headers,rows,name){var s='<Styles><Style ss:ID="H"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1B4D3D" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center"/></Style><Style ss:ID="BAD"><Interior ss:Color="#C0392B" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style><Style ss:ID="WARN"><Interior ss:Color="#D97706" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style><Style ss:ID="OK"><Interior ss:Color="#BBF7D0" ss:Pattern="Solid"/><Font ss:Color="#1B7A56" ss:Bold="1"/></Style><Style ss:ID="EXC"><Interior ss:Color="#1B7A56" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style></Styles>';function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}function cell(v){if(v&&typeof v==='object'&&'s' in v)return '<Cell ss:StyleID="'+v.s+'"><Data ss:Type="String">'+esc(v.v)+'</Data></Cell>';return '<Cell><Data ss:Type="'+(typeof v==='number'?'Number':'String')+'">'+esc(v)+'</Data></Cell>';}var hRow='<Row>'+headers.map(function(h){return '<Cell ss:StyleID="H"><Data ss:Type="String">'+esc(h)+'</Data></Cell>';}).join('')+'</Row>';var dRows=rows.map(function(r){return '<Row>'+r.map(cell).join('')+'</Row>';}).join('');return '<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'+s+'<Worksheet ss:Name="'+esc(name)+'"><Table>'+hRow+dRows+'</Table></Worksheet></Workbook>';}
+  function dlXLS(c,fn){var b=new Blob([c],{type:'application/vnd.ms-excel;charset=utf-8'});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download=fn;a.click();setTimeout(function(){URL.revokeObjectURL(u);},1000);}
+  function toast(msg){var old=document.querySelector('.nz-hr-toast');if(old)old.remove();var t=document.createElement('div');t.className='nz-hr-toast';t.style.cssText='position:fixed;bottom:24px;inset-inline-end:24px;background:#1B4D3D;color:#fff;padding:12px 18px;border-radius:8px;font-family:"Tajawal",sans-serif;font-size:13px;z-index:9999;display:flex;gap:8px';t.innerHTML='<span style="color:#C9A85F">✓</span>'+msg;document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .4s';setTimeout(function(){if(t.parentNode)t.remove();},400);},3000);}
+
+  window.hrExportCSV = function(){
+    var headers = ['الاسم','المنصب','القسم','الجنسية','رقم الإقامة','تاريخ الانتهاء','الأيام المتبقية','الراتب (ر.س)','قوى','حالة الإقامة'];
+    var rows = HR_STAFF.map(function(s){
+      var iqamaCell = s.daysLeft<=30?{v:s.expires+' ('+s.daysLeft+' يوم)',s:'BAD'}
+                    :s.daysLeft<=90?{v:s.expires+' ('+s.daysLeft+' يوم)',s:'WARN'}
+                    :s.daysLeft<=365?{v:s.expires+' ('+s.daysLeft+' يوم)',s:'OK'}
+                    :{v:s.expires+' ('+s.daysLeft+' يوم)',s:'EXC'};
+      var qiwaCell = s.qiwa?{v:'متوافق',s:'EXC'}:{v:'غير متوافق',s:'BAD'};
+      return [s.name,s.role,s.dept,s.nat,s.iqama,s.expires,s.daysLeft,s.salary,qiwaCell,iqamaCell];
+    });
+    dlXLS(toXLS(headers,rows,'الموارد البشرية'),'HR_الموظفون_'+todayStr()+'.xls');
+    toast('تم تصدير '+HR_STAFF.length+' موظف ✓');
+  };
+
+  window.hrExportPDF = function(){
+    var urgent  = HR_STAFF.filter(function(s){return s.daysLeft<=30;}).length;
+    var warnIq  = HR_STAFF.filter(function(s){return s.daysLeft>30&&s.daysLeft<=90;}).length;
+    var totSal  = HR_STAFF.reduce(function(a,s){return a+s.salary;},0);
+    var rows = HR_STAFF.map(function(s){
+      var iqCls = s.daysLeft<=30?'color:#C0392B;font-weight:700':s.daysLeft<=90?'color:#D97706;font-weight:700':s.daysLeft<=365?'color:#22C55E':'color:#1B7A56';
+      var iqLbl = s.daysLeft<=30?'✕ عاجل ('+s.daysLeft+' يوم)':s.daysLeft<=90?'⚠ '+s.daysLeft+' يوم':'✓ '+s.daysLeft+' يوم';
+      return '<tr><td>'+s.name+'</td><td>'+s.role+'</td><td>'+s.dept+'</td><td>'+s.nat+'</td>'
+        +'<td style="font-family:monospace;font-size:11px">'+s.iqama+'</td>'
+        +'<td style="'+iqCls+'">'+iqLbl+'</td>'
+        +'<td style="font-weight:600">'+s.salary.toLocaleString('ar-EG')+'</td>'
+        +'<td style="'+(s.qiwa?'color:#1B7A56':'color:#C0392B')+';font-weight:700">'+(s.qiwa?'✓':'✕')+'</td>'
+        +'</tr>';
+    }).join('');
+    var win=window.open('','_blank','width=1020,height=760');
+    win.document.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"/><title>تقرير الموارد البشرية</title>'
+      +'<style>body{font-family:"Tajawal","Segoe UI",sans-serif;margin:32px;color:#1a1a1a;direction:rtl}'
+      +'h1{font-size:22px;margin:0 0 4px}.sub{font-size:12px;color:#666;margin:0 0 18px}'
+      +'.kpis{display:flex;gap:14px;margin-bottom:18px}.kpi{padding:12px 20px;border-radius:10px;min-width:100px}'
+      +'.kpi .v{font-size:26px;font-weight:700}.kpi .l{font-size:11px;color:#666}'
+      +'table{width:100%;border-collapse:collapse;font-size:12px}'
+      +'th{background:#1B4D3D;color:#fff;padding:9px 12px;text-align:right}'
+      +'td{padding:8px 12px;border-bottom:1px solid #eee;vertical-align:middle}'
+      +'tr:nth-child(even){background:#fafafa}'
+      +'.footer{margin-top:18px;font-size:11px;color:#999}@media print{.no-print{display:none}}'
+      +'</style></head><body>'
+      +'<h1>👥 تقرير الموارد البشرية</h1>'
+      +'<p class="sub">'+new Date().toLocaleDateString('ar-SA')+' · قائمة الموظفين وتتبع الإقامات</p>'
+      +'<div class="kpis">'
+      +'<div class="kpi" style="background:#f5f5f5"><div class="v">'+HR_STAFF.length+'</div><div class="l">إجمالي الموظفين</div></div>'
+      +(urgent?'<div class="kpi" style="background:#FEE2E2"><div class="v" style="color:#C0392B">'+urgent+'</div><div class="l">إقامات عاجلة (≤٣٠ يوم)</div></div>':'')
+      +(warnIq?'<div class="kpi" style="background:#FEF3C7"><div class="v" style="color:#D97706">'+warnIq+'</div><div class="l">إقامات قريبة (≤٩٠ يوم)</div></div>':'')
+      +'<div class="kpi" style="background:#FEF9C3"><div class="v" style="color:#C9A85F">'+totSal.toLocaleString('ar-EG')+'</div><div class="l">إجمالي الرواتب (ر.س)</div></div>'
+      +'</div>'
+      +'<table><thead><tr><th>الاسم</th><th>المنصب</th><th>القسم</th><th>الجنسية</th><th>رقم الإقامة</th><th>حالة الإقامة</th><th>الراتب (ر.س)</th><th>قوى</th></tr></thead>'
+      +'<tbody>'+rows+'</tbody></table>'
+      +'<div class="footer">نظام نزل · الموارد البشرية · '+new Date().toLocaleString('ar-SA')+'</div>'
+      +'</body></html>');
+    win.document.close();
+    setTimeout(function(){win.print();},700);
+  };
+
+  // Inject export buttons into the rendered page header after React mounts
+  setTimeout(function(){
+    var actionsEl = document.querySelector('.nz-page-actions');
+    if(actionsEl && !actionsEl.querySelector('.hr-export-btn')){
+      var csvBtn = document.createElement('button');
+      csvBtn.className = 'nz-btn is-secondary hr-export-btn';
+      csvBtn.innerHTML = '📊 Excel';
+      csvBtn.onclick = window.hrExportCSV;
+      var pdfBtn = document.createElement('button');
+      pdfBtn.className = 'nz-btn is-secondary hr-export-btn';
+      pdfBtn.innerHTML = '🖨 تقرير PDF';
+      pdfBtn.onclick = window.hrExportPDF;
+      actionsEl.insertBefore(pdfBtn, actionsEl.firstChild);
+      actionsEl.insertBefore(csvBtn, actionsEl.firstChild);
+    }
+  }, 600);
+})();
+</script>
 </body>
 </html>

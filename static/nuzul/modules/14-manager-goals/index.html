@@ -108,6 +108,8 @@
           <p class="sub">أهداف شهرية وفصلية مع متابعة فورية. تنبيهات عند تجاوز الهدف أو التأخر عنه، مع معلومات إضافية لكل هدف.</p>
         </div>
         <div class="actions">
+          <button onclick="exportCSV()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">📊 Excel</button>
+          <button onclick="exportPDF()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">🖨 تقرير PDF</button>
           <button style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">سجل الأهداف</button>
           <button style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--brand-700);color:var(--paper);border:none;cursor:pointer">إضافة هدف جديد</button>
         </div>
@@ -238,6 +240,71 @@ setTimeout(function(){
     el.classList.add('is-in');
   });
 }, 80);
+
+// ── Export helpers ──────────────────────────────────
+function todayStr(){var d=new Date();return d.getFullYear()+(d.getMonth()+1<10?'0':'')+(d.getMonth()+1)+(d.getDate()<10?'0':'')+d.getDate();}
+function toXLS(headers,rows,name){var s='<Styles><Style ss:ID="H"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1B4D3D" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center"/></Style><Style ss:ID="BAD"><Interior ss:Color="#C0392B" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style><Style ss:ID="WARN"><Interior ss:Color="#D97706" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style><Style ss:ID="OK"><Interior ss:Color="#BBF7D0" ss:Pattern="Solid"/><Font ss:Color="#1B7A56" ss:Bold="1"/></Style><Style ss:ID="EXC"><Interior ss:Color="#1B7A56" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style></Styles>';function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}function cell(v){if(v&&typeof v==='object'&&'s' in v)return '<Cell ss:StyleID="'+v.s+'"><Data ss:Type="String">'+esc(v.v)+'</Data></Cell>';return '<Cell><Data ss:Type="'+(typeof v==='number'?'Number':'String')+'">'+esc(v)+'</Data></Cell>';}var hRow='<Row>'+headers.map(function(h){return '<Cell ss:StyleID="H"><Data ss:Type="String">'+esc(h)+'</Data></Cell>';}).join('')+'</Row>';var dRows=rows.map(function(r){return '<Row>'+r.map(cell).join('')+'</Row>';}).join('');return '<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'+s+'<Worksheet ss:Name="'+esc(name)+'"><Table>'+hRow+dRows+'</Table></Worksheet></Workbook>';}
+function dlXLS(c,fn){var b=new Blob([c],{type:'application/vnd.ms-excel;charset=utf-8'});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download=fn;a.click();setTimeout(function(){URL.revokeObjectURL(u);},1000);}
+function toast(msg,isErr){var old=document.querySelector('.nz-toast');if(old)old.remove();var t=document.createElement('div');t.className='nz-toast';t.style.cssText='position:fixed;bottom:24px;inset-inline-end:24px;background:'+(isErr?'#b91c1c':'#1B4D3D')+';color:#fff;padding:12px 18px;border-radius:8px;font-family:"Tajawal",sans-serif;font-size:13px;z-index:9999;display:flex;gap:8px';t.innerHTML='<span style="color:'+(isErr?'#fca5a5':'#C9A85F')+'">'+(isErr?'✕':'✓')+'</span>'+msg;document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .4s';setTimeout(function(){if(t.parentNode)t.remove();},400);},3000);}
+
+var GOALS = [
+  {name:'إيرادات الشهر',              pct:112, target:'٤٢٠ ألف ر.س',  achieved:'٤٧٠٬٢٤٠ ر.س'},
+  {name:'معدل الإشغال',               pct:104, target:'٨٣٪',          achieved:'٨٧٪'},
+  {name:'حجوزات الجولات',             pct:86,  target:'٢٤ جولة',      achieved:'٢٠ جولة'},
+  {name:'تقييمات النزلاء',            pct:96,  target:'٤٫٧ / ٥',      achieved:'٤٫٨ / ٥'},
+  {name:'تجديد إقامات الموظفين',      pct:42,  target:'١٠ تجديدات',   achieved:'٤ / ١٠'},
+  {name:'تقليل التكاليف التشغيلية',   pct:72,  target:'٨٪ توفير',     achieved:'٥٫٨٪'},
+];
+
+window.exportCSV = function(){
+  var headers = ['الهدف','نسبة الإنجاز (%)','المستهدف','المحقق','التقييم'];
+  var rows = GOALS.map(function(g){
+    var tier = g.pct>=100?{v:'ممتاز',s:'EXC'}:g.pct>=80?{v:'جيد',s:'OK'}:g.pct>=50?{v:'منخفض',s:'WARN'}:{v:'تحت الهدف',s:'BAD'};
+    return [g.name, g.pct, g.target, g.achieved, tier];
+  });
+  dlXLS(toXLS(headers,rows,'أهداف المدير'),'أهداف_المدير_'+todayStr()+'.xls');
+  toast('تم تصدير '+GOALS.length+' أهداف ✓');
+};
+
+window.exportPDF = function(){
+  var achieved = GOALS.filter(function(g){return g.pct>=100;}).length;
+  var ontrack  = GOALS.filter(function(g){return g.pct>=80&&g.pct<100;}).length;
+  var behind   = GOALS.filter(function(g){return g.pct<50;}).length;
+  var overall  = Math.round(GOALS.reduce(function(s,g){return s+g.pct;},0)/GOALS.length);
+  var rows = GOALS.map(function(g){
+    var tierCls = g.pct>=100?'color:#1B7A56;font-weight:700':g.pct>=80?'color:#22C55E;font-weight:700':g.pct>=50?'color:#D97706;font-weight:700':'color:#C0392B;font-weight:700';
+    var tierLbl = g.pct>=100?'⭐ ممتاز':g.pct>=80?'✓ جيد':g.pct>=50?'⚠ منخفض':'✕ تحت الهدف';
+    var bar = '<div style="background:#e5e7eb;border-radius:999px;height:8px;width:140px;display:inline-block;vertical-align:middle"><div style="background:'+(g.pct>=100?'#1B7A56':g.pct>=80?'#22C55E':g.pct>=50?'#D97706':'#C0392B')+';height:8px;border-radius:999px;width:'+Math.min(g.pct,100)+'%"></div></div>';
+    return '<tr><td>'+g.name+'</td><td style="font-weight:700;text-align:center">'+g.pct+'٪</td>'
+      +'<td>'+g.target+'</td><td style="font-weight:600">'+g.achieved+'</td>'
+      +'<td style="text-align:center">'+bar+'</td>'
+      +'<td style="'+tierCls+'">'+tierLbl+'</td></tr>';
+  }).join('');
+  var win=window.open('','_blank','width=960,height=700');
+  win.document.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"/><title>أهداف المدير</title>'
+    +'<style>body{font-family:"Tajawal","Segoe UI",sans-serif;margin:32px;color:#1a1a1a;direction:rtl}'
+    +'h1{font-size:22px;margin:0 0 4px}.sub{font-size:12px;color:#666;margin:0 0 18px}'
+    +'.kpis{display:flex;gap:14px;margin-bottom:18px}.kpi{padding:12px 20px;border-radius:10px;min-width:100px}'
+    +'.kpi .v{font-size:26px;font-weight:700}.kpi .l{font-size:11px;color:#666}'
+    +'table{width:100%;border-collapse:collapse;font-size:13px}th{background:#1B4D3D;color:#fff;padding:10px 12px;text-align:right}'
+    +'td{padding:9px 12px;border-bottom:1px solid #eee;vertical-align:middle}tr:nth-child(even){background:#fafafa}'
+    +'.footer{margin-top:18px;font-size:11px;color:#999}@media print{.no-print{display:none}}'
+    +'</style></head><body>'
+    +'<h1>🎯 تقرير أهداف المدير</h1>'
+    +'<p class="sub">'+new Date().toLocaleDateString('ar-SA')+' · أداء الشهر الحالي</p>'
+    +'<div class="kpis">'
+    +'<div class="kpi" style="background:#f5f5f5"><div class="v">'+overall+'٪</div><div class="l">الإنجاز الإجمالي</div></div>'
+    +'<div class="kpi" style="background:#D1FAE5"><div class="v" style="color:#1B7A56">'+achieved+'</div><div class="l">أهداف محققة</div></div>'
+    +'<div class="kpi" style="background:#DBEAFE"><div class="v" style="color:#1d4ed8">'+ontrack+'</div><div class="l">في المسار</div></div>'
+    +(behind?'<div class="kpi" style="background:#FEE2E2"><div class="v" style="color:#C0392B">'+behind+'</div><div class="l">تحت الهدف</div></div>':'')
+    +'</div>'
+    +'<table><thead><tr><th>الهدف</th><th>الإنجاز (%)</th><th>المستهدف</th><th>المحقق</th><th>شريط التقدم</th><th>التقييم</th></tr></thead>'
+    +'<tbody>'+rows+'</tbody></table>'
+    +'<div class="footer">نظام نزل · أهداف المدير · '+new Date().toLocaleString('ar-SA')+'</div>'
+    +'</body></html>');
+  win.document.close();
+  setTimeout(function(){win.print();},700);
+};
 </script>
 </body>
 </html>

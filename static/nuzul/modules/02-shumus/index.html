@@ -133,6 +133,8 @@
         </div>
         <div class="actions">
           <a class="gr-btn sec" href="/static/nuzul/modules/01-guests/index.html" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer;text-decoration:none">← الضيوف</a>
+          <button onclick="exportCSV()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">📊 Excel</button>
+          <button onclick="exportPDF()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--brand-700);color:var(--paper);border:none;cursor:pointer">🖨 تقرير PDF</button>
         </div>
       </div>
 
@@ -285,6 +287,65 @@ setTimeout(function(){
     el.classList.add('is-in');
   });
 }, 80);
+
+// ── Export helpers ──────────────────────────────────
+function todayStr(){var d=new Date();return d.getFullYear()+(d.getMonth()+1<10?'0':'')+(d.getMonth()+1)+(d.getDate()<10?'0':'')+d.getDate();}
+function toXLS(headers,rows,name){var s='<Styles><Style ss:ID="H"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1B4D3D" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center"/></Style><Style ss:ID="BAD"><Interior ss:Color="#C0392B" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style><Style ss:ID="WARN"><Interior ss:Color="#D97706" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style><Style ss:ID="OK"><Interior ss:Color="#BBF7D0" ss:Pattern="Solid"/><Font ss:Color="#1B7A56" ss:Bold="1"/></Style><Style ss:ID="EXC"><Interior ss:Color="#1B7A56" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style></Styles>';function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}function cell(v){if(v&&typeof v==='object'&&'s' in v)return '<Cell ss:StyleID="'+v.s+'"><Data ss:Type="String">'+esc(v.v)+'</Data></Cell>';return '<Cell><Data ss:Type="'+(typeof v==='number'?'Number':'String')+'">'+esc(v)+'</Data></Cell>';}var hRow='<Row>'+headers.map(function(h){return '<Cell ss:StyleID="H"><Data ss:Type="String">'+esc(h)+'</Data></Cell>';}).join('')+'</Row>';var dRows=rows.map(function(r){return '<Row>'+r.map(cell).join('')+'</Row>';}).join('');return '<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'+s+'<Worksheet ss:Name="'+esc(name)+'"><Table>'+hRow+dRows+'</Table></Worksheet></Workbook>';}
+function dlXLS(c,fn){var b=new Blob([c],{type:'application/vnd.ms-excel;charset=utf-8'});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download=fn;a.click();setTimeout(function(){URL.revokeObjectURL(u);},1000);}
+function toast(msg,isErr){var old=document.querySelector('.nz-toast');if(old)old.remove();var t=document.createElement('div');t.className='nz-toast';t.style.cssText='position:fixed;bottom:24px;inset-inline-end:24px;background:'+(isErr?'#b91c1c':'#1B4D3D')+';color:#fff;padding:12px 18px;border-radius:8px;font-family:"Tajawal",sans-serif;font-size:13px;z-index:9999;display:flex;gap:8px';t.innerHTML='<span style="color:'+(isErr?'#fca5a5':'#C9A85F')+'">'+(isErr?'✕':'✓')+'</span>'+msg;document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .4s';setTimeout(function(){if(t.parentNode)t.remove();},400);},3000);}
+
+var LOG_DATA = [
+  {name:'أحمد الفهد',         nat:'سعودي',   type:'هوية وطنية',  id:'1028456789',       status:'verified', time:'14:32'},
+  {name:'نورة المنصور',       nat:'سعودية',  type:'هوية وطنية',  id:'1099287461',       status:'verified', time:'14:18'},
+  {name:'Layla Karam',        nat:'لبنانية', type:'جواز سفر',    id:'LB-K829142',       status:'verified', time:'14:05'},
+  {name:'عبدالعزيز الرشيد',   nat:'إماراتي', type:'هوية خليجية', id:'784-1985-7461328-4',status:'review',  time:'13:48'},
+  {name:'Rajesh Kumar',       nat:'هندي',    type:'إقامة',       id:'2354281903',       status:'verified', time:'13:32'},
+];
+
+window.exportCSV = function(){
+  var stMap = {verified:{v:'متحقّق',s:'EXC'}, review:{v:'مراجعة يدوية',s:'WARN'}, failed:{v:'فشل',s:'BAD'}};
+  var headers = ['الاسم','الجنسية','نوع الهوية','رقم الهوية','الحالة','الوقت'];
+  var rows = LOG_DATA.map(function(r){
+    return [r.name, r.nat, r.type, r.id, stMap[r.status]||{v:r.status,s:'OK'}, r.time];
+  });
+  dlXLS(toXLS(headers,rows,'سجل التعرّف'),'شموس_سجل_'+todayStr()+'.xls');
+  toast('تم تصدير '+LOG_DATA.length+' سجل ✓');
+};
+
+window.exportPDF = function(){
+  var stStyle = {verified:'color:#1B7A56;font-weight:700', review:'color:#D97706;font-weight:700', failed:'color:#C0392B;font-weight:700'};
+  var stLabel = {verified:'✓ متحقّق', review:'⚠ مراجعة يدوية', failed:'✕ فشل'};
+  var verified = LOG_DATA.filter(function(r){return r.status==='verified';}).length;
+  var review   = LOG_DATA.filter(function(r){return r.status==='review';}).length;
+  var rows = LOG_DATA.map(function(r){
+    return '<tr><td>'+r.name+'</td><td>'+r.nat+'</td><td>'+r.type+'</td>'
+      +'<td style="font-family:monospace;font-size:11px">'+r.id+'</td>'
+      +'<td style="'+stStyle[r.status]+'">'+stLabel[r.status]+'</td><td>'+r.time+'</td></tr>';
+  }).join('');
+  var win=window.open('','_blank','width=920,height=680');
+  win.document.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"/><title>شموس — سجل التعرّف</title>'
+    +'<style>body{font-family:"Tajawal","Segoe UI",sans-serif;margin:32px;color:#1a1a1a;direction:rtl}'
+    +'h1{font-size:22px;margin:0 0 4px}.sub{font-size:12px;color:#666;margin:0 0 18px}'
+    +'.kpis{display:flex;gap:14px;margin-bottom:18px}.kpi{padding:12px 20px;border-radius:10px;min-width:110px}'
+    +'.kpi .v{font-size:26px;font-weight:700}.kpi .l{font-size:11px;color:#666}'
+    +'table{width:100%;border-collapse:collapse;font-size:13px}th{background:#1B4D3D;color:#fff;padding:10px 12px;text-align:right}'
+    +'td{padding:9px 12px;border-bottom:1px solid #eee}tr:nth-child(even){background:#fafafa}'
+    +'.footer{margin-top:18px;font-size:11px;color:#999}@media print{.no-print{display:none}}'
+    +'</style></head><body>'
+    +'<h1>🛡 شموس — سجل التعرّف على الضيف</h1>'
+    +'<p class="sub">تقرير يوم '+new Date().toLocaleDateString('ar-SA')+' · نقطة التعرّف — وزارة الداخلية</p>'
+    +'<div class="kpis">'
+    +'<div class="kpi" style="background:#f5f5f5"><div class="v">'+LOG_DATA.length+'</div><div class="l">إجمالي التعرّفات</div></div>'
+    +'<div class="kpi" style="background:#D1FAE5"><div class="v" style="color:#1B7A56">'+verified+'</div><div class="l">تحقّق ناجح</div></div>'
+    +(review?'<div class="kpi" style="background:#FEF3C7"><div class="v" style="color:#D97706">'+review+'</div><div class="l">مراجعة يدوية</div></div>':'')
+    +'</div>'
+    +'<table><thead><tr><th>الاسم</th><th>الجنسية</th><th>نوع الهوية</th><th>رقم الهوية</th><th>الحالة</th><th>الوقت</th></tr></thead>'
+    +'<tbody>'+rows+'</tbody></table>'
+    +'<div class="footer">نظام نزل · شموس نقطة التعرّف · '+new Date().toLocaleString('ar-SA')+'</div>'
+    +'</body></html>');
+  win.document.close();
+  setTimeout(function(){win.print();},700);
+};
 </script>
 </body>
 </html>
