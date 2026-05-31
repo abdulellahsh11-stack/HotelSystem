@@ -335,6 +335,25 @@ window.exportCSV = function(){
     var perfCell = pct>=80?{v:'ممتاز',s:'EXC'}:pct>=50?{v:'جيد',s:'OK'}:pct>=25?{v:'منخفض',s:'WARN'}:{v:'تحت الحد',s:'BAD'};
     return [c.name, stMap[c.status]||{v:c.status,s:'OK'}, c.bookings, c.revenue, c.commission+'%', c.revenue>0?perfCell:{v:'—',s:'BAD'}];
   });
+  var connected=CHANNELS.filter(function(c){return c.status==='connected';}).length;
+  var slow     =CHANNELS.filter(function(c){return c.status==='slow';}).length;
+  var inactive =CHANNELS.filter(function(c){return c.status==='inactive';}).length;
+  var maxRev2  =Math.max.apply(null,CHANNELS.map(function(c){return c.revenue;}));
+  var excP=CHANNELS.filter(function(c){return maxRev2>0&&c.revenue/maxRev2>=0.8;}).length;
+  var okP =CHANNELS.filter(function(c){return maxRev2>0&&c.revenue/maxRev2>=0.5&&c.revenue/maxRev2<0.8;}).length;
+  var warnP=CHANNELS.filter(function(c){return maxRev2>0&&c.revenue/maxRev2>=0.25&&c.revenue/maxRev2<0.5;}).length;
+  var badP=CHANNELS.filter(function(c){return !maxRev2||c.revenue/maxRev2<0.25;}).length;
+  var t=CHANNELS.length; function _p(n){return t>0?Math.round(n/t*100):0;}
+  rows.push([]);
+  rows.push([{v:'📊 ملخص القنوات',s:'EXC'},{v:'العدد',s:'EXC'},{v:'النسبة %',s:'EXC'},'','','']);
+  rows.push([{v:'⭐ ممتاز الأداء (≥٨٠٪)',s:'EXC'},{v:excP,s:'EXC'},{v:_p(excP)+'%',s:'EXC'}]);
+  rows.push([{v:'🟢 جيد الأداء (٥٠-٨٠٪)',s:'OK'},{v:okP,s:'OK'},{v:_p(okP)+'%',s:'OK'}]);
+  rows.push([{v:'🟠 منخفض الأداء (٢٥-٥٠٪)',s:'WARN'},{v:warnP,s:'WARN'},{v:_p(warnP)+'%',s:'WARN'}]);
+  rows.push([{v:'🔴 تحت الحد (<٢٥٪)',s:'BAD'},{v:badP,s:'BAD'},{v:_p(badP)+'%',s:'BAD'}]);
+  rows.push([]);
+  rows.push([{v:'حالة الاتصال — متصل',s:'EXC'},{v:connected,s:'EXC'},{v:_p(connected)+'%',s:'EXC'}]);
+  rows.push([{v:'حالة الاتصال — بطيء',s:'WARN'},{v:slow,s:'WARN'},{v:_p(slow)+'%',s:'WARN'}]);
+  rows.push([{v:'حالة الاتصال — غير مفعّل',s:'BAD'},{v:inactive,s:'BAD'},{v:_p(inactive)+'%',s:'BAD'}]);
   dlXLS(toXLS(headers,rows,'أداء القنوات'),'القنوات_'+todayStr()+'.xls');
   toast('تم تصدير تقرير القنوات ✓');
 };
@@ -343,6 +362,37 @@ window.exportPDF = function(){
   var totalRev = CHANNELS.reduce(function(s,c){return s+c.revenue;},0);
   var totalBook = CHANNELS.reduce(function(s,c){return s+c.bookings;},0);
   var totalComm = Math.round(CHANNELS.reduce(function(s,c){return s+c.revenue*c.commission/100;},0));
+  var maxR=Math.max.apply(null,CHANNELS.map(function(c){return c.revenue;}));
+  var excC=CHANNELS.filter(function(c){return maxR>0&&c.revenue/maxR>=0.8;}).length;
+  var okC =CHANNELS.filter(function(c){return maxR>0&&c.revenue/maxR>=0.5&&c.revenue/maxR<0.8;}).length;
+  var warnC=CHANNELS.filter(function(c){return maxR>0&&c.revenue/maxR>=0.25&&c.revenue/maxR<0.5;}).length;
+  var badC=CHANNELS.filter(function(c){return !maxR||c.revenue/maxR<0.25;}).length;
+  var connected=CHANNELS.filter(function(c){return c.status==='connected';}).length;
+  var inactive=CHANNELS.filter(function(c){return c.status==='inactive';}).length;
+  var t=CHANNELS.length; function _p(n){return t>0?Math.round(n/t*100):0;}
+  var statsHtml='<div style="background:linear-gradient(135deg,#f0f7f4,#f8faf9);border:1px solid #c6ddd7;border-radius:12px;padding:18px 20px;margin-bottom:20px">'
+    +'<div style="font-size:14px;font-weight:700;color:#1B4D3D;margin-bottom:14px">📊 ملخص القنوات · الإجمالي: '+t+' قناة · إيرادات: '+totalRev.toLocaleString('ar-EG')+' ر.س</div>'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#f0f0f0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#333">'+t+'</div><div style="font-size:10px;color:#666;margin-top:4px">إجمالي القنوات</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#D1FAE5;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#1B7A56">'+excC+'</div><div style="font-size:13px;font-weight:700;color:#1B7A56">'+_p(excC)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">ممتاز ≥٨٠٪ ⭐</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#BBF7D0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#059669">'+okC+'</div><div style="font-size:13px;font-weight:700;color:#059669">'+_p(okC)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">جيد ٥٠-٨٠٪ 🟢</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEF3C7;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#D97706">'+warnC+'</div><div style="font-size:13px;font-weight:700;color:#D97706">'+_p(warnC)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">منخفض ٢٥-٥٠٪ 🟠</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEE2E2;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#C0392B">'+badC+'</div><div style="font-size:13px;font-weight:700;color:#C0392B">'+_p(badC)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">تحت الحد <٢٥٪ 🔴</div></div>'
+    +'</div>'
+    +'<div style="background:#e8eceb;border-radius:6px;height:12px;overflow:hidden;display:flex">'
+    +(excC>0?'<div style="width:'+_p(excC)+'%;background:#1B7A56;height:100%"></div>':'')
+    +(okC>0?'<div style="width:'+_p(okC)+'%;background:#22C55E;height:100%"></div>':'')
+    +(warnC>0?'<div style="width:'+_p(warnC)+'%;background:#D97706;height:100%"></div>':'')
+    +(badC>0?'<div style="width:'+_p(badC)+'%;background:#C0392B;height:100%"></div>':'')
+    +'</div>'
+    +'<div style="margin-top:8px;font-size:10px;color:#666;display:flex;gap:14px;flex-wrap:wrap">'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#1B7A56;margin-left:3px"></span>ممتاز '+_p(excC)+'%</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#22C55E;margin-left:3px"></span>جيد '+_p(okC)+'%</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#D97706;margin-left:3px"></span>منخفض '+_p(warnC)+'%</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#C0392B;margin-left:3px"></span>تحت الحد '+_p(badC)+'%</span>'
+    +'<span> · متصل: '+connected+'/'+t+' · غير مفعّل: '+inactive+'</span>'
+    +'</div>'
+    +'</div>';
   var stStyle = {connected:'color:#1B7A56;font-weight:700', slow:'color:#D97706;font-weight:700', inactive:'color:#C0392B;font-weight:600'};
   var stLabel = {connected:'✓ متصل', slow:'⚠ بطيء', inactive:'✕ غير مفعّل'};
   var rows = CHANNELS.map(function(c){
@@ -366,11 +416,7 @@ window.exportPDF = function(){
     +'</style></head><body>'
     +'<h1>📡 تقرير أداء القنوات</h1>'
     +'<p class="sub">'+new Date().toLocaleDateString('ar-SA')+' · قنوات الحجز الخارجية</p>'
-    +'<div class="kpis">'
-    +'<div class="kpi" style="background:#D1FAE5"><div class="v" style="color:#1B7A56">'+totalBook+'</div><div class="l">إجمالي الحجوزات</div></div>'
-    +'<div class="kpi" style="background:#f5f5f5"><div class="v">'+totalRev.toLocaleString('ar-EG')+'</div><div class="l">الإيرادات (ر.س)</div></div>'
-    +'<div class="kpi" style="background:#FEF3C7"><div class="v" style="color:#D97706">'+totalComm.toLocaleString('ar-EG')+'</div><div class="l">عمولات مدفوعة (ر.س)</div></div>'
-    +'</div>'
+    +statsHtml+
     +'<table><thead><tr><th>القناة</th><th>الحالة</th><th>الحجوزات</th><th>الإيرادات (ر.س)</th><th>العمولة</th><th>العمولة المدفوعة</th></tr></thead>'
     +'<tbody>'+rows+'</tbody></table>'
     +'<div class="footer">نظام نزل · تقرير القنوات · '+new Date().toLocaleString('ar-SA')+'</div>'

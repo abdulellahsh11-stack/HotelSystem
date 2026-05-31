@@ -844,6 +844,15 @@ window.exportLog = function() {
             {v:stLabel[a.status]||a.status, s:stStyle[a.status]||''},
             a.time, a.rule];
   });
+  var _st={EXC:0,OK:0,WARN:0,BAD:0};
+  rows.forEach(function(r){var lS=null;r.forEach(function(c){if(c&&typeof c==='object'&&c.s)lS=c.s;});if(lS)_st[lS]++;});
+  var _t=ALARMS.length; function _p(n){return _t>0?Math.round(n/_t*100):0;}
+  rows.push([]);
+  rows.push([{v:'📊 ملخص التنبيهات',s:'EXC'},{v:'العدد',s:'EXC'},{v:'النسبة %',s:'EXC'},'','','','','']);
+  rows.push([{v:'⭐ معلوماتي (آمن)',s:'EXC'},{v:_st.EXC,s:'EXC'},{v:_p(_st.EXC)+'%',s:'EXC'}]);
+  rows.push([{v:'🟢 منخفضة الخطورة',s:'OK'},{v:_st.OK,s:'OK'},{v:_p(_st.OK)+'%',s:'OK'}]);
+  rows.push([{v:'🟠 متوسطة الخطورة',s:'WARN'},{v:_st.WARN,s:'WARN'},{v:_p(_st.WARN)+'%',s:'WARN'}]);
+  rows.push([{v:'🔴 عالية الخطورة',s:'BAD'},{v:_st.BAD,s:'BAD'},{v:_p(_st.BAD)+'%',s:'BAD'}]);
   dlXLS(toXLS(headers, rows, 'سجل الإنذارات'), 'SmartKey_Log_'+todayStr()+'.xls');
   toast('تم تصدير السجل ('+ALARMS.length+' سجل) ✓', 'success');
 };
@@ -881,11 +890,34 @@ window.exportPDF = function() {
   var stMap  = {active:'نشط',resolved:'محلول',snoozed:'مؤجّل'};
   var high=0,med=0,low=0,info=0;
   ALARMS.forEach(function(a){ if(a.sev==='high')high++; else if(a.sev==='med')med++; else if(a.sev==='low')low++; else info++; });
-  var summaryRows = '<tr><td>إجمالي التنبيهات</td><td>'+ALARMS.length+'</td></tr>'
-    +'<tr><td><span class="high">🔴 عالية الخطورة — تحت الحد</span></td><td>'+high+'</td></tr>'
-    +'<tr><td><span class="med">🟠 متوسطة — منخفض</span></td><td>'+med+'</td></tr>'
-    +'<tr><td><span class="low">🟢 منخفضة — جيد</span></td><td>'+low+'</td></tr>'
-    +'<tr><td><span class="info">⭐ معلوماتية — ممتاز</span></td><td>'+info+'</td></tr>';
+  var t=ALARMS.length; function _p(n){return t>0?Math.round(n/t*100):0;}
+  var statsHtml = '<div style="background:linear-gradient(135deg,#f0f7f4,#f8faf9);border:1px solid #c6ddd7;border-radius:12px;padding:18px 20px;margin-bottom:20px">'
+    +'<div style="font-size:14px;font-weight:700;color:#1B4D3D;margin-bottom:14px">📊 ملخص التنبيهات · الإجمالي: '+t+' تنبيه</div>'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#f0f0f0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#333">'+t+'</div><div style="font-size:10px;color:#666;margin-top:4px">الإجمالي</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#D1FAE5;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#1B7A56">'+info+'</div><div style="font-size:13px;font-weight:700;color:#1B7A56">'+_p(info)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">معلوماتية ⭐</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#BBF7D0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#059669">'+low+'</div><div style="font-size:13px;font-weight:700;color:#059669">'+_p(low)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">منخفضة 🟢</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEF3C7;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#D97706">'+med+'</div><div style="font-size:13px;font-weight:700;color:#D97706">'+_p(med)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">متوسطة 🟠</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEE2E2;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#C0392B">'+high+'</div><div style="font-size:13px;font-weight:700;color:#C0392B">'+_p(high)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">عالية 🔴</div></div>'
+    +'</div>'
+    +'<div style="background:#e8eceb;border-radius:6px;height:12px;overflow:hidden;display:flex">'
+    +(info>0?'<div style="width:'+_p(info)+'%;background:#1B7A56;height:100%"></div>':'')
+    +(low>0?'<div style="width:'+_p(low)+'%;background:#22C55E;height:100%"></div>':'')
+    +(med>0?'<div style="width:'+_p(med)+'%;background:#D97706;height:100%"></div>':'')
+    +(high>0?'<div style="width:'+_p(high)+'%;background:#C0392B;height:100%"></div>':'')
+    +'</div>'
+    +'<div style="margin-top:8px;font-size:10px;color:#666;display:flex;gap:14px;flex-wrap:wrap">'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#1B7A56;margin-left:3px"></span>معلوماتية '+_p(info)+'%</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#22C55E;margin-left:3px"></span>منخفضة '+_p(low)+'%</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#D97706;margin-left:3px"></span>متوسطة '+_p(med)+'%</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#C0392B;margin-left:3px"></span>عالية '+_p(high)+'%</span>'
+    +'</div>'
+    +'</div>';
+  var summaryRows = '<tr><td>إجمالي التنبيهات</td><td>'+t+'</td></tr>'
+    +'<tr><td><span class="high">🔴 عالية الخطورة</span></td><td>'+high+' ('+_p(high)+'%)</td></tr>'
+    +'<tr><td><span class="med">🟠 متوسطة</span></td><td>'+med+' ('+_p(med)+'%)</td></tr>'
+    +'<tr><td><span class="low">🟢 منخفضة</span></td><td>'+low+' ('+_p(low)+'%)</td></tr>'
+    +'<tr><td><span class="info">⭐ معلوماتية</span></td><td>'+info+' ('+_p(info)+'%)</td></tr>';
   var alarmRows = ALARMS.map(function(a){
     var sevCls = a.sev; var stCls = a.status;
     return '<tr><td class="'+sevCls+'">'+(sevMap[a.sev]||a.sev)+'</td>'
@@ -893,7 +925,7 @@ window.exportPDF = function() {
       +'<td class="'+stCls+'">'+(stMap[a.status]||a.status)+'</td>'
       +'<td>'+a.time+'</td></tr>';
   }).join('');
-  var html = '<h2>ملخص التنبيهات</h2><table><thead><tr><th>البيان</th><th>العدد</th></tr></thead><tbody>'+summaryRows+'</tbody></table>'
+  var html = statsHtml+'<h2>ملخص التنبيهات</h2><table><thead><tr><th>البيان</th><th>القيمة</th></tr></thead><tbody>'+summaryRows+'</tbody></table>'
     +'<h2>سجل الإنذارات الكامل</h2>'
     +'<table><thead><tr><th>الأولوية</th><th>العنوان</th><th>المصدر</th><th>الجهة</th><th>الحالة</th><th>الوقت</th></tr></thead><tbody>'+alarmRows+'</tbody></table>';
   printPDF('تقرير المفتاح الذكي — سجل الإنذارات', html);

@@ -1166,6 +1166,15 @@ window.exportReservations = function(){
       r.checkin, r.checkout, r.nights, r.channel,
       payMap[r.payment]||{v:r.payment,s:'OK'}, r.amt];
   });
+  var paid=RESERVATIONS.filter(function(r){return r.payment==='مدفوع';}).length;
+  var dep =RESERVATIONS.filter(function(r){return r.payment==='عربون';}).length;
+  var unpd=RESERVATIONS.filter(function(r){return r.payment==='لم يدفع';}).length;
+  var t=rows.length; function _p(n){return t>0?Math.round(n/t*100):0;}
+  rows.push([]);
+  rows.push([{v:'📊 ملخص الإحصائيات — الدفع',s:'EXC'},{v:'العدد',s:'EXC'},{v:'النسبة %',s:'EXC'},'','','','','','','','']);
+  rows.push([{v:'⭐ مدفوع بالكامل',s:'EXC'},{v:paid,s:'EXC'},{v:_p(paid)+'%',s:'EXC'}]);
+  rows.push([{v:'🟠 عربون مدفوع',s:'WARN'},{v:dep,s:'WARN'},{v:_p(dep)+'%',s:'WARN'}]);
+  rows.push([{v:'🔴 لم يدفع',s:'BAD'},{v:unpd,s:'BAD'},{v:_p(unpd)+'%',s:'BAD'}]);
   dlXLS(toXLS(headers,rows,'الحجوزات'),'الحجوزات_'+todayStr()+'.xls');
   toast('تم تصدير '+RESERVATIONS.length+' حجز ✓');
 };
@@ -1176,6 +1185,30 @@ window.exportPDF = function(){
   var unpaid  = RESERVATIONS.filter(function(r){return r.payment==='لم يدفع';}).length;
   var inhouse = GUESTS.length;
   var departing = GUESTS.filter(function(g){return g.status==='departing';}).length;
+  var totRes = RESERVATIONS.length;
+  function _pPct(n){return totRes>0?Math.round(n/totRes*100):0;}
+
+  var statsHtml = '<div style="background:linear-gradient(135deg,#f0f7f4,#f8faf9);border:1px solid #c6ddd7;border-radius:12px;padding:18px 20px;margin-bottom:20px">'
+    +'<div style="font-size:14px;font-weight:700;color:#1B4D3D;margin-bottom:14px">📊 ملخص الإحصائيات · إجمالي الحجوزات: '+totRes+'</div>'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#f0f0f0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#333">'+totRes+'</div><div style="font-size:10px;color:#666;margin-top:4px">الحجوزات</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#D1FAE5;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#1B7A56">'+paid+'</div><div style="font-size:13px;font-weight:700;color:#1B7A56">'+_pPct(paid)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">مدفوع ✓</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEF3C7;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#D97706">'+deposit+'</div><div style="font-size:13px;font-weight:700;color:#D97706">'+_pPct(deposit)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">عربون</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEE2E2;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#C0392B">'+unpaid+'</div><div style="font-size:13px;font-weight:700;color:#C0392B">'+_pPct(unpaid)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">لم يدفع</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#DBEAFE;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#1d4ed8">'+inhouse+'</div><div style="font-size:10px;color:rgba(0,0,0,0.5);margin-top:4px">نزلاء حاليون</div></div>'
+    +(departing?'<div style="flex:1;min-width:80px;text-align:center;background:#FEE2E2;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#C0392B">'+departing+'</div><div style="font-size:10px;color:rgba(0,0,0,0.5);margin-top:4px">مغادر اليوم</div></div>':'')
+    +'</div>'
+    +'<div style="background:#e8eceb;border-radius:6px;height:12px;overflow:hidden;display:flex">'
+    +(paid>0?'<div style="width:'+_pPct(paid)+'%;background:#1B7A56;height:100%"></div>':'')
+    +(deposit>0?'<div style="width:'+_pPct(deposit)+'%;background:#D97706;height:100%"></div>':'')
+    +(unpaid>0?'<div style="width:'+_pPct(unpaid)+'%;background:#C0392B;height:100%"></div>':'')
+    +'</div>'
+    +'<div style="margin-top:8px;font-size:10px;color:#666;display:flex;gap:14px;flex-wrap:wrap">'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#1B7A56;margin-left:3px"></span>مدفوع '+_pPct(paid)+'%</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#D97706;margin-left:3px"></span>عربون '+_pPct(deposit)+'%</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#C0392B;margin-left:3px"></span>لم يدفع '+_pPct(unpaid)+'%</span>'
+    +'</div>'
+    +'</div>';
 
   var resRows = RESERVATIONS.map(function(r){
     var payStyle = r.payment==='مدفوع'?'color:#1B7A56;font-weight:700':r.payment==='عربون'?'color:#D97706;font-weight:700':'color:#C0392B;font-weight:700';
@@ -1202,8 +1235,6 @@ window.exportPDF = function(){
     +'<style>body{font-family:"Tajawal","Segoe UI",sans-serif;margin:32px;color:#1a1a1a;direction:rtl}'
     +'h1{font-size:22px;margin:0 0 4px}h2{font-size:16px;margin:24px 0 10px;color:#1B4D3D}'
     +'.sub{font-size:12px;color:#666;margin:0 0 18px}'
-    +'.kpis{display:flex;gap:14px;margin-bottom:18px}.kpi{padding:12px 20px;border-radius:10px;min-width:100px}'
-    +'.kpi .v{font-size:26px;font-weight:700}.kpi .l{font-size:11px;color:#666}'
     +'table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:24px}'
     +'th{background:#1B4D3D;color:#fff;padding:9px 10px;text-align:right}'
     +'td{padding:8px 10px;border-bottom:1px solid #eee;vertical-align:middle}'
@@ -1212,14 +1243,7 @@ window.exportPDF = function(){
     +'</style></head><body>'
     +'<h1>🏨 تقرير لوحة الضيوف</h1>'
     +'<p class="sub">'+new Date().toLocaleDateString('ar-SA')+' · الحجوزات والنزلاء الحاليون</p>'
-    +'<div class="kpis">'
-    +'<div class="kpi" style="background:#D1FAE5"><div class="v" style="color:#1B7A56">'+inhouse+'</div><div class="l">نزلاء حالياً</div></div>'
-    +'<div class="kpi" style="background:#f5f5f5"><div class="v">'+RESERVATIONS.length+'</div><div class="l">حجوزات قادمة</div></div>'
-    +(departing?'<div class="kpi" style="background:#FEE2E2"><div class="v" style="color:#C0392B">'+departing+'</div><div class="l">مغادر اليوم</div></div>':'')
-    +'<div class="kpi" style="background:#D1FAE5"><div class="v" style="color:#1B7A56">'+paid+'</div><div class="l">حجز مدفوع</div></div>'
-    +(deposit?'<div class="kpi" style="background:#FEF3C7"><div class="v" style="color:#D97706">'+deposit+'</div><div class="l">عربون فقط</div></div>':'')
-    +(unpaid?'<div class="kpi" style="background:#FEE2E2"><div class="v" style="color:#C0392B">'+unpaid+'</div><div class="l">لم يدفع</div></div>':'')
-    +'</div>'
+    +statsHtml
     +'<h2>الحجوزات القادمة ('+RESERVATIONS.length+')</h2>'
     +'<table><thead><tr><th>رقم الحجز</th><th>الضيف</th><th>الغرفة</th><th>الوصول</th><th>المغادرة</th><th>القناة</th><th>الدفع</th><th>المبلغ</th></tr></thead>'
     +'<tbody>'+resRows+'</tbody></table>'

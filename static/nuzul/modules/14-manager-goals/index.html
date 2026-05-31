@@ -262,6 +262,19 @@ window.exportCSV = function(){
     var tier = g.pct>=100?{v:'ممتاز',s:'EXC'}:g.pct>=80?{v:'جيد',s:'OK'}:g.pct>=50?{v:'منخفض',s:'WARN'}:{v:'تحت الهدف',s:'BAD'};
     return [g.name, g.pct, g.target, g.achieved, tier];
   });
+  var excG =GOALS.filter(function(g){return g.pct>=100;}).length;
+  var okG  =GOALS.filter(function(g){return g.pct>=80&&g.pct<100;}).length;
+  var warnG=GOALS.filter(function(g){return g.pct>=50&&g.pct<80;}).length;
+  var badG =GOALS.filter(function(g){return g.pct<50;}).length;
+  var overall2=Math.round(GOALS.reduce(function(s,g){return s+g.pct;},0)/GOALS.length);
+  var t=GOALS.length; function _p(n){return t>0?Math.round(n/t*100):0;}
+  rows.push([]);
+  rows.push([{v:'📊 ملخص الأهداف',s:'EXC'},{v:'العدد',s:'EXC'},{v:'النسبة %',s:'EXC'},'','']);
+  rows.push([{v:'متوسط الإنجاز الإجمالي',s:overall2>=80?'EXC':overall2>=50?'OK':overall2>=30?'WARN':'BAD'},{v:overall2+'٪',s:overall2>=80?'EXC':overall2>=50?'OK':overall2>=30?'WARN':'BAD'},{v:'',s:overall2>=80?'EXC':overall2>=50?'OK':overall2>=30?'WARN':'BAD'}]);
+  rows.push([{v:'⭐ أهداف محققة (≥١٠٠٪)',s:'EXC'},{v:excG,s:'EXC'},{v:_p(excG)+'%',s:'EXC'}]);
+  rows.push([{v:'🟢 في المسار (٨٠-١٠٠٪)',s:'OK'},{v:okG,s:'OK'},{v:_p(okG)+'%',s:'OK'}]);
+  rows.push([{v:'🟠 منخفض (٥٠-٨٠٪)',s:'WARN'},{v:warnG,s:'WARN'},{v:_p(warnG)+'%',s:'WARN'}]);
+  rows.push([{v:'🔴 تحت الهدف (<٥٠٪)',s:'BAD'},{v:badG,s:'BAD'},{v:_p(badG)+'%',s:'BAD'}]);
   dlXLS(toXLS(headers,rows,'أهداف المدير'),'أهداف_المدير_'+todayStr()+'.xls');
   toast('تم تصدير '+GOALS.length+' أهداف ✓');
 };
@@ -271,6 +284,33 @@ window.exportPDF = function(){
   var ontrack  = GOALS.filter(function(g){return g.pct>=80&&g.pct<100;}).length;
   var behind   = GOALS.filter(function(g){return g.pct<50;}).length;
   var overall  = Math.round(GOALS.reduce(function(s,g){return s+g.pct;},0)/GOALS.length);
+  var warnG2=GOALS.filter(function(g){return g.pct>=50&&g.pct<80;}).length;
+  var t=GOALS.length; function _p(n){return t>0?Math.round(n/t*100):0;}
+  var overallTier=overall>=100?'EXC':overall>=80?'OK':overall>=50?'WARN':'BAD';
+  var overallColor=overall>=100?'#1B7A56':overall>=80?'#22C55E':overall>=50?'#D97706':'#C0392B';
+  var overallIcon=overall>=100?'⭐':overall>=80?'🟢':overall>=50?'🟠':'🔴';
+  var statsHtml='<div style="background:linear-gradient(135deg,#f0f7f4,#f8faf9);border:1px solid #c6ddd7;border-radius:12px;padding:18px 20px;margin-bottom:20px">'
+    +'<div style="font-size:14px;font-weight:700;color:#1B4D3D;margin-bottom:14px">📊 ملخص الأهداف · الإجمالي: '+t+' هدف · متوسط الإنجاز: '+overall+'٪ '+overallIcon+'</div>'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#f0f0f0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:'+overallColor+'">'+overall+'٪</div><div style="font-size:10px;color:#666;margin-top:4px">متوسط الإنجاز</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#D1FAE5;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#1B7A56">'+achieved+'</div><div style="font-size:13px;font-weight:700;color:#1B7A56">'+_p(achieved)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">محقق ≥١٠٠٪ ⭐</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#BBF7D0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#059669">'+ontrack+'</div><div style="font-size:13px;font-weight:700;color:#059669">'+_p(ontrack)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">في المسار 🟢</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEF3C7;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#D97706">'+warnG2+'</div><div style="font-size:13px;font-weight:700;color:#D97706">'+_p(warnG2)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">منخفض ٥٠-٨٠٪ 🟠</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEE2E2;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#C0392B">'+behind+'</div><div style="font-size:13px;font-weight:700;color:#C0392B">'+_p(behind)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">تحت الهدف 🔴</div></div>'
+    +'</div>'
+    +'<div style="background:#e8eceb;border-radius:6px;height:12px;overflow:hidden;display:flex">'
+    +(achieved>0?'<div style="width:'+_p(achieved)+'%;background:#1B7A56;height:100%"></div>':'')
+    +(ontrack>0?'<div style="width:'+_p(ontrack)+'%;background:#22C55E;height:100%"></div>':'')
+    +(warnG2>0?'<div style="width:'+_p(warnG2)+'%;background:#D97706;height:100%"></div>':'')
+    +(behind>0?'<div style="width:'+_p(behind)+'%;background:#C0392B;height:100%"></div>':'')
+    +'</div>'
+    +'<div style="margin-top:8px;font-size:10px;color:#666;display:flex;gap:14px;flex-wrap:wrap">'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#1B7A56;margin-left:3px"></span>محقق '+_p(achieved)+'%</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#22C55E;margin-left:3px"></span>في المسار '+_p(ontrack)+'%</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#D97706;margin-left:3px"></span>منخفض '+_p(warnG2)+'%</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#C0392B;margin-left:3px"></span>تحت الهدف '+_p(behind)+'%</span>'
+    +'</div>'
+    +'</div>';
   var rows = GOALS.map(function(g){
     var tierCls = g.pct>=100?'color:#1B7A56;font-weight:700':g.pct>=80?'color:#22C55E;font-weight:700':g.pct>=50?'color:#D97706;font-weight:700':'color:#C0392B;font-weight:700';
     var tierLbl = g.pct>=100?'⭐ ممتاز':g.pct>=80?'✓ جيد':g.pct>=50?'⚠ منخفض':'✕ تحت الهدف';
@@ -292,12 +332,7 @@ window.exportPDF = function(){
     +'</style></head><body>'
     +'<h1>🎯 تقرير أهداف المدير</h1>'
     +'<p class="sub">'+new Date().toLocaleDateString('ar-SA')+' · أداء الشهر الحالي</p>'
-    +'<div class="kpis">'
-    +'<div class="kpi" style="background:#f5f5f5"><div class="v">'+overall+'٪</div><div class="l">الإنجاز الإجمالي</div></div>'
-    +'<div class="kpi" style="background:#D1FAE5"><div class="v" style="color:#1B7A56">'+achieved+'</div><div class="l">أهداف محققة</div></div>'
-    +'<div class="kpi" style="background:#DBEAFE"><div class="v" style="color:#1d4ed8">'+ontrack+'</div><div class="l">في المسار</div></div>'
-    +(behind?'<div class="kpi" style="background:#FEE2E2"><div class="v" style="color:#C0392B">'+behind+'</div><div class="l">تحت الهدف</div></div>':'')
-    +'</div>'
+    +statsHtml+
     +'<table><thead><tr><th>الهدف</th><th>الإنجاز (%)</th><th>المستهدف</th><th>المحقق</th><th>شريط التقدم</th><th>التقييم</th></tr></thead>'
     +'<tbody>'+rows+'</tbody></table>'
     +'<div class="footer">نظام نزل · أهداف المدير · '+new Date().toLocaleString('ar-SA')+'</div>'

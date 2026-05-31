@@ -570,6 +570,15 @@ window.exportCSV = function(){
   var rows = ITEMS.map(function(it){
     return [it.name, it.cat, it.loc+' '+it.zone, it.qty, it.par, it.unit, it.sku, sMap[statusOf(it)]||''];
   });
+  var exc=0,ok_=0,warn=0,bad=0;
+  ITEMS.forEach(function(it){var s=statusOf(it);if(s==='excellent')exc++;else if(s==='ok')ok_++;else if(s==='warn')warn++;else bad++;});
+  var t=ITEMS.length; function _p(n){return t>0?Math.round(n/t*100):0;}
+  rows.push([]);
+  rows.push([{v:'📊 ملخص المخزون',s:'EXC'},{v:'العدد',s:'EXC'},{v:'النسبة %',s:'EXC'},'','','','','']);
+  rows.push([{v:'⭐ ممتاز (فوق الحد)',s:'EXC'},{v:exc,s:'EXC'},{v:_p(exc)+'%',s:'EXC'}]);
+  rows.push([{v:'🟢 جيد (قريب من الحد)',s:'OK'},{v:ok_,s:'OK'},{v:_p(ok_)+'%',s:'OK'}]);
+  rows.push([{v:'🟠 منخفض (تنبيه)',s:'WARN'},{v:warn,s:'WARN'},{v:_p(warn)+'%',s:'WARN'}]);
+  rows.push([{v:'🔴 تحت الحد (أمر عاجل)',s:'BAD'},{v:bad,s:'BAD'},{v:_p(bad)+'%',s:'BAD'}]);
   dlXLS(toXLS(headers, rows, 'مخزون الضيافة'), 'مخزون_الضيافة_'+todayStr()+'.xls');
   toast('تم تصدير '+ITEMS.length+' صنف ✓');
 };
@@ -601,11 +610,34 @@ function printPDF(title, bodyHTML) {
 window.exportPDF = function(){
   var excellent=0,ok=0,warn=0,bad=0,totalVal=0;
   ITEMS.forEach(function(it){ var s=statusOf(it); if(s==='excellent')excellent++; else if(s==='ok')ok++; else if(s==='warn')warn++; else bad++; totalVal+=it.qty*(it.cost||0); });
-  var summaryRows = '<tr><td>إجمالي الأصناف</td><td>'+ITEMS.length+'</td></tr>'
-    +'<tr><td class="excellent">⭐ ممتاز</td><td>'+excellent+'</td></tr>'
-    +'<tr><td class="ok">🟢 جيد</td><td>'+ok+'</td></tr>'
-    +'<tr><td class="warn">🟠 منخفض</td><td>'+warn+'</td></tr>'
-    +'<tr><td class="bad">🔴 تحت الحد</td><td>'+bad+'</td></tr>'
+  var t=ITEMS.length; function _p(n){return t>0?Math.round(n/t*100):0;}
+  var statsHtml = '<div style="background:linear-gradient(135deg,#f0f7f4,#f8faf9);border:1px solid #c6ddd7;border-radius:12px;padding:18px 20px;margin-bottom:20px">'
+    +'<div style="font-size:14px;font-weight:700;color:#1B4D3D;margin-bottom:14px">📊 ملخص المخزون · الإجمالي: '+t+' صنف · القيمة: '+totalVal.toLocaleString('ar-EG')+' ر.س</div>'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#f0f0f0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#333">'+t+'</div><div style="font-size:10px;color:#666;margin-top:4px">الإجمالي</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#D1FAE5;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#1B7A56">'+excellent+'</div><div style="font-size:13px;font-weight:700;color:#1B7A56">'+_p(excellent)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">ممتاز ⭐</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#BBF7D0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#059669">'+ok+'</div><div style="font-size:13px;font-weight:700;color:#059669">'+_p(ok)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">جيد 🟢</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEF3C7;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#D97706">'+warn+'</div><div style="font-size:13px;font-weight:700;color:#D97706">'+_p(warn)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">منخفض 🟠</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEE2E2;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#C0392B">'+bad+'</div><div style="font-size:13px;font-weight:700;color:#C0392B">'+_p(bad)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">تحت الحد 🔴</div></div>'
+    +'</div>'
+    +'<div style="background:#e8eceb;border-radius:6px;height:12px;overflow:hidden;display:flex">'
+    +(excellent>0?'<div style="width:'+_p(excellent)+'%;background:#1B7A56;height:100%"></div>':'')
+    +(ok>0?'<div style="width:'+_p(ok)+'%;background:#22C55E;height:100%"></div>':'')
+    +(warn>0?'<div style="width:'+_p(warn)+'%;background:#D97706;height:100%"></div>':'')
+    +(bad>0?'<div style="width:'+_p(bad)+'%;background:#C0392B;height:100%"></div>':'')
+    +'</div>'
+    +'<div style="margin-top:8px;font-size:10px;color:#666;display:flex;gap:14px;flex-wrap:wrap">'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#1B7A56;margin-left:3px"></span>ممتاز '+_p(excellent)+'%</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#22C55E;margin-left:3px"></span>جيد '+_p(ok)+'%</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#D97706;margin-left:3px"></span>منخفض '+_p(warn)+'%</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#C0392B;margin-left:3px"></span>تحت الحد '+_p(bad)+'%</span>'
+    +'</div>'
+    +'</div>';
+  var summaryRows = '<tr><td>إجمالي الأصناف</td><td>'+t+'</td></tr>'
+    +'<tr><td class="excellent">⭐ ممتاز</td><td>'+excellent+' ('+_p(excellent)+'%)</td></tr>'
+    +'<tr><td class="ok">🟢 جيد</td><td>'+ok+' ('+_p(ok)+'%)</td></tr>'
+    +'<tr><td class="warn">🟠 منخفض</td><td>'+warn+' ('+_p(warn)+'%)</td></tr>'
+    +'<tr><td class="bad">🔴 تحت الحد</td><td>'+bad+' ('+_p(bad)+'%)</td></tr>'
     +'<tr><td>القيمة الإجمالية التقديرية</td><td>'+totalVal.toLocaleString('ar-EG')+' ر.س</td></tr>';
   var itemRows = ITEMS.map(function(it){
     var s = statusOf(it);
@@ -615,7 +647,7 @@ window.exportPDF = function(){
       +'<td>'+it.qty+' '+it.unit+'</td><td>'+it.par+'</td><td>'+it.sku+'</td>'
       +'<td class="'+sCls+'">'+sLabel+'</td></tr>';
   }).join('');
-  var html = '<h2>ملخص المخزون</h2><table><thead><tr><th>البيان</th><th>القيمة</th></tr></thead><tbody>'+summaryRows+'</tbody></table>'
+  var html = statsHtml+'<h2>ملخص المخزون التفصيلي</h2><table><thead><tr><th>البيان</th><th>القيمة</th></tr></thead><tbody>'+summaryRows+'</tbody></table>'
     +'<h2>قائمة الأصناف الكاملة</h2>'
     +'<table><thead><tr><th>الصنف</th><th>الفئة</th><th>الموقع</th><th>الكمية</th><th>حد الطلب</th><th>SKU</th><th>الحالة</th></tr></thead><tbody>'+itemRows+'</tbody></table>';
   printPDF('تقرير مخزون الضيافة', html);

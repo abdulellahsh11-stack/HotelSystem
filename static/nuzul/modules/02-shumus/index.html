@@ -308,6 +308,15 @@ window.exportCSV = function(){
   var rows = LOG_DATA.map(function(r){
     return [r.name, r.nat, r.type, r.id, stMap[r.status]||{v:r.status,s:'OK'}, r.time];
   });
+  var verified=LOG_DATA.filter(function(r){return r.status==='verified';}).length;
+  var review  =LOG_DATA.filter(function(r){return r.status==='review';}).length;
+  var failed  =LOG_DATA.filter(function(r){return r.status==='failed';}).length;
+  var t=LOG_DATA.length; function _p(n){return t>0?Math.round(n/t*100):0;}
+  rows.push([]);
+  rows.push([{v:'📊 ملخص التحقق',s:'EXC'},{v:'العدد',s:'EXC'},{v:'النسبة %',s:'EXC'},'','','']);
+  rows.push([{v:'⭐ تحقّق ناجح',s:'EXC'},{v:verified,s:'EXC'},{v:_p(verified)+'%',s:'EXC'}]);
+  rows.push([{v:'🟠 مراجعة يدوية',s:'WARN'},{v:review,s:'WARN'},{v:_p(review)+'%',s:'WARN'}]);
+  rows.push([{v:'🔴 فشل التحقق',s:'BAD'},{v:failed,s:'BAD'},{v:_p(failed)+'%',s:'BAD'}]);
   dlXLS(toXLS(headers,rows,'سجل التعرّف'),'شموس_سجل_'+todayStr()+'.xls');
   toast('تم تصدير '+LOG_DATA.length+' سجل ✓');
 };
@@ -317,6 +326,27 @@ window.exportPDF = function(){
   var stLabel = {verified:'✓ متحقّق', review:'⚠ مراجعة يدوية', failed:'✕ فشل'};
   var verified = LOG_DATA.filter(function(r){return r.status==='verified';}).length;
   var review   = LOG_DATA.filter(function(r){return r.status==='review';}).length;
+  var failed   = LOG_DATA.filter(function(r){return r.status==='failed';}).length;
+  var t = LOG_DATA.length; function _p(n){return t>0?Math.round(n/t*100):0;}
+  var statsHtml = '<div style="background:linear-gradient(135deg,#f0f7f4,#f8faf9);border:1px solid #c6ddd7;border-radius:12px;padding:18px 20px;margin-bottom:20px">'
+    +'<div style="font-size:14px;font-weight:700;color:#1B4D3D;margin-bottom:14px">📊 ملخص الإحصائيات · إجمالي التعرّفات: '+t+' سجل</div>'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#f0f0f0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#333">'+t+'</div><div style="font-size:10px;color:#666;margin-top:4px">الإجمالي</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#D1FAE5;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#1B7A56">'+verified+'</div><div style="font-size:13px;font-weight:700;color:#1B7A56">'+_p(verified)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">تحقّق ناجح</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEF3C7;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#D97706">'+review+'</div><div style="font-size:13px;font-weight:700;color:#D97706">'+_p(review)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">مراجعة يدوية</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEE2E2;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#C0392B">'+failed+'</div><div style="font-size:13px;font-weight:700;color:#C0392B">'+_p(failed)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">فشل التحقق</div></div>'
+    +'</div>'
+    +'<div style="background:#e8eceb;border-radius:6px;height:12px;overflow:hidden;display:flex">'
+    +(verified>0?'<div style="width:'+_p(verified)+'%;background:#1B7A56;height:100%"></div>':'')
+    +(review>0?'<div style="width:'+_p(review)+'%;background:#D97706;height:100%"></div>':'')
+    +(failed>0?'<div style="width:'+_p(failed)+'%;background:#C0392B;height:100%"></div>':'')
+    +'</div>'
+    +'<div style="margin-top:8px;font-size:10px;color:#666;display:flex;gap:14px;flex-wrap:wrap">'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#1B7A56;margin-left:3px"></span>تحقّق ناجح '+_p(verified)+'%</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#D97706;margin-left:3px"></span>مراجعة يدوية '+_p(review)+'%</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#C0392B;margin-left:3px"></span>فشل التحقق '+_p(failed)+'%</span>'
+    +'</div>'
+    +'</div>';
   var rows = LOG_DATA.map(function(r){
     return '<tr><td>'+r.name+'</td><td>'+r.nat+'</td><td>'+r.type+'</td>'
       +'<td style="font-family:monospace;font-size:11px">'+r.id+'</td>'
@@ -326,19 +356,13 @@ window.exportPDF = function(){
   win.document.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"/><title>شموس — سجل التعرّف</title>'
     +'<style>body{font-family:"Tajawal","Segoe UI",sans-serif;margin:32px;color:#1a1a1a;direction:rtl}'
     +'h1{font-size:22px;margin:0 0 4px}.sub{font-size:12px;color:#666;margin:0 0 18px}'
-    +'.kpis{display:flex;gap:14px;margin-bottom:18px}.kpi{padding:12px 20px;border-radius:10px;min-width:110px}'
-    +'.kpi .v{font-size:26px;font-weight:700}.kpi .l{font-size:11px;color:#666}'
     +'table{width:100%;border-collapse:collapse;font-size:13px}th{background:#1B4D3D;color:#fff;padding:10px 12px;text-align:right}'
     +'td{padding:9px 12px;border-bottom:1px solid #eee}tr:nth-child(even){background:#fafafa}'
     +'.footer{margin-top:18px;font-size:11px;color:#999}@media print{.no-print{display:none}}'
     +'</style></head><body>'
     +'<h1>🛡 شموس — سجل التعرّف على الضيف</h1>'
     +'<p class="sub">تقرير يوم '+new Date().toLocaleDateString('ar-SA')+' · نقطة التعرّف — وزارة الداخلية</p>'
-    +'<div class="kpis">'
-    +'<div class="kpi" style="background:#f5f5f5"><div class="v">'+LOG_DATA.length+'</div><div class="l">إجمالي التعرّفات</div></div>'
-    +'<div class="kpi" style="background:#D1FAE5"><div class="v" style="color:#1B7A56">'+verified+'</div><div class="l">تحقّق ناجح</div></div>'
-    +(review?'<div class="kpi" style="background:#FEF3C7"><div class="v" style="color:#D97706">'+review+'</div><div class="l">مراجعة يدوية</div></div>':'')
-    +'</div>'
+    +statsHtml
     +'<table><thead><tr><th>الاسم</th><th>الجنسية</th><th>نوع الهوية</th><th>رقم الهوية</th><th>الحالة</th><th>الوقت</th></tr></thead>'
     +'<tbody>'+rows+'</tbody></table>'
     +'<div class="footer">نظام نزل · شموس نقطة التعرّف · '+new Date().toLocaleString('ar-SA')+'</div>'

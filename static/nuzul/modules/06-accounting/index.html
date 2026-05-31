@@ -858,15 +858,26 @@ function dlXLS(content,fname){
 }
 function todayStr(){ return new Date().toISOString().slice(0,10); }
 window.exportCSV = function(){
+  var entries = allEntries();
   var headers = ['#','النوع','الوصف','الحساب','المصدر','المبلغ','VAT','الوقت','ملاحظة','مصدر الربط'];
-  var rows = allEntries().map(function(e){
+  var rows = entries.map(function(e){
     var typeCell = e.type==='cr' ? {v:'إيراد',s:'EXC'} : {v:'مصروف',s:'BAD'};
     return ['JE-'+String(e.id).padStart(4,'0'), typeCell,
             e.desc, e.acct, e.src, e.amt, e.vat?Math.round(e.amt*.15):'',
             e.time, e.note||'', e.link||''];
   });
+  var rev=0,exp=0,cntRev=0,cntExp=0;
+  entries.forEach(function(e){if(e.amt===0)return;if(e.type==='cr'){rev+=e.amt;cntRev++;}else{exp+=e.amt;cntExp++;}});
+  var net=rev-exp; var margin=rev>0?Math.round(net/rev*100):0;
+  var t=entries.length; function _p(n){return t>0?Math.round(n/t*100):0;}
+  var tierS=margin>=30?'EXC':margin>=10?'OK':margin>=0?'WARN':'BAD';
+  rows.push([]);
+  rows.push([{v:'📊 ملخص المحاسبة',s:'EXC'},{v:'العدد / القيمة',s:'EXC'},{v:'النسبة %',s:'EXC'},'','','','','','','']);
+  rows.push([{v:'⭐ إيرادات',s:'EXC'},{v:rev.toLocaleString('ar-EG')+' ر.س',s:'EXC'},{v:'('+cntRev+' قيد) '+_p(cntRev)+'%',s:'EXC'}]);
+  rows.push([{v:'🔴 مصروفات',s:'BAD'},{v:exp.toLocaleString('ar-EG')+' ر.س',s:'BAD'},{v:'('+cntExp+' قيد) '+_p(cntExp)+'%',s:'BAD'}]);
+  rows.push([{v:'صافي الربح / الخسارة',s:tierS},{v:(net>=0?'+':'')+net.toLocaleString('ar-EG')+' ر.س',s:tierS},{v:'هامش: '+margin+'%',s:tierS}]);
   dlXLS(toXLS(headers, rows, 'دفتر المحاسبة'), 'المحاسبة_'+todayStr()+'.xls');
-  toast('تم تصدير '+allEntries().length+' قيد ✓');
+  toast('تم تصدير '+entries.length+' قيد ✓');
 };
 
 /* ════════════════════════════════════════════════
@@ -963,6 +974,30 @@ window.exportPDF = function() {
   var tierCls = margin < 0 ? 'tier-critical' : margin < 10 ? 'tier-low' : margin < 30 ? 'tier-good' : 'tier-excellent';
   var tierIcon = margin < 0 ? '🔴' : margin < 10 ? '🟠' : margin < 30 ? '🟢' : '⭐';
 
+  var cntRev = entries.filter(function(e){return e.type==='cr'&&e.amt>0;}).length;
+  var cntExp = entries.filter(function(e){return e.type!=='cr'&&e.amt>0;}).length;
+  var totE = entries.length;
+  function _pA(n){return totE>0?Math.round(n/totE*100):0;}
+  var netColor = net>=0?'#1B7A56':'#C0392B';
+  var statsHtml = '<div style="background:linear-gradient(135deg,#f0f7f4,#f8faf9);border:1px solid #c6ddd7;border-radius:12px;padding:18px 20px;margin-bottom:20px">'
+    +'<div style="font-size:14px;font-weight:700;color:#1B4D3D;margin-bottom:14px">📊 ملخص المحاسبة · الإجمالي: '+totE+' قيد</div>'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">'
+    +'<div style="flex:1;min-width:90px;text-align:center;background:#f0f0f0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#333">'+totE+'</div><div style="font-size:10px;color:#666;margin-top:4px">إجمالي القيود</div></div>'
+    +'<div style="flex:1;min-width:90px;text-align:center;background:#D1FAE5;border-radius:8px;padding:12px 8px"><div style="font-size:22px;font-weight:700;color:#1B7A56">'+rev.toLocaleString('ar-EG')+'</div><div style="font-size:11px;font-weight:700;color:#1B7A56">'+cntRev+' قيد · '+_pA(cntRev)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">إيرادات ⭐</div></div>'
+    +'<div style="flex:1;min-width:90px;text-align:center;background:#FEE2E2;border-radius:8px;padding:12px 8px"><div style="font-size:22px;font-weight:700;color:#C0392B">'+exp.toLocaleString('ar-EG')+'</div><div style="font-size:11px;font-weight:700;color:#C0392B">'+cntExp+' قيد · '+_pA(cntExp)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">مصروفات 🔴</div></div>'
+    +'<div style="flex:1;min-width:90px;text-align:center;background:'+(net>=0?'#D1FAE5':'#FEE2E2')+';border-radius:8px;padding:12px 8px"><div style="font-size:22px;font-weight:700;color:'+netColor+'">'+(net>=0?'+':'')+net.toLocaleString('ar-EG')+'</div><div style="font-size:13px;font-weight:700;color:'+netColor+'">'+tierIcon+' '+margin+'% هامش</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">صافي الربح</div></div>'
+    +'</div>'
+    +'<div style="background:#e8eceb;border-radius:6px;height:12px;overflow:hidden;display:flex">'
+    +(rev>0?'<div style="width:'+(rev/(rev+exp)*100).toFixed(1)+'%;background:#1B7A56;height:100%"></div>':'')
+    +(exp>0?'<div style="width:'+(exp/(rev+exp)*100).toFixed(1)+'%;background:#C0392B;height:100%"></div>':'')
+    +'</div>'
+    +'<div style="margin-top:8px;font-size:10px;color:#666;display:flex;gap:14px;flex-wrap:wrap">'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#1B7A56;margin-left:3px"></span>إيرادات '+Math.round(rev/(rev+exp||1)*100)+'%</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#C0392B;margin-left:3px"></span>مصروفات '+Math.round(exp/(rev+exp||1)*100)+'%</span>'
+    +'<span>هامش الربح الصافي: '+margin+'%</span>'
+    +'</div>'
+    +'</div>';
+
   /* journal table */
   var journalRows = entries.map(function(e,i){
     var typeCls = e.type==='cr' ? 'cr' : 'dr';
@@ -1000,7 +1035,8 @@ window.exportPDF = function() {
       +'<tr class="net"><td>الربح الصافي</td><td class="'+tc2+'">'+ti2+' '+(net2>=0?'+':'')+net2.toLocaleString('ar-EG')+' ر.س &nbsp;<small>('+m2+'%)</small></td></tr>';
   }
 
-  var html = '<h2>ملخص الأرباح والخسائر (P&amp;L)</h2>'
+  var html = statsHtml
+    +'<h2>ملخص الأرباح والخسائر (P&amp;L)</h2>'
     +'<table><thead><tr><th>البيان</th><th>القيمة</th></tr></thead><tbody>'+plRows+'</tbody></table>'
     +'<h2>دفتر اليومية — جميع القيود</h2>'
     +'<table><thead><tr><th>#</th><th>النوع</th><th>الوصف</th><th>الحساب</th><th>المصدر</th><th>المبلغ</th><th>VAT</th><th>الوقت</th></tr></thead><tbody>'

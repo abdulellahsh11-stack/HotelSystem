@@ -214,6 +214,17 @@ window.exportCSV = function(){
   var rows = ATTENDANCE.map(function(r){
     return [r.name, r.role, r.scheduled, r.actual, stMap[r.status]||{v:r.status,s:'OK'}, r.bonus||'-'];
   });
+  var early =ATTENDANCE.filter(function(r){return r.status==='early';}).length;
+  var ontime=ATTENDANCE.filter(function(r){return r.status==='ontime';}).length;
+  var late24=ATTENDANCE.filter(function(r){return r.status==='late24';}).length;
+  var late42=ATTENDANCE.filter(function(r){return r.status==='late42';}).length;
+  var t=ATTENDANCE.length; function _p(n){return t>0?Math.round(n/t*100):0;}
+  rows.push([]);
+  rows.push([{v:'📊 ملخص الحضور',s:'EXC'},{v:'العدد',s:'EXC'},{v:'النسبة %',s:'EXC'},'','','']);
+  rows.push([{v:'⭐ مبكر',s:'EXC'},{v:early,s:'EXC'},{v:_p(early)+'%',s:'EXC'}]);
+  rows.push([{v:'🟢 في الوقت',s:'OK'},{v:ontime,s:'OK'},{v:_p(ontime)+'%',s:'OK'}]);
+  rows.push([{v:'🟠 تأخر خفيف (٢٤ د)',s:'WARN'},{v:late24,s:'WARN'},{v:_p(late24)+'%',s:'WARN'}]);
+  rows.push([{v:'🔴 تأخر ملحوظ (٤٢ د)',s:'BAD'},{v:late42,s:'BAD'},{v:_p(late42)+'%',s:'BAD'}]);
   dlXLS(toXLS(headers,rows,'حضور الموظفين'),'حضور_الموظفين_'+todayStr()+'.xls');
   toast('تم تصدير '+ATTENDANCE.length+' موظف ✓');
 };
@@ -223,6 +234,34 @@ window.exportPDF = function(){
   var stLabel = {early:'⭐ مبكر', ontime:'✓ في الوقت', late24:'⚠ تأخر ٢٤ د', late42:'✕ تأخر ٤٢ د'};
   var totalBonus = ATTENDANCE.reduce(function(s,r){return s+r.bonus;},0);
   var present = ATTENDANCE.filter(function(r){return r.status!=='absent';}).length;
+  var early2 =ATTENDANCE.filter(function(r){return r.status==='early';}).length;
+  var ontime2=ATTENDANCE.filter(function(r){return r.status==='ontime';}).length;
+  var late242=ATTENDANCE.filter(function(r){return r.status==='late24';}).length;
+  var late422=ATTENDANCE.filter(function(r){return r.status==='late42';}).length;
+  var t=ATTENDANCE.length; function _p(n){return t>0?Math.round(n/t*100):0;}
+  var statsHtml='<div style="background:linear-gradient(135deg,#f0f7f4,#f8faf9);border:1px solid #c6ddd7;border-radius:12px;padding:18px 20px;margin-bottom:20px">'
+    +'<div style="font-size:14px;font-weight:700;color:#1B4D3D;margin-bottom:14px">📊 ملخص الحضور · الإجمالي: '+t+' موظف</div>'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#f0f0f0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#333">'+t+'</div><div style="font-size:10px;color:#666;margin-top:4px">الإجمالي</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#D1FAE5;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#1B7A56">'+early2+'</div><div style="font-size:13px;font-weight:700;color:#1B7A56">'+_p(early2)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">مبكر ⭐</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#BBF7D0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#059669">'+ontime2+'</div><div style="font-size:13px;font-weight:700;color:#059669">'+_p(ontime2)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">في الوقت 🟢</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEF3C7;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#D97706">'+late242+'</div><div style="font-size:13px;font-weight:700;color:#D97706">'+_p(late242)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">تأخر خفيف 🟠</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEE2E2;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#C0392B">'+late422+'</div><div style="font-size:13px;font-weight:700;color:#C0392B">'+_p(late422)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">تأخر ملحوظ 🔴</div></div>'
+    +'</div>'
+    +'<div style="background:#e8eceb;border-radius:6px;height:12px;overflow:hidden;display:flex">'
+    +(early2>0?'<div style="width:'+_p(early2)+'%;background:#1B7A56;height:100%"></div>':'')
+    +(ontime2>0?'<div style="width:'+_p(ontime2)+'%;background:#22C55E;height:100%"></div>':'')
+    +(late242>0?'<div style="width:'+_p(late242)+'%;background:#D97706;height:100%"></div>':'')
+    +(late422>0?'<div style="width:'+_p(late422)+'%;background:#C0392B;height:100%"></div>':'')
+    +'</div>'
+    +'<div style="margin-top:8px;font-size:10px;color:#666;display:flex;gap:14px;flex-wrap:wrap">'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#1B7A56;margin-left:3px"></span>مبكر '+_p(early2)+'%</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#22C55E;margin-left:3px"></span>في الوقت '+_p(ontime2)+'%</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#D97706;margin-left:3px"></span>تأخر خفيف '+_p(late242)+'%</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#C0392B;margin-left:3px"></span>تأخر ملحوظ '+_p(late422)+'%</span>'
+    +'<span>إجمالي الحوافز: '+totalBonus+' ر.س</span>'
+    +'</div>'
+    +'</div>';
   var rows = ATTENDANCE.map(function(r){
     return '<tr><td>'+r.name+'</td><td>'+r.role+'</td><td style="font-family:monospace">'+r.scheduled+'</td>'
       +'<td style="font-family:monospace">'+r.actual+'</td>'
@@ -241,11 +280,7 @@ window.exportPDF = function(){
     +'</style></head><body>'
     +'<h1>👥 تقرير حضور الموظفين</h1>'
     +'<p class="sub">يوم '+new Date().toLocaleDateString('ar-SA')+' · نظام أداء الموظفين</p>'
-    +'<div class="kpis">'
-    +'<div class="kpi" style="background:#D1FAE5"><div class="v" style="color:#1B7A56">'+present+'</div><div class="l">حاضرون</div></div>'
-    +'<div class="kpi" style="background:#FEF3C7"><div class="v" style="color:#D97706">'+ATTENDANCE.filter(function(r){return r.status.startsWith('late');}).length+'</div><div class="l">متأخرون</div></div>'
-    +'<div class="kpi" style="background:#FEF9C3"><div class="v" style="color:#C9A85F">'+totalBonus+'</div><div class="l">إجمالي الحوافز (ر.س)</div></div>'
-    +'</div>'
+    +statsHtml+
     +'<table><thead><tr><th>الاسم</th><th>المنصب</th><th>الموعد</th><th>الدخول الفعلي</th><th>الحالة</th><th>الحافز</th></tr></thead>'
     +'<tbody>'+rows+'</tbody></table>'
     +'<div class="footer">نظام نزل · تقرير أداء الموظفين · '+new Date().toLocaleString('ar-SA')+'</div>'

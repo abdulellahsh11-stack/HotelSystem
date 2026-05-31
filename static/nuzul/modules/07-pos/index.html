@@ -939,6 +939,15 @@ window.exportExcel = function() {
     return [t.id, t.outlet, t.desc, t.customer, t.room, t.method,
             t.amt, t.vat, t.amt+t.vat, stCell, t.time];
   });
+  var completed=TX.filter(function(t){return t.status==='مكتملة';}).length;
+  var pending  =TX.filter(function(t){return t.status==='معلّقة';}).length;
+  var declined =TX.filter(function(t){return t.status!=='مكتملة'&&t.status!=='معلّقة';}).length;
+  var t=TX.length; function _p(n){return t>0?Math.round(n/t*100):0;}
+  rows.push([]);
+  rows.push([{v:'📊 ملخص الحركات',s:'EXC'},{v:'العدد',s:'EXC'},{v:'النسبة %',s:'EXC'},'','','','','','','','']);
+  rows.push([{v:'⭐ مكتملة',s:'EXC'},{v:completed,s:'EXC'},{v:_p(completed)+'%',s:'EXC'}]);
+  rows.push([{v:'🟠 معلّقة',s:'WARN'},{v:pending,s:'WARN'},{v:_p(pending)+'%',s:'WARN'}]);
+  rows.push([{v:'🔴 مرفوضة',s:'BAD'},{v:declined,s:'BAD'},{v:_p(declined)+'%',s:'BAD'}]);
   dlXLS(toXLS(headers, rows, 'حركات نقاط البيع'), 'POS_Payments_'+todayStr()+'.xls');
   toast('تم تصدير '+TX.length+' حركة إلى Excel ✓', 'success');
 };
@@ -1173,6 +1182,38 @@ window.exportPDFReport = function() {
   var total = d.outlets.reduce(function(s,x){ return s+x.amt; }, 0);
   var totalVat = Math.round(d.totals.rev * 0.13);
 
+  var txCompleted = TX.filter(function(t){return t.status==='مكتملة';}).length;
+  var txPending   = TX.filter(function(t){return t.status==='معلّقة';}).length;
+  var txDeclined  = TX.filter(function(t){return t.status!=='مكتملة'&&t.status!=='معلّقة';}).length;
+  var txTotal = TX.length;
+  function _pP(n){return txTotal>0?Math.round(n/txTotal*100):0;}
+  var revTargets2 = {today:20000, week:140000, month:550000};
+  var target2 = revTargets2[REPORT_PERIOD] || 20000;
+  var revRatio2 = d.totals.rev / target2;
+  var revColor2 = revRatio2 < 0.7 ? '#C0392B' : revRatio2 < 0.85 ? '#D97706' : revRatio2 < 1.0 ? '#22C55E' : '#1B7A56';
+  var revIcon2  = revRatio2 < 0.7 ? '🔴' : revRatio2 < 0.85 ? '🟠' : revRatio2 < 1.0 ? '🟢' : '⭐';
+  var statsHtml = '<div style="background:linear-gradient(135deg,#f0f7f4,#f8faf9);border:1px solid #c6ddd7;border-radius:12px;padding:18px 20px;margin-bottom:20px">'
+    +'<div style="font-size:14px;font-weight:700;color:#1B4D3D;margin-bottom:14px">📊 ملخص نقاط البيع · الفترة: '+label+' · الإجمالي: '+d.totals.txns.toLocaleString('ar-SA')+' حركة</div>'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">'
+    +'<div style="flex:1;min-width:90px;text-align:center;background:#f0f0f0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#333">'+d.totals.txns.toLocaleString('ar-SA')+'</div><div style="font-size:10px;color:#666;margin-top:4px">إجمالي الحركات</div></div>'
+    +'<div style="flex:1;min-width:90px;text-align:center;background:#D1FAE5;border-radius:8px;padding:12px 8px"><div style="font-size:22px;font-weight:700;color:'+revColor2+'">'+revIcon2+' '+d.totals.rev.toLocaleString('ar-SA')+'</div><div style="font-size:11px;font-weight:700;color:'+revColor2+'">'+Math.round(revRatio2*100)+'% من الهدف</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">إجمالي المبيعات</div></div>'
+    +'<div style="flex:1;min-width:90px;text-align:center;background:#D1FAE5;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#1B7A56">'+txCompleted+'</div><div style="font-size:13px;font-weight:700;color:#1B7A56">'+_pP(txCompleted)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">مكتملة ⭐</div></div>'
+    +'<div style="flex:1;min-width:90px;text-align:center;background:#FEF3C7;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#D97706">'+txPending+'</div><div style="font-size:13px;font-weight:700;color:#D97706">'+_pP(txPending)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">معلّقة 🟠</div></div>'
+    +'<div style="flex:1;min-width:90px;text-align:center;background:#FEE2E2;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#C0392B">'+txDeclined+'</div><div style="font-size:13px;font-weight:700;color:#C0392B">'+_pP(txDeclined)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">مرفوضة 🔴</div></div>'
+    +'</div>'
+    +'<div style="background:#e8eceb;border-radius:6px;height:12px;overflow:hidden;display:flex">'
+    +(txCompleted>0?'<div style="width:'+_pP(txCompleted)+'%;background:#1B7A56;height:100%"></div>':'')
+    +(txPending>0?'<div style="width:'+_pP(txPending)+'%;background:#D97706;height:100%"></div>':'')
+    +(txDeclined>0?'<div style="width:'+_pP(txDeclined)+'%;background:#C0392B;height:100%"></div>':'')
+    +'</div>'
+    +'<div style="margin-top:8px;font-size:10px;color:#666;display:flex;gap:14px;flex-wrap:wrap">'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#1B7A56;margin-left:3px"></span>مكتملة '+_pP(txCompleted)+'%</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#D97706;margin-left:3px"></span>معلّقة '+_pP(txPending)+'%</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#C0392B;margin-left:3px"></span>مرفوضة '+_pP(txDeclined)+'%</span>'
+    +'<span>الهدف: '+target2.toLocaleString('ar-SA')+' ر.س · تحقق: '+Math.round(revRatio2*100)+'%</span>'
+    +'</div>'
+    +'</div>';
+
   var summaryRows = '<tr><td>الفترة</td><td>'+label+'</td></tr>'
     +'<tr><td>إجمالي المبيعات</td><td class="cr">'+d.totals.rev.toLocaleString('ar-SA')+' ر.س</td></tr>'
     +'<tr><td>عدد الحركات</td><td>'+d.totals.txns.toLocaleString('ar-SA')+'</td></tr>'
@@ -1190,7 +1231,8 @@ window.exportPDFReport = function() {
     return '<tr><td>'+t.id+'</td><td>'+t.outlet+'</td><td>'+t.customer+'</td><td>'+t.method+'</td><td>'+t.amt.toLocaleString('ar-SA')+' ر.س</td><td>'+t.status+'</td><td>'+t.time+'</td></tr>';
   }).join('');
 
-  var html = '<h2>ملخص المبيعات</h2><table><thead><tr><th>البيان</th><th>القيمة</th></tr></thead><tbody>'+summaryRows+'</tbody></table>'
+  var html = statsHtml
+    +'<h2>ملخص المبيعات</h2><table><thead><tr><th>البيان</th><th>القيمة</th></tr></thead><tbody>'+summaryRows+'</tbody></table>'
     +'<h2>أداء المنافذ</h2><table><thead><tr><th>المنفذ</th><th>الحركات</th><th>الإيراد</th><th>النسبة</th></tr></thead><tbody>'+outRows+'</tbody></table>'
     +(isMonth ? '' : '<h2>سجل الحركات التفصيلي</h2><table><thead><tr><th>#</th><th>المنفذ</th><th>العميل</th><th>طريقة الدفع</th><th>المبلغ</th><th>الحالة</th><th>الوقت</th></tr></thead><tbody>'+txRows+'</tbody></table>');
 

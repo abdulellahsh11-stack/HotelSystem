@@ -125,6 +125,22 @@ ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
       var qiwaCell = s.qiwa?{v:'متوافق',s:'EXC'}:{v:'غير متوافق',s:'BAD'};
       return [s.name,s.role,s.dept,s.nat,s.iqama,s.expires,s.daysLeft,s.salary,qiwaCell,iqamaCell];
     });
+    var exc=HR_STAFF.filter(function(s){return s.daysLeft>365;}).length;
+    var ok_=HR_STAFF.filter(function(s){return s.daysLeft>90&&s.daysLeft<=365;}).length;
+    var warn=HR_STAFF.filter(function(s){return s.daysLeft>30&&s.daysLeft<=90;}).length;
+    var bad=HR_STAFF.filter(function(s){return s.daysLeft<=30;}).length;
+    var qiwaOk=HR_STAFF.filter(function(s){return s.qiwa;}).length;
+    var qiwaNo=HR_STAFF.filter(function(s){return !s.qiwa;}).length;
+    var t=HR_STAFF.length; function _p(n){return t>0?Math.round(n/t*100):0;}
+    rows.push([]);
+    rows.push([{v:'📊 ملخص الموارد البشرية',s:'EXC'},{v:'العدد',s:'EXC'},{v:'النسبة %',s:'EXC'},'','','','','','','']);
+    rows.push([{v:'⭐ إقامة ممتازة (>١ سنة)',s:'EXC'},{v:exc,s:'EXC'},{v:_p(exc)+'%',s:'EXC'}]);
+    rows.push([{v:'🟢 إقامة جيدة (٣-١٢ شهر)',s:'OK'},{v:ok_,s:'OK'},{v:_p(ok_)+'%',s:'OK'}]);
+    rows.push([{v:'🟠 إقامة قريبة (١-٣ أشهر)',s:'WARN'},{v:warn,s:'WARN'},{v:_p(warn)+'%',s:'WARN'}]);
+    rows.push([{v:'🔴 إقامة عاجلة (≤٣٠ يوم)',s:'BAD'},{v:bad,s:'BAD'},{v:_p(bad)+'%',s:'BAD'}]);
+    rows.push([]);
+    rows.push([{v:'متوافق مع قوى',s:'EXC'},{v:qiwaOk,s:'EXC'},{v:_p(qiwaOk)+'%',s:'EXC'}]);
+    rows.push([{v:'غير متوافق مع قوى',s:'BAD'},{v:qiwaNo,s:'BAD'},{v:_p(qiwaNo)+'%',s:'BAD'}]);
     dlXLS(toXLS(headers,rows,'الموارد البشرية'),'HR_الموظفون_'+todayStr()+'.xls');
     toast('تم تصدير '+HR_STAFF.length+' موظف ✓');
   };
@@ -133,6 +149,34 @@ ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
     var urgent  = HR_STAFF.filter(function(s){return s.daysLeft<=30;}).length;
     var warnIq  = HR_STAFF.filter(function(s){return s.daysLeft>30&&s.daysLeft<=90;}).length;
     var totSal  = HR_STAFF.reduce(function(a,s){return a+s.salary;},0);
+    var excIq  = HR_STAFF.filter(function(s){return s.daysLeft>365;}).length;
+    var okIq   = HR_STAFF.filter(function(s){return s.daysLeft>90&&s.daysLeft<=365;}).length;
+    var qiwaOk = HR_STAFF.filter(function(s){return s.qiwa;}).length;
+    var t=HR_STAFF.length; function _p(n){return t>0?Math.round(n/t*100):0;}
+    var statsHtml = '<div style="background:linear-gradient(135deg,#f0f7f4,#f8faf9);border:1px solid #c6ddd7;border-radius:12px;padding:18px 20px;margin-bottom:20px">'
+      +'<div style="font-size:14px;font-weight:700;color:#1B4D3D;margin-bottom:14px">📊 ملخص الموارد البشرية · الإجمالي: '+t+' موظف</div>'
+      +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">'
+      +'<div style="flex:1;min-width:80px;text-align:center;background:#f0f0f0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#333">'+t+'</div><div style="font-size:10px;color:#666;margin-top:4px">إجمالي الموظفين</div></div>'
+      +'<div style="flex:1;min-width:80px;text-align:center;background:#D1FAE5;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#1B7A56">'+excIq+'</div><div style="font-size:13px;font-weight:700;color:#1B7A56">'+_p(excIq)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">ممتاز >١ سنة</div></div>'
+      +'<div style="flex:1;min-width:80px;text-align:center;background:#BBF7D0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#059669">'+okIq+'</div><div style="font-size:13px;font-weight:700;color:#059669">'+_p(okIq)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">جيد ٣-١٢ شهر</div></div>'
+      +'<div style="flex:1;min-width:80px;text-align:center;background:#FEF3C7;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#D97706">'+warnIq+'</div><div style="font-size:13px;font-weight:700;color:#D97706">'+_p(warnIq)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">قريب ≤٩٠ يوم</div></div>'
+      +'<div style="flex:1;min-width:80px;text-align:center;background:#FEE2E2;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#C0392B">'+urgent+'</div><div style="font-size:13px;font-weight:700;color:#C0392B">'+_p(urgent)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">عاجل ≤٣٠ يوم</div></div>'
+      +'<div style="flex:1;min-width:80px;text-align:center;background:'+(qiwaOk===t?'#D1FAE5':'#FEF3C7')+';border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:'+(qiwaOk===t?'#1B7A56':'#D97706')+'">'+qiwaOk+'/'+t+'</div><div style="font-size:10px;color:rgba(0,0,0,0.5);margin-top:4px">قوى متوافق</div></div>'
+      +'</div>'
+      +'<div style="background:#e8eceb;border-radius:6px;height:12px;overflow:hidden;display:flex">'
+      +(excIq>0?'<div style="width:'+_p(excIq)+'%;background:#1B7A56;height:100%"></div>':'')
+      +(okIq>0?'<div style="width:'+_p(okIq)+'%;background:#22C55E;height:100%"></div>':'')
+      +(warnIq>0?'<div style="width:'+_p(warnIq)+'%;background:#D97706;height:100%"></div>':'')
+      +(urgent>0?'<div style="width:'+_p(urgent)+'%;background:#C0392B;height:100%"></div>':'')
+      +'</div>'
+      +'<div style="margin-top:8px;font-size:10px;color:#666;display:flex;gap:14px;flex-wrap:wrap">'
+      +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#1B7A56;margin-left:3px"></span>ممتاز '+_p(excIq)+'%</span>'
+      +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#22C55E;margin-left:3px"></span>جيد '+_p(okIq)+'%</span>'
+      +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#D97706;margin-left:3px"></span>قريب '+_p(warnIq)+'%</span>'
+      +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#C0392B;margin-left:3px"></span>عاجل '+_p(urgent)+'%</span>'
+      +'<span>إجمالي الرواتب: '+totSal.toLocaleString('ar-EG')+' ر.س</span>'
+      +'</div>'
+      +'</div>';
     var rows = HR_STAFF.map(function(s){
       var iqCls = s.daysLeft<=30?'color:#C0392B;font-weight:700':s.daysLeft<=90?'color:#D97706;font-weight:700':s.daysLeft<=365?'color:#22C55E':'color:#1B7A56';
       var iqLbl = s.daysLeft<=30?'✕ عاجل ('+s.daysLeft+' يوم)':s.daysLeft<=90?'⚠ '+s.daysLeft+' يوم':'✓ '+s.daysLeft+' يوم';
@@ -157,12 +201,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
       +'</style></head><body>'
       +'<h1>👥 تقرير الموارد البشرية</h1>'
       +'<p class="sub">'+new Date().toLocaleDateString('ar-SA')+' · قائمة الموظفين وتتبع الإقامات</p>'
-      +'<div class="kpis">'
-      +'<div class="kpi" style="background:#f5f5f5"><div class="v">'+HR_STAFF.length+'</div><div class="l">إجمالي الموظفين</div></div>'
-      +(urgent?'<div class="kpi" style="background:#FEE2E2"><div class="v" style="color:#C0392B">'+urgent+'</div><div class="l">إقامات عاجلة (≤٣٠ يوم)</div></div>':'')
-      +(warnIq?'<div class="kpi" style="background:#FEF3C7"><div class="v" style="color:#D97706">'+warnIq+'</div><div class="l">إقامات قريبة (≤٩٠ يوم)</div></div>':'')
-      +'<div class="kpi" style="background:#FEF9C3"><div class="v" style="color:#C9A85F">'+totSal.toLocaleString('ar-EG')+'</div><div class="l">إجمالي الرواتب (ر.س)</div></div>'
-      +'</div>'
+      +statsHtml
       +'<table><thead><tr><th>الاسم</th><th>المنصب</th><th>القسم</th><th>الجنسية</th><th>رقم الإقامة</th><th>حالة الإقامة</th><th>الراتب (ر.س)</th><th>قوى</th></tr></thead>'
       +'<tbody>'+rows+'</tbody></table>'
       +'<div class="footer">نظام نزل · الموارد البشرية · '+new Date().toLocaleString('ar-SA')+'</div>'

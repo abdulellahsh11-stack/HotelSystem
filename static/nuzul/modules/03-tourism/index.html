@@ -828,21 +828,48 @@ window.exportCSV = function(){
     var stCell = sc==='ok'?{v:'سارٍ — '+days+' يوم',s:'EXC'}:sc==='warn'?{v:'تنبيه — '+days+' يوم',s:'WARN'}:{v:days<0?'منتهي':'عاجل — '+days+' يوم',s:'BAD'};
     return [d.name, d.num, d.authority, d.issued, d.expires, days, stCell];
   });
+  var safe  =DOCS.filter(function(d){return statusClass(daysLeft(d.expires))==='ok';}).length;
+  var warn  =DOCS.filter(function(d){return statusClass(daysLeft(d.expires))==='warn';}).length;
+  var urgent=DOCS.filter(function(d){return statusClass(daysLeft(d.expires))==='err'||statusClass(daysLeft(d.expires))==='over';}).length;
+  var t=DOCS.length; function _p(n){return t>0?Math.round(n/t*100):0;}
+  rows.push([]);
+  rows.push([{v:'📊 ملخص المستندات',s:'EXC'},{v:'العدد',s:'EXC'},{v:'النسبة %',s:'EXC'},'','','','']);
+  rows.push([{v:'⭐ سارية المفعول',s:'EXC'},{v:safe,s:'EXC'},{v:_p(safe)+'%',s:'EXC'}]);
+  rows.push([{v:'🟠 تنبيه (≤٩٠ يوم)',s:'WARN'},{v:warn,s:'WARN'},{v:_p(warn)+'%',s:'WARN'}]);
+  rows.push([{v:'🔴 عاجلة / منتهية',s:'BAD'},{v:urgent,s:'BAD'},{v:_p(urgent)+'%',s:'BAD'}]);
   dlXLS(toXLS(headers,rows,'المستندات الحكومية'),'المستندات_الحكومية_'+todayStr()+'.xls');
   toast('تم تصدير '+DOCS.length+' مستند ✓');
 };
 
 window.exportPDF = function(){
-  var urgent = DOCS.filter(function(d){return daysLeft(d.expires)<=30;});
-  var warn   = DOCS.filter(function(d){var dl=daysLeft(d.expires);return dl>30&&dl<=90;});
-  var safe   = DOCS.filter(function(d){return daysLeft(d.expires)>90;});
+  var urgentDocs = DOCS.filter(function(d){return daysLeft(d.expires)<=30;});
+  var warnDocs   = DOCS.filter(function(d){var dl=daysLeft(d.expires);return dl>30&&dl<=90;});
+  var safeDocs   = DOCS.filter(function(d){return daysLeft(d.expires)>90;});
+  var t=DOCS.length; function _p(n){return t>0?Math.round(n/t*100):0;}
+  var statsHtml = '<div style="background:linear-gradient(135deg,#fffdf5,#fdf8e1);border:1px solid #e6c98f;border-radius:12px;padding:18px 20px;margin-bottom:20px">'
+    +'<div style="font-size:14px;font-weight:700;color:#9A6D14;margin-bottom:14px">📊 ملخص المستندات · الإجمالي: '+t+' وثيقة</div>'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#f0f0f0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#333">'+t+'</div><div style="font-size:10px;color:#666;margin-top:4px">إجمالي الوثائق</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#D1FAE5;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#1B7A56">'+safeDocs.length+'</div><div style="font-size:13px;font-weight:700;color:#1B7A56">'+_p(safeDocs.length)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">سارية المفعول</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEF3C7;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#D97706">'+warnDocs.length+'</div><div style="font-size:13px;font-weight:700;color:#D97706">'+_p(warnDocs.length)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">تنبيه (≤٩٠ يوم)</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEE2E2;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#C0392B">'+urgentDocs.length+'</div><div style="font-size:13px;font-weight:700;color:#C0392B">'+_p(urgentDocs.length)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">عاجلة / منتهية</div></div>'
+    +'</div>'
+    +'<div style="background:#e8eceb;border-radius:6px;height:12px;overflow:hidden;display:flex">'
+    +(safeDocs.length>0?'<div style="width:'+_p(safeDocs.length)+'%;background:#1B7A56;height:100%"></div>':'')
+    +(warnDocs.length>0?'<div style="width:'+_p(warnDocs.length)+'%;background:#D97706;height:100%"></div>':'')
+    +(urgentDocs.length>0?'<div style="width:'+_p(urgentDocs.length)+'%;background:#C0392B;height:100%"></div>':'')
+    +'</div>'
+    +'<div style="margin-top:8px;font-size:10px;color:#666;display:flex;gap:14px;flex-wrap:wrap">'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#1B7A56;margin-left:3px"></span>سارية المفعول '+_p(safeDocs.length)+'%</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#D97706;margin-left:3px"></span>تنبيه '+_p(warnDocs.length)+'%</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#C0392B;margin-left:3px"></span>عاجلة/منتهية '+_p(urgentDocs.length)+'%</span>'
+    +'</div>'
+    +'</div>';
   var rows = DOCS.map(function(d){
     var days = daysLeft(d.expires);
     var sc = statusClass(days);
-    var rowStyle = sc==='ok'?'':'sc==="warn"?"background:#FFFBEB":"background:#FFF1F2"';
     var stStyle = sc==='ok'?'color:#1B7A56;font-weight:700':sc==='warn'?'color:#D97706;font-weight:700':'color:#C0392B;font-weight:700';
     var stLabel = sc==='ok'?'✓ سارٍ':sc==='warn'?'⚠ قريب':'✕ '+(days<0?'منتهي':'عاجل');
-    var bg = sc==='ok'?'':'sc==="warn"?"#FFFBEB":"#FFF1F2"';
     return '<tr style="background:'+(sc==='warn'?'#FFFBEB':sc!=='ok'?'#FFF1F2':'')+'"><td>'+d.name+'</td>'
       +'<td style="font-family:monospace;font-size:11px">'+d.num+'</td>'
       +'<td>'+d.authority+'</td>'
@@ -854,8 +881,6 @@ window.exportPDF = function(){
   win.document.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"/><title>تقرير المستندات</title>'
     +'<style>body{font-family:"Tajawal","Segoe UI",sans-serif;margin:32px;color:#1a1a1a;direction:rtl}'
     +'h1{font-size:22px;margin:0 0 4px}.sub{font-size:12px;color:#666;margin:0 0 18px}'
-    +'.kpis{display:flex;gap:14px;margin-bottom:18px}.kpi{padding:12px 20px;border-radius:10px;min-width:100px}'
-    +'.kpi .v{font-size:26px;font-weight:700}.kpi .l{font-size:11px;color:#666}'
     +'table{width:100%;border-collapse:collapse;font-size:12px}'
     +'th{background:#9A6D14;color:#fff;padding:10px 12px;text-align:right}'
     +'td{padding:9px 12px;border-bottom:1px solid #eee;vertical-align:middle}'
@@ -863,12 +888,7 @@ window.exportPDF = function(){
     +'</style></head><body>'
     +'<h1>📜 تقرير المستندات الحكومية والتراخيص</h1>'
     +'<p class="sub">'+new Date().toLocaleDateString('ar-SA')+' · رصد المستندات وتتبع انتهاء الصلاحية</p>'
-    +'<div class="kpis">'
-    +'<div class="kpi" style="background:#f5f5f5"><div class="v">'+DOCS.length+'</div><div class="l">إجمالي المستندات</div></div>'
-    +(urgent.length?'<div class="kpi" style="background:#FEE2E2"><div class="v" style="color:#C0392B">'+urgent.length+'</div><div class="l">عاجلة (≤٣٠ يوم)</div></div>':'')
-    +(warn.length?'<div class="kpi" style="background:#FEF3C7"><div class="v" style="color:#D97706">'+warn.length+'</div><div class="l">تنبيه (≤٩٠ يوم)</div></div>':'')
-    +'<div class="kpi" style="background:#D1FAE5"><div class="v" style="color:#1B7A56">'+safe.length+'</div><div class="l">سارية المفعول</div></div>'
-    +'</div>'
+    +statsHtml
     +'<table><thead><tr><th>المستند</th><th>رقم الوثيقة</th><th>الجهة</th><th>الإصدار</th><th>الانتهاء</th><th>الأيام المتبقية</th><th>الحالة</th></tr></thead>'
     +'<tbody>'+rows+'</tbody></table>'
     +'<div class="footer">نظام نزل · المستندات الحكومية · '+new Date().toLocaleString('ar-SA')+'</div>'
