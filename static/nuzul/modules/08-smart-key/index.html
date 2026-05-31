@@ -771,13 +771,13 @@ window.exportLog = function() {
       a.title, a.desc, a.src, a.target,
       {active:'نشط',resolved:'محلول',snoozed:'مؤجّل'}[a.status]||a.status,
       a.time, a.rule
-    ].map(function(v){ return '"'+String(v||'').replace(/"/g,'""')+'"'; }).join(',');
+    ].map(function(v){ return String(v||''); }).join('\t');
   });
-  var csv = bom + headers.map(function(h){ return '"'+h+'"'; }).join(',') + '\r\n' + rows.join('\r\n');
-  var blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+  var tsv = bom + headers.join('\t') + '\r\n' + rows.join('\r\n');
+  var blob = new Blob([tsv], {type:'text/tab-separated-values;charset=utf-8'});
   var url = URL.createObjectURL(blob);
   var a = document.createElement('a'); a.href=url;
-  a.download = 'SmartKey_Log_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.download = 'SmartKey_Log_'+new Date().toISOString().slice(0,10)+'.xls';
   a.click(); URL.revokeObjectURL(url);
   toast('تم تصدير السجل ('+ALARMS.length+' سجل) ✓', 'success');
 };

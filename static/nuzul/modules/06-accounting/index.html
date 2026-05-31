@@ -764,10 +764,10 @@ window.exportCSV = function(){
       e.time,e.note||'',e.link||''
     ]);
   });
-  var csv=rows.map(function(r){ return r.map(function(c){ return'"'+String(c).replace(/"/g,'""')+'"'; }).join(','); }).join('\r\n');
+  var csv=rows.map(function(r){ return r.map(function(c){ return String(c); }).join('\t'); }).join('\r\n');
   var a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'}));
-  a.download='المحاسبة_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.href=URL.createObjectURL(new Blob(['﻿'+csv],{type:'text/tab-separated-values;charset=utf-8;'}));
+  a.download='المحاسبة_'+new Date().toISOString().slice(0,10)+'.xls';
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   toast('تم تصدير '+allEntries().length+' قيد ✓');
 };
