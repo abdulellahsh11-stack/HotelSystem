@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="/static/dheuof/shared/chrome.css"/>
 <link rel="stylesheet" href="/static/dheuof/shared/module.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="/static/dheuof/shared/vibrant.js"></script>
 <style>
 /* ── Alert banner ──────────────────────────────────────────────── */
 .doc-alert{background:linear-gradient(135deg,#C99428,#9A6D14);color:var(--paper);border-radius:14px;padding:22px 26px;margin-bottom:22px;display:grid;grid-template-columns:auto 1fr auto auto;gap:22px;align-items:center;position:relative;overflow:hidden}
@@ -123,6 +124,8 @@
   <div>
     <div id="topbar-slot"></div>
     <main class="dh-main">
+<div id="vib-hero-wrap"></div>
+<div id="tier-bar-wrap"></div>
 
       <div class="mod-head" data-m-rise>
         <div class="left">
@@ -238,6 +241,10 @@
   </div>
 </div>
 
+<script>
+renderVibrantHero({ icon:'📋', num:'03', title:'المستندات والاشتراكات', en:'Government Docs · Renewals', sub:'رفع المستندات الحكومية وتنبيهات الانتهاء', badges:[{v:'٤٢',l:'وثيقة نشطة'},{v:'٣',l:'تنتهي ≤ ٣٠ يوم'}] });
+renderTierBar({ exc:28, good:11, low:2, bad:1 });
+</script>
 <script src="/static/dheuof/shared/sidebar.js"></script>
 <script>StaticSidebar.mount({ activeId: "03-tourism", placeholder: "بحث في المستندات..." });</script>
 <script src="/static/dheuof/assets/animations.js"></script>

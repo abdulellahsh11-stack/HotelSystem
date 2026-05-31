@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="/static/dheuof/assets/animations.css"/>
 <link rel="stylesheet" href="/static/dheuof/shared/chrome.css"/>
 <link rel="stylesheet" href="/static/dheuof/shared/module.css"/>
+<script src="/static/dheuof/shared/vibrant.js"></script>
 <style>
 /* ── Tickets table ─────────────────────────────────────────────────── */
 .wh-tk{background:var(--white);border:1px solid var(--hairline);border-radius:12px;overflow:hidden}
@@ -134,6 +135,8 @@
   <div>
     <div id="topbar-slot"></div>
     <main class="dh-main">
+<div id="vib-hero-wrap"></div>
+<div id="tier-bar-wrap"></div>
 
       <!-- Page header -->
       <div class="mod-head" data-m-rise>
@@ -382,6 +385,10 @@
   </div>
 </div>
 
+<script>
+renderVibrantHero({ icon:'🔧', num:'05', title:'مستودع الصيانة', en:'Maintenance Warehouse', sub:'قطع الغيار، أدوات الصيانة، الأسلاك والإنارة', badges:[{v:'٧',l:'تذاكر مفتوحة'},{v:'٣٨٦',l:'صنف'}] });
+renderTierBar({ exc:210, good:120, low:40, bad:16 });
+</script>
 <script src="/static/dheuof/shared/sidebar.js"></script>
 <script>StaticSidebar.mount({ activeId: "05-warehouse", placeholder: "بحث في التذاكر والقطع..." });</script>
 <script src="/static/dheuof/assets/animations.js"></script>

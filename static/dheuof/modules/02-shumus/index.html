@@ -114,6 +114,7 @@
   .sh-log-row .sub { font-size: 11px; color: var(--fg-3); margin-top: 1px; }
   .sh-log-row .id { font-family: var(--font-mono); font-size: 11px; color: var(--fg-2); }
 </style>
+<script src="/static/dheuof/shared/vibrant.js"></script>
 </head>
 <body>
 <div class="dh-app">
@@ -121,6 +122,8 @@
   <div>
     <div id="topbar-slot"></div>
     <main class="dh-main">
+<div id="vib-hero-wrap"></div>
+<div id="tier-bar-wrap"></div>
 
       <div class="mod-head" data-m-rise>
         <div class="left">
@@ -277,6 +280,10 @@
   </div>
 </div>
 
+<script>
+renderVibrantHero({ icon:'🛡', num:'02', title:'شموس', en:'Identity Verification · MOI', sub:'ربط مباشر بوزارة الداخلية — تعرّف فوري على الضيف', badges:[{v:'٢٤٨',l:'تعرّف اليوم'},{v:'٩٩٪',l:'دقة التعرّف'}] });
+renderTierBar({ exc:198, good:36, low:10, bad:4 });
+</script>
 <script src="/static/dheuof/shared/sidebar.js"></script>
 <script>StaticSidebar.mount({ activeId: "02-shumus", placeholder: "بحث في سجل التعرّف..." });</script>
 <script src="/static/dheuof/assets/animations.js"></script>
