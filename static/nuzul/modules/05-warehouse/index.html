@@ -264,6 +264,7 @@
         </div>
         <div class="right">
           <button class="btn-sec" onclick="exportCSV()">⬇ تصدير Excel</button>
+          <button class="btn-sec" onclick="exportPDF()" style="background:var(--brand-700);color:var(--white);border-color:var(--brand-700)">🖨 تصدير PDF</button>
           <button class="btn-green" onclick="showAddItem()">+ صنف جديد</button>
         </div>
       </div>
@@ -711,6 +712,53 @@ window.exportCSV = function(){
   });
   dlXLS(toXLS(headers, rows, 'مستودع الصيانة'), 'مستودع_الصيانة_'+todayStr()+'.xls');
   toast('تم تصدير '+ITEMS.length+' صنف إلى Excel ✓');
+};
+
+function printPDF(title, bodyHTML) {
+  var w = window.open('', '_blank');
+  if (!w) { toast('تعذّر فتح نافذة الطباعة — تأكد من السماح بالنوافذ المنبثقة', true); return; }
+  var css = 'body{font-family:"Segoe UI",Arial,sans-serif;background:#fff;color:#111;direction:rtl;padding:32px 40px;font-size:13px;line-height:1.6}'
+    +'h1{font-size:20px;color:#1B4D3D;margin:0 0 4px}'
+    +'h2{font-size:15px;color:#1B4D3D;margin:24px 0 10px;border-bottom:2px solid #C9A85F;padding-bottom:4px}'
+    +'.meta{font-size:11px;color:#888;margin-bottom:24px}'
+    +'table{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:12px}'
+    +'th{background:#1B4D3D;color:#fff;padding:8px 12px;text-align:right;font-weight:600}'
+    +'td{padding:7px 12px;border-bottom:1px solid #eee;text-align:right}'
+    +'tr:nth-child(even) td{background:#f7faf8}'
+    +'.ok{color:#1B7A56;font-weight:600}.warn{color:#B45309;font-weight:600}.bad{color:#C0392B;font-weight:600}'
+    +'.footer{font-size:10px;color:#bbb;margin-top:32px;border-top:1px solid #eee;padding-top:12px;text-align:center}'
+    +'@media print{@page{margin:15mm}}';
+  w.document.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"/><title>'+title+'</title><style>'+css+'</style></head><body>'
+    +'<h1>'+title+'</h1>'
+    +'<div class="meta">تاريخ الإصدار: '+new Date().toLocaleDateString('ar-SA',{year:'numeric',month:'long',day:'numeric'})+' &nbsp;·&nbsp; نظام ضيوف — Dheuof Hotel</div>'
+    +bodyHTML
+    +'<div class="footer">صدر بواسطة نظام ضيوف — Dheuof Hotel Management System</div>'
+    +'</body></html>');
+  w.document.close(); w.focus();
+  setTimeout(function(){ w.print(); }, 700);
+}
+
+window.exportPDF = function(){
+  var ok=0,warn=0,bad=0,totalVal=0;
+  ITEMS.forEach(function(it){ var s=statusOf(it); if(s==='ok')ok++; else if(s==='warn')warn++; else bad++; totalVal+=it.qty*(it.cost||0); });
+  var summaryRows = '<tr><td>إجمالي الأصناف</td><td>'+ITEMS.length+'</td></tr>'
+    +'<tr><td class="ok">جيدة</td><td>'+ok+'</td></tr>'
+    +'<tr><td class="warn">تحت الحد</td><td>'+warn+'</td></tr>'
+    +'<tr><td class="bad">ناقص</td><td>'+bad+'</td></tr>'
+    +'<tr><td>القيمة الإجمالية التقديرية</td><td>'+totalVal.toLocaleString('ar-EG')+' ر.س</td></tr>';
+  var itemRows = ITEMS.map(function(it){
+    var s = statusOf(it);
+    var sCls = {ok:'ok',warn:'warn',bad:'bad'}[s]||'';
+    var sLabel = {ok:'جيدة',warn:'تحت الحد',bad:'ناقص'}[s]||'';
+    return '<tr><td>'+it.name+'</td><td>'+it.cat+'</td><td>'+it.brand+'</td><td>'+it.color+'</td>'
+      +'<td>'+it.qty+' '+it.unit+'</td><td>'+it.par+'</td><td>'+it.sku+'</td>'
+      +'<td class="'+sCls+'">'+sLabel+'</td></tr>';
+  }).join('');
+  var html = '<h2>ملخص المستودع</h2><table><thead><tr><th>البيان</th><th>القيمة</th></tr></thead><tbody>'+summaryRows+'</tbody></table>'
+    +'<h2>قائمة الأصناف الكاملة</h2>'
+    +'<table><thead><tr><th>الصنف</th><th>الفئة</th><th>العلامة</th><th>اللون</th><th>الكمية</th><th>حد الطلب</th><th>SKU</th><th>الحالة</th></tr></thead><tbody>'+itemRows+'</tbody></table>';
+  printPDF('تقرير مستودع الصيانة', html);
+  toast('جارٍ فتح نافذة الطباعة… ✓');
 };
 
 /* ════════════════════════════════════════

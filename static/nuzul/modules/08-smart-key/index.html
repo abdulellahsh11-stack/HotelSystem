@@ -287,7 +287,8 @@ body { background: var(--paper-tint); }
           <p class="sub">يراقب جميع البرامج ويُصدر إنذاراً فورياً عند اكتشاف ثغرة بيانات، نزيل غير مسجّل، أو انتهاء مدة إقامة — مع تخصيص كامل لقواعد التبليغ والمدد.</p>
         </div>
         <div class="actions">
-          <button onclick="exportLog()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">📥 تصدير السجل</button>
+          <button onclick="exportLog()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">📥 تصدير Excel</button>
+          <button onclick="exportPDF()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--brand-700);color:var(--paper);border:none;cursor:pointer">🖨 تصدير PDF</button>
           <button onclick="runScan()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:#7C2D12;color:var(--paper);border:none;cursor:pointer">🔍 فحص فوري</button>
         </div>
       </div>
@@ -443,7 +444,8 @@ body { background: var(--paper-tint); }
       <div class="sk-pane" id="pane-log">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
           <span style="font-size:13px;color:var(--fg-2)" id="logCount"></span>
-          <button onclick="exportLog()" style="font-family:var(--font-ar);font-size:12px;padding:7px 14px;border-radius:7px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">📥 تصدير CSV</button>
+          <button onclick="exportLog()" style="font-family:var(--font-ar);font-size:12px;padding:7px 14px;border-radius:7px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">📥 تصدير Excel</button>
+          <button onclick="exportPDF()" style="font-family:var(--font-ar);font-size:12px;padding:7px 14px;border-radius:7px;background:var(--brand-700);color:var(--paper);border:none;cursor:pointer">🖨 PDF</button>
         </div>
         <div class="sk-log" id="logTable"></div>
       </div>
@@ -834,6 +836,55 @@ window.exportLog = function() {
   });
   dlXLS(toXLS(headers, rows, 'سجل الإنذارات'), 'SmartKey_Log_'+todayStr()+'.xls');
   toast('تم تصدير السجل ('+ALARMS.length+' سجل) ✓', 'success');
+};
+
+function printPDF(title, bodyHTML) {
+  var w = window.open('', '_blank');
+  if (!w) { toast('تعذّر فتح نافذة الطباعة — تأكد من السماح بالنوافذ المنبثقة', true); return; }
+  var css = 'body{font-family:"Segoe UI",Arial,sans-serif;background:#fff;color:#111;direction:rtl;padding:32px 40px;font-size:13px;line-height:1.6}'
+    +'h1{font-size:20px;color:#1B4D3D;margin:0 0 4px}'
+    +'h2{font-size:15px;color:#1B4D3D;margin:24px 0 10px;border-bottom:2px solid #C9A85F;padding-bottom:4px}'
+    +'.meta{font-size:11px;color:#888;margin-bottom:24px}'
+    +'table{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:12px}'
+    +'th{background:#1B4D3D;color:#fff;padding:8px 12px;text-align:right;font-weight:600}'
+    +'td{padding:7px 12px;border-bottom:1px solid #eee;text-align:right}'
+    +'tr:nth-child(even) td{background:#f7faf8}'
+    +'.high{color:#C0392B;font-weight:700}.med{color:#B45309;font-weight:600}.low{color:#1B7A56;font-weight:600}.info{color:#1e40af;font-weight:600}'
+    +'.active{color:#C0392B}.resolved{color:#1B7A56}.snoozed{color:#B45309}'
+    +'.footer{font-size:10px;color:#bbb;margin-top:32px;border-top:1px solid #eee;padding-top:12px;text-align:center}'
+    +'@media print{@page{margin:15mm}}';
+  w.document.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"/><title>'+title+'</title><style>'+css+'</style></head><body>'
+    +'<h1>'+title+'</h1>'
+    +'<div class="meta">تاريخ الإصدار: '+new Date().toLocaleDateString('ar-SA',{year:'numeric',month:'long',day:'numeric'})+' &nbsp;·&nbsp; نظام ضيوف — Dheuof Hotel</div>'
+    +bodyHTML
+    +'<div class="footer">صدر بواسطة نظام ضيوف — Dheuof Hotel Management System</div>'
+    +'</body></html>');
+  w.document.close(); w.focus();
+  setTimeout(function(){ w.print(); }, 700);
+}
+
+window.exportPDF = function() {
+  var sevMap = {high:'عالية',med:'متوسطة',low:'منخفضة',info:'معلوماتي'};
+  var stMap  = {active:'نشط',resolved:'محلول',snoozed:'مؤجّل'};
+  var high=0,med=0,low=0,info=0;
+  ALARMS.forEach(function(a){ if(a.sev==='high')high++; else if(a.sev==='med')med++; else if(a.sev==='low')low++; else info++; });
+  var summaryRows = '<tr><td>إجمالي التنبيهات</td><td>'+ALARMS.length+'</td></tr>'
+    +'<tr><td class="high">عالية الخطورة</td><td>'+high+'</td></tr>'
+    +'<tr><td class="med">متوسطة</td><td>'+med+'</td></tr>'
+    +'<tr><td class="low">منخفضة</td><td>'+low+'</td></tr>'
+    +'<tr><td class="info">معلوماتية</td><td>'+info+'</td></tr>';
+  var alarmRows = ALARMS.map(function(a){
+    var sevCls = a.sev; var stCls = a.status;
+    return '<tr><td class="'+sevCls+'">'+(sevMap[a.sev]||a.sev)+'</td>'
+      +'<td>'+a.title+'</td><td>'+a.src+'</td><td>'+a.target+'</td>'
+      +'<td class="'+stCls+'">'+(stMap[a.status]||a.status)+'</td>'
+      +'<td>'+a.time+'</td></tr>';
+  }).join('');
+  var html = '<h2>ملخص التنبيهات</h2><table><thead><tr><th>البيان</th><th>العدد</th></tr></thead><tbody>'+summaryRows+'</tbody></table>'
+    +'<h2>سجل الإنذارات الكامل</h2>'
+    +'<table><thead><tr><th>الأولوية</th><th>العنوان</th><th>المصدر</th><th>الجهة</th><th>الحالة</th><th>الوقت</th></tr></thead><tbody>'+alarmRows+'</tbody></table>';
+  printPDF('تقرير المفتاح الذكي — سجل الإنذارات', html);
+  toast('جارٍ فتح نافذة الطباعة… ✓', 'success');
 };
 
 /* ════════════════════════════════
