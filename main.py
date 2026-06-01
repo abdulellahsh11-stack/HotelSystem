@@ -1841,6 +1841,10 @@ def _serve_module(path: str) -> HTMLResponse:
             return HTMLResponse(f.read())
     return RedirectResponse("/")
 
+@app.get("/static/dheuof/modules/01-guests/checkin.html")
+async def redirect_checkin():
+    return RedirectResponse("/static/dheuof/modules/01-guests/index.html", status_code=301)
+
 @app.get("/dheuof",   response_class=HTMLResponse)
 @app.get("/guests-module", response_class=HTMLResponse)
 async def mod_guests():    return _serve_module("01-guests")
