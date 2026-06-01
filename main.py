@@ -79,6 +79,16 @@ async def lifespan(app_: FastAPI):
         run_v3_migrations(db)
     except Exception as e:
         log.warning(f"v3 migrations: {e}")
+    try:
+        from db.schema_v3 import run_staff_app_migrations
+        run_staff_app_migrations(db)
+    except Exception as e:
+        log.warning(f"staff_app migrations: {e}")
+    try:
+        from db.schema_v3 import run_security_hardening
+        run_security_hardening(db)
+    except Exception as e:
+        log.warning(f"security hardening migrations: {e}")
 
     # Load optional Month-3 services
     try:
@@ -202,14 +212,37 @@ def require_admin(request: Request):
 
 def get_client_session(request: Request) -> Optional[dict]:
     token = _get_client_token(request)
+    if not token:
+        return None
     with _lock:
-        return _client_sessions.get(token) if token else None
+        session = _client_sessions.get(token)
+    if session is None:
+        return None
+    # Finding #8: enforce server-side session TTL (8 hours)
+    try:
+        from db.security import session_is_expired, is_token_revoked
+        if session_is_expired(session):
+            with _lock:
+                _client_sessions.pop(token, None)
+            return None
+        # Finding #8: check revocation table
+        db = getattr(request.app.state, "db", None)
+        if db and is_token_revoked(db, token):
+            with _lock:
+                _client_sessions.pop(token, None)
+            return None
+    except Exception:
+        pass
+    return session
 
 
 def require_client(request: Request) -> dict:
     session = get_client_session(request)
     if not session:
         raise HTTPException(status_code=401, detail="غير مصرح")
+    # Finding #3: enforce non-empty client_id
+    if not session.get("client_id", "").strip():
+        raise HTTPException(status_code=401, detail="جلسة غير صالحة — client_id مفقود")
     return session
 
 
@@ -1357,8 +1390,17 @@ async def client_login(request: Request):
 async def client_logout(request: Request):
     token = _get_client_token(request)
     if token:
+        session = None
         with _lock:
-            _client_sessions.pop(token, None)
+            session = _client_sessions.pop(token, None)
+        # Finding #8: persist revocation so other servers/restarts honor it
+        try:
+            from db.security import revoke_token
+            db = request.app.state.db
+            cid = (session or {}).get("client_id", "")
+            revoke_token(db, token, cid, reason="logout")
+        except Exception:
+            pass
     response = RedirectResponse("/login", status_code=303)
     response.delete_cookie("client_token")
     return response
@@ -1552,11 +1594,13 @@ async def save_room(request: Request, session=Depends(require_client)):
 # ──────────────────────────────────────────────────────────────
 @app.get("/api/channels/status/{client_id}")
 async def channels_status(client_id: str, request: Request, session=Depends(require_client)):
+    # Finding #2 BOLA fix: ignore path client_id — always use session's client_id
+    cid = session["client_id"]
     channels = request.app.state.channels
     if not channels:
         return {"success": True, "data": {}}
     try:
-        status = channels.get_status(client_id)
+        status = channels.get_status(cid)
         return {"success": True, "data": status}
     except Exception as e:
         return JSONResponse({"success": False, "error": str(e)}, status_code=500)
@@ -1629,11 +1673,13 @@ async def mawasim_settings(request: Request, session=Depends(require_client)):
 
 @app.get("/api/channels/sync-log/{client_id}")
 async def sync_log(client_id: str, request: Request, session=Depends(require_client)):
+    # Finding #2 BOLA fix: always use session's client_id
+    cid = session["client_id"]
     db = request.app.state.db
     try:
         rows = db.execute(
             "SELECT * FROM channel_sync_log WHERE client_id=%s ORDER BY created_at DESC LIMIT 50",
-            (client_id,), fetch="all"
+            (cid,), fetch="all"
         )
         return {"success": True, "data": [dict(r) for r in (rows or [])]}
     except Exception as e:
@@ -1642,11 +1688,13 @@ async def sync_log(client_id: str, request: Request, session=Depends(require_cli
 
 @app.get("/api/channels/revenue-split/{client_id}")
 async def revenue_split(client_id: str, request: Request, days: int = 30, session=Depends(require_client)):
+    # Finding #2 BOLA fix: always use session's client_id
+    cid = session["client_id"]
     channels = request.app.state.channels
     if not channels:
         return {"success": True, "data": {}}
     try:
-        data = channels.get_revenue_split(client_id, days)
+        data = channels.get_revenue_split(cid, days)
         return {"success": True, "data": data}
     except Exception as e:
         return JSONResponse({"success": False, "error": str(e)}, status_code=500)
@@ -1657,14 +1705,16 @@ async def revenue_split(client_id: str, request: Request, days: int = 30, sessio
 # ──────────────────────────────────────────────────────────────
 @app.get("/api/pricing/rules/{client_id}")
 async def get_pricing_rules(client_id: str, request: Request, room_id: Optional[int] = None, session=Depends(require_client)):
+    # Finding #2 BOLA fix: always use session's client_id
+    cid = session["client_id"]
     pricing = request.app.state.pricing
     if not pricing:
         return {"success": True, "data": []}
     try:
         if room_id:
-            data = pricing.get_or_save_rules(client_id, room_id)
+            data = pricing.get_or_save_rules(cid, room_id)
         else:
-            data = pricing._get_rooms_with_rules(client_id)
+            data = pricing._get_rooms_with_rules(cid)
         return {"success": True, "data": data}
     except Exception as e:
         return JSONResponse({"success": False, "error": str(e)}, status_code=500)
@@ -1676,7 +1726,8 @@ async def save_pricing_rules(request: Request, session=Depends(require_client)):
     pricing = request.app.state.pricing
     if not pricing:
         return JSONResponse({"success": False, "error": "خدمة التسعير غير متاحة"}, status_code=503)
-    cid = data.get("client_id") or session["client_id"]
+    # Finding #2 BOLA fix: never accept client_id from request body
+    cid = session["client_id"]
     room_id = data.get("room_id")
     if not room_id:
         return JSONResponse({"success": False, "error": "room_id مطلوب"}, status_code=400)
@@ -1689,13 +1740,15 @@ async def save_pricing_rules(request: Request, session=Depends(require_client)):
 
 @app.get("/api/pricing/calendar/{client_id}")
 async def pricing_calendar(client_id: str, request: Request, room_id: int = 0, days: int = 30, session=Depends(require_client)):
+    # Finding #2 BOLA fix: always use session's client_id
+    cid = session["client_id"]
     pricing = request.app.state.pricing
     if not pricing:
         return {"success": True, "data": []}
     if not room_id:
         return JSONResponse({"success": False, "error": "room_id مطلوب"}, status_code=400)
     try:
-        data = pricing.get_pricing_calendar(client_id, room_id, days)
+        data = pricing.get_pricing_calendar(cid, room_id, days)
         return {"success": True, "data": data}
     except Exception as e:
         return JSONResponse({"success": False, "error": str(e)}, status_code=500)
