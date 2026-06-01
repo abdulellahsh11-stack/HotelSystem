@@ -104,7 +104,7 @@
 
 /* ── Guests view ────────────────────────────────────────────────── */
 .guests-tbl{background:var(--white);border:1px solid var(--hairline);border-radius:14px;overflow:hidden}
-.g-tr{display:grid;grid-template-columns:48px 2fr 1fr 1fr 1.2fr 120px;gap:12px;align-items:center;padding:13px 20px;border-top:1px solid var(--hairline);font-size:13px}
+.g-tr{display:grid;grid-template-columns:48px 2fr 1fr 1fr 1.2fr 280px;gap:12px;align-items:center;padding:13px 20px;border-top:1px solid var(--hairline);font-size:13px}
 .g-tr.hd{background:var(--paper-tint);border-top:none;font-size:11px;color:var(--fg-3);font-weight:600;letter-spacing:.04em}
 .alert-tag{display:inline-flex;align-items:center;gap:4px;background:var(--gold-100);color:var(--gold-800);border:1px solid var(--gold-200);font-size:10px;font-weight:600;padding:2px 7px;border-radius:5px;margin-top:3px}
 
@@ -573,9 +573,16 @@
       <div class="ci-layout">
         <!-- Arrivals list -->
         <div class="ci-arrivals">
-          <div class="hd">
-            <div class="t">الوصول المتوقع اليوم</div>
-            <div class="s">Today's arrivals — sorted by ETA</div>
+          <div class="hd" style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+            <div>
+              <div class="t">الوصول المتوقع اليوم</div>
+              <div class="s">Today's arrivals — sorted by ETA</div>
+            </div>
+            <button id="group-ci-btn" class="btn-sm sec" onclick="toggleGroupCI()" style="font-size:11px;flex-shrink:0">تسجيل جماعي</button>
+          </div>
+          <div id="group-ci-bar" style="display:none;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--brand-50);border-radius:0;margin-bottom:0;border-bottom:1px solid var(--brand-200)">
+            <span id="group-ci-count" style="font-size:13px;color:var(--brand-700);font-weight:600">٠ ضيف محدد</span>
+            <button class="btn-sm primary" onclick="doGroupCheckin()">تسجيل دخول الجميع</button>
           </div>
           <div id="ci-list"></div>
         </div>
@@ -969,7 +976,18 @@ function renderCIList(filter){
   var el = document.getElementById('ci-list'); if(!el) return;
   el.innerHTML = list.map(function(r){
     var done = r.status==='done';
-    return '<div class="ci-arr-row'+(done?' is-done':'')+(ciSelected&&ciSelected.id===r.id?' selected':'')+'" onclick="ciSelectGuest(RESERVATIONS.find(function(x){return x.id==='+r.id+'}))">'
+    var cbHtml = '';
+    if(_groupCIMode && !done){
+      var chk = _groupSelected.indexOf(r.id)!==-1;
+      cbHtml = '<input type="checkbox" style="width:16px;height:16px;accent-color:var(--brand-700);margin-inline-end:4px;flex-shrink:0;"'
+        +(chk?' checked':'')
+        +' onchange="toggleGroupSelect('+r.id+')" onclick="event.stopPropagation()"/>';
+    }
+    var clickFn = _groupCIMode && !done
+      ? 'toggleGroupSelect('+r.id+')'
+      : 'ciSelectGuest(RESERVATIONS.find(function(x){return x.id==='+r.id+'}))';
+    return '<div class="ci-arr-row'+(done?' is-done':'')+(ciSelected&&ciSelected.id===r.id?' selected':'')+'" onclick="'+clickFn+'" style="'+(_groupCIMode&&!done?'cursor:default;':'')+(ciSelected&&ciSelected.id===r.id?'border-right:3px solid var(--brand-700)':'')+'">'
+      +cbHtml
       +'<div class="ci-arr-av'+(r.vip?' vip':'')+'">'+r.init+'</div>'
       +'<div>'
         +'<div class="ci-arr-nm">'+r.name+(r.vip?' <span style="background:var(--gold-500);color:var(--brand-900);font-size:9px;padding:2px 5px;border-radius:3px;font-weight:700;vertical-align:middle">VIP</span>':' ')+'</div>'
@@ -1031,7 +1049,10 @@ window.ciStep3 = function(){
       +'<div><div class="k">تاريخ المغادرة</div><div class="v">'+r.checkout+'</div></div>'
       +'<div><div class="k">قناة الحجز</div><div class="v">'+r.channel+'</div></div>'
     +'</div>'
-    +'<a href="https://wa.me/?text='+waMsg+'" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:#25D366;color:var(--paper);border-radius:8px;padding:10px 20px;font-family:var(--font-ar);font-size:13px;font-weight:600;text-decoration:none;margin-top:4px">📱 إرسال تأكيد للضيف عبر واتساب</a>'
+    +'<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:4px">'
+    +'<a href="https://wa.me/?text='+waMsg+'" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:#25D366;color:var(--paper);border-radius:8px;padding:10px 20px;font-family:var(--font-ar);font-size:13px;font-weight:600;text-decoration:none">📱 إرسال تأكيد للضيف عبر واتساب</a>'
+    +'<button class="btn-sm sec" onclick="openSelfCI(\''+(r.phone||'')+'\',\''+r.name+'\',\''+r.room+'\')" style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.35);color:var(--paper);padding:10px 20px;font-size:13px">🔗 رابط تسجيل ذاتي</button>'
+    +'</div>'
     +'</div>';
   document.getElementById('ci-step1').style.display='none';
   document.getElementById('ci-step2').style.display='none';
@@ -1080,8 +1101,10 @@ function renderGuests(){
       +'<div style="font-weight:600">'+g.room+' <span style="font-weight:400;font-size:11px;color:var(--fg-3)">'+g.type+'</span></div>'
       +'<div style="font-family:var(--font-mono);font-size:12px">'+g.since+'</div>'
       +'<div style="font-family:var(--font-mono);font-size:12px">'+g.until+'</div>'
-      +'<div style="display:flex;gap:6px"><button class="btn-sm sec">تفاصيل</button>'
-      +'<button class="btn-sm sec" style="color:var(--warning-700);border-color:var(--warning-200)" onclick="doCheckout('+g.id+')">خروج 🚪</button></div>'
+      +'<div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn-sm sec">تفاصيل</button>'
+      +'<a class="btn-sm sec" href="/static/dheuof/modules/01-guests/portal.html?name='+encodeURIComponent(g.name)+'&room='+encodeURIComponent(g.room)+'" target="_blank" style="text-decoration:none;color:var(--brand-700);border-color:var(--brand-200)">🌐 بوابة النزيل</a>'
+      +'<button class="btn-sm sec" style="color:var(--brand-700);border-color:var(--brand-200)" onclick="openExpressCheckout('+g.id+')">تسجيل خروج سريع</button>'
+      +'<button class="btn-sm sec" style="color:var(--warning-700);border-color:var(--warning-200)" onclick="openLateCheckout('+g.id+')">مغادرة متأخرة</button></div>'
       +'</div>';
   }).join('');
 }
@@ -1510,6 +1533,136 @@ renderCalendar();
 })();
 showView('dashboard'); // default view = dashboard
 
+/* ════════════════════════════════════════
+   FEATURE 4: GROUP CHECK-IN MODE
+════════════════════════════════════════ */
+var _groupCIMode = false;
+var _groupSelected = [];
+window.toggleGroupCI = function(){
+  _groupCIMode = !_groupCIMode;
+  _groupSelected = [];
+  var btn = document.getElementById('group-ci-btn');
+  if(btn){ btn.textContent = _groupCIMode ? 'إلغاء الجماعي' : 'تسجيل جماعي'; btn.className = _groupCIMode ? 'btn-sm primary' : 'btn-sm sec'; }
+  var bar = document.getElementById('group-ci-bar');
+  if(bar) bar.style.display = _groupCIMode ? 'flex' : 'none';
+  renderCIList('');
+};
+window.toggleGroupSelect = function(rid){
+  var idx = _groupSelected.indexOf(rid);
+  if(idx === -1) _groupSelected.push(rid);
+  else _groupSelected.splice(idx,1);
+  var cnt = document.getElementById('group-ci-count');
+  if(cnt) cnt.textContent = _groupSelected.length+' ضيف محدد';
+};
+window.doGroupCheckin = function(){
+  if(!_groupSelected.length) return;
+  toast('تم تسجيل دخول '+_groupSelected.length+' ضيوف دفعةً واحدة');
+  _groupSelected = [];
+  toggleGroupCI();
+};
+
+/* ════════════════════════════════════════
+   FEATURE 1: EXPRESS CHECKOUT
+════════════════════════════════════════ */
+var _ecoGuest = null;
+window.openExpressCheckout = function(gid){
+  var g = GUESTS.find(function(x){return x.id===gid;});
+  if(!g) return;
+  _ecoGuest = g;
+  var total = g.balanceLeft || '٠';
+  document.getElementById('eco-title').textContent = 'تسجيل الخروج — '+g.name+' · الغرفة '+g.room;
+  document.getElementById('eco-details').innerHTML =
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px">'
+    +'<div><div style="color:var(--fg-3);font-size:11px">النزيل</div><div style="font-weight:600">'+g.name+'</div></div>'
+    +'<div><div style="color:var(--fg-3);font-size:11px">الغرفة</div><div style="font-weight:600">'+g.room+'</div></div>'
+    +'<div><div style="color:var(--fg-3);font-size:11px">الرصيد المتبقي</div><div style="font-weight:700;color:var(--brand-700)">'+total+' ر.س</div></div>'
+    +'<div><div style="color:var(--fg-3);font-size:11px">وقت المغادرة</div><div style="font-weight:600">الآن</div></div>'
+    +'</div>'
+    +'<div style="margin-top:14px;padding:12px;background:var(--brand-50);border-radius:8px;font-size:12px;color:var(--fg-2)">سيتم تحرير الغرفة '+g.room+' وإرسالها لقائمة التنظيف تلقائياً.</div>';
+  var modal = document.getElementById('express-checkout-modal');
+  modal.style.display='flex';
+};
+window.closeExpressCheckout = function(){ document.getElementById('express-checkout-modal').style.display='none'; };
+window.confirmExpressCheckout = function(){
+  if(!_ecoGuest) return;
+  toast('تم تسجيل خروج '+_ecoGuest.name+' — الغرفة '+_ecoGuest.room+' قيد التنظيف');
+  var name = _ecoGuest.name;
+  var phone = _ecoGuest.phone || '';
+  closeExpressCheckout();
+  openSatisfactionSurvey(name, phone);
+};
+
+/* ════════════════════════════════════════
+   FEATURE 2: LATE CHECKOUT
+════════════════════════════════════════ */
+var _lcoGuest = null;
+window.openLateCheckout = function(gid){
+  var g = GUESTS.find(function(x){return x.id===gid;});
+  if(!g) return;
+  _lcoGuest = g;
+  document.getElementById('lco-guest-name').textContent = g.name+' — الغرفة '+g.room;
+  document.getElementById('late-checkout-modal').style.display='flex';
+};
+window.closeLateCheckout = function(){ document.getElementById('late-checkout-modal').style.display='none'; };
+window.confirmLateCheckout = function(){
+  if(!_lcoGuest) return;
+  var t = document.getElementById('lco-time').value;
+  toast('تم تحديد مغادرة '+_lcoGuest.name+' في الساعة '+t);
+  closeLateCheckout();
+};
+document.addEventListener('DOMContentLoaded',function(){
+  var ti = document.getElementById('lco-time');
+  if(ti) ti.addEventListener('input',function(){
+    var val = this.value;
+    var base = 12;
+    var parts = val.split(':');
+    var h = parseInt(parts[0],10);
+    var extra = Math.max(0, h - base);
+    var fee = extra * 75;
+    document.getElementById('lco-fee-display').textContent = extra > 0 ? 'رسوم التأخير: '+fee+' ر.س ('+extra+' ساعة × ٧٥ ر.س)' : 'لا توجد رسوم — في الوقت المحدد';
+  });
+});
+
+/* ════════════════════════════════════════
+   FEATURE 3: SELF CHECK-IN QR / LINK
+════════════════════════════════════════ */
+window.openSelfCI = function(phone, name, room){
+  var token = Math.random().toString(36).substr(2,8).toUpperCase();
+  var link = 'https://www.dheuof.com/self-checkin?token='+token+'&room='+room;
+  document.getElementById('self-ci-link').textContent = link;
+  var msg = encodeURIComponent('مرحباً '+name+'،\nيمكنك تسجيل وصولك مسبقاً عبر الرابط:\n'+link);
+  document.getElementById('self-ci-wa').href = phone ? 'https://wa.me/'+phone+'?text='+msg : '#';
+  document.getElementById('self-ci-modal').style.display='flex';
+};
+window.copySelfCILink = function(){
+  var link = document.getElementById('self-ci-link').textContent;
+  navigator.clipboard.writeText(link).catch(function(){});
+  toast('تم نسخ الرابط');
+};
+
+/* ════════════════════════════════════════
+   FEATURE 5: SATISFACTION SURVEY
+════════════════════════════════════════ */
+var _satRating = 0;
+var _satPhone = '';
+window.setSatRating = function(n){
+  _satRating = n;
+  document.querySelectorAll('.sat-star').forEach(function(s,i){
+    s.style.opacity = i < n ? '1' : '.3';
+    s.style.color = i < n ? '#F59E0B' : '';
+  });
+};
+window.openSatisfactionSurvey = function(name, phone){
+  _satPhone = phone||'';
+  _satRating = 0;
+  document.getElementById('sat-guest-name').textContent = 'كيف كانت إقامة '+name+'؟';
+  document.querySelectorAll('.sat-star').forEach(function(s){ s.style.opacity='.4'; s.style.color=''; });
+  document.getElementById('sat-comment').value = '';
+  var msg = encodeURIComponent('مرحباً '+name+'،\nشكراً لإقامتكم معنا! نودّ معرفة رأيكم:\n١- كيف تقيّم إقامتك من ١ إلى ٥؟\n٢- ما الذي يمكننا تحسينه؟\nنتطلع لاستضافتكم مجدداً');
+  document.getElementById('sat-wa-btn').href = _satPhone ? 'https://wa.me/'+_satPhone+'?text='+msg : '#';
+  document.getElementById('satisfaction-modal').style.display='flex';
+};
+
 })();
 </script>
 
@@ -1627,6 +1780,70 @@ showView('dashboard'); // default view = dashboard
     <div class="cfg-foot">
       <button class="btn-sm primary" style="min-width:120px" onclick="saveRoomSettings()">💾 حفظ وتطبيق</button>
       <button class="btn-sm sec" onclick="closeRoomSettings()">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ EXPRESS CHECKOUT MODAL ═════════════════════════════════ -->
+<div id="express-checkout-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:900;align-items:center;justify-content:center">
+  <div style="background:var(--paper);border-radius:16px;padding:28px 32px;width:min(480px,95vw);font-family:var(--font-ar)" dir="rtl">
+    <h3 id="eco-title" style="margin:0 0 18px;color:var(--brand-900)">تسجيل الخروج — الغرفة XXX</h3>
+    <div id="eco-details"></div>
+    <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end">
+      <button class="btn-sm sec" onclick="closeExpressCheckout()">إلغاء</button>
+      <button class="btn-sm primary" onclick="confirmExpressCheckout()">تأكيد الخروج</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ LATE CHECKOUT MODAL ════════════════════════════════════ -->
+<div id="late-checkout-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:900;align-items:center;justify-content:center">
+  <div style="background:var(--paper);border-radius:16px;padding:28px 32px;width:min(420px,95vw);font-family:var(--font-ar)" dir="rtl">
+    <h3 style="margin:0 0 16px;color:var(--brand-900)">إدارة المغادرة المتأخرة</h3>
+    <p id="lco-guest-name" style="font-size:13px;color:var(--fg-2);margin-bottom:16px"></p>
+    <label style="font-size:12px;color:var(--fg-3);display:block;margin-bottom:6px">وقت المغادرة الجديد</label>
+    <input type="time" id="lco-time" value="14:00" style="width:100%;padding:9px 12px;border:1.5px solid var(--hairline);border-radius:8px;font-family:var(--font-en);font-size:15px;margin-bottom:12px;box-sizing:border-box"/>
+    <div id="lco-fee-display" style="padding:12px;background:#FFFBEB;border-radius:8px;font-size:13px;font-weight:600;color:#92400E;text-align:center;margin-bottom:16px">رسوم التأخير: يُحسب عند الاختيار</div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn-sm sec" onclick="closeLateCheckout()">إلغاء</button>
+      <button class="btn-sm primary" onclick="confirmLateCheckout()">تطبيق</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SELF CHECK-IN LINK MODAL ══════════════════════════════ -->
+<div id="self-ci-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:900;align-items:center;justify-content:center">
+  <div style="background:var(--paper);border-radius:16px;padding:28px 32px;width:min(400px,95vw);font-family:var(--font-ar);text-align:center" dir="rtl">
+    <h3 style="margin:0 0 8px;color:var(--brand-900)">تسجيل الوصول الذاتي</h3>
+    <p style="font-size:12px;color:var(--fg-3);margin-bottom:20px">أرسل هذا الرابط للنزيل قبل الوصول — يملأ بياناته مسبقاً</p>
+    <div style="background:var(--brand-50);border:2px solid var(--brand-200);border-radius:12px;padding:20px;margin-bottom:16px">
+      <div style="font-family:var(--font-mono,monospace);font-size:11px;color:var(--brand-700);word-break:break-all" id="self-ci-link">https://www.dheuof.com/self-checkin?token=XXXX</div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:center;margin-bottom:14px">
+      <button class="btn-sm primary" onclick="copySelfCILink()">نسخ الرابط</button>
+      <a id="self-ci-wa" class="btn-sm" href="#" target="_blank" style="background:#25D366;color:white;border:none;display:inline-flex;align-items:center;gap:5px;text-decoration:none;padding:7px 14px;border-radius:6px;font-family:var(--font-ar);font-size:12px;font-weight:600">واتساب</a>
+    </div>
+    <button class="btn-sm sec" onclick="document.getElementById('self-ci-modal').style.display='none'">إغلاق</button>
+  </div>
+</div>
+
+<!-- ═══ SATISFACTION SURVEY MODAL ═════════════════════════════ -->
+<div id="satisfaction-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:900;align-items:center;justify-content:center">
+  <div style="background:var(--paper);border-radius:16px;padding:32px;width:min(440px,95vw);font-family:var(--font-ar);text-align:center" dir="rtl">
+    <div style="font-size:36px;margin-bottom:10px">&#11088;</div>
+    <h3 style="margin:0 0 6px;color:var(--brand-900)" id="sat-guest-name">كيف كانت إقامة الضيف؟</h3>
+    <p style="font-size:12px;color:var(--fg-3);margin-bottom:20px">أرسل استبيان رضا مكون من سؤالين عبر واتساب</p>
+    <div style="display:flex;justify-content:center;gap:8px;margin-bottom:16px" id="sat-stars">
+      <button class="sat-star" onclick="setSatRating(1)" style="font-size:28px;background:none;border:none;cursor:pointer;opacity:.4">&#9733;</button>
+      <button class="sat-star" onclick="setSatRating(2)" style="font-size:28px;background:none;border:none;cursor:pointer;opacity:.4">&#9733;</button>
+      <button class="sat-star" onclick="setSatRating(3)" style="font-size:28px;background:none;border:none;cursor:pointer;opacity:.4">&#9733;</button>
+      <button class="sat-star" onclick="setSatRating(4)" style="font-size:28px;background:none;border:none;cursor:pointer;opacity:.4">&#9733;</button>
+      <button class="sat-star" onclick="setSatRating(5)" style="font-size:28px;background:none;border:none;cursor:pointer;opacity:.4">&#9733;</button>
+    </div>
+    <textarea id="sat-comment" placeholder="ملاحظات إضافية (اختياري)..." rows="3" style="width:100%;padding:10px 12px;border:1.5px solid var(--hairline);border-radius:8px;font-family:var(--font-ar);font-size:13px;resize:none;margin-bottom:14px;box-sizing:border-box"></textarea>
+    <div style="display:flex;gap:8px;justify-content:center">
+      <button class="btn-sm sec" onclick="document.getElementById('satisfaction-modal').style.display='none'">تخطي</button>
+      <a id="sat-wa-btn" class="btn-sm" style="background:#25D366;color:white;border:none;text-decoration:none;padding:7px 14px;border-radius:6px;font-family:var(--font-ar);font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:5px" href="#" target="_blank">إرسال الاستبيان</a>
     </div>
   </div>
 </div>

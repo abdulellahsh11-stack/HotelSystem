@@ -565,6 +565,111 @@ body { background: var(--paper-tint); }
             <div class="m">Foodics · Marn · Oracle · Book4Time · REST</div>
           </button>
         </div>
+        <!-- ── Table Management ── -->
+        <div class="dh-card" style="margin-top:20px" id="table-mgmt">
+          <div class="dh-card-head" style="padding:16px 20px;display:flex;align-items:center;justify-content:space-between">
+            <div>
+              <div style="font-family:var(--font-ar);font-size:15px;font-weight:700;color:var(--ink-900)">إدارة الطاولات</div>
+              <div style="font-size:11px;color:var(--fg-3);margin-top:2px">Table Management — المطعم والكافيه</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <span style="background:#DCFCE7;color:#166534;font-size:11px;padding:3px 10px;border-radius:6px">٨ طاولات مشغولة</span>
+              <span style="background:#FEF3C7;color:#92400E;font-size:11px;padding:3px 10px;border-radius:6px">٤ خالية</span>
+            </div>
+          </div>
+          <div style="padding:0 16px 20px;display:grid;grid-template-columns:repeat(6,1fr);gap:10px" id="tables-grid">
+            <!-- Tables rendered by JS -->
+          </div>
+        </div>
+
+        <!-- ── Kitchen Display System ── -->
+        <div class="dh-card" style="margin-top:16px">
+          <div class="dh-card-head" style="padding:16px 20px;display:flex;align-items:center;justify-content:space-between">
+            <div>
+              <div style="font-family:var(--font-ar);font-size:15px;font-weight:700;color:var(--ink-900)">شاشة المطبخ — KDS</div>
+              <div style="font-size:11px;color:var(--fg-3);margin-top:2px">Kitchen Display System — الطلبات قيد التحضير</div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <span id="kds-pending-badge" style="background:#FEF3C7;color:#92400E;font-size:11px;padding:3px 10px;border-radius:6px;font-weight:600">٣ طلبات معلّقة</span>
+            </div>
+          </div>
+          <div style="padding:0 16px 16px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px" id="kds-grid">
+            <div style="border:1.5px solid #FDE68A;border-radius:10px;padding:14px;background:#FFFBEB">
+              <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+                <span style="font-weight:700;color:#92400E;font-size:13px">طاولة ٢</span>
+                <span style="font-size:10px;color:#D97706;background:#FEF3C7;padding:2px 8px;border-radius:4px">١٥ دقيقة</span>
+              </div>
+              <div style="font-size:12px;color:var(--ink-900);margin-bottom:10px">
+                <div style="margin-bottom:4px">١× برجر دجاج مع بطاطس</div>
+                <div style="margin-bottom:4px">٢× عصير برتقال</div>
+                <div style="color:var(--fg-3);font-size:11px">ملاحظة: بلا بصل</div>
+              </div>
+              <button onclick="markKDSReady(this)" style="width:100%;padding:8px;background:var(--brand-700);color:var(--paper);border:none;border-radius:6px;font-family:var(--font-ar);font-size:12px;font-weight:600;cursor:pointer">✓ جاهز للتقديم</button>
+            </div>
+            <div style="border:1.5px solid #FCA5A5;border-radius:10px;padding:14px;background:#FEF2F2">
+              <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+                <span style="font-weight:700;color:#991B1B;font-size:13px">غرفة ٣٠٧</span>
+                <span style="font-size:10px;color:#DC2626;background:#FEE2E2;padding:2px 8px;border-radius:4px">٢٨ دقيقة !</span>
+              </div>
+              <div style="font-size:12px;color:var(--ink-900);margin-bottom:10px">
+                <div style="margin-bottom:4px">١× شاورما لحم</div>
+                <div style="margin-bottom:4px">١× سلطة خضراء</div>
+                <div style="margin-bottom:4px">٢× قهوة سوداء</div>
+                <div style="color:#DC2626;font-size:11px">⚠ أولوية عالية</div>
+              </div>
+              <button onclick="markKDSReady(this)" style="width:100%;padding:8px;background:#DC2626;color:var(--paper);border:none;border-radius:6px;font-family:var(--font-ar);font-size:12px;font-weight:600;cursor:pointer">✓ جاهز — أرسل للغرفة</button>
+            </div>
+            <div style="border:1.5px solid var(--hairline);border-radius:10px;padding:14px;background:var(--brand-50)">
+              <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+                <span style="font-weight:700;color:var(--brand-700);font-size:13px">طاولة ١٠</span>
+                <span style="font-size:10px;color:var(--fg-2);background:var(--hairline);padding:2px 8px;border-radius:4px">٥ دقائق</span>
+              </div>
+              <div style="font-size:12px;color:var(--ink-900);margin-bottom:10px">
+                <div style="margin-bottom:4px">٥× كريم بروليه</div>
+                <div style="margin-bottom:4px">٣× قهوة عربية</div>
+              </div>
+              <button onclick="markKDSReady(this)" style="width:100%;padding:8px;background:var(--brand-700);color:var(--paper);border:none;border-radius:6px;font-family:var(--font-ar);font-size:12px;font-weight:600;cursor:pointer">✓ جاهز للتقديم</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Shift Management ── -->
+        <div class="dh-card" style="margin-top:16px">
+          <div class="dh-card-head" style="padding:16px 20px;display:flex;align-items:center;justify-content:space-between">
+            <div>
+              <div style="font-family:var(--font-ar);font-size:15px;font-weight:700;color:var(--ink-900)">إدارة الوردية</div>
+              <div style="font-size:11px;color:var(--fg-3);margin-top:2px">Shift Management — الوردية الصباحية ٦ص–٢م</div>
+            </div>
+            <span style="background:#DCFCE7;color:#166534;font-size:12px;font-weight:600;padding:5px 12px;border-radius:8px">● الوردية نشطة منذ ٦:٠٠ص</span>
+          </div>
+          <div style="padding:0 16px 16px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px">
+            <div style="padding:14px;border:1px solid var(--hairline);border-radius:8px;text-align:center">
+              <div style="font-size:11px;color:var(--fg-3);margin-bottom:4px">إيراد الوردية</div>
+              <div style="font-size:20px;font-weight:700;color:var(--brand-700);font-family:var(--font-en)">8,240</div>
+              <div style="font-size:10px;color:var(--fg-3)">ر.س</div>
+            </div>
+            <div style="padding:14px;border:1px solid var(--hairline);border-radius:8px;text-align:center">
+              <div style="font-size:11px;color:var(--fg-3);margin-bottom:4px">عدد الفواتير</div>
+              <div style="font-size:20px;font-weight:700;color:var(--ink-900);font-family:var(--font-en)">34</div>
+              <div style="font-size:10px;color:var(--fg-3)">فاتورة</div>
+            </div>
+            <div style="padding:14px;border:1px solid var(--hairline);border-radius:8px;text-align:center">
+              <div style="font-size:11px;color:var(--fg-3);margin-bottom:4px">الكاشير</div>
+              <div style="font-size:14px;font-weight:700;color:var(--ink-900)">أحمد محمد</div>
+              <div style="font-size:10px;color:var(--fg-3)">وردية صباحية</div>
+            </div>
+            <div style="padding:14px;border:1px solid var(--hairline);border-radius:8px;text-align:center">
+              <div style="font-size:11px;color:var(--fg-3);margin-bottom:4px">الفرق النقدي</div>
+              <div style="font-size:20px;font-weight:700;color:#16A34A;font-family:var(--font-en)">+0</div>
+              <div style="font-size:10px;color:#16A34A">متطابق ✓</div>
+            </div>
+          </div>
+          <div style="padding:0 16px 16px;display:flex;gap:10px">
+            <button onclick="printShiftReport()" style="padding:9px 18px;border:1.5px solid var(--brand-200);background:var(--brand-50);color:var(--brand-700);border-radius:6px;font-family:var(--font-ar);font-size:13px;font-weight:600;cursor:pointer">🖨 طباعة تقرير الوردية</button>
+            <button onclick="closeShift()" style="padding:9px 18px;border:none;background:#DC2626;color:var(--paper);border-radius:6px;font-family:var(--font-ar);font-size:13px;font-weight:600;cursor:pointer">إغلاق الوردية</button>
+          </div>
+        </div>
+
       </div>
 
       <!-- ═══ TAB 2: Transactions ═══ -->
@@ -804,6 +909,54 @@ body { background: var(--paper-tint); }
       </div>
 
     </main>
+  </div>
+</div>
+
+<!-- ── Split Bill Modal ── -->
+<div id="split-bill-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:900;align-items:center;justify-content:center">
+  <div style="background:var(--paper);border-radius:16px;padding:28px 32px;width:min(460px,95vw);font-family:var(--font-ar)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <h3 id="split-title" style="margin:0;color:var(--brand-900);font-size:16px">تقسيم الفاتورة — طاولة ١</h3>
+      <button onclick="document.getElementById('split-bill-modal').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer">✕</button>
+    </div>
+    <div style="padding:12px;background:var(--brand-50);border-radius:8px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:13px;color:var(--fg-2)">الإجمالي</span>
+      <span id="split-total" style="font-size:18px;font-weight:700;color:var(--brand-700);font-family:var(--font-en)">0 ر.س</span>
+    </div>
+    <div style="margin-bottom:14px">
+      <label style="font-size:12px;color:var(--fg-3);display:block;margin-bottom:6px">طريقة التقسيم</label>
+      <div style="display:flex;gap:8px">
+        <button id="split-equal-btn" onclick="setSplitMode('equal')" class="split-mode-btn" style="flex:1;padding:9px;border-radius:6px;border:1.5px solid var(--brand-700);background:var(--brand-700);color:var(--paper);font-family:var(--font-ar);font-size:12px;cursor:pointer">تقسيم متساوٍ</button>
+        <button id="split-custom-btn" onclick="setSplitMode('custom')" class="split-mode-btn" style="flex:1;padding:9px;border-radius:6px;border:1.5px solid var(--hairline);background:var(--paper);color:var(--ink-900);font-family:var(--font-ar);font-size:12px;cursor:pointer">تقسيم مخصص</button>
+        <button id="split-room-btn" onclick="setSplitMode('room')" class="split-mode-btn" style="flex:1;padding:9px;border-radius:6px;border:1.5px solid var(--hairline);background:var(--paper);color:var(--ink-900);font-family:var(--font-ar);font-size:12px;cursor:pointer">إضافة للغرفة</button>
+      </div>
+    </div>
+    <div id="split-equal-section" style="margin-bottom:14px">
+      <label style="font-size:12px;color:var(--fg-3);display:block;margin-bottom:6px">عدد الأشخاص</label>
+      <div style="display:flex;align-items:center;gap:10px">
+        <button onclick="adjustSplitPeople(-1)" style="width:36px;height:36px;border-radius:50%;border:1.5px solid var(--hairline);background:var(--paper);font-size:18px;cursor:pointer">−</button>
+        <span id="split-people-count" style="font-size:20px;font-weight:700;color:var(--brand-900);min-width:30px;text-align:center">2</span>
+        <button onclick="adjustSplitPeople(1)" style="width:36px;height:36px;border-radius:50%;border:1.5px solid var(--brand-700);background:var(--brand-700);color:var(--paper);font-size:18px;cursor:pointer">+</button>
+        <div style="flex:1;padding:10px;background:var(--brand-50);border-radius:8px;text-align:center">
+          <div style="font-size:11px;color:var(--fg-3)">نصيب كل شخص</div>
+          <div id="split-per-person" style="font-size:16px;font-weight:700;color:var(--brand-700);font-family:var(--font-en)">0 ر.س</div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-bottom:16px">
+      <label style="font-size:12px;color:var(--fg-3);display:block;margin-bottom:6px">إضافة إكرامية (Tip)</label>
+      <div style="display:flex;gap:8px">
+        <button onclick="setTip(0)"  style="flex:1;padding:7px;border-radius:6px;border:1.5px solid var(--hairline);background:var(--paper);font-family:var(--font-ar);font-size:12px;cursor:pointer">بلا</button>
+        <button onclick="setTip(5)"  style="flex:1;padding:7px;border-radius:6px;border:1.5px solid var(--hairline);background:var(--paper);font-family:var(--font-ar);font-size:12px;cursor:pointer">٥٪</button>
+        <button onclick="setTip(10)" style="flex:1;padding:7px;border-radius:6px;border:1.5px solid var(--hairline);background:var(--paper);font-family:var(--font-ar);font-size:12px;cursor:pointer">١٠٪</button>
+        <button onclick="setTip(15)" style="flex:1;padding:7px;border-radius:6px;border:1.5px solid var(--hairline);background:var(--paper);font-family:var(--font-ar);font-size:12px;cursor:pointer">١٥٪</button>
+      </div>
+    </div>
+    <div id="tip-display" style="display:none;padding:8px 12px;background:#FEF3C7;border-radius:6px;font-size:12px;color:#92400E;margin-bottom:12px;text-align:center"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button onclick="document.getElementById('split-bill-modal').style.display='none'" style="padding:9px 20px;border-radius:6px;border:1px solid var(--hairline);background:var(--paper);font-family:var(--font-ar);cursor:pointer">إلغاء</button>
+      <button onclick="confirmSplitBill()" style="padding:9px 20px;border-radius:6px;border:none;background:var(--brand-700);color:var(--paper);font-family:var(--font-ar);font-weight:600;cursor:pointer">✓ تأكيد ومعالجة الدفع</button>
+    </div>
   </div>
 </div>
 
@@ -1349,6 +1502,157 @@ setTimeout(function(){
 <script>
 renderVibrantHero({ icon:'🏧', num:'07', title:'نقاط البيع', en:'POS · MADA · Apple Pay', sub:'٦ أجهزة متصلة، إقفال يومي تلقائي', badges:[{v:'٢٤٨',l:'حركة اليوم'},{v:'٦',l:'جهاز نشط'}] });
 renderTierBar({ exc:186, good:42, low:14, bad:6 });
+</script>
+
+<!-- ══ Feature 1-4: Table Management, Split Bill, KDS, Shift Management ══ -->
+<script>
+(function(){
+'use strict';
+
+/* ── Feature 1: Table Management ── */
+var TABLE_DATA = [
+  {n:1,  status:'occupied', guests:4, waiter:'محمد', time:'45 دقيقة',   amount:320},
+  {n:2,  status:'occupied', guests:2, waiter:'سارة', time:'٢٠ دقيقة',   amount:185},
+  {n:3,  status:'free',     guests:0, waiter:'',     time:'',            amount:0},
+  {n:4,  status:'occupied', guests:6, waiter:'عمر',  time:'١:١٠ ساعة',  amount:580},
+  {n:5,  status:'free',     guests:0, waiter:'',     time:'',            amount:0},
+  {n:6,  status:'occupied', guests:3, waiter:'نورة', time:'٣٥ دقيقة',   amount:240},
+  {n:7,  status:'reserved', guests:4, waiter:'',     time:'٧:٣٠م',      amount:0},
+  {n:8,  status:'occupied', guests:2, waiter:'محمد', time:'١٥ دقيقة',   amount:95},
+  {n:9,  status:'free',     guests:0, waiter:'',     time:'',            amount:0},
+  {n:10, status:'occupied', guests:5, waiter:'سارة', time:'٥٠ دقيقة',   amount:440},
+  {n:11, status:'occupied', guests:2, waiter:'عمر',  time:'٢٥ دقيقة',   amount:165},
+  {n:12, status:'free',     guests:0, waiter:'',     time:'',            amount:0},
+];
+
+function renderTables(){
+  var grid = document.getElementById('tables-grid');
+  if(!grid) return;
+  var statusClr = {occupied:'#16A34A', free:'#6B7280', reserved:'#D97706'};
+  var statusBg  = {occupied:'#F0FDF4', free:'#F9FAFB', reserved:'#FFFBEB'};
+  var statusLbl = {occupied:'مشغولة', free:'خالية', reserved:'محجوزة'};
+  grid.innerHTML = TABLE_DATA.map(function(t){
+    return '<div onclick="openTable('+t.n+')" style="border:1.5px solid '+(t.status==='occupied'?'var(--brand-200)':t.status==='reserved'?'#FDE68A':'var(--hairline)')+';border-radius:10px;padding:12px;text-align:center;background:'+statusBg[t.status]+';cursor:pointer;transition:all 140ms" onmouseover="this.style.transform=\'translateY(-2px)\'" onmouseout="this.style.transform=\'\'">'
+      +'<div style="font-size:11px;font-weight:700;color:var(--fg-2);margin-bottom:4px">طاولة '+t.n+'</div>'
+      +'<div style="font-size:18px;font-weight:700;color:'+statusClr[t.status]+'">'+statusLbl[t.status]+'</div>'
+      +(t.guests ? '<div style="font-size:10px;color:var(--fg-3);margin-top:4px">'+t.guests+' أشخاص · '+t.time+'</div>' : '<div style="font-size:10px;color:var(--fg-3);margin-top:4px">—</div>')
+      +(t.amount ? '<div style="font-size:12px;font-weight:600;color:var(--brand-700);margin-top:4px;font-family:var(--font-en)">'+t.amount+' ر.س</div>' : '')
+      +'</div>';
+  }).join('');
+}
+
+window.openTable = function(n){
+  var t = TABLE_DATA.find(function(x){ return x.n===n; });
+  if(!t) return;
+  if(t.status === 'free'){
+    if(!confirm('فتح طاولة '+n+' لنزلاء جدد؟')) return;
+    t.status = 'occupied'; t.guests=2; t.waiter='—'; t.time='الآن'; t.amount=0;
+    renderTables();
+  } else {
+    openSplitBill(n, t.amount);
+  }
+};
+
+document.addEventListener('DOMContentLoaded', renderTables);
+
+/* ── Feature 2: Split Bill ── */
+var _splitTotal = 0;
+var _splitPeople = 2;
+var _splitTipPct = 0;
+
+window.openSplitBill = function(tableN, amount){
+  _splitTotal = amount;
+  _splitPeople = 2;
+  _splitTipPct = 0;
+  document.getElementById('split-title').textContent = 'تقسيم الفاتورة — طاولة '+tableN;
+  document.getElementById('split-total').textContent = amount+' ر.س';
+  updateSplitCalc();
+  document.getElementById('tip-display').style.display='none';
+  document.getElementById('split-bill-modal').style.display='flex';
+};
+
+function updateSplitCalc(){
+  var tip = _splitTotal * _splitTipPct / 100;
+  var total = _splitTotal + tip;
+  var pp = _splitPeople > 0 ? Math.ceil(total/_splitPeople) : total;
+  document.getElementById('split-people-count').textContent = _splitPeople;
+  document.getElementById('split-per-person').textContent = pp+' ر.س';
+}
+
+window.adjustSplitPeople = function(d){
+  _splitPeople = Math.max(1, _splitPeople+d);
+  updateSplitCalc();
+};
+
+window.setTip = function(pct){
+  _splitTipPct = pct;
+  var tip = Math.round(_splitTotal * pct / 100);
+  var d = document.getElementById('tip-display');
+  if(pct>0){
+    d.style.display='block';
+    d.textContent='الإكرامية: '+tip+' ر.س ('+pct+'%) — الإجمالي مع الإكرامية: '+(_splitTotal+tip)+' ر.س';
+  } else {
+    d.style.display='none';
+  }
+  updateSplitCalc();
+};
+
+window.setSplitMode = function(mode){
+  document.querySelectorAll('.split-mode-btn').forEach(function(b){
+    b.style.background='var(--paper)'; b.style.color='var(--ink-900)'; b.style.borderColor='var(--hairline)';
+  });
+  var btn = document.getElementById('split-'+mode+'-btn');
+  if(btn){ btn.style.background='var(--brand-700)'; btn.style.color='var(--paper)'; btn.style.borderColor='var(--brand-700)'; }
+};
+
+window.confirmSplitBill = function(){
+  document.getElementById('split-bill-modal').style.display='none';
+  var tip = Math.round(_splitTotal*_splitTipPct/100);
+  var t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--brand-700);color:var(--paper);padding:12px 24px;border-radius:10px;font-family:var(--font-ar);font-size:13px;font-weight:600;z-index:9999';
+  t.textContent='✓ تمت معالجة الدفع — '+(_splitTotal+tip)+' ر.س موزعة على '+_splitPeople+' أشخاص';
+  document.body.appendChild(t);
+  setTimeout(function(){ t.remove(); }, 3000);
+};
+
+/* ── Feature 3: Kitchen Display System (KDS) ── */
+window.markKDSReady = function(btn){
+  var card = btn.closest('div[style*="border:1.5px"]');
+  btn.textContent='✓ تم التسليم';
+  btn.style.background='var(--success-600,#16A34A)';
+  btn.disabled=true;
+  if(card){
+    card.style.opacity='0.5';
+    card.style.border='1.5px solid #D1FAE5';
+    card.style.background='#F0FDF4';
+  }
+  var badge = document.getElementById('kds-pending-badge');
+  if(badge){
+    var n = parseInt(badge.textContent)||1;
+    if(n>1) badge.textContent=(n-1)+' طلبات معلّقة';
+    else badge.textContent='لا طلبات معلّقة';
+  }
+};
+
+/* ── Feature 4: Shift Management ── */
+window.printShiftReport = function(){
+  var t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--brand-700);color:var(--paper);padding:12px 24px;border-radius:10px;font-family:var(--font-ar);font-size:13px;font-weight:600;z-index:9999';
+  t.textContent='🖨 جارٍ طباعة تقرير الوردية الصباحية...';
+  document.body.appendChild(t);
+  setTimeout(function(){ t.remove(); }, 2500);
+};
+
+window.closeShift = function(){
+  if(!confirm('هل أنت متأكد من إغلاق الوردية الصباحية؟ سيتم تجميد جميع المعاملات.')) return;
+  var t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#16A34A;color:var(--paper);padding:12px 24px;border-radius:10px;font-family:var(--font-ar);font-size:13px;font-weight:600;z-index:9999';
+  t.textContent='✓ تم إغلاق الوردية الصباحية — الإيراد ٨٬٢٤٠ ر.س محفوظ';
+  document.body.appendChild(t);
+  setTimeout(function(){ t.remove(); }, 3000);
+};
+
+})();
 </script>
 </body>
 </html>

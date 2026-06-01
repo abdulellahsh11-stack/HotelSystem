@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="/static/dheuof/shared/module.css"/>
 <style>
 /* ── KPI strip ─────────────────────────────────────────────────── */
-.kpi-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px}
+.kpi-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:24px}
 .kpi-card{background:var(--white);border:1px solid var(--hairline);border-radius:14px;padding:18px 20px}
 .kpi-card.accent{background:linear-gradient(135deg,var(--brand-800),var(--brand-900));border-color:transparent;color:var(--paper)}
 .kpi-card .lbl{font-size:11px;color:var(--fg-3);letter-spacing:.04em}
@@ -205,6 +205,7 @@
           <button onclick="exportReservations()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">📊 Excel</button>
           <button onclick="exportPDF()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">🖨 تقرير PDF</button>
           <a class="gr-btn sec" href="/static/dheuof/modules/01-guests/registration.html">+ تسجيل نزيل جديد</a>
+          <button onclick="openGroupBooking()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--brand-700);color:var(--paper);border:none;cursor:pointer">+ حجز جماعي</button>
         </div>
       </div>
 
@@ -234,6 +235,11 @@
           <div class="lbl">إيراد اليوم · Revenue</div>
           <div class="val">٢٤٬٨٦٠<span class="sfx" style="font-size:12px">ر.س</span></div>
           <div class="delta up">▲ +١٨٪ مقابل المتوقع</div>
+        </div>
+        <div class="kpi-card">
+          <div class="lbl">أعضاء الولاء · Loyalty</div>
+          <div class="val">٢٣<span class="sfx">عضو</span></div>
+          <div class="delta up">▲ +٣ هذا الشهر</div>
         </div>
       </div>
 
@@ -287,6 +293,94 @@
             <tbody id="res-tbody"></tbody>
           </table>
         </div>
+
+        <!-- ── Waitlist Panel ── -->
+        <div class="dh-card" style="margin-top:16px" id="waitlist-panel">
+          <div class="dh-card-head" style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px">
+            <div>
+              <div class="ttl" style="font-family:var(--font-ar);font-size:14px;font-weight:700">قائمة الانتظار</div>
+              <div class="sub" style="font-size:11px;color:var(--fg-3)">الطلبات المعلّقة — تُبلَّغ تلقائياً عند توفر غرفة</div>
+            </div>
+            <button onclick="addToWaitlist()" style="padding:7px 14px;background:var(--brand-700);color:var(--paper);border:none;border-radius:6px;font-family:var(--font-ar);font-size:12px;font-weight:600;cursor:pointer">+ إضافة للانتظار</button>
+          </div>
+          <div style="padding:0 16px 16px">
+            <table style="width:100%;border-collapse:collapse;font-family:var(--font-ar);font-size:12px">
+              <thead>
+                <tr style="background:var(--brand-50)">
+                  <th style="padding:8px 12px;text-align:right;font-weight:600;color:var(--brand-700)">الاسم</th>
+                  <th style="padding:8px 12px;text-align:center;font-weight:600;color:var(--brand-700)">نوع الغرفة</th>
+                  <th style="padding:8px 12px;text-align:center;font-weight:600;color:var(--brand-700)">الوصول</th>
+                  <th style="padding:8px 12px;text-align:center;font-weight:600;color:var(--brand-700)">الليالي</th>
+                  <th style="padding:8px 12px;text-align:center;font-weight:600;color:var(--brand-700)">الحالة</th>
+                  <th style="padding:8px;text-align:center"></th>
+                </tr>
+              </thead>
+              <tbody id="waitlist-tbody">
+                <tr>
+                  <td style="padding:10px 12px;border-bottom:1px solid var(--hairline)">أحمد الجهني</td>
+                  <td style="padding:10px 12px;text-align:center;border-bottom:1px solid var(--hairline)">جناح</td>
+                  <td style="padding:10px 12px;text-align:center;border-bottom:1px solid var(--hairline);font-family:var(--font-mono)">2026-06-05</td>
+                  <td style="padding:10px 12px;text-align:center;border-bottom:1px solid var(--hairline)">٣</td>
+                  <td style="padding:10px 12px;text-align:center;border-bottom:1px solid var(--hairline)"><span style="background:#FEF3C7;color:#92400E;padding:2px 8px;border-radius:4px;font-size:11px">في الانتظار</span></td>
+                  <td style="padding:10px 8px;text-align:center;border-bottom:1px solid var(--hairline)">
+                    <button onclick="notifyWaitlist(this)" style="padding:4px 10px;background:var(--brand-700);color:var(--paper);border:none;border-radius:4px;font-family:var(--font-ar);font-size:11px;cursor:pointer">إبلاغ</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:10px 12px">سارة المطيري</td>
+                  <td style="padding:10px 12px;text-align:center">ديلوكس</td>
+                  <td style="padding:10px 12px;text-align:center;font-family:var(--font-mono)">2026-06-07</td>
+                  <td style="padding:10px 12px;text-align:center">٢</td>
+                  <td style="padding:10px 12px;text-align:center"><span style="background:#FEE2E2;color:#991B1B;padding:2px 8px;border-radius:4px;font-size:11px">أولوية عالية</span></td>
+                  <td style="padding:10px 8px;text-align:center">
+                    <button onclick="notifyWaitlist(this)" style="padding:4px 10px;background:var(--brand-700);color:var(--paper);border:none;border-radius:4px;font-family:var(--font-ar);font-size:11px;cursor:pointer">إبلاغ</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ── Rate Plans Section ── -->
+        <div class="dh-card" style="margin-top:16px">
+          <div class="dh-card-head" style="padding:14px 20px;display:flex;align-items:center;justify-content:space-between">
+            <div>
+              <div class="ttl" style="font-family:var(--font-ar);font-size:14px;font-weight:700">خطط الأسعار</div>
+              <div class="sub" style="font-size:11px;color:var(--fg-3)">Rate Plans — موسمية · خاصة · شركات</div>
+            </div>
+            <button onclick="addRatePlan()" style="padding:7px 14px;background:var(--brand-700);color:var(--paper);border:none;border-radius:6px;font-family:var(--font-ar);font-size:12px;font-weight:600;cursor:pointer">+ خطة جديدة</button>
+          </div>
+          <div style="padding:0 16px 16px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px" id="rate-plans-grid">
+            <div style="border:1.5px solid var(--brand-200);border-radius:10px;padding:14px;background:var(--brand-50)">
+              <div style="font-size:12px;font-weight:700;color:var(--brand-700);margin-bottom:6px">الأساسي</div>
+              <div style="font-size:20px;font-weight:700;color:var(--brand-900);font-family:var(--font-en)">480 <span style="font-size:11px;color:var(--fg-3)">ر.س/ليلة</span></div>
+              <div style="font-size:11px;color:var(--fg-3);margin-top:4px">ستاندرد · طوال العام</div>
+              <div style="margin-top:8px;display:flex;gap:6px">
+                <span style="background:#DCFCE7;color:#166534;font-size:10px;padding:2px 7px;border-radius:4px">نشط</span>
+                <span style="background:var(--brand-50);color:var(--brand-700);font-size:10px;padding:2px 7px;border-radius:4px">٤٢ حجز</span>
+              </div>
+            </div>
+            <div style="border:1.5px solid #D97706;border-radius:10px;padding:14px;background:#FFFBEB">
+              <div style="font-size:12px;font-weight:700;color:#92400E;margin-bottom:6px">الموسم العالي</div>
+              <div style="font-size:20px;font-weight:700;color:#92400E;font-family:var(--font-en)">720 <span style="font-size:11px;color:var(--fg-3)">ر.س/ليلة</span></div>
+              <div style="font-size:11px;color:var(--fg-3);margin-top:4px">رمضان · الصيف · المواسم</div>
+              <div style="margin-top:8px;display:flex;gap:6px">
+                <span style="background:#FEF3C7;color:#92400E;font-size:10px;padding:2px 7px;border-radius:4px">موسمي</span>
+                <span style="background:#FFFBEB;color:#D97706;font-size:10px;padding:2px 7px;border-radius:4px">١٨ حجز</span>
+              </div>
+            </div>
+            <div style="border:1.5px solid var(--hairline);border-radius:10px;padding:14px">
+              <div style="font-size:12px;font-weight:700;color:var(--ink-900);margin-bottom:6px">شركات وجهات</div>
+              <div style="font-size:20px;font-weight:700;color:var(--ink-900);font-family:var(--font-en)">420 <span style="font-size:11px;color:var(--fg-3)">ر.س/ليلة</span></div>
+              <div style="font-size:11px;color:var(--fg-3);margin-top:4px">عقود سنوية · خصم ١٢٪</div>
+              <div style="margin-top:8px;display:flex;gap:6px">
+                <span style="background:#EFF6FF;color:#1D4ED8;font-size:10px;padding:2px 7px;border-radius:4px">تعاقدي</span>
+                <span style="background:#EFF6FF;color:#1D4ED8;font-size:10px;padding:2px 7px;border-radius:4px">٩ شركات</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <!-- ════════════════════════════════════════
@@ -670,6 +764,7 @@ window.showResDetail = function(rid){
     {l:'القناة',v:r.channel},
     {l:'المبلغ',v:r.amt+' ر.س'},
     {l:'حالة الدفع',v:r.payment},
+    {l:'نقاط الولاء',v:'<span style="color:var(--gold-500);font-weight:700;font-family:var(--font-en)">★ 1,240</span> نقطة · مستوى ذهبي'},
   ].map(function(row){ return '<div class="detail-row"><span class="lbl">'+row.l+'</span><span class="val">'+row.v+'</span></div>'; }).join('');
   modal('تفاصيل الحجز — '+rid, html,
     '<button class="btn-primary" onclick="var b=document.getElementById(\'ci-'+rid+'\');if(b)doCheckin(b);document.querySelector(\'.dh-modal-bd\').remove()">تسجيل دخول الآن</button>'
@@ -842,6 +937,7 @@ window.showGuestDetail = function(gid){
     {l:'الجوال',   v:'<span style="direction:ltr;font-family:var(--font-mono)">'+g.phone+'</span>'},
     {l:'المبلغ المتبقي',v:g.balanceLeft+' ر.س'},
     {l:'التنبيهات', v:g.alerts.length ? g.alerts.map(function(a){return a.text;}).join(' · ') : 'لا يوجد'},
+    {l:'نقاط الولاء',v:'<span style="color:var(--gold-500);font-weight:700;font-family:var(--font-en)">★ 1,240</span> نقطة · مستوى ذهبي'},
   ].map(function(row){ return '<div class="detail-row"><span class="lbl">'+row.l+'</span><span class="val">'+row.v+'</span></div>'; }).join('');
   modal('ملف النزيل — '+g.name, html);
 };
@@ -1256,6 +1352,88 @@ window.exportPDF = function(){
   setTimeout(function(){win.print();},700);
 };
 
+/* ═══════════════════════════════════════════════
+   FEATURE A — GROUP BOOKING
+═══════════════════════════════════════════════ */
+window.openGroupBooking = function(){
+  var today = new Date();
+  var tomorrow = new Date(today); tomorrow.setDate(today.getDate()+1);
+  var fmt = function(d){ return d.toISOString().split('T')[0]; };
+  document.getElementById('gb-in').value = fmt(today);
+  document.getElementById('gb-out').value = fmt(tomorrow);
+  document.getElementById('group-booking-modal').style.display='flex';
+  updateGroupSummary();
+};
+window.closeGroupBooking = function(){ document.getElementById('group-booking-modal').style.display='none'; };
+window.updateGroupSummary = function(){
+  var n = parseInt(document.getElementById('gb-rooms').value||0,10);
+  var rate = parseFloat(document.getElementById('gb-rate').value||0);
+  var inD = document.getElementById('gb-in').value;
+  var outD = document.getElementById('gb-out').value;
+  var name = document.getElementById('gb-name').value||'—';
+  var nights = 0;
+  if(inD && outD){ var d1=new Date(inD),d2=new Date(outD); nights=Math.max(0,Math.round((d2-d1)/86400000)); }
+  var total = n * rate * nights;
+  var el = document.getElementById('gb-summary-text');
+  if(!n||!nights){ el.textContent='أدخل التفاصيل لعرض الملخص'; return; }
+  el.innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'
+    +'<div>المجموعة: <strong>'+name+'</strong></div>'
+    +'<div>الغرف: <strong>'+n+' غرفة</strong></div>'
+    +'<div>الليالي: <strong>'+nights+' ليلة</strong></div>'
+    +'<div>سعر الليلة: <strong>'+rate.toLocaleString('ar-SA')+' ر.س</strong></div>'
+    +'<div style="grid-column:1/-1;border-top:1px solid var(--brand-200);padding-top:8px;margin-top:4px">الإجمالي: <strong style="color:var(--brand-700);font-size:15px">'+total.toLocaleString('ar-SA')+' ر.س</strong></div>'
+    +'</div>';
+};
+window.confirmGroupBooking = function(){
+  var name = document.getElementById('gb-name').value||'مجموعة';
+  var n = document.getElementById('gb-rooms').value;
+  closeGroupBooking();
+  var t = document.createElement('div');
+  t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--brand-700);color:var(--paper);padding:12px 24px;border-radius:10px;font-family:var(--font-ar);font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.25)';
+  t.textContent='✓ تم تأكيد الحجز الجماعي لـ'+name+' ('+n+' غرف)';
+  document.body.appendChild(t);
+  setTimeout(function(){ t.remove(); }, 3500);
+};
+
+/* ═══════════════════════════════════════════════
+   FEATURE B — WAITLIST
+═══════════════════════════════════════════════ */
+window.addToWaitlist = function(){
+  var name = prompt('اسم العميل:');
+  if(!name) return;
+  var type = prompt('نوع الغرفة (ستاندرد/ديلوكس/جناح):') || 'ستاندرد';
+  var tbody = document.getElementById('waitlist-tbody');
+  var tr = document.createElement('tr');
+  tr.innerHTML = '<td style="padding:10px 12px;border-bottom:1px solid var(--hairline)">'+name+'</td>'
+    +'<td style="padding:10px 12px;text-align:center;border-bottom:1px solid var(--hairline)">'+type+'</td>'
+    +'<td style="padding:10px 12px;text-align:center;border-bottom:1px solid var(--hairline);font-family:var(--font-mono)">'+new Date().toISOString().split("T")[0]+'</td>'
+    +'<td style="padding:10px 12px;text-align:center;border-bottom:1px solid var(--hairline)">—</td>'
+    +'<td style="padding:10px 12px;text-align:center;border-bottom:1px solid var(--hairline)"><span style="background:#FEF3C7;color:#92400E;padding:2px 8px;border-radius:4px;font-size:11px">في الانتظار</span></td>'
+    +'<td style="padding:10px 8px;text-align:center;border-bottom:1px solid var(--hairline)"><button onclick="notifyWaitlist(this)" style="padding:4px 10px;background:var(--brand-700);color:var(--paper);border:none;border-radius:4px;font-family:var(--font-ar);font-size:11px;cursor:pointer">إبلاغ</button></td>';
+  tbody.appendChild(tr);
+};
+window.notifyWaitlist = function(btn){
+  btn.textContent='✓ أُبلغ';
+  btn.style.background='var(--success-600)';
+  btn.disabled=true;
+};
+
+/* ═══════════════════════════════════════════════
+   FEATURE C — RATE PLANS
+═══════════════════════════════════════════════ */
+window.addRatePlan = function(){
+  var name = prompt('اسم الخطة:');
+  if(!name) return;
+  var rate = prompt('السعر بالريال/ليلة:') || '500';
+  var grid = document.getElementById('rate-plans-grid');
+  var div = document.createElement('div');
+  div.style.cssText='border:1.5px solid var(--hairline);border-radius:10px;padding:14px';
+  div.innerHTML='<div style="font-size:12px;font-weight:700;color:var(--ink-900);margin-bottom:6px">'+name+'</div>'
+    +'<div style="font-size:20px;font-weight:700;color:var(--ink-900);font-family:var(--font-en)">'+rate+' <span style="font-size:11px;color:var(--fg-3)">ر.س/ليلة</span></div>'
+    +'<div style="margin-top:8px"><span style="background:#F3F4F6;color:#6B7280;font-size:10px;padding:2px 7px;border-radius:4px">جديد</span></div>';
+  grid.appendChild(div);
+};
+
 })();
 </script>
 <script>
@@ -1284,5 +1462,50 @@ window.exportPDF = function(){
   document.body.style.paddingTop = '56px';
 })();
 </script>
+<!-- ── Group Booking Modal (Feature A) ── -->
+<div id="group-booking-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:900;align-items:center;justify-content:center">
+  <div style="background:var(--paper);border-radius:16px;padding:28px 32px;width:min(580px,95vw);font-family:var(--font-ar);max-height:85vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <h3 style="margin:0;color:var(--brand-900);font-size:17px">حجز جماعي — Group Booking</h3>
+      <button onclick="closeGroupBooking()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--fg-2)">✕</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+      <div>
+        <label style="font-size:11px;color:var(--fg-3);display:block;margin-bottom:4px">اسم المجموعة / الشركة</label>
+        <input id="gb-name" placeholder="مثال: شركة أرامكو" style="width:100%;padding:9px 12px;border:1.5px solid var(--hairline);border-radius:8px;font-family:var(--font-ar);font-size:13px;box-sizing:border-box"/>
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--fg-3);display:block;margin-bottom:4px">عدد الغرف</label>
+        <input id="gb-rooms" type="number" min="2" max="50" value="5" style="width:100%;padding:9px 12px;border:1.5px solid var(--hairline);border-radius:8px;font-family:var(--font-en);font-size:13px;box-sizing:border-box" oninput="updateGroupSummary()"/>
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--fg-3);display:block;margin-bottom:4px">تاريخ الوصول</label>
+        <input id="gb-in" type="date" style="width:100%;padding:9px 12px;border:1.5px solid var(--hairline);border-radius:8px;font-family:var(--font-en);font-size:13px;box-sizing:border-box" oninput="updateGroupSummary()"/>
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--fg-3);display:block;margin-bottom:4px">تاريخ المغادرة</label>
+        <input id="gb-out" type="date" style="width:100%;padding:9px 12px;border:1.5px solid var(--hairline);border-radius:8px;font-family:var(--font-en);font-size:13px;box-sizing:border-box" oninput="updateGroupSummary()"/>
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--fg-3);display:block;margin-bottom:4px">نوع الغرف</label>
+        <select id="gb-type" style="width:100%;padding:9px 12px;border:1.5px solid var(--hairline);border-radius:8px;font-family:var(--font-ar);font-size:13px;box-sizing:border-box">
+          <option>ستاندرد</option><option>ديلوكس</option><option>جناح</option><option>مختلطة</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--fg-3);display:block;margin-bottom:4px">سعر الليلة / غرفة (ر.س)</label>
+        <input id="gb-rate" type="number" value="480" style="width:100%;padding:9px 12px;border:1.5px solid var(--hairline);border-radius:8px;font-family:var(--font-en);font-size:13px;box-sizing:border-box" oninput="updateGroupSummary()"/>
+      </div>
+    </div>
+    <div id="gb-summary" style="padding:14px;background:var(--brand-50);border-radius:10px;font-size:13px;margin-bottom:16px;border:1px solid var(--brand-200)">
+      <div style="font-weight:700;color:var(--brand-700);margin-bottom:6px">ملخص الحجز الجماعي</div>
+      <div id="gb-summary-text" style="color:var(--fg-2)">أدخل التفاصيل لعرض الملخص</div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button onclick="closeGroupBooking()" style="padding:9px 20px;border-radius:6px;border:1px solid var(--hairline);background:var(--paper);font-family:var(--font-ar);cursor:pointer">إلغاء</button>
+      <button onclick="confirmGroupBooking()" style="padding:9px 20px;border-radius:6px;border:none;background:var(--brand-700);color:var(--paper);font-family:var(--font-ar);font-weight:600;cursor:pointer">تأكيد الحجز الجماعي</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

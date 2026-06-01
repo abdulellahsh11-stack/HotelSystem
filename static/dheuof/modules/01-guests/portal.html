@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<title>ضيوف · بوابة النزيل</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="stylesheet" href="/static/dheuof/colors_and_type.css"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-ar,'Tajawal',Arial,sans-serif);background:#F4F6F8;min-height:100vh;color:var(--ink-900,#1A1A2E)}
+
+/* ── Top bar ── */
+.portal-header{background:var(--brand-900,#0E2A22);color:var(--paper,#fff);padding:16px 24px;display:flex;align-items:center;justify-content:space-between}
+.portal-logo{display:flex;align-items:center;gap:10px}
+.portal-logo .brand-name{font-size:20px;font-weight:700;color:var(--gold-500,#C9A85F)}
+.portal-logo .sub{font-size:11px;color:rgba(255,255,255,.6);margin-top:1px}
+.guest-chip{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:6px 14px;font-size:12px;color:var(--paper,#fff)}
+
+/* ── Welcome banner ── */
+.welcome-banner{background:linear-gradient(135deg,var(--brand-700,#1B4D3E),var(--brand-900,#0E2A22));color:var(--paper,#fff);padding:28px 24px;position:relative;overflow:hidden}
+.welcome-banner::after{content:"";position:absolute;inset-inline-end:-40px;top:-40px;width:180px;height:180px;border-radius:50%;background:var(--gold-500,#C9A85F);opacity:.08}
+.welcome-banner h1{font-size:22px;font-weight:700;margin-bottom:4px}
+.welcome-banner .sub{font-size:13px;color:rgba(255,255,255,.7);margin-bottom:16px}
+.room-badge{display:inline-flex;align-items:center;gap:8px;background:var(--gold-500,#C9A85F);color:var(--brand-900,#0E2A22);padding:6px 16px;border-radius:20px;font-size:12px;font-weight:700}
+.stay-info{display:flex;gap:20px;margin-top:14px;flex-wrap:wrap}
+.stay-info .s{font-size:12px;color:rgba(255,255,255,.65)}
+.stay-info .v{font-size:13px;font-weight:600;color:var(--paper,#fff);margin-top:2px}
+
+/* ── Grid ── */
+.portal-grid{padding:20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;max-width:900px;margin:0 auto}
+
+/* ── Service card ── */
+.svc-card{background:var(--paper,#fff);border-radius:14px;padding:20px 16px;text-align:center;cursor:pointer;transition:all 140ms;border:1.5px solid transparent;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.svc-card:hover{border-color:var(--brand-300,#2D6A4F);transform:translateY(-3px);box-shadow:0 6px 18px rgba(0,0,0,.1)}
+.svc-card:active{transform:translateY(0)}
+.svc-card .ic{font-size:32px;margin-bottom:10px;line-height:1}
+.svc-card .lbl{font-size:13px;font-weight:700;color:var(--ink-900,#1A1A2E);margin-bottom:4px}
+.svc-card .sub{font-size:11px;color:var(--fg-3,#9CA3AF)}
+.svc-card.accent{background:var(--brand-700,#1B4D3E);color:var(--paper,#fff);border-color:transparent}
+.svc-card.accent .lbl,.svc-card.accent .sub{color:rgba(255,255,255,.85)}
+
+/* ── Modal ── */
+.modal-bd{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:900;align-items:center;justify-content:center;padding:16px}
+.modal-bd.open{display:flex}
+.modal-box{background:var(--paper,#fff);border-radius:18px;width:min(480px,100%);max-height:85vh;overflow-y:auto;padding:28px}
+.modal-title{font-size:17px;font-weight:700;color:var(--brand-900,#0E2A22);margin-bottom:18px;display:flex;align-items:center;justify-content:space-between}
+.modal-title button{background:none;border:none;font-size:22px;cursor:pointer;color:var(--fg-2,#6B7280);line-height:1}
+
+/* ── Room service menu ── */
+.menu-category{font-size:12px;font-weight:700;color:var(--fg-2,#6B7280);text-transform:uppercase;letter-spacing:.05em;margin:14px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--hairline,#E5E7EB)}
+.menu-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--hairline,#E5E7EB)}
+.menu-item:last-child{border-bottom:none}
+.menu-item .info .name{font-size:13px;font-weight:600;color:var(--ink-900,#1A1A2E)}
+.menu-item .info .desc{font-size:11px;color:var(--fg-3,#9CA3AF);margin-top:2px}
+.menu-item .price{font-size:13px;font-weight:700;color:var(--brand-700,#1B4D3E);font-family:monospace;white-space:nowrap;margin-inline-start:12px}
+.qty-ctrl{display:flex;align-items:center;gap:8px;margin-top:6px}
+.qty-btn{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--hairline,#E5E7EB);background:var(--paper,#fff);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:600;color:var(--brand-700,#1B4D3E)}
+.qty-btn.plus{background:var(--brand-700,#1B4D3E);color:var(--paper,#fff);border-color:var(--brand-700)}
+.qty-val{min-width:20px;text-align:center;font-size:14px;font-weight:700}
+
+/* ── Request form ── */
+.req-field{margin-bottom:14px}
+.req-field label{font-size:11px;color:var(--fg-3,#9CA3AF);display:block;margin-bottom:5px;font-weight:500}
+.req-field input,.req-field textarea,.req-field select{width:100%;padding:10px 13px;border:1.5px solid var(--hairline,#E5E7EB);border-radius:8px;font-family:inherit;font-size:13px;color:var(--ink-900,#1A1A2E);outline:none;transition:border-color 140ms;background:var(--paper,#fff)}
+.req-field input:focus,.req-field textarea:focus,.req-field select:focus{border-color:var(--brand-500,#2D6A4F)}
+.req-field textarea{resize:vertical;min-height:80px}
+
+/* ── Buttons ── */
+.btn-primary{display:block;width:100%;padding:12px;background:var(--brand-700,#1B4D3E);color:var(--paper,#fff);border:none;border-radius:8px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;text-align:center;transition:background 120ms}
+.btn-primary:hover{background:var(--brand-800,#163D30)}
+.btn-sec{display:block;width:100%;padding:11px;background:var(--paper,#fff);color:var(--ink-900,#1A1A2E);border:1.5px solid var(--hairline,#E5E7EB);border-radius:8px;font-family:inherit;font-size:13px;cursor:pointer;text-align:center;margin-top:8px}
+
+/* ── Stars ── */
+.stars{display:flex;justify-content:center;gap:8px;margin:16px 0}
+.star-btn{font-size:36px;background:none;border:none;cursor:pointer;opacity:.3;transition:all 140ms;line-height:1}
+.star-btn.on{opacity:1;color:#F59E0B}
+
+/* ── Loyalty card ── */
+.loyalty-card{background:linear-gradient(135deg,var(--brand-700),var(--brand-900));border-radius:14px;padding:20px 24px;color:var(--paper,#fff);position:relative;overflow:hidden;margin:20px;max-width:860px;margin-inline:auto}
+.loyalty-card::after{content:"";position:absolute;inset-inline-end:-30px;top:-30px;width:140px;height:140px;border-radius:50%;background:var(--gold-500,#C9A85F);opacity:.15}
+.loyalty-points{font-size:40px;font-weight:700;color:var(--gold-500,#C9A85F);font-family:monospace}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--brand-700,#1B4D3E);color:var(--paper,#fff);padding:13px 26px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.25);pointer-events:none;animation:fadeInUp .25s ease}
+@keyframes fadeInUp{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+/* ── Responsive ── */
+@media(max-width:480px){
+  .portal-grid{grid-template-columns:repeat(2,1fr);padding:14px;gap:10px}
+  .welcome-banner{padding:20px 16px}
+}
+</style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header class="portal-header">
+  <div class="portal-logo">
+    <div>
+      <div class="brand-name">ضيوف</div>
+      <div class="sub">بوابة النزيل الرقمية</div>
+    </div>
+  </div>
+  <div class="guest-chip" id="header-guest-chip">أحمد الفهد · الغرفة ٤٠٢</div>
+</header>
+
+<!-- ── Welcome banner ── -->
+<div class="welcome-banner">
+  <h1 id="welcome-name">أهلاً وسهلاً، أحمد</h1>
+  <p class="sub">نسعد بخدمتكم · فندق الواحة الذهبية · الرياض</p>
+  <div class="room-badge">🏨 الغرفة ٤٠٢ — جناح ملكي</div>
+  <div class="stay-info">
+    <div class="s">تاريخ الوصول <div class="v">٢٧ مايو ٢٠٢٦</div></div>
+    <div class="s">تاريخ المغادرة <div class="v">٣١ مايو ٢٠٢٦</div></div>
+    <div class="s">الليالي المتبقية <div class="v">٢ ليلة</div></div>
+    <div class="s">الرصيد المستحق <div class="v" style="color:#F59E0B">٦٬٠٩٤ ر.س</div></div>
+  </div>
+</div>
+
+<!-- ── Loyalty card ── -->
+<div class="loyalty-card">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+    <div>
+      <div style="font-size:12px;color:rgba(255,255,255,.6);margin-bottom:4px">نقاط الولاء</div>
+      <div class="loyalty-points">1,240</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.7);margin-top:4px">نقطة · مستوى <span style="color:var(--gold-500,#C9A85F);font-weight:700">ذهبي ★</span></div>
+    </div>
+    <div style="text-align:center">
+      <div style="font-size:11px;color:rgba(255,255,255,.6);margin-bottom:8px">الإقامة الحالية تضيف</div>
+      <div style="font-size:24px;font-weight:700;color:var(--gold-500,#C9A85F)">+320</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.6)">نقطة</div>
+    </div>
+    <div>
+      <div style="font-size:11px;color:rgba(255,255,255,.6);margin-bottom:6px">للوصول للمستوى البلاتيني</div>
+      <div style="background:rgba(255,255,255,.15);border-radius:20px;height:8px;width:160px;overflow:hidden">
+        <div style="width:62%;height:100%;background:var(--gold-500,#C9A85F);border-radius:20px"></div>
+      </div>
+      <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:4px">١٬٢٤٠ / ٢٬٠٠٠ نقطة</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Services grid ── -->
+<div class="portal-grid">
+
+  <div class="svc-card accent" onclick="openModal('room-service-modal')">
+    <div class="ic">🍽</div>
+    <div class="lbl">خدمة الغرف</div>
+    <div class="sub">طلب وجبات وعصائر</div>
+  </div>
+
+  <div class="svc-card" onclick="openModal('request-modal','housekeeping')">
+    <div class="ic">🧹</div>
+    <div class="lbl">تنظيف الغرفة</div>
+    <div class="sub">طلب التنظيف الآن</div>
+  </div>
+
+  <div class="svc-card" onclick="openModal('request-modal','laundry')">
+    <div class="ic">👔</div>
+    <div class="lbl">الغسيل والكي</div>
+    <div class="sub">استلام وتسليم خلال ٤ ساعات</div>
+  </div>
+
+  <div class="svc-card" onclick="openModal('request-modal','maintenance')">
+    <div class="ic">🔧</div>
+    <div class="lbl">طلب صيانة</div>
+    <div class="sub">أبلغ عن عطل أو مشكلة</div>
+  </div>
+
+  <div class="svc-card" onclick="openModal('request-modal','transport')">
+    <div class="ic">🚗</div>
+    <div class="lbl">المواصلات</div>
+    <div class="sub">سيارة فندق · تاكسي</div>
+  </div>
+
+  <div class="svc-card" onclick="openModal('request-modal','spa')">
+    <div class="ic">💆</div>
+    <div class="lbl">السبا والصحة</div>
+    <div class="sub">حجز جلسة استرخاء</div>
+  </div>
+
+  <div class="svc-card" onclick="openModal('request-modal','concierge')">
+    <div class="ic">🗺</div>
+    <div class="lbl">كونسيرج</div>
+    <div class="sub">توصيات وحجوزات</div>
+  </div>
+
+  <div class="svc-card" onclick="openModal('checkout-modal')">
+    <div class="ic">🚪</div>
+    <div class="lbl">تسجيل الخروج</div>
+    <div class="sub">Express Checkout</div>
+  </div>
+
+  <div class="svc-card" onclick="openModal('survey-modal')">
+    <div class="ic">⭐</div>
+    <div class="lbl">تقييم الإقامة</div>
+    <div class="sub">شاركنا رأيك</div>
+  </div>
+
+  <div class="svc-card" onclick="openModal('request-modal','wifi')">
+    <div class="ic">📶</div>
+    <div class="lbl">الواي فاي</div>
+    <div class="sub">كلمة المرور: Oasis@2026</div>
+  </div>
+
+  <div class="svc-card" onclick="openModal('request-modal','wakeup')">
+    <div class="ic">⏰</div>
+    <div class="lbl">إيقاظ صباحي</div>
+    <div class="sub">اضبط وقت المكالمة</div>
+  </div>
+
+  <div class="svc-card" onclick="openModal('info-modal')">
+    <div class="ic">ℹ</div>
+    <div class="lbl">معلومات الفندق</div>
+    <div class="sub">خدمات، مرافق، أوقات</div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════ MODALS ═══ -->
+
+<!-- Room Service Modal -->
+<div class="modal-bd" id="room-service-modal">
+  <div class="modal-box">
+    <div class="modal-title">
+      <span>🍽 خدمة الغرف</span>
+      <button onclick="closeModal('room-service-modal')">✕</button>
+    </div>
+
+    <div class="menu-category">المشروبات الساخنة</div>
+    <div class="menu-item" data-price="18" data-name="قهوة عربية">
+      <div class="info"><div class="name">قهوة عربية مع تمر</div><div class="desc">دلّة أصيلة مع تمر مدجول</div></div>
+      <div style="text-align:left"><div class="price">١٨ ر.س</div><div class="qty-ctrl"><button class="qty-btn" onclick="adjustQty(this,-1)">−</button><span class="qty-val">0</span><button class="qty-btn plus" onclick="adjustQty(this,1)">+</button></div></div>
+    </div>
+    <div class="menu-item" data-price="22" data-name="شاي أخضر">
+      <div class="info"><div class="name">شاي أخضر بالنعناع</div><div class="desc">طازج مع عسل طبيعي</div></div>
+      <div style="text-align:left"><div class="price">٢٢ ر.س</div><div class="qty-ctrl"><button class="qty-btn" onclick="adjustQty(this,-1)">−</button><span class="qty-val">0</span><button class="qty-btn plus" onclick="adjustQty(this,1)">+</button></div></div>
+    </div>
+    <div class="menu-item" data-price="28" data-name="كابتشينو">
+      <div class="info"><div class="name">كابتشينو إيطالي</div><div class="desc">حبوب أرابيكا × مجصب ندي</div></div>
+      <div style="text-align:left"><div class="price">٢٨ ر.س</div><div class="qty-ctrl"><button class="qty-btn" onclick="adjustQty(this,-1)">−</button><span class="qty-val">0</span><button class="qty-btn plus" onclick="adjustQty(this,1)">+</button></div></div>
+    </div>
+
+    <div class="menu-category">وجبات خفيفة</div>
+    <div class="menu-item" data-price="65" data-name="سلطة سيزر">
+      <div class="info"><div class="name">سلطة سيزر بالدجاج</div><div class="desc">خس روماني، صلصة سيزر، كروتون</div></div>
+      <div style="text-align:left"><div class="price">٦٥ ر.س</div><div class="qty-ctrl"><button class="qty-btn" onclick="adjustQty(this,-1)">−</button><span class="qty-val">0</span><button class="qty-btn plus" onclick="adjustQty(this,1)">+</button></div></div>
+    </div>
+    <div class="menu-item" data-price="85" data-name="ساندويش كلاب">
+      <div class="info"><div class="name">ساندويش كلاب</div><div class="desc">دجاج مشوي، خبز توست، خضار طازج</div></div>
+      <div style="text-align:left"><div class="price">٨٥ ر.س</div><div class="qty-ctrl"><button class="qty-btn" onclick="adjustQty(this,-1)">−</button><span class="qty-val">0</span><button class="qty-btn plus" onclick="adjustQty(this,1)">+</button></div></div>
+    </div>
+    <div class="menu-item" data-price="45" data-name="فاكهة موسمية">
+      <div class="info"><div class="name">طبق فاكهة موسمية</div><div class="desc">تشكيلة يومية طازجة</div></div>
+      <div style="text-align:left"><div class="price">٤٥ ر.س</div><div class="qty-ctrl"><button class="qty-btn" onclick="adjustQty(this,-1)">−</button><span class="qty-val">0</span><button class="qty-btn plus" onclick="adjustQty(this,1)">+</button></div></div>
+    </div>
+
+    <div class="menu-category">وجبات رئيسية</div>
+    <div class="menu-item" data-price="145" data-name="مندي دجاج">
+      <div class="info"><div class="name">مندي دجاج</div><div class="desc">أرز بسمتي، دجاج كامل، مرق</div></div>
+      <div style="text-align:left"><div class="price">١٤٥ ر.س</div><div class="qty-ctrl"><button class="qty-btn" onclick="adjustQty(this,-1)">−</button><span class="qty-val">0</span><button class="qty-btn plus" onclick="adjustQty(this,1)">+</button></div></div>
+    </div>
+    <div class="menu-item" data-price="185" data-name="ستيك لحم">
+      <div class="info"><div class="name">ستيك لحم أنقوس</div><div class="desc">٢٥٠ جرام، بطاطس محمرة، صلصة الفطر</div></div>
+      <div style="text-align:left"><div class="price">١٨٥ ر.س</div><div class="qty-ctrl"><button class="qty-btn" onclick="adjustQty(this,-1)">−</button><span class="qty-val">0</span><button class="qty-btn plus" onclick="adjustQty(this,1)">+</button></div></div>
+    </div>
+
+    <div style="margin-top:16px;padding:12px;background:var(--brand-50,#F0FDF4);border-radius:8px;display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:13px;color:var(--fg-2,#6B7280)">الإجمالي: <strong id="rs-total" style="color:var(--brand-700,#1B4D3E)">٠ ر.س</strong></div>
+      <div style="font-size:11px;color:var(--fg-3,#9CA3AF)">وقت التوصيل: ٢٠–٣٠ دقيقة</div>
+    </div>
+    <button class="btn-primary" style="margin-top:14px" onclick="submitRoomService()">🍽 تأكيد الطلب</button>
+    <button class="btn-sec" onclick="closeModal('room-service-modal')">إلغاء</button>
+  </div>
+</div>
+
+<!-- Generic Request Modal -->
+<div class="modal-bd" id="request-modal">
+  <div class="modal-box">
+    <div class="modal-title">
+      <span id="req-modal-title">طلب خدمة</span>
+      <button onclick="closeModal('request-modal')">✕</button>
+    </div>
+    <div id="req-modal-body">
+      <div class="req-field">
+        <label>تفاصيل الطلب</label>
+        <textarea id="req-details" placeholder="اكتب تفاصيل طلبك هنا..."></textarea>
+      </div>
+      <div class="req-field">
+        <label>الوقت المفضّل</label>
+        <select id="req-time">
+          <option>في أقرب وقت ممكن</option>
+          <option>خلال ساعة</option>
+          <option>في الصباح</option>
+          <option>في المساء</option>
+          <option>وقت محدد</option>
+        </select>
+      </div>
+      <div class="req-field">
+        <label>ملاحظات إضافية (اختياري)</label>
+        <input id="req-notes" placeholder="أي ملاحظة إضافية..."/>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="submitRequest()">إرسال الطلب</button>
+    <button class="btn-sec" onclick="closeModal('request-modal')">إلغاء</button>
+  </div>
+</div>
+
+<!-- Express Checkout Modal -->
+<div class="modal-bd" id="checkout-modal">
+  <div class="modal-box">
+    <div class="modal-title">
+      <span>🚪 تسجيل الخروج</span>
+      <button onclick="closeModal('checkout-modal')">✕</button>
+    </div>
+    <div style="padding:16px;background:var(--brand-50,#F0FDF4);border-radius:10px;margin-bottom:16px">
+      <div style="font-size:13px;color:var(--fg-2,#6B7280);margin-bottom:10px">ملخص الإقامة</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px">
+        <div><div style="color:var(--fg-3,#9CA3AF);font-size:11px">النزيل</div><div style="font-weight:600">أحمد الفهد</div></div>
+        <div><div style="color:var(--fg-3,#9CA3AF);font-size:11px">الغرفة</div><div style="font-weight:600">٤٠٢ — جناح ملكي</div></div>
+        <div><div style="color:var(--fg-3,#9CA3AF);font-size:11px">عدد الليالي</div><div style="font-weight:600">٤ ليالٍ</div></div>
+        <div><div style="color:var(--fg-3,#9CA3AF);font-size:11px">الرصيد المستحق</div><div style="font-weight:700;color:var(--brand-700,#1B4D3E)">٦٬٠٩٤ ر.س</div></div>
+      </div>
+    </div>
+    <div class="req-field">
+      <label>طريقة الدفع</label>
+      <select>
+        <option>MADA</option><option>Visa / Mastercard</option><option>Apple Pay</option><option>نقداً عند الفندق</option>
+      </select>
+    </div>
+    <div style="font-size:12px;color:var(--fg-3,#9CA3AF);margin-bottom:14px;padding:10px;background:#FEF3C7;border-radius:6px">
+      ⏰ وقت المغادرة القياسي: ١٢:٠٠ ظهراً — تأكيد الخروج يُلغي الوصول لخدمات الغرفة
+    </div>
+    <button class="btn-primary" onclick="confirmPortalCheckout()">✓ تأكيد تسجيل الخروج</button>
+    <button class="btn-sec" onclick="closeModal('checkout-modal')">العودة</button>
+  </div>
+</div>
+
+<!-- Survey Modal -->
+<div class="modal-bd" id="survey-modal">
+  <div class="modal-box" style="text-align:center">
+    <div class="modal-title" style="justify-content:center">
+      <span>⭐ تقييم إقامتك</span>
+    </div>
+    <p style="font-size:13px;color:var(--fg-2,#6B7280);margin-bottom:10px">رأيك يهمّنا — ساعدنا في التحسين</p>
+
+    <div style="margin-bottom:14px">
+      <div style="font-size:12px;color:var(--fg-3,#9CA3AF);margin-bottom:8px">التقييم العام</div>
+      <div class="stars" id="overall-stars">
+        <button class="star-btn" onclick="setStar('overall',1)">★</button>
+        <button class="star-btn" onclick="setStar('overall',2)">★</button>
+        <button class="star-btn" onclick="setStar('overall',3)">★</button>
+        <button class="star-btn" onclick="setStar('overall',4)">★</button>
+        <button class="star-btn" onclick="setStar('overall',5)">★</button>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;text-align:right">
+      <div style="padding:10px;border:1px solid var(--hairline,#E5E7EB);border-radius:8px">
+        <div style="font-size:11px;color:var(--fg-3,#9CA3AF);margin-bottom:6px">النظافة</div>
+        <div class="stars" id="clean-stars" style="justify-content:flex-start;gap:4px;margin:0">
+          <button class="star-btn" style="font-size:20px" onclick="setStar('clean',1)">★</button>
+          <button class="star-btn" style="font-size:20px" onclick="setStar('clean',2)">★</button>
+          <button class="star-btn" style="font-size:20px" onclick="setStar('clean',3)">★</button>
+          <button class="star-btn" style="font-size:20px" onclick="setStar('clean',4)">★</button>
+          <button class="star-btn" style="font-size:20px" onclick="setStar('clean',5)">★</button>
+        </div>
+      </div>
+      <div style="padding:10px;border:1px solid var(--hairline,#E5E7EB);border-radius:8px">
+        <div style="font-size:11px;color:var(--fg-3,#9CA3AF);margin-bottom:6px">الخدمة</div>
+        <div class="stars" id="service-stars" style="justify-content:flex-start;gap:4px;margin:0">
+          <button class="star-btn" style="font-size:20px" onclick="setStar('service',1)">★</button>
+          <button class="star-btn" style="font-size:20px" onclick="setStar('service',2)">★</button>
+          <button class="star-btn" style="font-size:20px" onclick="setStar('service',3)">★</button>
+          <button class="star-btn" style="font-size:20px" onclick="setStar('service',4)">★</button>
+          <button class="star-btn" style="font-size:20px" onclick="setStar('service',5)">★</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="req-field" style="text-align:right">
+      <label>ما الذي أعجبك؟ وما الذي نحسّنه؟</label>
+      <textarea id="survey-comment" placeholder="رأيك الصريح يساعدنا..."></textarea>
+    </div>
+    <button class="btn-primary" onclick="submitSurvey()">إرسال التقييم</button>
+    <button class="btn-sec" onclick="closeModal('survey-modal')">لاحقاً</button>
+  </div>
+</div>
+
+<!-- Hotel Info Modal -->
+<div class="modal-bd" id="info-modal">
+  <div class="modal-box">
+    <div class="modal-title">
+      <span>ℹ معلومات الفندق</span>
+      <button onclick="closeModal('info-modal')">✕</button>
+    </div>
+    <div style="font-size:13px;color:var(--ink-900,#1A1A2E)">
+      <div style="margin-bottom:12px;padding:12px;border:1px solid var(--hairline,#E5E7EB);border-radius:8px">
+        <div style="font-weight:700;margin-bottom:6px">الاستقبال</div>
+        <div style="color:var(--fg-2,#6B7280)">متاح ٢٤ ساعة · الطابق الأرضي · داخلي: 0</div>
+      </div>
+      <div style="margin-bottom:12px;padding:12px;border:1px solid var(--hairline,#E5E7EB);border-radius:8px">
+        <div style="font-weight:700;margin-bottom:6px">المطعم الرئيسي</div>
+        <div style="color:var(--fg-2,#6B7280)">الإفطار: ٦:٣٠ص–١٠:٣٠ص<br>الغداء: ١٢:٠٠م–٣:٣٠م<br>العشاء: ٧:٠٠م–١١:٠٠م</div>
+      </div>
+      <div style="margin-bottom:12px;padding:12px;border:1px solid var(--hairline,#E5E7EB);border-radius:8px">
+        <div style="font-weight:700;margin-bottom:6px">المسبح والسبا</div>
+        <div style="color:var(--fg-2,#6B7280)">٦:٠٠ص–١٠:٠٠م · الطابق الثالث</div>
+      </div>
+      <div style="margin-bottom:12px;padding:12px;border:1px solid var(--hairline,#E5E7EB);border-radius:8px">
+        <div style="font-weight:700;margin-bottom:6px">واي فاي</div>
+        <div style="color:var(--fg-2,#6B7280)">الشبكة: <strong>Oasis_Guest</strong><br>كلمة المرور: <strong style="font-family:monospace">Oasis@2026</strong></div>
+      </div>
+      <div style="padding:12px;border:1px solid var(--hairline,#E5E7EB);border-radius:8px">
+        <div style="font-weight:700;margin-bottom:6px">خدمة الغرف</div>
+        <div style="color:var(--fg-2,#6B7280)">٦:٠٠ص–١٢:٠٠م · داخلي: 1</div>
+      </div>
+    </div>
+    <button class="btn-sec" style="margin-top:14px" onclick="closeModal('info-modal')">إغلاق</button>
+  </div>
+</div>
+
+<!-- ── JS ── -->
+<script>
+// Modal helpers
+window.openModal = function(id, type){
+  var m = document.getElementById(id);
+  if(!m) return;
+  if(id==='request-modal' && type){
+    var titles = {
+      housekeeping:'🧹 طلب تنظيف الغرفة',
+      laundry:'👔 الغسيل والكي',
+      maintenance:'🔧 طلب صيانة',
+      transport:'🚗 المواصلات',
+      spa:'💆 السبا والصحة',
+      concierge:'🗺 كونسيرج',
+      wifi:'📶 معلومات الواي فاي',
+      wakeup:'⏰ إيقاظ صباحي'
+    };
+    document.getElementById('req-modal-title').textContent = titles[type]||'طلب خدمة';
+    var body = document.getElementById('req-modal-body');
+    if(type==='wifi'){
+      body.innerHTML='<div style="padding:16px;background:var(--brand-50,#F0FDF4);border-radius:10px;text-align:center"><div style="font-size:13px;color:var(--fg-2,#6B7280);margin-bottom:8px">شبكة الواي فاي</div><div style="font-size:16px;font-weight:700;font-family:monospace;color:var(--brand-700,#1B4D3E);margin-bottom:4px">Oasis_Guest</div><div style="font-size:13px;color:var(--fg-3,#9CA3AF)">كلمة المرور:</div><div style="font-size:20px;font-weight:700;font-family:monospace;color:var(--brand-900,#0E2A22);margin-top:4px;letter-spacing:.1em">Oasis@2026</div></div>';
+    } else if(type==='wakeup'){
+      body.innerHTML='<div class="req-field"><label>وقت الإيقاظ</label><input type="time" id="wakeup-time" value="07:00"/></div><div class="req-field"><label>طريقة الإيقاظ</label><select><option>مكالمة هاتفية</option><option>رسالة نصية</option><option>طرق الباب</option></select></div>';
+    } else {
+      body.innerHTML='<div class="req-field"><label>تفاصيل الطلب</label><textarea id="req-details" placeholder="اكتب تفاصيل طلبك هنا..."></textarea></div><div class="req-field"><label>الوقت المفضل</label><select id="req-time"><option>في أقرب وقت ممكن</option><option>خلال ساعة</option><option>في الصباح</option><option>في المساء</option></select></div><div class="req-field"><label>ملاحظات إضافية</label><input id="req-notes" placeholder="أي ملاحظة..."/></div>';
+    }
+  }
+  m.classList.add('open');
+};
+window.closeModal = function(id){
+  var m = document.getElementById(id);
+  if(m) m.classList.remove('open');
+};
+
+// Close on backdrop click
+document.querySelectorAll('.modal-bd').forEach(function(m){
+  m.addEventListener('click', function(e){ if(e.target===m) m.classList.remove('open'); });
+});
+
+// Room service qty & total
+window.adjustQty = function(btn, d){
+  var ctrl = btn.closest('.qty-ctrl');
+  var val  = ctrl.querySelector('.qty-val');
+  var n    = Math.max(0, parseInt(val.textContent||0)+d);
+  val.textContent = n;
+  recalcRSTotal();
+};
+function recalcRSTotal(){
+  var total = 0;
+  document.querySelectorAll('.menu-item').forEach(function(item){
+    var n   = parseInt(item.querySelector('.qty-val')?.textContent||0);
+    var p   = parseInt(item.dataset.price||0);
+    total  += n * p;
+  });
+  var el = document.getElementById('rs-total');
+  if(el) el.textContent = total.toLocaleString('ar-SA')+' ر.س';
+}
+window.submitRoomService = function(){
+  var items=[];
+  document.querySelectorAll('.menu-item').forEach(function(item){
+    var n = parseInt(item.querySelector('.qty-val')?.textContent||0);
+    if(n>0) items.push(n+'× '+item.dataset.name);
+  });
+  if(!items.length){ showToast('اختر عنصراً واحداً على الأقل'); return; }
+  closeModal('room-service-modal');
+  showToast('✓ تم إرسال طلبك — التوصيل خلال ٢٠–٣٠ دقيقة');
+};
+
+// Generic request
+window.submitRequest = function(){
+  closeModal('request-modal');
+  showToast('✓ تم استلام طلبك — سنتواصل معك قريباً');
+};
+
+// Survey stars
+var _starRatings = {};
+window.setStar = function(category, n){
+  _starRatings[category] = n;
+  var container = document.getElementById(category+'-stars');
+  if(!container) return;
+  container.querySelectorAll('.star-btn').forEach(function(s,i){
+    s.classList.toggle('on', i < n);
+  });
+};
+
+window.submitSurvey = function(){
+  if(!_starRatings.overall){ showToast('يرجى تقييم إقامتك أولاً'); return; }
+  closeModal('survey-modal');
+  showToast('✓ شكراً على تقييمك! رأيك يصنع الفرق');
+};
+
+// Checkout
+window.confirmPortalCheckout = function(){
+  closeModal('checkout-modal');
+  showToast('✓ تم تسجيل خروجك — نتطلع لاستضافتك مجدداً');
+  setTimeout(function(){
+    document.querySelector('.welcome-banner h1').textContent='شكراً لإقامتك معنا!';
+    document.querySelector('.welcome-banner .sub').textContent='نتطلع لاستضافتك مجدداً — فندق الواحة الذهبية';
+  }, 1500);
+};
+
+// Toast
+function showToast(msg){
+  var t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(function(){ t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(function(){ t.remove(); }, 300); }, 3000);
+}
+
+// Init URL params (room=XXX&name=YYY)
+(function(){
+  var p = new URLSearchParams(window.location.search);
+  var name = p.get('name') || 'أحمد';
+  var room = p.get('room') || '٤٠٢';
+  var el = document.getElementById('welcome-name');
+  if(el) el.textContent = 'أهلاً وسهلاً، '+name;
+  var chip = document.getElementById('header-guest-chip');
+  if(chip) chip.textContent = name+' · الغرفة '+room;
+  document.querySelector('.room-badge').textContent = '🏨 الغرفة '+room;
+})();
+</script>
+</body>
+</html>
