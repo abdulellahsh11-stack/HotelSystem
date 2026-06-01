@@ -1116,8 +1116,7 @@ window.saveRoomSettings = function(){
    NEW BOOKING MODAL
 ════════════════════════════════════════ */
 window.registerInRoom = function(roomNo, roomType){
-  // Navigate to registration page with room pre-selected in URL params
-  window.location.href = '/static/dheuof/modules/01-guests/registration.html?room='+encodeURIComponent(roomNo)+'&type='+encodeURIComponent(roomType);
+  window.location.href = '/static/dheuof/modules/01-guests/index.html?room='+encodeURIComponent(roomNo)+'&type='+encodeURIComponent(roomType);
 };
 
 window.openNewBooking = function(){

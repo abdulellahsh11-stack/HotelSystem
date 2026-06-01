@@ -1258,5 +1258,33 @@ window.exportPDF = function(){
 
 })();
 </script>
+<script>
+/* ── Pre-fill room from URL params (room=X&type=Y) ── */
+(function(){
+  var p = new URLSearchParams(window.location.search);
+  var room = p.get('room'), type = p.get('type');
+  if(!room) return;
+  // Show banner and switch to rooms tab so user can confirm the selection
+  var banner = document.createElement('div');
+  banner.dir = 'rtl';
+  banner.style.cssText = 'position:fixed;top:0;right:0;left:0;z-index:9999;background:var(--brand-700);color:var(--paper);padding:14px 28px;display:flex;align-items:center;gap:14px;font-family:var(--font-ar);font-size:14px;font-weight:600;box-shadow:0 4px 20px rgba(0,0,0,.25)';
+  banner.innerHTML = '<span style="font-size:20px">🏨</span>'
+    + '<span>الغرفة <strong>' + room + '</strong>'+(type?' — '+type:'')+' · جاهزة · أدخل بيانات الضيف للتسجيل</span>'
+    + '<button onclick="this.parentNode.remove()" style="margin-inline-start:auto;background:rgba(255,255,255,.18);border:none;color:var(--paper);border-radius:6px;padding:5px 14px;cursor:pointer;font-family:var(--font-ar);font-size:13px">✕</button>';
+  document.body.appendChild(banner);
+  // Switch to guests tab to start registration
+  setTimeout(function(){
+    var regBtn = document.querySelector('.btn-primary[onclick*="registration"]');
+    // Try to pre-fill a room note in the new reservation button
+    var allBtns = document.querySelectorAll('.btn-primary');
+    allBtns.forEach(function(btn){
+      if(btn.textContent.includes('حجز جديد') || btn.textContent.includes('حجز')){
+        btn.textContent = '+ حجز جديد — الغرفة ' + room;
+        btn.onclick = function(){ window.location='/static/dheuof/modules/01-guests/registration.html?room='+encodeURIComponent(room)+'&type='+encodeURIComponent(type||''); };
+      }
+    });
+  }, 300);
+})();
+</script>
 </body>
 </html>
