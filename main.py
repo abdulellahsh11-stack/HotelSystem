@@ -456,128 +456,528 @@ async function doLogin(){{
 
 
 def _admin_dashboard(clients: list, stats: dict) -> str:
-    total = stats.get("total", 0)
-    active = stats.get("active", 0)
-    revenue = stats.get("revenue", 0)
-
-    rows = ""
-    for c in clients:
-        cid = c.get("id", "")
-        name = c.get("name", c.get("hotel_name", cid))
-        plan = c.get("plan", "trial")
-        status = c.get("status", "trial")
-        badge_cls = {"active": "badge-green", "trial": "badge-yellow", "suspended": "badge-red"}.get(status, "badge-blue")
-        status_ar = {"active": "نشط", "trial": "تجريبي", "suspended": "موقوف"}.get(status, status)
-        created = str(c.get("created_at", ""))[:10]
-        rows += f"""<tr>
-          <td><strong>{name}</strong><br><small style="color:#94a3b8;font-size:11px">{cid}</small></td>
-          <td><span class="badge badge-blue">{plan}</span></td>
-          <td><span class="badge {badge_cls}">{status_ar}</span></td>
-          <td>{created}</td>
-          <td>
-            <button onclick="toggleClient('{cid}')" style="background:#f1f5f9;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:12px;margin-left:4px">تبديل</button>
-            <button onclick="deleteClient('{cid}')" style="background:#fee2e2;color:#dc2626;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:12px">حذف</button>
-          </td>
-        </tr>"""
-
-    trial = stats.get("trial", 0)
-    return f"""<!DOCTYPE html>
+    return """<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>ضيوف — لوحة الإدارة</title>
-{_NAV}
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:#f0f4f8;color:#1e293b;display:flex;min-height:100vh;direction:rtl}
+.sidebar{width:220px;background:#0F2640;min-height:100vh;display:flex;flex-direction:column;position:fixed;right:0;top:0;bottom:0;z-index:100}
+.sidebar .logo{padding:24px 20px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sidebar .logo h1{color:#fff;font-size:1.4rem;font-weight:700}
+.sidebar .logo small{color:#94a3b8;font-size:.75rem}
+.sidebar a{display:flex;align-items:center;gap:10px;padding:12px 20px;color:#cbd5e1;text-decoration:none;font-size:.875rem;transition:.2s}
+.sidebar a:hover,.sidebar a.active{background:rgba(255,255,255,.1);color:#fff}
+.sidebar a .icon{font-size:1rem}
+.sidebar .spacer{flex:1}
+.main{margin-right:220px;flex:1;padding:0;min-height:100vh}
+.topbar{background:#fff;padding:16px 28px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 1px 4px rgba(0,0,0,.08);position:sticky;top:0;z-index:50}
+.topbar h2{font-size:1rem;font-weight:600;color:#0F2640}
+.content{padding:24px 28px}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:24px}
+.stat{background:#fff;border-radius:12px;padding:18px 20px;box-shadow:0 1px 3px rgba(0,0,0,.06);border-top:3px solid #185FA5}
+.stat.g{border-top-color:#10B981}.stat.y{border-top-color:#F59E0B}.stat.r{border-top-color:#ef4444}.stat.p{border-top-color:#8b5cf6}
+.stat .val{font-size:1.8rem;font-weight:700;color:#0F2640}.stat .lbl{font-size:.75rem;color:#64748b;margin-top:4px}
+.card{background:#fff;border-radius:12px;padding:20px 24px;box-shadow:0 1px 3px rgba(0,0,0,.06);margin-bottom:20px}
+.card-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f1f5f9}
+.card-hdr h3{font-size:.9rem;font-weight:600;color:#0F2640}
+table{width:100%;border-collapse:collapse;font-size:.825rem}
+th{background:#f8fafc;padding:10px 12px;text-align:right;font-weight:600;color:#64748b;border-bottom:2px solid #e2e8f0}
+td{padding:10px 12px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+tr:hover td{background:#fafbfc}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:600}
+.bg{background:#dcfce7;color:#16a34a}.by{background:#fef9c3;color:#ca8a04}.br{background:#fee2e2;color:#dc2626}.bb{background:#dbeafe;color:#1d4ed8}.bp{background:#ede9fe;color:#7c3aed}
+.btn{border:none;padding:7px 14px;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;transition:.2s}
+.btn-p{background:#185FA5;color:#fff}.btn-p:hover{background:#0F4A8A}
+.btn-g{background:#10B981;color:#fff}.btn-g:hover{background:#059669}
+.btn-r{background:#ef4444;color:#fff}.btn-r:hover{background:#dc2626}
+.btn-s{background:#f1f5f9;color:#374151}.btn-s:hover{background:#e2e8f0}
+.btn-y{background:#F59E0B;color:#fff}.btn-y:hover{background:#D97706}
+.pane{display:none}.pane.active{display:block}
+.alert-exp{background:#fef3c7;border:1px solid #fbbf24;border-radius:8px;padding:10px 14px;font-size:.8rem;color:#92400e;margin-bottom:8px}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-left:6px}
+.dot-g{background:#10B981}.dot-y{background:#F59E0B}.dot-r{background:#ef4444}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:16px;padding:28px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto}
+.modal h4{font-size:1rem;font-weight:700;color:#0F2640;margin-bottom:20px}
+.fg{margin-bottom:14px}
+.fg label{display:block;font-size:.8rem;font-weight:600;color:#374151;margin-bottom:5px}
+.fg input,.fg select{width:100%;padding:8px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.875rem;outline:none}
+.fg input:focus,.fg select:focus{border-color:#185FA5}
+.fg-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tag{display:inline-block;background:#e0f2fe;color:#0369a1;padding:2px 8px;border-radius:4px;font-size:.7rem;font-weight:600;margin-left:4px}
+</style>
 </head>
 <body>
 <div class="sidebar">
   <div class="logo"><h1>ضيوف</h1><small>لوحة الإدارة</small></div>
-  <a href="/admin" class="active"><span class="icon">&#128200;</span> الرئيسية</a>
-  <a href="/admin#clients"><span class="icon">&#127970;</span> المنشآت</a>
+  <a href="#" class="active" onclick="nav('overview',this)"><span class="icon">&#128200;</span> الرئيسية</a>
+  <a href="#" onclick="nav('clients',this)"><span class="icon">&#127970;</span> المنشآت</a>
+  <a href="#" onclick="nav('sessions',this)"><span class="icon">&#128101;</span> الجلسات النشطة</a>
+  <a href="#" onclick="nav('subs',this)"><span class="icon">&#128203;</span> الاشتراكات</a>
+  <a href="#" onclick="nav('employees',this)"><span class="icon">&#128188;</span> الموظفون</a>
+  <a href="#" onclick="nav('tickets',this)"><span class="icon">&#127917;</span> الدعم</a>
+  <div class="spacer"></div>
   <a href="/api/health" target="_blank"><span class="icon">&#128154;</span> الصحة</a>
-  <a href="/api/admin/logout" style="color:#ef4444;margin-top:auto"><span class="icon">&#128682;</span> خروج</a>
+  <a href="/api/admin/logout" style="color:#f87171"><span class="icon">&#128682;</span> خروج</a>
 </div>
 <div class="main">
   <div class="topbar">
-    <h2>لوحة التحكم الرئيسية</h2>
+    <h2 id="page-title">الرئيسية</h2>
     <div style="display:flex;gap:10px;align-items:center">
-      <span style="font-size:13px;color:#64748b">{datetime.now().strftime('%Y-%m-%d %H:%M')}</span>
-      <a href="/api/admin/logout" class="btn btn-danger" style="padding:8px 16px">خروج</a>
+      <span id="clock" style="font-size:.8rem;color:#94a3b8"></span>
+      <button class="btn btn-s" onclick="refreshAll()" title="تحديث">&#8635; تحديث</button>
+      <a href="/api/admin/logout" class="btn btn-r">خروج</a>
     </div>
   </div>
 
-  <div class="stats-grid">
-    <div class="stat-card"><div class="label">إجمالي المنشآت</div><div class="value">{total}</div></div>
-    <div class="stat-card green"><div class="label">المنشآت النشطة</div><div class="value">{active}</div></div>
-    <div class="stat-card gold"><div class="label">تجريبي</div><div class="value">{trial}</div></div>
-    <div class="stat-card"><div class="label">الإيرادات (ر.س)</div><div class="value">{revenue:,.0f}</div></div>
+  <div class="content">
+
+  <!-- ═══════════ OVERVIEW ═══════════ -->
+  <div id="pane-overview" class="pane active">
+    <div class="stat-grid">
+      <div class="stat"><div class="val" id="st-total">-</div><div class="lbl">إجمالي المنشآت</div></div>
+      <div class="stat g"><div class="val" id="st-active">-</div><div class="lbl">نشطة</div></div>
+      <div class="stat y"><div class="val" id="st-trial">-</div><div class="lbl">تجريبي</div></div>
+      <div class="stat r"><div class="val" id="st-suspended">-</div><div class="lbl">موقوفة</div></div>
+      <div class="stat p"><div class="val" id="st-sessions">-</div><div class="lbl">جلسات نشطة الآن</div></div>
+      <div class="stat"><div class="val" id="st-revenue">-</div><div class="lbl">الإيرادات (ر.س)</div></div>
+    </div>
+    <div id="expiry-alerts"></div>
+    <div class="card">
+      <div class="card-hdr"><h3>آخر المنشآت المسجلة</h3></div>
+      <table><thead><tr><th>المنشأة</th><th>الخطة</th><th>الحالة</th><th>تاريخ التسجيل</th></tr></thead>
+      <tbody id="ov-recent"></tbody></table>
+    </div>
   </div>
 
-  <div class="card" id="clients">
-    <div class="card-title">المنشآت المسجلة</div>
-    <div style="display:flex;justify-content:flex-end;margin-bottom:16px;gap:10px">
-      <button onclick="showAddClient()" class="btn btn-primary">+ إضافة منشأة</button>
-      <button onclick="generateKey()" class="btn btn-success">+ مفتاح تفعيل</button>
-    </div>
-    <div id="key-result" style="display:none;background:#f0fdf4;padding:12px;border-radius:8px;margin-bottom:16px;font-weight:600;color:#16a34a;letter-spacing:2px"></div>
-    <div style="overflow-x:auto">
-    <table>
-      <thead><tr>
-        <th>المنشأة</th><th>الخطة</th><th>الحالة</th><th>التسجيل</th><th>إجراءات</th>
+  <!-- ═══════════ CLIENTS ═══════════ -->
+  <div id="pane-clients" class="pane">
+    <div class="card">
+      <div class="card-hdr">
+        <h3>جميع المنشآت</h3>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-p" onclick="openAddModal()">+ إضافة</button>
+          <button class="btn btn-g" onclick="generateKey()">+ مفتاح تفعيل</button>
+        </div>
+      </div>
+      <div id="key-result" style="display:none;background:#f0fdf4;padding:10px 14px;border-radius:8px;margin-bottom:14px;font-weight:700;color:#16a34a;letter-spacing:2px;font-size:.9rem"></div>
+      <div style="overflow-x:auto">
+      <table><thead><tr>
+        <th>المنشأة</th><th>الخطة</th><th>الحالة</th><th>انتهاء الاشتراك</th><th>تاريخ التسجيل</th><th>إجراءات</th>
       </tr></thead>
-      <tbody id="clients_body">{rows if rows else '<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:40px">لا توجد منشآت بعد</td></tr>'}</tbody>
-    </table>
+      <tbody id="clients-body"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ SESSIONS ═══════════ -->
+  <div id="pane-sessions" class="pane">
+    <div class="card">
+      <div class="card-hdr">
+        <h3>الجلسات النشطة الآن</h3>
+        <button class="btn btn-s" onclick="loadSessions()">&#8635; تحديث</button>
+      </div>
+      <table><thead><tr>
+        <th>المنشأة</th><th>وقت الدخول</th><th>المدة</th><th>إجراء</th>
+      </tr></thead>
+      <tbody id="sessions-body"></tbody></table>
+    </div>
+  </div>
+
+  <!-- ═══════════ SUBSCRIPTIONS ═══════════ -->
+  <div id="pane-subs" class="pane">
+    <div class="card">
+      <div class="card-hdr"><h3>إدارة الاشتراكات</h3><button class="btn btn-s" onclick="loadSubs()">&#8635; تحديث</button></div>
+      <div style="overflow-x:auto">
+      <table><thead><tr>
+        <th>المنشأة</th><th>الخطة</th><th>الحالة</th><th>بداية</th><th>نهاية</th><th>المتبقي</th><th>السعر</th><th>تعديل</th>
+      </tr></thead>
+      <tbody id="subs-body"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ EMPLOYEES ═══════════ -->
+  <div id="pane-employees" class="pane">
+    <div class="card">
+      <div class="card-hdr">
+        <h3>سجل الموظفين</h3>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select id="emp-filter" onchange="loadEmployees()" style="padding:6px 10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.8rem">
+            <option value="">كل المنشآت</option>
+          </select>
+          <button class="btn btn-s" onclick="loadEmployees()">&#8635; تحديث</button>
+        </div>
+      </div>
+      <table><thead><tr>
+        <th>المنشأة</th><th>الموظف</th><th>الدور</th><th>آخر نشاط</th><th>عدد المهام</th>
+      </tr></thead>
+      <tbody id="emp-body"></tbody></table>
+    </div>
+  </div>
+
+  <!-- ═══════════ TICKETS ═══════════ -->
+  <div id="pane-tickets" class="pane">
+    <div class="card">
+      <div class="card-hdr"><h3>تذاكر الدعم</h3><button class="btn btn-s" onclick="loadTickets()">&#8635; تحديث</button></div>
+      <table><thead><tr>
+        <th>المنشأة</th><th>الموضوع</th><th>الحالة</th><th>التاريخ</th><th>رد</th>
+      </tr></thead>
+      <tbody id="tickets-body"></tbody></table>
+    </div>
+  </div>
+
+  </div>
+</div>
+
+<!-- Modal: Add Client -->
+<div class="modal-bg" id="modal-add">
+  <div class="modal">
+    <h4>إضافة منشأة جديدة</h4>
+    <div class="fg"><label>معرف المنشأة (ID)</label><input id="nc-id" placeholder="hotel-001"></div>
+    <div class="fg"><label>اسم المنشأة</label><input id="nc-name" placeholder="فندق النخبة"></div>
+    <div class="fg"><label>كلمة المرور</label><input id="nc-pass" type="password"></div>
+    <div class="fg"><label>الخطة</label>
+      <select id="nc-plan">
+        <option value="trial">تجريبي (trial)</option>
+        <option value="starter">مبدئي (starter)</option>
+        <option value="operations">تشغيلي (operations)</option>
+        <option value="professional">احترافي (professional)</option>
+        <option value="enterprise">مؤسسي (enterprise)</option>
+      </select>
+    </div>
+    <div id="nc-err" style="display:none;color:#dc2626;font-size:.8rem;margin-bottom:10px"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-p" style="flex:1" onclick="addClient()">إضافة</button>
+      <button class="btn btn-s" style="flex:1" onclick="closeModal('modal-add')">إلغاء</button>
     </div>
   </div>
 </div>
 
-<div id="modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center">
-  <div style="background:#fff;border-radius:16px;padding:32px;width:100%;max-width:500px">
-    <h3 style="margin-bottom:20px;color:#0F2640">إضافة منشأة جديدة</h3>
-    <div class="form-group"><label>معرف المنشأة (ID)</label><input id="nc_id" placeholder="hotel-001"></div>
-    <div class="form-group"><label>اسم المنشأة</label><input id="nc_name" placeholder="فندق النخبة"></div>
-    <div class="form-group"><label>كلمة المرور</label><input id="nc_pass" type="password"></div>
-    <div class="form-group"><label>الخطة</label>
-      <select id="nc_plan"><option>trial</option><option>starter</option><option>operations</option><option>professional</option><option>enterprise</option></select>
+<!-- Modal: Edit Subscription -->
+<div class="modal-bg" id="modal-sub">
+  <div class="modal">
+    <h4>تعديل اشتراك: <span id="sub-edit-name"></span></h4>
+    <input type="hidden" id="sub-edit-cid">
+    <div class="fg-row">
+      <div class="fg"><label>الخطة</label>
+        <select id="sub-plan">
+          <option value="trial">trial</option>
+          <option value="starter">starter</option>
+          <option value="operations">operations</option>
+          <option value="professional">professional</option>
+          <option value="enterprise">enterprise</option>
+        </select>
+      </div>
+      <div class="fg"><label>الحالة</label>
+        <select id="sub-status">
+          <option value="trial">تجريبي</option>
+          <option value="active">نشط</option>
+          <option value="suspended">موقوف</option>
+          <option value="expired">منتهي</option>
+        </select>
+      </div>
     </div>
-    <div id="nc_err" class="alert alert-error" style="display:none"></div>
-    <div style="display:flex;gap:10px;margin-top:20px">
-      <button onclick="addClient()" class="btn btn-primary" style="flex:1">إضافة</button>
-      <button onclick="document.getElementById('modal').style.display='none'" class="btn btn-outline" style="flex:1">إلغاء</button>
+    <div class="fg-row">
+      <div class="fg"><label>تاريخ البداية</label><input type="date" id="sub-start"></div>
+      <div class="fg"><label>تاريخ الانتهاء</label><input type="date" id="sub-end"></div>
+    </div>
+    <div class="fg"><label>السعر الشهري (ر.س)</label><input type="number" id="sub-price" min="0" step="0.01"></div>
+    <div id="sub-err" style="display:none;color:#dc2626;font-size:.8rem;margin-bottom:10px"></div>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="btn btn-p" style="flex:1" onclick="saveSub()">حفظ</button>
+      <button class="btn btn-s" style="flex:1" onclick="closeModal('modal-sub')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Ticket Reply -->
+<div class="modal-bg" id="modal-ticket">
+  <div class="modal">
+    <h4>الرد على التذكرة</h4>
+    <input type="hidden" id="tk-id">
+    <div class="fg"><label>الرد</label><textarea id="tk-reply" rows="4" style="width:100%;padding:8px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.875rem;resize:vertical"></textarea></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-p" style="flex:1" onclick="sendReply()">إرسال</button>
+      <button class="btn btn-s" style="flex:1" onclick="closeModal('modal-ticket')">إلغاء</button>
     </div>
   </div>
 </div>
 
 <script>
-function showAddClient(){{var m=document.getElementById('modal');m.style.display='flex';}}
-async function addClient(){{
-  const id=document.getElementById('nc_id').value.trim();
-  const name=document.getElementById('nc_name').value.trim();
-  const pass=document.getElementById('nc_pass').value;
-  const plan=document.getElementById('nc_plan').value;
-  const err=document.getElementById('nc_err');
-  if(!id||!name||!pass){{err.textContent='جميع الحقول مطلوبة';err.style.display='block';return}}
-  const r=await fetch('/api/admin/clients',{{method:'POST',headers:{{'Content-Type':'application/json'}},body:JSON.stringify({{id,name,password:pass,plan}})}});
+const PLANS={trial:'تجريبي',starter:'مبدئي',operations:'تشغيلي',professional:'احترافي',enterprise:'مؤسسي'};
+const STATUS_AR={active:'نشط',trial:'تجريبي',suspended:'موقوف',expired:'منتهي'};
+const STATUS_CLS={active:'bg',trial:'by',suspended:'br',expired:'br'};
+let _clients=[];
+
+function tick(){
+  const n=new Date();
+  document.getElementById('clock').textContent=n.toLocaleDateString('ar-SA',{weekday:'short',year:'numeric',month:'short',day:'numeric'})+' '+n.toLocaleTimeString('ar-SA');
+}
+setInterval(tick,1000);tick();
+
+function nav(id,el){
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sidebar a').forEach(a=>a.classList.remove('active'));
+  document.getElementById('pane-'+id).classList.add('active');
+  if(el){el.classList.add('active');}
+  const titles={overview:'الرئيسية',clients:'المنشآت',sessions:'الجلسات النشطة',subs:'الاشتراكات',employees:'الموظفون',tickets:'تذاكر الدعم'};
+  document.getElementById('page-title').textContent=titles[id]||id;
+  if(id==='clients')loadClients();
+  else if(id==='sessions')loadSessions();
+  else if(id==='subs')loadSubs();
+  else if(id==='employees')loadEmployees();
+  else if(id==='tickets')loadTickets();
+}
+
+function refreshAll(){loadOverview();const active=document.querySelector('.pane.active')?.id?.replace('pane-','');if(active&&active!=='overview')nav(active);}
+
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function openAddModal(){document.getElementById('nc-id').value='';document.getElementById('nc-name').value='';document.getElementById('nc-pass').value='';document.getElementById('nc-err').style.display='none';openModal('modal-add');}
+
+// ─── Overview ───────────────────────────────────────────────
+async function loadOverview(){
+  const [cr,sr]=await Promise.all([
+    fetch('/api/admin/clients').then(r=>r.json()).catch(()=>({})),
+    fetch('/api/admin/sessions').then(r=>r.json()).catch(()=>({}))
+  ]);
+  const clients=cr.clients||[];_clients=clients;
+  const total=clients.length;
+  const active=clients.filter(c=>c.status==='active').length;
+  const trial=clients.filter(c=>c.status==='trial').length;
+  const susp=clients.filter(c=>c.status==='suspended').length;
+  const sessions=(sr.sessions||[]).length;
+  document.getElementById('st-total').textContent=total;
+  document.getElementById('st-active').textContent=active;
+  document.getElementById('st-trial').textContent=trial;
+  document.getElementById('st-suspended').textContent=susp;
+  document.getElementById('st-sessions').textContent=sessions;
+  // revenue from subscriptions
+  let rev=0;
+  clients.forEach(c=>{if(c.sub_price)rev+=parseFloat(c.sub_price)||0;});
+  document.getElementById('st-revenue').textContent=rev.toLocaleString('ar-SA',{minimumFractionDigits:0});
+  // expiry alerts
+  const alerts=document.getElementById('expiry-alerts');
+  alerts.innerHTML='';
+  const today=new Date();
+  clients.forEach(c=>{
+    if(c.sub_end){
+      const end=new Date(c.sub_end);
+      const days=Math.ceil((end-today)/86400000);
+      if(days<=14&&days>=0){
+        alerts.innerHTML+=`<div class="alert-exp">⚠️ <strong>${c.name||c.id}</strong> — اشتراكه ينتهي خلال <strong>${days}</strong> يوم (${c.sub_end})</div>`;
+      }else if(days<0){
+        alerts.innerHTML+=`<div class="alert-exp" style="background:#fee2e2;border-color:#fca5a5;color:#7f1d1d">🔴 <strong>${c.name||c.id}</strong> — اشتراكه انتهى منذ ${Math.abs(days)} يوم</div>`;
+      }
+    }
+  });
+  // recent
+  const recent=[...clients].sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0)).slice(0,5);
+  document.getElementById('ov-recent').innerHTML=recent.map(c=>{
+    const sc=STATUS_CLS[c.status]||'bb';
+    return `<tr><td><strong>${c.name||c.id}</strong><br><small style="color:#94a3b8">${c.id}</small></td>
+      <td><span class="badge bb">${PLANS[c.plan]||c.plan||'—'}</span></td>
+      <td><span class="badge ${sc}">${STATUS_AR[c.status]||c.status}</span></td>
+      <td>${(c.created_at||'').substring(0,10)||'—'}</td></tr>`;
+  }).join('')||'<tr><td colspan="4" style="text-align:center;color:#94a3b8;padding:24px">لا توجد بيانات</td></tr>';
+}
+
+// ─── Clients ────────────────────────────────────────────────
+async function loadClients(){
+  const r=await fetch('/api/admin/clients').then(r=>r.json()).catch(()=>({}));
+  const clients=r.clients||[];_clients=clients;
+  document.getElementById('clients-body').innerHTML=clients.map(c=>{
+    const sc=STATUS_CLS[c.status]||'bb';
+    const end=c.sub_end?`<span style="font-weight:600">${c.sub_end}</span>`:'<span style="color:#94a3b8">—</span>';
+    const days=c.sub_end?Math.ceil((new Date(c.sub_end)-new Date())/86400000):null;
+    const daysTag=days!==null?(days<0?`<span class="tag" style="background:#fee2e2;color:#dc2626">منتهي</span>`:(days<=14?`<span class="tag" style="background:#fef3c7;color:#92400e">${days}y</span>`:`<span class="tag" style="background:#dcfce7;color:#16a34a">${days}y</span>`)): '';
+    return `<tr>
+      <td><strong>${c.name||c.id}</strong><br><small style="color:#94a3b8;font-size:11px">${c.id}</small></td>
+      <td><span class="badge bb">${PLANS[c.plan]||c.plan||'—'}</span></td>
+      <td><span class="badge ${sc}">${STATUS_AR[c.status]||c.status}</span></td>
+      <td>${end} ${daysTag}</td>
+      <td>${(c.created_at||'').substring(0,10)||'—'}</td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-s" onclick="editSub('${c.id}')" style="margin-left:4px">&#9998; اشتراك</button>
+        <button class="btn btn-s" onclick="toggleClient('${c.id}')" style="margin-left:4px">تبديل</button>
+        <button class="btn btn-r" onclick="deleteClient('${c.id}')">حذف</button>
+      </td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="6" style="text-align:center;color:#94a3b8;padding:32px">لا توجد منشآت</td></tr>';
+}
+
+async function addClient(){
+  const id=document.getElementById('nc-id').value.trim();
+  const name=document.getElementById('nc-name').value.trim();
+  const pass=document.getElementById('nc-pass').value;
+  const plan=document.getElementById('nc-plan').value;
+  const err=document.getElementById('nc-err');
+  if(!id||!name||!pass){err.textContent='جميع الحقول مطلوبة';err.style.display='block';return;}
+  const r=await fetch('/api/admin/clients',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,name,password:pass,plan})});
   const d=await r.json();
-  if(d.success){{location.reload()}}else{{err.textContent=d.error||'خطأ';err.style.display='block'}}
-}}
-async function toggleClient(id){{
-  await fetch('/api/admin/clients/'+id+'/toggle',{{method:'POST'}});
-  location.reload();
-}}
-async function deleteClient(id){{
-  if(!confirm('هل تريد حذف هذه المنشأة؟'))return;
-  await fetch('/api/admin/clients/'+id,{{method:'DELETE'}});
-  location.reload();
-}}
-async function generateKey(){{
+  if(d.success){closeModal('modal-add');loadClients();loadOverview();}
+  else{err.textContent=d.error||'خطأ';err.style.display='block';}
+}
+
+async function toggleClient(id){
+  await fetch('/api/admin/clients/'+id+'/toggle',{method:'POST'});
+  loadClients();loadOverview();
+}
+
+async function deleteClient(id){
+  if(!confirm('هل تريد حذف هذه المنشأة نهائياً؟'))return;
+  await fetch('/api/admin/clients/'+id,{method:'DELETE'});
+  loadClients();loadOverview();
+}
+
+async function generateKey(){
   const plan=prompt('الخطة (trial/starter/operations/professional/enterprise):','trial');
   if(!plan)return;
   const days=parseInt(prompt('عدد الأيام:','30'))||30;
-  const r=await fetch('/api/admin/keys/generate',{{method:'POST',headers:{{'Content-Type':'application/json'}},body:JSON.stringify({{plan,days}})}});
+  const r=await fetch('/api/admin/keys/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({plan,days})});
   const d=await r.json();
-  if(d.key){{const el=document.getElementById('key-result');el.style.display='block';el.textContent='المفتاح: '+d.key;}}
-}}
+  if(d.key){const el=document.getElementById('key-result');el.style.display='block';el.textContent='🔑 المفتاح: '+d.key;}
+}
+
+// ─── Sessions ───────────────────────────────────────────────
+async function loadSessions(){
+  const r=await fetch('/api/admin/sessions').then(r=>r.json()).catch(()=>({}));
+  const sessions=r.sessions||[];
+  document.getElementById('st-sessions').textContent=sessions.length;
+  const now=new Date();
+  document.getElementById('sessions-body').innerHTML=sessions.map(s=>{
+    const created=new Date(s.created_at);
+    const mins=Math.floor((now-created)/60000);
+    const dur=mins<60?`${mins} دقيقة`:`${Math.floor(mins/60)}س ${mins%60}د`;
+    return `<tr>
+      <td><strong>${s.client_name||s.client_id}</strong><br><small style="color:#94a3b8">${s.client_id}</small></td>
+      <td>${s.created_at.replace('T',' ').substring(0,19)}</td>
+      <td><span class="dot dot-g"></span>${dur}</td>
+      <td><button class="btn btn-r" style="padding:4px 10px;font-size:.75rem" onclick="revokeSession('${s.token_prefix}')">إنهاء</button></td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="4" style="text-align:center;color:#94a3b8;padding:32px">لا توجد جلسات نشطة</td></tr>';
+}
+
+async function revokeSession(prefix){
+  if(!confirm('هل تريد إنهاء هذه الجلسة؟'))return;
+  await fetch('/api/admin/sessions/'+prefix+'/revoke',{method:'POST'});
+  loadSessions();
+}
+
+// ─── Subscriptions ──────────────────────────────────────────
+async function loadSubs(){
+  const r=await fetch('/api/admin/subscriptions').then(r=>r.json()).catch(()=>({}));
+  const subs=r.subscriptions||[];
+  const today=new Date();
+  document.getElementById('subs-body').innerHTML=subs.map(s=>{
+    const end=s.sub_end?new Date(s.sub_end):null;
+    const days=end?Math.ceil((end-today)/86400000):null;
+    let daysHtml='—';
+    if(days!==null){
+      if(days<0)daysHtml=`<span style="color:#dc2626;font-weight:600">انتهى منذ ${Math.abs(days)}ي</span>`;
+      else if(days<=14)daysHtml=`<span style="color:#d97706;font-weight:600">${days} يوم</span>`;
+      else daysHtml=`<span style="color:#16a34a;font-weight:600">${days} يوم</span>`;
+    }
+    const sc=STATUS_CLS[s.status]||'bb';
+    return `<tr>
+      <td><strong>${s.name||s.client_id}</strong><br><small style="color:#94a3b8">${s.client_id}</small></td>
+      <td><span class="badge bb">${PLANS[s.plan]||s.plan||'—'}</span></td>
+      <td><span class="badge ${sc}">${STATUS_AR[s.status]||s.status}</span></td>
+      <td>${s.sub_start||'—'}</td>
+      <td>${s.sub_end||'—'}</td>
+      <td>${daysHtml}</td>
+      <td>${s.price?parseFloat(s.price).toLocaleString('ar-SA'):'—'} ر.س</td>
+      <td><button class="btn btn-y" onclick="editSub('${s.client_id}')">&#9998; تعديل</button></td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="8" style="text-align:center;color:#94a3b8;padding:32px">لا توجد اشتراكات</td></tr>';
+}
+
+function editSub(cid){
+  const c=_clients.find(x=>x.id===cid)||{id:cid};
+  document.getElementById('sub-edit-cid').value=cid;
+  document.getElementById('sub-edit-name').textContent=c.name||cid;
+  document.getElementById('sub-plan').value=c.plan||'trial';
+  document.getElementById('sub-status').value=c.status||'trial';
+  document.getElementById('sub-start').value=c.sub_start||'';
+  document.getElementById('sub-end').value=c.sub_end||'';
+  document.getElementById('sub-price').value=c.sub_price||'';
+  document.getElementById('sub-err').style.display='none';
+  openModal('modal-sub');
+}
+
+async function saveSub(){
+  const cid=document.getElementById('sub-edit-cid').value;
+  const body={
+    plan:document.getElementById('sub-plan').value,
+    status:document.getElementById('sub-status').value,
+    sub_start:document.getElementById('sub-start').value,
+    sub_end:document.getElementById('sub-end').value,
+    sub_price:parseFloat(document.getElementById('sub-price').value)||0
+  };
+  const r=await fetch('/api/admin/subscriptions/'+cid,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const d=await r.json();
+  if(d.success){closeModal('modal-sub');loadClients();loadSubs();loadOverview();}
+  else{const e=document.getElementById('sub-err');e.textContent=d.error||'خطأ';e.style.display='block';}
+}
+
+// ─── Employees ──────────────────────────────────────────────
+async function loadEmployees(){
+  const filterCid=document.getElementById('emp-filter').value;
+  const url='/api/admin/employees'+(filterCid?'?client_id='+filterCid:'');
+  const r=await fetch(url).then(r=>r.json()).catch(()=>({}));
+  const emps=r.employees||[];
+  // populate filter
+  const sel=document.getElementById('emp-filter');
+  const cur=sel.value;
+  if(sel.options.length<=1){
+    _clients.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.name||c.id;sel.appendChild(o);});
+    sel.value=cur;
+  }
+  document.getElementById('emp-body').innerHTML=emps.map(e=>{
+    return `<tr>
+      <td><strong>${e.client_name||e.client_id}</strong></td>
+      <td>${e.name||'—'}</td>
+      <td><span class="badge bb">${e.role||'—'}</span></td>
+      <td>${e.last_active?(e.last_active.replace('T',' ').substring(0,19)):'—'}</td>
+      <td>${e.task_count||0}</td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:32px">لا توجد بيانات</td></tr>';
+}
+
+// ─── Tickets ────────────────────────────────────────────────
+async function loadTickets(){
+  const r=await fetch('/api/admin/tickets').then(r=>r.json()).catch(()=>({}));
+  const tickets=r.tickets||[];
+  document.getElementById('tickets-body').innerHTML=tickets.map(t=>{
+    const sc=t.status==='open'?'br':'bg';
+    return `<tr>
+      <td>${t.client_id||'—'}</td>
+      <td>${t.subject||'—'}</td>
+      <td><span class="badge ${sc}">${t.status==='open'?'مفتوح':'مغلق'}</span></td>
+      <td>${(t.created_at||'').substring(0,10)}</td>
+      <td><button class="btn btn-s" style="padding:4px 10px;font-size:.75rem" onclick="openReply('${t.id}')">رد</button></td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:32px">لا توجد تذاكر</td></tr>';
+}
+
+function openReply(id){document.getElementById('tk-id').value=id;document.getElementById('tk-reply').value='';openModal('modal-ticket');}
+async function sendReply(){
+  const id=document.getElementById('tk-id').value;
+  const reply=document.getElementById('tk-reply').value.trim();
+  if(!reply)return;
+  await fetch('/api/admin/tickets/reply',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,reply})});
+  closeModal('modal-ticket');loadTickets();
+}
+
+// Auto-refresh overview every 30s
+setInterval(loadOverview,30000);
+loadOverview();
 </script>
 </body>
 </html>"""
@@ -1128,11 +1528,7 @@ async def admin_page(request: Request):
     if not is_auth:
         return HTMLResponse(_admin_login_page())
 
-    store: "DataStore" = request.app.state.store
-    clients = store.get_all_clients()
-    active = sum(1 for c in clients if c.get("status") == "active")
-    stats = {"total": len(clients), "active": active, "revenue": 0}
-    return HTMLResponse(_admin_dashboard(clients, stats))
+    return HTMLResponse(_admin_dashboard([], {}))
 
 
 @app.get("/guests", response_class=HTMLResponse)
@@ -1281,6 +1677,11 @@ async def admin_logout_post():
 async def admin_clients(request: Request, _=Depends(require_admin)):
     store: "DataStore" = request.app.state.store
     clients = store.get_all_clients()
+    # Normalize subscription fields for the dashboard
+    for c in clients:
+        c.setdefault("sub_end", c.get("subscription_expires", c.get("trial_end", "")))
+        c.setdefault("sub_start", "")
+        c.setdefault("sub_price", 0)
     return {"success": True, "clients": clients}
 
 
@@ -1966,6 +2367,118 @@ async def admin_close_ticket(request: Request, _=Depends(require_admin)):
             break
     store.save_admin_data(data)
     return {"success": True}
+
+
+@app.get("/api/admin/sessions")
+async def admin_list_sessions(request: Request, _=Depends(require_admin)):
+    """قائمة الجلسات النشطة لجميع المنشآت"""
+    store: "DataStore" = request.app.state.store
+    with _lock:
+        raw = dict(_client_sessions)
+    result = []
+    for token, sess in raw.items():
+        cid = sess.get("client_id", "")
+        client = store.get_client(cid) or {}
+        result.append({
+            "token_prefix": token[:8],
+            "client_id": cid,
+            "client_name": client.get("name", client.get("hotel_name", cid)),
+            "plan": client.get("plan", "trial"),
+            "created_at": sess.get("created_at", ""),
+        })
+    result.sort(key=lambda x: x["created_at"], reverse=True)
+    return {"success": True, "sessions": result}
+
+
+@app.post("/api/admin/sessions/{token_prefix}/revoke")
+async def admin_revoke_session(token_prefix: str, request: Request, _=Depends(require_admin)):
+    """إنهاء جلسة نشطة بواسطة المدير"""
+    with _lock:
+        to_remove = [t for t in _client_sessions if t.startswith(token_prefix)]
+        for t in to_remove:
+            _client_sessions.pop(t, None)
+    return {"success": True, "revoked": len(to_remove)}
+
+
+@app.get("/api/admin/subscriptions")
+async def admin_list_subscriptions(request: Request, _=Depends(require_admin)):
+    """قائمة اشتراكات جميع المنشآت"""
+    store: "DataStore" = request.app.state.store
+    clients = store.get_all_clients()
+    subs = []
+    for c in clients:
+        subs.append({
+            "client_id": c.get("id", ""),
+            "name": c.get("name", c.get("hotel_name", c.get("id", ""))),
+            "plan": c.get("plan", "trial"),
+            "status": c.get("status", "trial"),
+            "sub_start": c.get("sub_start", ""),
+            "sub_end": c.get("sub_end", c.get("subscription_expires", c.get("trial_end", ""))),
+            "price": c.get("sub_price", 0),
+        })
+    subs.sort(key=lambda x: x.get("sub_end") or "", reverse=False)
+    return {"success": True, "subscriptions": subs}
+
+
+@app.put("/api/admin/subscriptions/{client_id}")
+async def admin_update_subscription(client_id: str, request: Request, _=Depends(require_admin)):
+    """تحديث اشتراك منشأة"""
+    store: "DataStore" = request.app.state.store
+    client = store.get_client(client_id)
+    if not client:
+        raise HTTPException(status_code=404, detail="المنشأة غير موجودة")
+    body = await request.json()
+    for field in ["plan", "status", "sub_start", "sub_end", "sub_price"]:
+        if field in body:
+            client[field] = body[field]
+    # sync status on the client record as well
+    if "status" in body:
+        client["status"] = body["status"]
+    store.save_client(client)
+    return {"success": True, "client_id": client_id}
+
+
+@app.get("/api/admin/employees")
+async def admin_list_employees(request: Request, client_id: Optional[str] = None, _=Depends(require_admin)):
+    """قائمة الموظفين من قاعدة البيانات مع آخر نشاط"""
+    db = request.app.state.db
+    store: "DataStore" = request.app.state.store
+    if not db.use_postgres:
+        return {"success": True, "employees": []}
+    try:
+        if client_id:
+            rows = db.execute("""
+                SELECT e.client_id, e.name, e.role, e.id,
+                       MAX(ra.created_at) as last_active,
+                       COUNT(ra.id) as task_count
+                FROM employees e
+                LEFT JOIN room_actions ra ON ra.client_id=e.client_id AND ra.performed_by=e.name
+                WHERE e.client_id=%s
+                GROUP BY e.client_id, e.name, e.role, e.id
+                ORDER BY last_active DESC NULLS LAST
+            """, (client_id,), fetch="all")
+        else:
+            rows = db.execute("""
+                SELECT e.client_id, e.name, e.role, e.id,
+                       MAX(ra.created_at) as last_active,
+                       COUNT(ra.id) as task_count
+                FROM employees e
+                LEFT JOIN room_actions ra ON ra.client_id=e.client_id AND ra.performed_by=e.name
+                GROUP BY e.client_id, e.name, e.role, e.id
+                ORDER BY last_active DESC NULLS LAST
+                LIMIT 200
+            """, fetch="all")
+        clients_map = {c["id"]: c.get("name", c.get("hotel_name", c["id"])) for c in store.get_all_clients()}
+        result = []
+        for r in (rows or []):
+            d = dict(r)
+            d["client_name"] = clients_map.get(d.get("client_id", ""), d.get("client_id", ""))
+            if d.get("last_active"):
+                d["last_active"] = str(d["last_active"])
+            result.append(d)
+        return {"success": True, "employees": result}
+    except Exception as e:
+        return {"success": True, "employees": [], "warning": str(e)}
 
 
 @app.get("/api/admin/settings")
