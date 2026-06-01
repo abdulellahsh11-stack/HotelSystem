@@ -294,14 +294,26 @@ tr:hover td{background:#f8fafc}
 """
 
 
-def _login_page(error: str = "") -> str:
+_SEO_BASE = """<meta name="description" content="ضيوف — منصة إدارة الفنادق والشقق المخدومة الذكية في السعودية. حجوزات، نزلاء، فواتير، تقارير، واتساب.">
+<meta name="keywords" content="نظام فنادق, إدارة فندق, شقق مخدومة, حجوزات, نزلاء, فواتير ضريبية, واتساب فندق, ضيوف, dheuof">
+<meta name="robots" content="index, follow">
+<meta property="og:title" content="ضيوف — منصة الضيافة الذكية">
+<meta property="og:description" content="إدارة فندقك بذكاء — حجوزات، نزلاء، فواتير، تقارير متقدمة وأكثر من 17 وحدة.">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ar_SA">
+<link rel="canonical" href="https://dheuof.com/">"""
+
+
+def _login_page(error: str = "", ref_code: str = "") -> str:
     err_html = f'<div class="alert alert-error">{error}</div>' if error else ""
+    ref_field = f'<input type="hidden" id="ref-code" value="{ref_code}">' if ref_code else '<input type="hidden" id="ref-code" value="">'
     return f"""<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ضيوف — تسجيل الدخول</title>
+<title>ضيوف — نظام إدارة الفنادق والشقق المخدومة</title>
+{_SEO_BASE}
 <style>
   *{{margin:0;padding:0;box-sizing:border-box}}
   body{{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:linear-gradient(135deg,#0F2640 0%,#185FA5 100%);min-height:100vh;display:flex;align-items:center;justify-content:center}}
@@ -352,6 +364,7 @@ def _login_page(error: str = "") -> str:
   </div>
 
   <div id="pane-register" class="pane">
+    {ref_field}
     <div class="form-group">
       <label>اسم المنشأة</label>
       <input type="text" id="reg-name" placeholder="فندق الواحة">
@@ -395,8 +408,9 @@ async function doRegister(){{
   const id=document.getElementById('reg-id').value.trim();
   const pass=document.getElementById('reg-pass').value;
   const key=document.getElementById('reg-key').value.trim();
+  const ref=document.getElementById('ref-code')?.value||'';
   if(!name||!id||!pass)return showErr('يرجى ملء جميع الحقول');
-  const r=await fetch('/api/client/register',{{method:'POST',headers:{{'Content-Type':'application/json'}},body:JSON.stringify({{hotel_name:name,client_id:id,password:pass,activation_key:key}})}});
+  const r=await fetch('/api/client/register',{{method:'POST',headers:{{'Content-Type':'application/json'}},body:JSON.stringify({{hotel_name:name,client_id:id,password:pass,activation_key:key,ref_code:ref}})}});
   const d=await r.json();
   if(d.ok||d.success)location.href='/';else showErr(d.error||'خطأ في التسجيل');
 }}
@@ -521,6 +535,7 @@ tr:hover td{background:#fafbfc}
   <a href="#" onclick="nav('subs',this)"><span class="icon">&#128203;</span> الاشتراكات</a>
   <a href="#" onclick="nav('employees',this)"><span class="icon">&#128188;</span> الموظفون</a>
   <a href="#" onclick="nav('modules',this)"><span class="icon">&#9881;</span> التحكم بالوحدات</a>
+  <a href="#" onclick="nav('marketers',this)"><span class="icon">&#128279;</span> المسوقون</a>
   <a href="#" onclick="nav('tickets',this)"><span class="icon">&#127917;</span> الدعم</a>
   <div class="spacer"></div>
   <a href="/api/health" target="_blank"><span class="icon">&#128154;</span> الصحة</a>
@@ -639,6 +654,24 @@ tr:hover td{background:#fafbfc}
     </div>
   </div>
 
+  <!-- ═══════════ MARKETERS ═══════════ -->
+  <div id="pane-marketers" class="pane">
+    <div class="card">
+      <div class="card-hdr">
+        <h3>&#128279; المسوقون وروابطهم التسويقية</h3>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-p" onclick="openAddMktr()">+ إضافة مسوق</button>
+          <button class="btn btn-s" onclick="loadMarketers()">&#8635; تحديث</button>
+        </div>
+      </div>
+      <div id="mktr-link-info" style="display:none;background:#f0fdf4;padding:10px 14px;border-radius:8px;margin-bottom:14px;font-size:.8rem;color:#166534;word-break:break-all"></div>
+      <table><thead><tr>
+        <th>اسم المسوق</th><th>كود الإحالة</th><th>رابط التسجيل</th><th>التسجيلات</th><th>العمولة %</th><th>الحالة</th><th>إجراءات</th>
+      </tr></thead>
+      <tbody id="mktr-body"></tbody></table>
+    </div>
+  </div>
+
   <!-- ═══════════ TICKETS ═══════════ -->
   <div id="pane-tickets" class="pane">
     <div class="card">
@@ -742,6 +775,41 @@ tr:hover td{background:#fafbfc}
   </div>
 </div>
 
+<!-- Modal: Add Marketer -->
+<div class="modal-bg" id="modal-mktr">
+  <div class="modal">
+    <h4>إضافة مسوق جديد</h4>
+    <div class="fg"><label>الاسم</label><input id="mk-name" placeholder="اسم المسوق"></div>
+    <div class="fg-row">
+      <div class="fg"><label>كود الإحالة (اختياري)</label><input id="mk-code" placeholder="ABC123 — يُولَّد تلقائياً"></div>
+      <div class="fg"><label>نسبة العمولة %</label><input type="number" id="mk-comm" value="10" min="0" max="100"></div>
+    </div>
+    <div class="fg-row">
+      <div class="fg"><label>رقم الهاتف</label><input id="mk-phone" placeholder="+9665xxxxxxxx"></div>
+      <div class="fg"><label>البريد الإلكتروني</label><input id="mk-email" placeholder="marketer@email.com"></div>
+    </div>
+    <div class="fg"><label>ملاحظات</label><input id="mk-notes" placeholder="ملاحظات اختيارية"></div>
+    <div id="mk-err" style="display:none;color:#dc2626;font-size:.8rem;margin-bottom:10px"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-p" style="flex:1" onclick="addMarketer()">إضافة</button>
+      <button class="btn btn-s" style="flex:1" onclick="closeModal('modal-mktr')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Marketer Referrals -->
+<div class="modal-bg" id="modal-refs">
+  <div class="modal" style="max-width:640px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h4 id="refs-title" style="margin:0">تسجيلات المسوق</h4>
+      <button onclick="closeModal('modal-refs')" style="background:none;border:none;cursor:pointer;font-size:1.3rem;color:#94a3b8">&#10005;</button>
+    </div>
+    <div id="refs-link" style="background:#f0fdf4;padding:10px 14px;border-radius:8px;margin-bottom:14px;font-size:.8rem;color:#166534;word-break:break-all"></div>
+    <table><thead><tr><th>المنشأة</th><th>الخطة</th><th>تاريخ التسجيل</th></tr></thead>
+    <tbody id="refs-body"></tbody></table>
+  </div>
+</div>
+
 <!-- Modal: Ticket Reply -->
 <div class="modal-bg" id="modal-ticket">
   <div class="modal">
@@ -772,7 +840,7 @@ function nav(id,el){
   document.querySelectorAll('.sidebar a').forEach(a=>a.classList.remove('active'));
   document.getElementById('pane-'+id).classList.add('active');
   if(el){el.classList.add('active');}
-  const titles={overview:'الرئيسية',clients:'المنشآت',sessions:'الجلسات النشطة',subs:'الاشتراكات',employees:'الموظفون',modules:'التحكم بالوحدات',tickets:'تذاكر الدعم'};
+  const titles={overview:'الرئيسية',clients:'المنشآت',sessions:'الجلسات النشطة',subs:'الاشتراكات',employees:'الموظفون',modules:'التحكم بالوحدات',tickets:'تذاكر الدعم',marketers:'المسوقون'};
   document.getElementById('page-title').textContent=titles[id]||id;
   if(id==='clients')loadClients();
   else if(id==='sessions')loadSessions();
@@ -780,6 +848,7 @@ function nav(id,el){
   else if(id==='employees')loadEmployees();
   else if(id==='modules')initModulesPane();
   else if(id==='tickets')loadTickets();
+  else if(id==='marketers')loadMarketers();
 }
 
 function refreshAll(){loadOverview();const active=document.querySelector('.pane.active')?.id?.replace('pane-','');if(active&&active!=='overview')nav(active);}
@@ -1127,6 +1196,63 @@ async function saveModules(){
     const c=_clients.find(x=>x.id===cid);
     if(c)c.enabled_modules=enabled;
   }
+}
+
+// ─── Marketers ──────────────────────────────────────────────
+function _refLink(code){return location.origin+'/ref/'+code;}
+
+async function loadMarketers(){
+  const r=await fetch('/api/admin/marketers').then(r=>r.json()).catch(()=>({}));
+  const mkts=r.marketers||[];
+  document.getElementById('mktr-body').innerHTML=mkts.map(m=>{
+    const link=_refLink(m.ref_code);
+    const sc=m.status==='active'?'bg':'br';
+    return `<tr>
+      <td><strong>${m.name}</strong>${m.phone?`<br><small style="color:#94a3b8">${m.phone}</small>`:''}</td>
+      <td><code style="background:#f1f5f9;padding:2px 8px;border-radius:4px;font-size:.8rem">${m.ref_code}</code></td>
+      <td>
+        <input readonly value="${link}" style="width:200px;font-size:.72rem;padding:4px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc">
+        <button onclick="copyLink('${link}')" style="background:#185FA5;color:#fff;border:none;padding:4px 8px;border-radius:5px;cursor:pointer;font-size:.72rem;margin-right:4px">نسخ</button>
+      </td>
+      <td><span style="font-weight:700;color:#185FA5">${m.referral_count||0}</span> تسجيل</td>
+      <td>${m.commission_rate||10}%</td>
+      <td><span class="badge ${sc}">${m.status==='active'?'نشط':'موقوف'}</span></td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-p" onclick="viewRefs(${m.id},'${m.name}','${m.ref_code}')" style="margin-left:4px">&#128065; عرض</button>
+        <button class="btn btn-r" onclick="deactivateMktr(${m.id})">تعطيل</button>
+      </td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="7" style="text-align:center;color:#94a3b8;padding:32px">لا يوجد مسوقون</td></tr>';
+}
+
+function copyLink(link){navigator.clipboard.writeText(link).catch(()=>{});const el=document.getElementById('mktr-link-info');el.style.display='block';el.textContent='✓ تم نسخ الرابط: '+link;setTimeout(()=>el.style.display='none',4000);}
+
+function openAddMktr(){['mk-name','mk-code','mk-email','mk-phone','mk-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('mk-comm').value='10';document.getElementById('mk-err').style.display='none';openModal('modal-mktr');}
+
+async function addMarketer(){
+  const name=document.getElementById('mk-name').value.trim();
+  const err=document.getElementById('mk-err');
+  if(!name){err.textContent='الاسم مطلوب';err.style.display='block';return;}
+  const body={name,phone:document.getElementById('mk-phone').value,email:document.getElementById('mk-email').value,ref_code:document.getElementById('mk-code').value.trim().toUpperCase()||'',commission_rate:parseFloat(document.getElementById('mk-comm').value)||10,notes:document.getElementById('mk-notes').value};
+  const r=await fetch('/api/admin/marketers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const d=await r.json();
+  if(d.success){closeModal('modal-mktr');loadMarketers();const link=_refLink(d.marketer.ref_code);const el=document.getElementById('mktr-link-info');el.style.display='block';el.textContent='✓ أُضيف المسوق — الرابط: '+link;}
+  else{err.textContent=d.error||'خطأ';err.style.display='block';}
+}
+
+async function deactivateMktr(id){if(!confirm('تعطيل هذا المسوق؟'))return;await fetch('/api/admin/marketers/'+id,{method:'DELETE'});loadMarketers();}
+
+async function viewRefs(id,name,code){
+  document.getElementById('refs-title').textContent='تسجيلات: '+name;
+  document.getElementById('refs-link').textContent='رابط الإحالة: '+_refLink(code);
+  openModal('modal-refs');
+  const r=await fetch('/api/admin/marketers/'+id+'/referrals').then(r=>r.json()).catch(()=>({}));
+  const refs=r.referrals||[];
+  document.getElementById('refs-body').innerHTML=refs.length?refs.map(ref=>`<tr>
+    <td><strong>${ref.client_name||ref.client_id}</strong></td>
+    <td><span class="badge bb">${PLANS[ref.plan]||ref.plan||'trial'}</span></td>
+    <td>${(ref.converted_at||'').substring(0,10)}</td>
+  </tr>`).join(''):'<tr><td colspan="3" style="text-align:center;color:#94a3b8;padding:24px">لا توجد تسجيلات بعد</td></tr>';
 }
 
 // Auto-refresh overview every 30s
@@ -2742,6 +2868,25 @@ async def client_register(request: Request):
     }
     store.save_client(client)
 
+    # تسجيل إحالة المسوق إن وُجدت
+    ref_code = str(body.get("ref_code", "")).strip().upper()
+    if ref_code:
+        db = request.app.state.db
+        if db.use_postgres:
+            try:
+                row = db.execute(
+                    "SELECT id FROM marketers WHERE ref_code=%s AND status='active'",
+                    (ref_code,), fetch="one"
+                )
+                if row:
+                    db.execute(
+                        """INSERT INTO marketer_referrals (marketer_id,client_id,plan,ref_code)
+                           VALUES (%s,%s,%s,%s) ON CONFLICT DO NOTHING""",
+                        (row["id"], client_id, plan, ref_code)
+                    )
+            except Exception as e:
+                log.warning(f"ref tracking: {e}")
+
     token = _new_token()
     with _lock:
         _client_sessions[token] = {"client_id": client_id, "created_at": datetime.now().isoformat()}
@@ -2978,6 +3123,122 @@ async def dashboard_page(request: Request):
         with open(dash_path, "r", encoding="utf-8") as f:
             return HTMLResponse(f.read())
     return RedirectResponse("/")
+
+
+# ──────────────────────────────────────────────────────────────
+#  SEO Routes
+# ──────────────────────────────────────────────────────────────
+@app.get("/robots.txt")
+async def robots_txt():
+    from fastapi.responses import PlainTextResponse
+    return PlainTextResponse(
+        "User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api/\n"
+        "Sitemap: https://dheuof.com/sitemap.xml\n"
+    )
+
+
+@app.get("/sitemap.xml")
+async def sitemap():
+    from fastapi.responses import Response
+    xml = """<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://dheuof.com/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://dheuof.com/marketing</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+</urlset>"""
+    return Response(content=xml, media_type="application/xml")
+
+
+@app.get("/ref/{code}", response_class=HTMLResponse)
+async def referral_redirect(code: str):
+    """رابط الإحالة — يفتح صفحة التسجيل مع كود المسوق محمّل تلقائياً"""
+    return HTMLResponse(_login_page(ref_code=code.upper()))
+
+
+# ──────────────────────────────────────────────────────────────
+#  Admin — Marketers (المسوقون)
+# ──────────────────────────────────────────────────────────────
+@app.get("/api/admin/marketers")
+async def admin_list_marketers(request: Request, _=Depends(require_admin)):
+    db = request.app.state.db
+    if not db.use_postgres:
+        return {"success": True, "marketers": []}
+    try:
+        rows = db.execute("""
+            SELECT m.*,
+                   COUNT(r.id) AS referral_count,
+                   COALESCE(SUM(0), 0) AS total_earnings
+            FROM marketers m
+            LEFT JOIN marketer_referrals r ON r.marketer_id = m.id
+            GROUP BY m.id
+            ORDER BY referral_count DESC
+        """, fetch="all")
+        return {"success": True, "marketers": [dict(r) for r in (rows or [])]}
+    except Exception as e:
+        return {"success": True, "marketers": [], "warning": str(e)}
+
+
+@app.post("/api/admin/marketers")
+async def admin_create_marketer(request: Request, _=Depends(require_admin)):
+    body = await request.json()
+    name = str(body.get("name", "")).strip()
+    if not name:
+        return JSONResponse({"success": False, "error": "الاسم مطلوب"}, status_code=400)
+    db = request.app.state.db
+    # توليد كود فريد إذا لم يُحدَّد
+    ref_code = str(body.get("ref_code", "")).strip().upper()
+    if not ref_code:
+        ref_code = secrets.token_hex(4).upper()
+    try:
+        row = db.execute("""
+            INSERT INTO marketers (name, phone, email, ref_code, commission_rate, notes)
+            VALUES (%s, %s, %s, %s, %s, %s) RETURNING *
+        """, (name, body.get("phone",""), body.get("email",""),
+              ref_code, float(body.get("commission_rate", 10)),
+              body.get("notes","")), fetch="one")
+        return {"success": True, "marketer": dict(row)}
+    except Exception as e:
+        return JSONResponse({"success": False, "error": str(e)}, status_code=500)
+
+
+@app.put("/api/admin/marketers/{mktr_id}")
+async def admin_update_marketer(mktr_id: int, request: Request, _=Depends(require_admin)):
+    body = await request.json()
+    db = request.app.state.db
+    fields = []
+    vals = []
+    for f in ["name", "phone", "email", "commission_rate", "status", "notes"]:
+        if f in body:
+            fields.append(f"{f}=%s")
+            vals.append(body[f])
+    if not fields:
+        return {"success": True}
+    vals.append(mktr_id)
+    db.execute(f"UPDATE marketers SET {', '.join(fields)} WHERE id=%s", vals)
+    return {"success": True}
+
+
+@app.delete("/api/admin/marketers/{mktr_id}")
+async def admin_delete_marketer(mktr_id: int, request: Request, _=Depends(require_admin)):
+    db = request.app.state.db
+    db.execute("UPDATE marketers SET status='inactive' WHERE id=%s", (mktr_id,))
+    return {"success": True}
+
+
+@app.get("/api/admin/marketers/{mktr_id}/referrals")
+async def admin_marketer_referrals(mktr_id: int, request: Request, _=Depends(require_admin)):
+    db = request.app.state.db
+    store: "DataStore" = request.app.state.store
+    try:
+        rows = db.execute("""
+            SELECT r.*, c.name as client_name
+            FROM marketer_referrals r
+            LEFT JOIN clients c ON c.id = r.client_id
+            WHERE r.marketer_id = %s
+            ORDER BY r.converted_at DESC
+        """, (mktr_id,), fetch="all")
+        return {"success": True, "referrals": [dict(r) for r in (rows or [])]}
+    except Exception as e:
+        return {"success": True, "referrals": [], "warning": str(e)}
 
 
 # ──────────────────────────────────────────────────────────────
