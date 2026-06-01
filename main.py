@@ -520,6 +520,7 @@ tr:hover td{background:#fafbfc}
   <a href="#" onclick="nav('sessions',this)"><span class="icon">&#128101;</span> الجلسات النشطة</a>
   <a href="#" onclick="nav('subs',this)"><span class="icon">&#128203;</span> الاشتراكات</a>
   <a href="#" onclick="nav('employees',this)"><span class="icon">&#128188;</span> الموظفون</a>
+  <a href="#" onclick="nav('modules',this)"><span class="icon">&#9881;</span> التحكم بالوحدات</a>
   <a href="#" onclick="nav('tickets',this)"><span class="icon">&#127917;</span> الدعم</a>
   <div class="spacer"></div>
   <a href="/api/health" target="_blank"><span class="icon">&#128154;</span> الصحة</a>
@@ -621,6 +622,23 @@ tr:hover td{background:#fafbfc}
     </div>
   </div>
 
+  <!-- ═══════════ MODULES ═══════════ -->
+  <div id="pane-modules" class="pane">
+    <div class="card">
+      <div class="card-hdr">
+        <h3>التحكم بالوحدات لكل منشأة</h3>
+        <select id="mod-client-sel" onchange="loadModules()" style="padding:6px 10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.8rem">
+          <option value="">-- اختر منشأة --</option>
+        </select>
+      </div>
+      <div id="modules-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:4px"></div>
+      <div id="modules-save-row" style="display:none;margin-top:16px;padding-top:14px;border-top:1px solid #f1f5f9">
+        <button class="btn btn-p" onclick="saveModules()">&#10003; حفظ التغييرات</button>
+        <span id="mod-saved" style="display:none;color:#16a34a;font-size:.8rem;margin-right:10px">&#10003; تم الحفظ</span>
+      </div>
+    </div>
+  </div>
+
   <!-- ═══════════ TICKETS ═══════════ -->
   <div id="pane-tickets" class="pane">
     <div class="card">
@@ -696,6 +714,34 @@ tr:hover td{background:#fafbfc}
   </div>
 </div>
 
+<!-- Modal: Client Detail (employees + password reset) -->
+<div class="modal-bg" id="modal-client-detail">
+  <div class="modal" style="max-width:680px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+      <h4 id="detail-title" style="margin:0">تفاصيل المنشأة</h4>
+      <button onclick="closeModal('modal-client-detail')" style="background:none;border:none;cursor:pointer;font-size:1.3rem;color:#94a3b8">&#10005;</button>
+    </div>
+    <!-- Manager section -->
+    <div style="background:#f8fafc;border-radius:10px;padding:14px 16px;margin-bottom:16px">
+      <div style="font-size:.8rem;font-weight:700;color:#0F2640;margin-bottom:10px">&#128272; بيانات المدير / الدخول</div>
+      <div class="fg-row">
+        <div class="fg"><label>كلمة مرور جديدة</label><input type="password" id="mgr-pass" placeholder="اتركها فارغة للإبقاء"></div>
+        <div class="fg" style="display:flex;align-items:flex-end">
+          <button class="btn btn-y" style="width:100%" onclick="resetManagerPass()">&#128274; تغيير كلمة المرور</button>
+        </div>
+      </div>
+      <div id="mgr-msg" style="font-size:.8rem;margin-top:6px;display:none"></div>
+    </div>
+    <!-- Employees section -->
+    <div style="font-size:.8rem;font-weight:700;color:#0F2640;margin-bottom:10px">&#128188; الموظفون في هذه المنشأة</div>
+    <div style="overflow-x:auto;max-height:280px;overflow-y:auto">
+    <table><thead><tr><th>الاسم</th><th>الدور</th><th>آخر نشاط</th><th>عدد المهام</th></tr></thead>
+    <tbody id="detail-emp-body"></tbody></table>
+    </div>
+    <input type="hidden" id="detail-cid">
+  </div>
+</div>
+
 <!-- Modal: Ticket Reply -->
 <div class="modal-bg" id="modal-ticket">
   <div class="modal">
@@ -726,12 +772,13 @@ function nav(id,el){
   document.querySelectorAll('.sidebar a').forEach(a=>a.classList.remove('active'));
   document.getElementById('pane-'+id).classList.add('active');
   if(el){el.classList.add('active');}
-  const titles={overview:'الرئيسية',clients:'المنشآت',sessions:'الجلسات النشطة',subs:'الاشتراكات',employees:'الموظفون',tickets:'تذاكر الدعم'};
+  const titles={overview:'الرئيسية',clients:'المنشآت',sessions:'الجلسات النشطة',subs:'الاشتراكات',employees:'الموظفون',modules:'التحكم بالوحدات',tickets:'تذاكر الدعم'};
   document.getElementById('page-title').textContent=titles[id]||id;
   if(id==='clients')loadClients();
   else if(id==='sessions')loadSessions();
   else if(id==='subs')loadSubs();
   else if(id==='employees')loadEmployees();
+  else if(id==='modules')initModulesPane();
   else if(id==='tickets')loadTickets();
 }
 
@@ -804,6 +851,7 @@ async function loadClients(){
       <td>${end} ${daysTag}</td>
       <td>${(c.created_at||'').substring(0,10)||'—'}</td>
       <td style="white-space:nowrap">
+        <button class="btn btn-p" onclick="openClientDetail('${c.id}')" style="margin-left:4px">&#128065; تفاصيل</button>
         <button class="btn btn-s" onclick="editSub('${c.id}')" style="margin-left:4px">&#9998; اشتراك</button>
         <button class="btn btn-s" onclick="toggleClient('${c.id}')" style="margin-left:4px">تبديل</button>
         <button class="btn btn-r" onclick="deleteClient('${c.id}')">حذف</button>
@@ -973,6 +1021,112 @@ async function sendReply(){
   if(!reply)return;
   await fetch('/api/admin/tickets/reply',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,reply})});
   closeModal('modal-ticket');loadTickets();
+}
+
+// ─── Client Detail (Manager + Employees) ────────────────────
+async function openClientDetail(cid){
+  const c=_clients.find(x=>x.id===cid)||{id:cid,name:cid};
+  document.getElementById('detail-cid').value=cid;
+  document.getElementById('detail-title').textContent='تفاصيل: '+(c.name||cid);
+  document.getElementById('mgr-pass').value='';
+  document.getElementById('mgr-msg').style.display='none';
+  document.getElementById('detail-emp-body').innerHTML='<tr><td colspan="4" style="text-align:center;padding:20px;color:#94a3b8">جاري التحميل...</td></tr>';
+  openModal('modal-client-detail');
+  // load employees for this client
+  const r=await fetch('/api/admin/employees?client_id='+cid).then(r=>r.json()).catch(()=>({}));
+  const emps=r.employees||[];
+  document.getElementById('detail-emp-body').innerHTML=emps.length?emps.map(e=>`<tr>
+    <td><strong>${e.name||'—'}</strong></td>
+    <td><span class="badge bb">${e.role||'—'}</span></td>
+    <td>${e.last_active?(e.last_active.replace('T',' ').substring(0,19)):'لم يسجل نشاط'}</td>
+    <td>${e.task_count||0}</td>
+  </tr>`).join(''):'<tr><td colspan="4" style="text-align:center;padding:20px;color:#94a3b8">لا يوجد موظفون مسجلون</td></tr>';
+}
+
+async function resetManagerPass(){
+  const cid=document.getElementById('detail-cid').value;
+  const pass=document.getElementById('mgr-pass').value.trim();
+  const msg=document.getElementById('mgr-msg');
+  if(!pass){msg.textContent='أدخل كلمة المرور الجديدة';msg.style.color='#dc2626';msg.style.display='block';return;}
+  const r=await fetch('/api/admin/clients/'+cid+'/reset-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pass})});
+  const d=await r.json();
+  if(d.success){msg.textContent='✓ تم تغيير كلمة المرور بنجاح';msg.style.color='#16a34a';}
+  else{msg.textContent=d.error||'خطأ';msg.style.color='#dc2626';}
+  msg.style.display='block';
+  document.getElementById('mgr-pass').value='';
+}
+
+// ─── Modules ────────────────────────────────────────────────
+const ALL_MODULES=[
+  {id:'M01',name:'الاستقبال'},{id:'M02',name:'النزلاء'},{id:'M03',name:'الفواتير'},
+  {id:'M04',name:'نقطة البيع'},{id:'M05',name:'الإشراف الداخلي'},{id:'M06',name:'المستودع'},
+  {id:'M07',name:'الصيانة'},{id:'M08',name:'واتساب'},{id:'M09',name:'الحجوزات'},
+  {id:'M10',name:'التسويق'},{id:'M11',name:'إدارة القنوات'},{id:'M12',name:'الذكاء الاصطناعي'},
+  {id:'M13',name:'التقارير'},{id:'M14',name:'الموظفون'},{id:'M15',name:'السياحة'},
+  {id:'M16',name:'المفاتيح الإلكترونية'},{id:'M17',name:'الحجوزات الخارجية'},
+];
+const PLAN_MODULES={
+  trial:['M01','M02'],
+  starter:['M01','M02','M07'],
+  operations:['M01','M02','M05','M07','M08','M13'],
+  professional:['M01','M02','M03','M04','M05','M06','M07','M08','M11','M13'],
+  enterprise:ALL_MODULES.map(m=>m.id)
+};
+
+function initModulesPane(){
+  const sel=document.getElementById('mod-client-sel');
+  if(sel.options.length<=1){
+    _clients.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=(c.name||c.id)+' ('+c.plan+')';sel.appendChild(o);});
+  }
+}
+
+function loadModules(){
+  const cid=document.getElementById('mod-client-sel').value;
+  const grid=document.getElementById('modules-grid');
+  if(!cid){grid.innerHTML='';document.getElementById('modules-save-row').style.display='none';return;}
+  const c=_clients.find(x=>x.id===cid)||{plan:'trial'};
+  const enabledByPlan=PLAN_MODULES[c.plan]||[];
+  const customEnabled=c.enabled_modules||enabledByPlan;
+  grid.innerHTML=ALL_MODULES.map(m=>{
+    const checked=customEnabled.includes(m.id);
+    const byPlan=enabledByPlan.includes(m.id);
+    return `<label style="display:flex;align-items:center;gap:8px;background:${checked?'#f0fdf4':'#f8fafc'};border:1.5px solid ${checked?'#86efac':'#e2e8f0'};border-radius:10px;padding:12px 14px;cursor:pointer;transition:.2s">
+      <input type="checkbox" value="${m.id}" ${checked?'checked':''} onchange="onModuleToggle()" style="width:16px;height:16px;accent-color:#10B981">
+      <div>
+        <div style="font-weight:600;font-size:.82rem;color:#0F2640">${m.id}</div>
+        <div style="font-size:.75rem;color:#64748b">${m.name}</div>
+        ${byPlan?'<span style="font-size:.65rem;color:#059669">✓ مشمول في الخطة</span>':''}
+      </div>
+    </label>`;
+  }).join('');
+  document.getElementById('modules-save-row').style.display='block';
+  document.getElementById('mod-saved').style.display='none';
+}
+
+function onModuleToggle(){
+  const checkboxes=document.querySelectorAll('#modules-grid input[type=checkbox]');
+  checkboxes.forEach(cb=>{
+    const lbl=cb.closest('label');
+    const on=cb.checked;
+    lbl.style.background=on?'#f0fdf4':'#f8fafc';
+    lbl.style.borderColor=on?'#86efac':'#e2e8f0';
+  });
+}
+
+async function saveModules(){
+  const cid=document.getElementById('mod-client-sel').value;
+  if(!cid)return;
+  const enabled=[...document.querySelectorAll('#modules-grid input[type=checkbox]:checked')].map(cb=>cb.value);
+  const r=await fetch('/api/admin/clients/'+cid+'/modules',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled_modules:enabled})});
+  const d=await r.json();
+  if(d.success){
+    const saved=document.getElementById('mod-saved');
+    saved.style.display='inline';
+    setTimeout(()=>saved.style.display='none',3000);
+    // update local cache
+    const c=_clients.find(x=>x.id===cid);
+    if(c)c.enabled_modules=enabled;
+  }
 }
 
 // Auto-refresh overview every 30s
@@ -2436,6 +2590,36 @@ async def admin_update_subscription(client_id: str, request: Request, _=Depends(
         client["status"] = body["status"]
     store.save_client(client)
     return {"success": True, "client_id": client_id}
+
+
+@app.post("/api/admin/clients/{client_id}/reset-password")
+async def admin_reset_client_password(client_id: str, request: Request, _=Depends(require_admin)):
+    """إعادة تعيين كلمة مرور مدير المنشأة"""
+    store: "DataStore" = request.app.state.store
+    client = store.get_client(client_id)
+    if not client:
+        raise HTTPException(status_code=404, detail="المنشأة غير موجودة")
+    body = await request.json()
+    password = str(body.get("password", "")).strip()
+    if len(password) < 4:
+        return JSONResponse({"success": False, "error": "كلمة المرور قصيرة جداً"}, status_code=400)
+    cfg = request.app.state.cfg
+    client["pass_hash"] = _hash_password(password, cfg.pass_salt)
+    store.save_client(client)
+    return {"success": True}
+
+
+@app.put("/api/admin/clients/{client_id}/modules")
+async def admin_update_modules(client_id: str, request: Request, _=Depends(require_admin)):
+    """تحديث الوحدات المفعّلة لمنشأة"""
+    store: "DataStore" = request.app.state.store
+    client = store.get_client(client_id)
+    if not client:
+        raise HTTPException(status_code=404, detail="المنشأة غير موجودة")
+    body = await request.json()
+    client["enabled_modules"] = body.get("enabled_modules", [])
+    store.save_client(client)
+    return {"success": True, "enabled_modules": client["enabled_modules"]}
 
 
 @app.get("/api/admin/employees")
