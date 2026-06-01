@@ -243,6 +243,55 @@
 .toggle .thumb{position:absolute;top:3px;left:3px;width:16px;height:16px;background:var(--paper);border-radius:999px;box-shadow:0 1px 3px rgba(0,0,0,.22);transition:left 200ms;pointer-events:none}
 .toggle input:checked~.thumb{left:19px}
 
+/* ── Calendar View ──────────────────────────────────────────────── */
+.cal-wrap{background:var(--white);border:1px solid var(--hairline);border-radius:14px;overflow:hidden}
+.cal-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.cal-header-row{display:flex;min-width:max-content;position:sticky;top:0;background:var(--paper-tint);z-index:10;border-bottom:2px solid var(--brand-200)}
+.cal-room-label{width:128px;flex-shrink:0;padding:10px 14px;font-size:10px;font-weight:700;color:var(--fg-3);letter-spacing:.05em;border-left:2px solid var(--hairline);display:flex;align-items:center}
+.cal-day-head{width:60px;flex-shrink:0;text-align:center;padding:8px 2px;border-left:1px solid var(--hairline)}
+.cal-day-head.today{background:var(--brand-700);color:var(--paper)}
+.cal-day-head .dn{font-size:9px;opacity:.7;font-family:var(--font-ar)}
+.cal-day-head .dd{font-size:14px;font-weight:700;line-height:1.1}
+.cal-row{display:flex;min-width:max-content;border-bottom:1px solid var(--hairline);height:48px;align-items:stretch;overflow:visible}
+.cal-row.floor-divider{height:26px;background:linear-gradient(to left,var(--brand-900),var(--brand-800))}
+.cal-floor-label{width:128px;flex-shrink:0;padding:0 14px;display:flex;align-items:center;border-left:2px solid rgba(255,255,255,.15);font-size:10px;font-weight:700;color:var(--gold-400);letter-spacing:.07em}
+.cal-floor-span{flex:1;border-left:2px solid rgba(255,255,255,.15)}
+.cal-room-cell{width:128px;flex-shrink:0;padding:0 14px;border-left:2px solid var(--hairline);display:flex;flex-direction:column;justify-content:center;cursor:default}
+.cal-room-cell .rn{font-family:var(--font-ar-display);font-size:15px;font-weight:700;color:var(--ink-900)}
+.cal-room-cell .rt{font-size:10px;color:var(--fg-3)}
+.cal-day-cell{width:60px;flex-shrink:0;border-left:1px dashed var(--hairline);position:relative;cursor:pointer;transition:background 100ms}
+.cal-day-cell:hover{background:var(--brand-50)}
+.cal-day-cell.today-col{background:rgba(0,100,60,.04)}
+.cal-add-hint{position:absolute;inset:3px;background:var(--brand-50);border:1px dashed var(--brand-300);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--brand-400);opacity:0;transition:opacity 120ms;pointer-events:none}
+.cal-day-cell:hover .cal-add-hint{opacity:1}
+.cal-bk{position:absolute;top:5px;bottom:5px;border-radius:5px;display:flex;align-items:center;padding:0 6px;overflow:hidden;cursor:pointer;z-index:2;transition:filter 120ms}
+.cal-bk:hover{filter:brightness(1.12)}
+.cal-bk .bk-nm{color:var(--paper);font-size:10px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ── WhatsApp action button ─────────────────────────────────────── */
+.wa-act-btn{display:inline-flex;align-items:center;gap:5px;background:#25D366;color:var(--paper);border:none;border-radius:6px;padding:5px 11px;font-size:11px;font-weight:600;cursor:pointer;text-decoration:none;flex-shrink:0}
+.wa-act-btn:hover{background:#1ebe5d;color:var(--paper)}
+
+/* ── Cleaning checklist modal ───────────────────────────────────── */
+.cl-modal{position:fixed;inset:0;z-index:9100;display:none;align-items:center;justify-content:center;background:rgba(10,30,22,.6);backdrop-filter:blur(4px)}
+.cl-modal.open{display:flex}
+.cl-box{background:var(--white);border-radius:16px;width:min(440px,94vw);overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.32);animation:nb-in 200ms ease}
+.cl-head{background:var(--brand-900);padding:18px 24px;display:flex;align-items:center;gap:12px}
+.cl-head .ic{font-size:26px}
+.cl-head .tx .t{font-family:var(--font-ar-display);font-size:16px;font-weight:600;color:var(--paper)}
+.cl-head .tx .s{font-size:11px;color:var(--gold-400);margin-top:2px}
+.cl-body{padding:18px 22px;display:flex;flex-direction:column;gap:8px}
+.cl-item{display:flex;align-items:center;gap:12px;padding:10px 13px;border:1.5px solid var(--hairline);border-radius:9px;cursor:pointer;transition:all 140ms;user-select:none}
+.cl-item:hover{border-color:var(--brand-300);background:var(--brand-50)}
+.cl-item.done{border-color:var(--success-300);background:#F0FDF4}
+.cl-item input[type=checkbox]{width:18px;height:18px;accent-color:var(--brand-700);cursor:pointer;flex-shrink:0}
+.cl-item .cl-lbl{font-family:var(--font-ar);font-size:13px;color:var(--ink-900);flex:1}
+.cl-item.done .cl-lbl{color:var(--success-700);text-decoration:line-through;opacity:.8}
+.cl-progress{height:5px;background:var(--hairline);border-radius:999px;overflow:hidden;margin:6px 0 2px}
+.cl-progress-bar{height:100%;background:var(--brand-600);border-radius:999px;transition:width 250ms ease}
+.cl-prog-txt{font-size:11px;color:var(--fg-3);text-align:center;margin-bottom:4px}
+.cl-foot{padding:14px 22px;border-top:1px solid var(--hairline);display:flex;gap:10px;background:var(--paper-tint)}
+
 /* ── New Booking Modal ──────────────────────────────────────── */
 .nb-modal{position:fixed;inset:0;z-index:8500;display:flex;align-items:center;justify-content:center;padding:20px}
 .nb-overlay{position:absolute;inset:0;background:rgba(14,42,34,.6);backdrop-filter:blur(4px)}
@@ -307,6 +356,10 @@
       <a class="dh-nav-item" onclick="showView('rooms')">
         <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 22V8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v14"/><path d="M2 22h20"/><path d="M6 12h12"/><path d="M6 17h12"/></svg></span>
         <span class="lbl">الغرف</span>
+      </a>
+      <a class="dh-nav-item" onclick="showView('calendar')">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/></svg></span>
+        <span class="lbl">تقويم الحجوزات</span>
       </a>
     </div>
     <div class="dh-nav-group">
@@ -655,6 +708,39 @@
       </div>
     </section>
 
+    <!-- ══════════════════════════════════════════════════════════
+         VIEW 6 · تقويم الحجوزات
+    ═══════════════════════════════════════════════════════════ -->
+    <section id="view-calendar" class="fd-view" style="display:none">
+      <div class="mod-head">
+        <div class="left">
+          <div class="num-row"><span class="num">01 · CALENDAR</span><span class="en-tag">14-Day Room Booking Timeline</span></div>
+          <h1>تقويم الحجوزات</h1>
+          <p class="sub" id="cal-subtitle">جدول الغرف — ١٤ يوماً قادماً</p>
+        </div>
+        <div class="actions">
+          <button class="btn-sm sec" onclick="openNewBooking()" style="display:inline-flex;align-items:center;gap:6px"><span style="font-size:15px">＋</span> حجز جديد</button>
+          <button class="btn-sm sec" onclick="renderCalendar()">↺ تحديث</button>
+        </div>
+      </div>
+
+      <!-- Legend -->
+      <div style="background:var(--white);border:1px solid var(--hairline);border-radius:10px;padding:12px 20px;display:flex;gap:20px;align-items:center;flex-wrap:wrap">
+        <span style="font-size:12px;font-weight:600;color:var(--ink-900)">الرموز:</span>
+        <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--fg-2)"><span style="width:28px;height:12px;border-radius:3px;background:var(--brand-600);display:inline-block"></span>نزيل حالي</span>
+        <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--fg-2)"><span style="width:28px;height:12px;border-radius:3px;background:var(--warning-500);display:inline-block"></span>حجز قادم</span>
+        <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--fg-2)"><span style="width:28px;height:12px;border-radius:3px;background:var(--gold-600);display:inline-block"></span>VIP</span>
+        <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--fg-2)"><span style="width:28px;height:12px;border-radius:3px;background:var(--hairline);border:1px dashed var(--ink-200);display:inline-block"></span>شاغرة — اضغط للحجز</span>
+      </div>
+
+      <!-- Calendar grid -->
+      <div class="cal-wrap">
+        <div class="cal-scroll">
+          <div id="cal-grid"></div>
+        </div>
+      </div>
+    </section>
+
   </main>
 </div>
 </div>
@@ -756,12 +842,18 @@ function renderTasks(){
     var bg    = t.taskType==='cleaning'?'var(--warning-50)':'var(--danger-50)';
     var clr   = t.taskType==='cleaning'?'var(--warning-700)':'var(--danger-600)';
     var lbl   = t.taskType==='cleaning'?'تنظيف':'صيانة';
-    return '<div style="display:flex;align-items:center;gap:14px;padding:11px 20px;border-bottom:1px solid var(--hairline)">'
+    var role  = t.taskType==='cleaning' ? 'housekeeping' : 'maintenance';
+    var staff = HOTEL_ROLES[role];
+    var phone = staff ? staff.phone.replace(/\D/g,'') : '';
+    var waMsg = encodeURIComponent('مرحباً '+t.staffName+'، طلب '+lbl+' للغرفة '+t.room+' ('+t.type+') — '+t.time);
+    var waBtn = phone ? '<a class="wa-act-btn" href="https://wa.me/'+phone+'?text='+waMsg+'" target="_blank">📱 واتساب</a>' : '';
+    return '<div style="display:flex;align-items:center;gap:12px;padding:11px 20px;border-bottom:1px solid var(--hairline)">'
       +'<span style="font-size:20px">'+emoji+'</span>'
       +'<div style="flex:1">'
         +'<div style="font-size:13px;font-weight:600;color:var(--ink-900)">الغرفة '+t.room+' · '+t.type+' — '+lbl+'</div>'
         +'<div style="font-size:11px;color:var(--fg-3)">مُسند إلى: <strong>'+t.staffName+'</strong> · '+t.time+'</div>'
       +'</div>'
+      +waBtn
       +'<span style="font-size:11px;font-weight:600;color:'+clr+';background:'+bg+';padding:3px 9px;border-radius:5px">'+lbl+'</span>'
       +'</div>';
   }).join('');
@@ -770,7 +862,7 @@ function renderTasks(){
 /* ════════════════════════════════════════
    VIEW NAVIGATION
 ════════════════════════════════════════ */
-var VIEWS = ['dashboard','reservations','checkin','guests','rooms'];
+var VIEWS = ['dashboard','reservations','checkin','guests','rooms','calendar'];
 var currentView = 'checkin';
 
 window.showView = function(id){
@@ -928,6 +1020,7 @@ window.ciStep3 = function(){
   if(!ciSelected) return;
   var r = ciSelected;
   var body = document.getElementById('ci-confirm-body'); if(!body) return;
+  var waMsg = encodeURIComponent('مرحباً '+r.name+'،\nنُبشّركم بأن غرفتكم رقم '+r.room+' ('+r.type+') جاهزة لاستقبالكم في فندق الواحة الذهبية.\nتاريخ المغادرة: '+r.checkout+'\nنتمنى لكم إقامة ممتعة 🌟');
   body.innerHTML = '<div class="confirm-card">'
     +'<span class="big-ic">🔑</span>'
     +'<h3>'+r.name+'</h3>'
@@ -938,6 +1031,7 @@ window.ciStep3 = function(){
       +'<div><div class="k">تاريخ المغادرة</div><div class="v">'+r.checkout+'</div></div>'
       +'<div><div class="k">قناة الحجز</div><div class="v">'+r.channel+'</div></div>'
     +'</div>'
+    +'<a href="https://wa.me/?text='+waMsg+'" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:#25D366;color:var(--paper);border-radius:8px;padding:10px 20px;font-family:var(--font-ar);font-size:13px;font-weight:600;text-decoration:none;margin-top:4px">📱 إرسال تأكيد للضيف عبر واتساب</a>'
     +'</div>';
   document.getElementById('ci-step1').style.display='none';
   document.getElementById('ci-step2').style.display='none';
@@ -1028,16 +1122,61 @@ function renderFloors(){
   }).join('');
 }
 
+var _cleanPending = {no:null, floorId:null};
+
 window.markClean = function(no, floorId){
+  _cleanPending = {no:no, floorId:floorId};
+  // Show checklist modal
+  var modal = document.getElementById('clean-modal');
+  if(!modal){ doMarkClean(no, floorId); return; }
+  document.getElementById('cl-room-no').textContent = no;
+  // Reset all checkboxes
+  modal.querySelectorAll('input[type=checkbox]').forEach(function(cb){
+    cb.checked = false;
+    cb.closest('.cl-item').classList.remove('done');
+  });
+  updateClProgress();
+  modal.classList.add('open');
+};
+
+function doMarkClean(no, floorId){
   var fl = FLOORS.find(function(f){ return f.floor===floorId; });
   if(!fl) return;
   var r = fl.rooms.find(function(x){ return x.no===no; });
   if(r){ r.status='clean'; delete r.guest; }
-  // Close pending cleaning task
   TASKS.forEach(function(t){ if(t.room===no && t.status==='pending') t.status='done'; });
   renderFloors();
   renderTasks();
+  renderCalendar();
   toast('الغرفة '+no+' — جاهزة للإشغال ✓');
+}
+
+function updateClProgress(){
+  var modal = document.getElementById('clean-modal'); if(!modal) return;
+  var cbs = modal.querySelectorAll('input[type=checkbox]');
+  var done = Array.from(cbs).filter(function(c){ return c.checked; }).length;
+  var pct = Math.round(done/cbs.length*100);
+  var bar = document.getElementById('cl-bar'); if(bar) bar.style.width = pct+'%';
+  var txt = document.getElementById('cl-prog-txt'); if(txt) txt.textContent = done+' من '+cbs.length+' بنود مكتملة · '+pct+'٪';
+  var btn = document.getElementById('cl-confirm-btn');
+  if(btn){ btn.disabled = done < cbs.length; btn.style.opacity = done < cbs.length ? '.5' : '1'; }
+}
+
+window.clToggleItem = function(cb){
+  var item = cb.closest('.cl-item');
+  if(item) item.classList.toggle('done', cb.checked);
+  updateClProgress();
+};
+
+window.confirmClean = function(){
+  var modal = document.getElementById('clean-modal');
+  if(modal) modal.classList.remove('open');
+  doMarkClean(_cleanPending.no, _cleanPending.floorId);
+};
+
+window.closeCleanModal = function(){
+  var modal = document.getElementById('clean-modal');
+  if(modal) modal.classList.remove('open');
 };
 
 window.markMaint = function(no, floorId){
@@ -1195,6 +1334,105 @@ window.saveRoomSettings = function(){
 };
 
 /* ════════════════════════════════════════
+   CALENDAR VIEW
+════════════════════════════════════════ */
+function renderCalendar(){
+  var con = document.getElementById('cal-grid'); if(!con) return;
+
+  // 14-day range from today
+  var TODAY = new Date('2026-05-30');
+  var DAY_MS = 86400000;
+  var days = [];
+  for(var i=0;i<14;i++){
+    var d = new Date(TODAY.getTime() + i*DAY_MS);
+    days.push(d);
+  }
+  var dayStrs = days.map(function(d){ return d.toISOString().split('T')[0]; });
+
+  // Build booking map: roomNo → list of spans
+  var bookingMap = {};
+  function addSpan(roomNo, span){
+    if(!bookingMap[roomNo]) bookingMap[roomNo]=[];
+    bookingMap[roomNo].push(span);
+  }
+  GUESTS.forEach(function(g){
+    addSpan(g.room,{start:g.since,end:g.until,name:g.name,init:g.init,vip:g.vip,type:'current'});
+  });
+  RESERVATIONS.filter(function(r){ return r.status==='pending'; }).forEach(function(r){
+    addSpan(r.room,{start:r.checkin,end:r.checkout,name:r.name,init:r.init,vip:r.vip,type:'pending'});
+  });
+
+  // Day header
+  var DAY_AR = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  var headHtml = '<div class="cal-header-row">'
+    +'<div class="cal-room-label">الغرفة</div>'
+    +days.map(function(d,i){
+      var isT = i===0;
+      return '<div class="cal-day-head'+(isT?' today':'')+'"><div class="dn">'+DAY_AR[d.getDay()]+'</div><div class="dd">'+d.getDate()+'</div></div>';
+    }).join('')
+    +'</div>';
+
+  // Rows
+  var rowsHtml = '';
+  FLOORS.forEach(function(fl){
+    // Floor divider row
+    rowsHtml += '<div class="cal-row floor-divider">'
+      +'<div class="cal-floor-label">'+fl.floor+' · '+fl.ar+'</div>'
+      +'<div class="cal-floor-span"></div>'
+      +'</div>';
+
+    fl.rooms.forEach(function(rm){
+      var spans = bookingMap[rm.no] || [];
+
+      // Build cells
+      var cells = dayStrs.map(function(ds, di){
+        // Find a booking that covers this day
+        var bk = null;
+        for(var s=0;s<spans.length;s++){
+          if(ds >= spans[s].start && ds < spans[s].end){ bk=spans[s]; break; }
+        }
+        var isToday = di===0;
+        var cellCls = 'cal-day-cell'+(isToday?' today-col':'');
+
+        if(bk){
+          var isStart = ds === bk.start;
+          // Calculate width: how many days of this booking remain from di
+          var endIdx = dayStrs.indexOf(bk.end);
+          var spanDays = (endIdx===-1 ? 14 : Math.min(endIdx,14)) - di;
+          if(spanDays < 1) spanDays = 1;
+          var bkColor = bk.vip ? 'var(--gold-600)' : (bk.type==='current' ? 'var(--brand-600)' : 'var(--warning-500)');
+          if(isStart){
+            return '<div class="'+cellCls+'" style="position:relative">'
+              +'<div class="cal-bk" style="left:3px;right:3px;background:'+bkColor+';width:calc('+spanDays+'*60px - 6px)" title="'+bk.name+'">'
+              +'<span class="bk-nm">'+bk.init+' '+bk.name.split(' ')[0]+'</span>'
+              +'</div>'
+              +'</div>';
+          } else {
+            // Continuation: transparent (the start cell already drew the wide bar)
+            return '<div class="'+cellCls+'"></div>';
+          }
+        } else {
+          return '<div class="'+cellCls+'" onclick="openNewBooking()" title="اضغط للحجز"><div class="cal-add-hint">＋</div></div>';
+        }
+      }).join('');
+
+      rowsHtml += '<div class="cal-row">'
+        +'<div class="cal-room-cell"><div class="rn">'+rm.no+'</div><div class="rt">'+rm.type+'</div></div>'
+        +cells
+        +'</div>';
+    });
+  });
+
+  con.innerHTML = headHtml + rowsHtml;
+
+  // Update subtitle
+  var sub = document.getElementById('cal-subtitle');
+  var totalRooms = FLOORS.reduce(function(s,f){ return s+f.rooms.length; },0);
+  var totalBooked = Object.keys(bookingMap).length;
+  if(sub) sub.textContent = totalRooms+' غرفة · '+totalBooked+' مشغولة الآن · ١٤ يوماً قادماً';
+}
+
+/* ════════════════════════════════════════
    INIT
 ════════════════════════════════════════ */
 /* ════════════════════════════════════════
@@ -1254,6 +1492,7 @@ renderResTable(RESERVATIONS);
 renderCIList('');
 renderGuests();
 renderFloors();
+renderCalendar();
 // Init subtitle
 (function(){
   var total = FLOORS.reduce(function(s,f){ return s+f.rooms.length; },0);
@@ -1273,6 +1512,34 @@ showView('dashboard'); // default view = dashboard
 
 })();
 </script>
+
+<!-- ═══ CLEANING CHECKLIST MODAL ══════════════════════════════ -->
+<div id="clean-modal" class="cl-modal">
+  <div class="cl-box" dir="rtl">
+    <div class="cl-head">
+      <div class="ic">🧹</div>
+      <div class="tx">
+        <div class="t">قائمة تحقق التنظيف — الغرفة <span id="cl-room-no"></span></div>
+        <div class="s">Room Cleaning Checklist · يجب اكتمال جميع البنود قبل التأكيد</div>
+      </div>
+    </div>
+    <div class="cl-body">
+      <label class="cl-item"><input type="checkbox" onchange="clToggleItem(this)"><span class="cl-lbl">🛏️ تغيير الفراش والوسائد والبياضات</span></label>
+      <label class="cl-item"><input type="checkbox" onchange="clToggleItem(this)"><span class="cl-lbl">🚿 تنظيف الحمام — المرحاض والمغسلة والدش</span></label>
+      <label class="cl-item"><input type="checkbox" onchange="clToggleItem(this)"><span class="cl-lbl">🪣 تعبئة مستلزمات الاستحمام (شامبو، صابون، مناشف نظيفة)</span></label>
+      <label class="cl-item"><input type="checkbox" onchange="clToggleItem(this)"><span class="cl-lbl">🧹 كنس الأرضيات وتنظيف السجاد</span></label>
+      <label class="cl-item"><input type="checkbox" onchange="clToggleItem(this)"><span class="cl-lbl">🪟 تنظيف النوافذ والمرايا وفتح التهوية</span></label>
+      <label class="cl-item"><input type="checkbox" onchange="clToggleItem(this)"><span class="cl-lbl">🧴 تجديد مشروبات المنيبار (ماء، قهوة، شاي)</span></label>
+      <label class="cl-item"><input type="checkbox" onchange="clToggleItem(this)"><span class="cl-lbl">📺 التحقق من عمل جهاز التحكم، التلفزيون، الإضاءة</span></label>
+      <div class="cl-progress"><div class="cl-progress-bar" id="cl-bar" style="width:0%"></div></div>
+      <div class="cl-prog-txt" id="cl-prog-txt">٠ من ٧ بنود مكتملة · ٠٪</div>
+    </div>
+    <div class="cl-foot">
+      <button class="btn-sm sec" onclick="closeCleanModal()">إلغاء</button>
+      <button id="cl-confirm-btn" class="btn-sm primary" onclick="confirmClean()" disabled style="opacity:.5;flex:1">✓ تأكيد إتمام التنظيف — الغرفة جاهزة</button>
+    </div>
+  </div>
+</div>
 
 <!-- ═══ NEW BOOKING MODAL ═════════════════════════════════════ -->
 <div id="nb-modal" style="display:none" class="nb-modal">
