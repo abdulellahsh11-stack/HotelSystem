@@ -61,3 +61,76 @@
 .sal .cur { font-size: 10px; color: var(--fg-3); }
 
 .qiwa .dh-pill { font-size: 10.5px; }
+
+/* ══ Print / Direct PDF Layout ══════════════════════════════════════ */
+@media print {
+  /* Force background colors & images to print */
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+  /* A4 landscape fits the 7-column table comfortably */
+  @page { size: A4 landscape; margin: 14mm 12mm; }
+
+  /* ── Hide all UI chrome ── */
+  .dh-sidebar,
+  .dh-topbar,
+  .dh-page-actions,
+  .hr-tabs,
+  .dh-card-actions,
+  .dh-chip,
+  .dh-icon-btn,
+  .dh-btn { display: none !important; }
+
+  /* ── Remove two-column grid → full-width block ── */
+  .dh-app   { display: block !important; }
+  .dh-main  { padding: 12px 16px 24px !important; gap: 14px !important; max-width: 100% !important; }
+
+  /* ── KPI cards: keep 5 columns, tighten padding ── */
+  .hr-kpi { grid-template-columns: repeat(5, 1fr) !important; gap: 8px !important; margin-bottom: 12px !important; }
+  .hr-kpi .card { padding: 10px 12px !important; border: 1px solid #ccc !important; box-shadow: none !important; }
+  .hr-kpi .card .v   { font-size: 20px !important; }
+  .hr-kpi .card .lbl { font-size: 10.5px !important; }
+  .hr-kpi .card .sub { font-size: 9.5px !important; }
+
+  /* ── Staff table ── */
+  .hr-card { border: 1px solid #ccc !important; border-radius: 6px !important; box-shadow: none !important; overflow: visible !important; }
+  .dh-card-head { padding: 10px 14px !important; background: #1B4D3D !important; }
+  .dh-card-head .ttl { color: #fff !important; font-size: 14px !important; }
+  .dh-card-head .sub { color: rgba(255,255,255,0.65) !important; }
+
+  /* 7-column grid: collapse last action column to zero */
+  .hr-tr {
+    grid-template-columns: 2.2fr 0.75fr 1.05fr 1.25fr 0.9fr 0.85fr 0px !important;
+    padding: 7px 14px !important;
+    gap: 8px !important;
+    font-size: 11.5px !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+  .hr-tr.hr-th { font-size: 10px !important; padding: 7px 14px !important; }
+
+  /* Shrink avatar */
+  .hr-emp { gap: 8px !important; }
+  .hr-emp .av { width: 28px !important; height: 28px !important; font-size: 9px !important; flex-shrink: 0 !important; }
+  .hr-emp .nm  { font-size: 12px !important; }
+  .hr-emp .sub { font-size: 10px !important; }
+
+  /* Iqama bar */
+  .hr-iq .bar { height: 5px !important; }
+  .hr-iq .lbl { font-size: 9.5px !important; }
+
+  /* Salary */
+  .sal .v   { font-size: 12px !important; }
+  .sal .cur { font-size: 9px !important; }
+
+  /* Qiwa pills */
+  .qiwa .dh-pill { font-size: 9.5px !important; padding: 2px 6px !important; }
+
+  /* Hide last-column action button */
+  .hr-tr > :last-child { visibility: hidden !important; overflow: hidden !important; }
+
+  /* Page head */
+  .dh-page-head { margin-bottom: 10px !important; }
+
+  /* Don't break KPIs across pages */
+  .hr-kpi { break-inside: avoid !important; page-break-inside: avoid !important; }
+}
