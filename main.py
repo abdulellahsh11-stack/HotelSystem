@@ -79,6 +79,11 @@ async def lifespan(app_: FastAPI):
         run_v3_migrations(db)
     except Exception as e:
         log.warning(f"v3 migrations: {e}")
+    try:
+        from db.schema_v3 import run_staff_app_migrations
+        run_staff_app_migrations(db)
+    except Exception as e:
+        log.warning(f"staff_app migrations: {e}")
 
     # Load optional Month-3 services
     try:

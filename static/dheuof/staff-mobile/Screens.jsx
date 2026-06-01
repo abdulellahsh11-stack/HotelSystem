@@ -1,6 +1,35 @@
 /* @jsx React.createElement */
 /* global React, NzIcon */
-const { useState, useEffect } = React;
+const { useState, useEffect, useRef } = React;
+
+/* ══ API helpers ════════════════════════════════════════════════════════════ */
+async function apiGet(path) {
+  try {
+    const r = await fetch(path, {credentials:'include'});
+    if (!r.ok) return null;
+    const j = await r.json();
+    return j.success ? j.data : null;
+  } catch { return null; }
+}
+
+async function apiPost(path, body) {
+  try {
+    const r = await fetch(path, {
+      method:'POST', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(body),
+    });
+    if (!r.ok) return null;
+    return await r.json();
+  } catch { return null; }
+}
+
+/* Map API room status → app status key */
+function mapStatus(s) {
+  const m = {available:'ready',clean:'clean',cleaning:'clean',checkout:'checkout',
+              occupied:'occ','checked-out':'checkout',blocked:'block',maintenance:'block'};
+  return m[s] || s;
+}
 
 /* ══ i18n ══════════════════════════════════════════════════════════════════ */
 const T = {
@@ -226,7 +255,7 @@ function BottomNav({tab,setTab,t,unread}) {
 }
 
 /* ══ Screen 1 — Home ════════════════════════════════════════════════════════ */
-function HomeScreen({t,checkedIn,onToggle,sinceTime}) {
+function HomeScreen({t,checkedIn,onToggle,sinceTime,staffName}) {
   const hr = new Date().getHours();
   const greet = hr<12 ? t.greet_m : t.greet_e;
   const kpis = [{v:'١٢',l:t.tasks_lbl},{v:'٥',l:t.done_lbl},{v:'٤',l:t.cleaned_lbl},{v:'٧.٣',l:t.hrs_lbl}];
@@ -240,7 +269,7 @@ function HomeScreen({t,checkedIn,onToggle,sinceTime}) {
       <div className="sm-gps-bar"><span className="gps-dot"/><span>📍 {t.gps_ok}</span></div>
       <div className="sm-home-hero">
         <div>
-          <div className="sm-greet">{greet}، ماريا 👋</div>
+          <div className="sm-greet">{greet}، {staffName||'ماريا'} 👋</div>
           <div className="sm-role">{t.emp_role}</div>
         </div>
         <button className={'sm-attend-btn'+(checkedIn?' is-out':'')} onClick={onToggle}>
@@ -374,21 +403,54 @@ function TaskDetail({t,task,tasks,setTasks,onBack,onToast}) {
 }
 
 /* ══ Screen 3 — Rooms ═══════════════════════════════════════════════════════ */
-function RoomsScreen({t,rooms,setRooms,onToast}) {
-  const [filter,setFilter]     = useState('all');
-  const [confirm,setConfirm]   = useState(null);
-  const [chkd,setChkd]         = useState(false);
+function RoomsScreen({t,rooms,setRooms,onToast,staffName}) {
+  const [filter,setFilter]   = useState('all');
+  const [confirm,setConfirm] = useState(null);
+  const [chkd,setChkd]       = useState(false);
+  const [loading,setLoading] = useState(false);
+  const [apiRooms,setApiRooms] = useState(null); // null = not loaded yet
 
+  /* جلب الغرف من الـ API عند أول فتح */
+  useEffect(()=>{
+    apiGet('/api/m07/rooms/status').then(data=>{
+      if(data && data.length>0){
+        const mapped = data.map(r=>({
+          id: r.room_number,
+          type: r.room_type || 'ستاندرد',
+          floor: r.floor || 1,
+          status: mapStatus(r.status),
+          guest: r.current_guest || null,
+          due: r.checkout_due || null,
+          last_action_by: r.last_action_by || null,
+          last_action_at: r.last_action_at || null,
+        }));
+        setApiRooms(mapped);
+      }
+    });
+  },[]);
+
+  const displayRooms = apiRooms || rooms;
   const statuses = ['all','occ','checkout','clean','ready','block'];
   const lbl = s=>({all:'الكل',occ:t.room_occ,checkout:t.room_checkout,clean:t.room_clean,ready:t.room_ready,block:t.room_block})[s];
   const counts = {};
-  rooms.forEach(r=>{ counts[r.status]=(counts[r.status]||0)+1; });
-  const filtered = rooms.filter(r=>filter==='all'||r.status===filter);
+  displayRooms.forEach(r=>{ counts[r.status]=(counts[r.status]||0)+1; });
+  const filtered = displayRooms.filter(r=>filter==='all'||r.status===filter);
 
-  const doCheckout = () => {
-    if(!chkd) return;
-    setRooms(rooms.map(r=>r.id===confirm.id?{...r,status:'clean',guest:null,due:null}:r));
-    onToast(t.toast_checkout); setConfirm(null);
+  const doCheckout = async () => {
+    if(!chkd || !staffName.trim()) return;
+    setLoading(true);
+    const result = await apiPost(`/api/m07/rooms/${confirm.id}/checkout`, {
+      staff_name: staffName,
+      confirmed_clean: true,
+    });
+    setLoading(false);
+
+    const updater = r=>r.id===confirm.id ? {...r,status:'clean',guest:null,due:null,last_action_by:staffName} : r;
+    if(apiRooms) setApiRooms(apiRooms.map(updater));
+    else         setRooms(rooms.map(updater));
+
+    onToast(result ? `✓ ${result.message||t.toast_checkout}` : t.toast_checkout);
+    setConfirm(null);
   };
 
   return (
@@ -400,6 +462,7 @@ function RoomsScreen({t,rooms,setRooms,onToast}) {
           <span className="rs rs-co">{counts.checkout||0} {t.room_checkout}</span>
         </div>
       </div>
+      {apiRooms && <div className="sm-api-badge">🔗 مباشر من النظام</div>}
       <div className="sm-filter-bar sm-filter-scroll">
         {statuses.map(s=>(
           <button key={s} className={'sm-fbtn'+(filter===s?' is-on':'')} onClick={()=>setFilter(s)}>
@@ -419,6 +482,7 @@ function RoomsScreen({t,rooms,setRooms,onToast}) {
               <div className="rc-type">{room.type} · ط{room.floor}</div>
               {room.guest&&<div className="rc-guest">👤 {room.guest}</div>}
               {room.due  &&<div className="rc-due">🕐 {room.due}</div>}
+              {room.last_action_by&&<div className="rc-last">✓ {room.last_action_by}</div>}
               {isCo&&<div className="rc-hint">اضغط للتسجيل ▼</div>}
             </div>
           );
@@ -433,13 +497,20 @@ function RoomsScreen({t,rooms,setRooms,onToast}) {
             <div className="sm-modal-room">غرفة {confirm.id} · {confirm.type}</div>
             {confirm.guest&&<div className="sm-modal-guest">👤 {confirm.guest}</div>}
             <div className="sm-modal-body">{t.confirm_body}</div>
+            {/* اسم الموظف المسؤول عن الفحص */}
+            <div className="sm-modal-staff-row">
+              <span className="sm-modal-staff-lbl">👤 الموظف المسؤول عن الفحص</span>
+              <div className="sm-modal-staff-name">{staffName||'—'}</div>
+            </div>
             <label className={'sm-modal-chk'+(chkd?' is-on':'')} onClick={()=>setChkd(!chkd)}>
               <span className="box">{chkd?'✓':''}</span>
               <span className="lbl">{t.confirm_chk}</span>
             </label>
             <div className="sm-modal-acts">
               <button className="sm-modal-cancel" onClick={()=>setConfirm(null)}>{t.cancel}</button>
-              <button className={'sm-modal-ok'+(chkd?'':' disabled')} onClick={doCheckout}>{t.confirm_ok}</button>
+              <button className={'sm-modal-ok'+((chkd&&staffName.trim())?'':' disabled')} onClick={doCheckout} disabled={loading}>
+                {loading?'جارٍ...' : t.confirm_ok}
+              </button>
             </div>
           </div>
         </div>
@@ -508,7 +579,7 @@ function MessagesScreen({t,lang,setLang}) {
 }
 
 /* ══ Screen 5 — Profile ═════════════════════════════════════════════════════ */
-function ProfileScreen({t}) {
+function ProfileScreen({t,staffName,onChangeName}) {
   const today = new Date().getDay();
   const dLabels=['ح','ن','ث','ر','خ','ج','س'];
   const bars   =[88,76,95,82,91,0,0];
@@ -524,7 +595,7 @@ function ProfileScreen({t}) {
       <div className="sm-emp-card">
         <div className="sm-emp-av">م</div>
         <div className="sm-emp-info">
-          <div className="nm">{t.emp_name}</div>
+          <div className="nm">{staffName||t.emp_name}</div>
           <div className="rl">{t.emp_role}</div>
           <div className="sh">الوردية الصباحية · ٠٨:٠٠–١٦:٠٠</div>
         </div>
@@ -570,6 +641,39 @@ function ProfileScreen({t}) {
           </div>
         ))}
       </div>
+
+      {onChangeName && (
+        <div style={{padding:'16px'}}>
+          <button onClick={onChangeName} style={{width:'100%',height:46,borderRadius:12,border:'1.5px solid #E5E5EA',background:'#fff',fontFamily:'var(--font-ar)',fontSize:14,color:'#636366',cursor:'pointer'}}>
+            🔄 تغيير اسم الموظف
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ══ Staff Name Setup ════════════════════════════════════════════════════════ */
+function StaffNameSetup({onDone}) {
+  const [name,setName] = useState('');
+  return (
+    <div style={{height:'100%',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'32px 24px',background:'linear-gradient(135deg,#143A2E,#0E2A22)',gap:20}}>
+      <div style={{fontSize:48}}>👤</div>
+      <div style={{fontFamily:'var(--font-ar-display)',fontSize:22,fontWeight:700,color:'#fff',textAlign:'center'}}>من أنت؟</div>
+      <div style={{fontSize:13,color:'rgba(201,168,95,0.8)',textAlign:'center'}}>سيُسجَّل اسمك على كل إجراء تقوم به</div>
+      <input
+        value={name}
+        onChange={e=>setName(e.target.value)}
+        placeholder="اكتب اسمك الكامل"
+        style={{width:'100%',padding:'14px 16px',borderRadius:12,border:'none',fontSize:15,fontFamily:'var(--font-ar)',textAlign:'right',outline:'none',background:'rgba(255,255,255,0.12)',color:'#fff'}}
+      />
+      <button
+        disabled={!name.trim()}
+        onClick={()=>onDone(name.trim())}
+        style={{width:'100%',height:52,borderRadius:12,border:'none',background:name.trim()?'#C9A85F':'rgba(255,255,255,0.2)',color:name.trim()?'#1B2A1A':'rgba(255,255,255,0.4)',fontSize:15,fontWeight:700,fontFamily:'var(--font-ar)',cursor:name.trim()?'pointer':'default'}}
+      >
+        دخول للتطبيق
+      </button>
     </div>
   );
 }
@@ -583,6 +687,7 @@ function StaffApp({fullScreen}) {
   const [rooms,setRooms]     = useState(ROOMS_INIT);
   const [tasks,setTasks]     = useState(TASKS_INIT);
   const [toast,setToast]     = useState(null);
+  const [staffName,setStaffName] = useState(()=>localStorage.getItem('dheuof_staff_name')||'');
   const t   = T[lang];
   const dir = t.dir;
 
@@ -593,18 +698,32 @@ function StaffApp({fullScreen}) {
     else          { setCI(false); setSince(null); setToast(t.toast_checkout_att); }
   };
 
+  const handleSetName = (name) => {
+    localStorage.setItem('dheuof_staff_name', name);
+    setStaffName(name);
+  };
+
   const wrapStyle = fullScreen
     ? {height:'100dvh',display:'flex',flexDirection:'column',background:'#F2F2F7',overflow:'hidden',direction:dir}
     : {height:'100%',  display:'flex',flexDirection:'column',background:'#F2F2F7',overflow:'hidden',direction:dir,paddingTop:56};
 
+  /* أول دخول → شاشة إدخال الاسم */
+  if (!staffName) {
+    return (
+      <div style={wrapStyle}>
+        <StaffNameSetup onDone={handleSetName}/>
+      </div>
+    );
+  }
+
   return (
     <div style={wrapStyle}>
       <div style={{flex:1,overflowY:'auto',position:'relative'}}>
-        {tab==='home' &&<HomeScreen     t={t} checkedIn={checkedIn} onToggle={toggleCI} sinceTime={sinceTime}/>}
+        {tab==='home' &&<HomeScreen     t={t} checkedIn={checkedIn} onToggle={toggleCI} sinceTime={sinceTime} staffName={staffName}/>}
         {tab==='tasks'&&<TasksScreen    t={t} tasks={tasks} setTasks={setTasks} onToast={setToast}/>}
-        {tab==='rooms'&&<RoomsScreen    t={t} rooms={rooms} setRooms={setRooms} onToast={setToast}/>}
+        {tab==='rooms'&&<RoomsScreen    t={t} rooms={rooms} setRooms={setRooms} onToast={setToast} staffName={staffName}/>}
         {tab==='msgs' &&<MessagesScreen t={t} lang={lang} setLang={setLang}/>}
-        {tab==='me'   &&<ProfileScreen  t={t}/>}
+        {tab==='me'   &&<ProfileScreen  t={t} staffName={staffName} onChangeName={()=>{localStorage.removeItem('dheuof_staff_name');setStaffName('');}}/>}
       </div>
       <BottomNav tab={tab} setTab={setTab} t={t} unread={unread}/>
       {toast&&<Toast msg={toast} onDone={()=>setToast(null)}/>}
