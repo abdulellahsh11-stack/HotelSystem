@@ -608,3 +608,145 @@ def run_v3_migrations(db) -> None:
             log.warning(f"Trigger {trigger_name}: {e}")
 
     log.info("✅ v3 migrations اكتملت")
+
+
+# ── Staff App migrations — room accountability ─────────────────────────────
+
+STAFF_APP_MIGRATIONS = """
+CREATE TABLE IF NOT EXISTS room_actions (
+    id              SERIAL PRIMARY KEY,
+    client_id       VARCHAR(50),
+    room_number     VARCHAR(20) NOT NULL,
+    action_type     VARCHAR(40) NOT NULL,
+    performed_by    VARCHAR(100) NOT NULL,
+    previous_status VARCHAR(30),
+    new_status      VARCHAR(30),
+    notes           TEXT,
+    created_at      TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_room_actions_client ON room_actions(client_id, room_number);
+CREATE INDEX IF NOT EXISTS idx_room_actions_staff  ON room_actions(performed_by)
+"""
+
+STAFF_APP_ALTER = [
+    "ALTER TABLE rooms ADD COLUMN IF NOT EXISTS last_action_by  VARCHAR(100)",
+    "ALTER TABLE rooms ADD COLUMN IF NOT EXISTS last_action_at  TIMESTAMPTZ",
+    "ALTER TABLE rooms ADD COLUMN IF NOT EXISTS current_guest   VARCHAR(200)",
+    "ALTER TABLE rooms ADD COLUMN IF NOT EXISTS checkout_due    VARCHAR(10)",
+]
+
+
+def run_staff_app_migrations(db) -> None:
+    import logging
+    log = logging.getLogger("dheuof.db.staff_app")
+    if not db.use_postgres:
+        return
+    for stmt in STAFF_APP_MIGRATIONS.split(";"):
+        s = stmt.strip()
+        if s:
+            try:
+                db.execute(s)
+            except Exception as e:
+                if "already exists" not in str(e).lower():
+                    log.warning(f"staff_app migration: {e}")
+    for stmt in STAFF_APP_ALTER:
+        try:
+            db.execute(stmt)
+        except Exception as e:
+            if "already exists" not in str(e).lower():
+                log.warning(f"ALTER rooms: {e}")
+    log.info("✅ Staff App migrations — room_actions + accountability columns")
+
+
+# ── Security Hardening migrations (Isolation Audit — 10 findings) ──────────
+
+def run_security_hardening(db) -> None:
+    """
+    تطبيق ملف SQL الأمني — specs/db/04-isolation-hardening.sql
+    يعالج النقاط العشر من تقرير فحص أمن العزل.
+    """
+    import logging
+    import os
+    log = logging.getLogger("dheuof.db.security")
+
+    if not db.use_postgres:
+        log.info("⏭  Security hardening skipped — JSON fallback mode")
+        return
+
+    sql_path = os.path.join(os.path.dirname(__file__), "..", "specs", "db", "04-isolation-hardening.sql")
+    sql_path = os.path.normpath(sql_path)
+
+    if not os.path.exists(sql_path):
+        log.warning(f"⚠️  Security hardening SQL not found: {sql_path}")
+        return
+
+    with open(sql_path, "r", encoding="utf-8") as f:
+        raw_sql = f.read()
+
+    # تقسيم على ';' مع تجاهل الـ DO $$ blocks بشكل صحيح
+    statements = _split_sql_safe(raw_sql)
+    ok = fail = 0
+    for stmt in statements:
+        s = stmt.strip()
+        if not s or s.startswith("--"):
+            continue
+        try:
+            db.execute(s)
+            ok += 1
+        except Exception as e:
+            err = str(e).lower()
+            if any(x in err for x in ("already exists", "duplicate", "42p07", "42710")):
+                ok += 1
+            else:
+                log.warning(f"hardening stmt failed: {e} | SQL: {s[:80]}")
+                fail += 1
+
+    # تشغيل audit على SECURITY DEFINER functions
+    try:
+        from db.security import audit_security_definer_functions
+        funcs = audit_security_definer_functions(db)
+        if funcs:
+            log.warning(f"⚠️  SECURITY DEFINER functions detected ({len(funcs)}): "
+                        f"{[f['function_name'] for f in funcs]}")
+    except Exception as e:
+        log.warning(f"SECURITY DEFINER audit: {e}")
+
+    log.info(f"✅ Security hardening — {ok} statements OK, {fail} failed")
+
+
+def _split_sql_safe(sql: str) -> list:
+    """تقسيم SQL بشكل آمن مع الحفاظ على DO $$ ... $$ blocks."""
+    statements = []
+    current = []
+    in_dollar_quote = False
+    dollar_tag = ""
+
+    for line in sql.splitlines():
+        stripped = line.strip()
+        if not in_dollar_quote:
+            if "$$" in stripped:
+                in_dollar_quote = True
+                dollar_tag = "$$"
+            if stripped.endswith(";") and not in_dollar_quote:
+                current.append(line)
+                statements.append("\n".join(current))
+                current = []
+                continue
+        else:
+            if dollar_tag in stripped and stripped != dollar_tag + ";":
+                pass
+            if stripped.endswith(dollar_tag + ";") or stripped == dollar_tag + ";":
+                in_dollar_quote = False
+                dollar_tag = ""
+                current.append(line)
+                statements.append("\n".join(current))
+                current = []
+                continue
+        current.append(line)
+
+    if current:
+        leftover = "\n".join(current).strip()
+        if leftover:
+            statements.append(leftover)
+
+    return statements

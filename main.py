@@ -84,6 +84,11 @@ async def lifespan(app_: FastAPI):
         run_staff_app_migrations(db)
     except Exception as e:
         log.warning(f"staff_app migrations: {e}")
+    try:
+        from db.schema_v3 import run_security_hardening
+        run_security_hardening(db)
+    except Exception as e:
+        log.warning(f"security hardening migrations: {e}")
 
     # Load optional Month-3 services
     try:
@@ -207,14 +212,37 @@ def require_admin(request: Request):
 
 def get_client_session(request: Request) -> Optional[dict]:
     token = _get_client_token(request)
+    if not token:
+        return None
     with _lock:
-        return _client_sessions.get(token) if token else None
+        session = _client_sessions.get(token)
+    if session is None:
+        return None
+    # Finding #8: enforce server-side session TTL (8 hours)
+    try:
+        from db.security import session_is_expired, is_token_revoked
+        if session_is_expired(session):
+            with _lock:
+                _client_sessions.pop(token, None)
+            return None
+        # Finding #8: check revocation table
+        db = getattr(request.app.state, "db", None)
+        if db and is_token_revoked(db, token):
+            with _lock:
+                _client_sessions.pop(token, None)
+            return None
+    except Exception:
+        pass
+    return session
 
 
 def require_client(request: Request) -> dict:
     session = get_client_session(request)
     if not session:
         raise HTTPException(status_code=401, detail="غير مصرح")
+    # Finding #3: enforce non-empty client_id
+    if not session.get("client_id", "").strip():
+        raise HTTPException(status_code=401, detail="جلسة غير صالحة — client_id مفقود")
     return session
 
 
@@ -266,14 +294,26 @@ tr:hover td{background:#f8fafc}
 """
 
 
-def _login_page(error: str = "") -> str:
+_SEO_BASE = """<meta name="description" content="ضيوف — منصة إدارة الفنادق والشقق المخدومة الذكية في السعودية. حجوزات، نزلاء، فواتير، تقارير، واتساب.">
+<meta name="keywords" content="نظام فنادق, إدارة فندق, شقق مخدومة, حجوزات, نزلاء, فواتير ضريبية, واتساب فندق, ضيوف, dheuof">
+<meta name="robots" content="index, follow">
+<meta property="og:title" content="ضيوف — منصة الضيافة الذكية">
+<meta property="og:description" content="إدارة فندقك بذكاء — حجوزات، نزلاء، فواتير، تقارير متقدمة وأكثر من 17 وحدة.">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ar_SA">
+<link rel="canonical" href="https://dheuof.com/">"""
+
+
+def _login_page(error: str = "", ref_code: str = "") -> str:
     err_html = f'<div class="alert alert-error">{error}</div>' if error else ""
+    ref_field = f'<input type="hidden" id="ref-code" value="{ref_code}">' if ref_code else '<input type="hidden" id="ref-code" value="">'
     return f"""<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ضيوف — تسجيل الدخول</title>
+<title>ضيوف — نظام إدارة الفنادق والشقق المخدومة</title>
+{_SEO_BASE}
 <style>
   *{{margin:0;padding:0;box-sizing:border-box}}
   body{{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:linear-gradient(135deg,#0F2640 0%,#185FA5 100%);min-height:100vh;display:flex;align-items:center;justify-content:center}}
@@ -324,6 +364,7 @@ def _login_page(error: str = "") -> str:
   </div>
 
   <div id="pane-register" class="pane">
+    {ref_field}
     <div class="form-group">
       <label>اسم المنشأة</label>
       <input type="text" id="reg-name" placeholder="فندق الواحة">
@@ -367,8 +408,9 @@ async function doRegister(){{
   const id=document.getElementById('reg-id').value.trim();
   const pass=document.getElementById('reg-pass').value;
   const key=document.getElementById('reg-key').value.trim();
+  const ref=document.getElementById('ref-code')?.value||'';
   if(!name||!id||!pass)return showErr('يرجى ملء جميع الحقول');
-  const r=await fetch('/api/client/register',{{method:'POST',headers:{{'Content-Type':'application/json'}},body:JSON.stringify({{hotel_name:name,client_id:id,password:pass,activation_key:key}})}});
+  const r=await fetch('/api/client/register',{{method:'POST',headers:{{'Content-Type':'application/json'}},body:JSON.stringify({{hotel_name:name,client_id:id,password:pass,activation_key:key,ref_code:ref}})}});
   const d=await r.json();
   if(d.ok||d.success)location.href='/';else showErr(d.error||'خطأ في التسجيل');
 }}
@@ -428,128 +470,794 @@ async function doLogin(){{
 
 
 def _admin_dashboard(clients: list, stats: dict) -> str:
-    total = stats.get("total", 0)
-    active = stats.get("active", 0)
-    revenue = stats.get("revenue", 0)
-
-    rows = ""
-    for c in clients:
-        cid = c.get("id", "")
-        name = c.get("name", c.get("hotel_name", cid))
-        plan = c.get("plan", "trial")
-        status = c.get("status", "trial")
-        badge_cls = {"active": "badge-green", "trial": "badge-yellow", "suspended": "badge-red"}.get(status, "badge-blue")
-        status_ar = {"active": "نشط", "trial": "تجريبي", "suspended": "موقوف"}.get(status, status)
-        created = str(c.get("created_at", ""))[:10]
-        rows += f"""<tr>
-          <td><strong>{name}</strong><br><small style="color:#94a3b8;font-size:11px">{cid}</small></td>
-          <td><span class="badge badge-blue">{plan}</span></td>
-          <td><span class="badge {badge_cls}">{status_ar}</span></td>
-          <td>{created}</td>
-          <td>
-            <button onclick="toggleClient('{cid}')" style="background:#f1f5f9;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:12px;margin-left:4px">تبديل</button>
-            <button onclick="deleteClient('{cid}')" style="background:#fee2e2;color:#dc2626;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:12px">حذف</button>
-          </td>
-        </tr>"""
-
-    trial = stats.get("trial", 0)
-    return f"""<!DOCTYPE html>
+    return """<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>ضيوف — لوحة الإدارة</title>
-{_NAV}
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:#f0f4f8;color:#1e293b;display:flex;min-height:100vh;direction:rtl}
+.sidebar{width:220px;background:#0F2640;min-height:100vh;display:flex;flex-direction:column;position:fixed;right:0;top:0;bottom:0;z-index:100}
+.sidebar .logo{padding:24px 20px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sidebar .logo h1{color:#fff;font-size:1.4rem;font-weight:700}
+.sidebar .logo small{color:#94a3b8;font-size:.75rem}
+.sidebar a{display:flex;align-items:center;gap:10px;padding:12px 20px;color:#cbd5e1;text-decoration:none;font-size:.875rem;transition:.2s}
+.sidebar a:hover,.sidebar a.active{background:rgba(255,255,255,.1);color:#fff}
+.sidebar a .icon{font-size:1rem}
+.sidebar .spacer{flex:1}
+.main{margin-right:220px;flex:1;padding:0;min-height:100vh}
+.topbar{background:#fff;padding:16px 28px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 1px 4px rgba(0,0,0,.08);position:sticky;top:0;z-index:50}
+.topbar h2{font-size:1rem;font-weight:600;color:#0F2640}
+.content{padding:24px 28px}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:24px}
+.stat{background:#fff;border-radius:12px;padding:18px 20px;box-shadow:0 1px 3px rgba(0,0,0,.06);border-top:3px solid #185FA5}
+.stat.g{border-top-color:#10B981}.stat.y{border-top-color:#F59E0B}.stat.r{border-top-color:#ef4444}.stat.p{border-top-color:#8b5cf6}
+.stat .val{font-size:1.8rem;font-weight:700;color:#0F2640}.stat .lbl{font-size:.75rem;color:#64748b;margin-top:4px}
+.card{background:#fff;border-radius:12px;padding:20px 24px;box-shadow:0 1px 3px rgba(0,0,0,.06);margin-bottom:20px}
+.card-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f1f5f9}
+.card-hdr h3{font-size:.9rem;font-weight:600;color:#0F2640}
+table{width:100%;border-collapse:collapse;font-size:.825rem}
+th{background:#f8fafc;padding:10px 12px;text-align:right;font-weight:600;color:#64748b;border-bottom:2px solid #e2e8f0}
+td{padding:10px 12px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+tr:hover td{background:#fafbfc}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:600}
+.bg{background:#dcfce7;color:#16a34a}.by{background:#fef9c3;color:#ca8a04}.br{background:#fee2e2;color:#dc2626}.bb{background:#dbeafe;color:#1d4ed8}.bp{background:#ede9fe;color:#7c3aed}
+.btn{border:none;padding:7px 14px;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;transition:.2s}
+.btn-p{background:#185FA5;color:#fff}.btn-p:hover{background:#0F4A8A}
+.btn-g{background:#10B981;color:#fff}.btn-g:hover{background:#059669}
+.btn-r{background:#ef4444;color:#fff}.btn-r:hover{background:#dc2626}
+.btn-s{background:#f1f5f9;color:#374151}.btn-s:hover{background:#e2e8f0}
+.btn-y{background:#F59E0B;color:#fff}.btn-y:hover{background:#D97706}
+.pane{display:none}.pane.active{display:block}
+.alert-exp{background:#fef3c7;border:1px solid #fbbf24;border-radius:8px;padding:10px 14px;font-size:.8rem;color:#92400e;margin-bottom:8px}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-left:6px}
+.dot-g{background:#10B981}.dot-y{background:#F59E0B}.dot-r{background:#ef4444}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:16px;padding:28px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto}
+.modal h4{font-size:1rem;font-weight:700;color:#0F2640;margin-bottom:20px}
+.fg{margin-bottom:14px}
+.fg label{display:block;font-size:.8rem;font-weight:600;color:#374151;margin-bottom:5px}
+.fg input,.fg select{width:100%;padding:8px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.875rem;outline:none}
+.fg input:focus,.fg select:focus{border-color:#185FA5}
+.fg-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tag{display:inline-block;background:#e0f2fe;color:#0369a1;padding:2px 8px;border-radius:4px;font-size:.7rem;font-weight:600;margin-left:4px}
+</style>
 </head>
 <body>
 <div class="sidebar">
   <div class="logo"><h1>ضيوف</h1><small>لوحة الإدارة</small></div>
-  <a href="/admin" class="active"><span class="icon">&#128200;</span> الرئيسية</a>
-  <a href="/admin#clients"><span class="icon">&#127970;</span> المنشآت</a>
+  <a href="#" class="active" onclick="nav('overview',this)"><span class="icon">&#128200;</span> الرئيسية</a>
+  <a href="#" onclick="nav('clients',this)"><span class="icon">&#127970;</span> المنشآت</a>
+  <a href="#" onclick="nav('sessions',this)"><span class="icon">&#128101;</span> الجلسات النشطة</a>
+  <a href="#" onclick="nav('subs',this)"><span class="icon">&#128203;</span> الاشتراكات</a>
+  <a href="#" onclick="nav('employees',this)"><span class="icon">&#128188;</span> الموظفون</a>
+  <a href="#" onclick="nav('modules',this)"><span class="icon">&#9881;</span> التحكم بالوحدات</a>
+  <a href="#" onclick="nav('marketers',this)"><span class="icon">&#128279;</span> المسوقون</a>
+  <a href="#" onclick="nav('tickets',this)"><span class="icon">&#127917;</span> الدعم</a>
+  <div class="spacer"></div>
   <a href="/api/health" target="_blank"><span class="icon">&#128154;</span> الصحة</a>
-  <a href="/api/admin/logout" style="color:#ef4444;margin-top:auto"><span class="icon">&#128682;</span> خروج</a>
+  <a href="/api/admin/logout" style="color:#f87171"><span class="icon">&#128682;</span> خروج</a>
 </div>
 <div class="main">
   <div class="topbar">
-    <h2>لوحة التحكم الرئيسية</h2>
+    <h2 id="page-title">الرئيسية</h2>
     <div style="display:flex;gap:10px;align-items:center">
-      <span style="font-size:13px;color:#64748b">{datetime.now().strftime('%Y-%m-%d %H:%M')}</span>
-      <a href="/api/admin/logout" class="btn btn-danger" style="padding:8px 16px">خروج</a>
+      <span id="clock" style="font-size:.8rem;color:#94a3b8"></span>
+      <button class="btn btn-s" onclick="refreshAll()" title="تحديث">&#8635; تحديث</button>
+      <a href="/api/admin/logout" class="btn btn-r">خروج</a>
     </div>
   </div>
 
-  <div class="stats-grid">
-    <div class="stat-card"><div class="label">إجمالي المنشآت</div><div class="value">{total}</div></div>
-    <div class="stat-card green"><div class="label">المنشآت النشطة</div><div class="value">{active}</div></div>
-    <div class="stat-card gold"><div class="label">تجريبي</div><div class="value">{trial}</div></div>
-    <div class="stat-card"><div class="label">الإيرادات (ر.س)</div><div class="value">{revenue:,.0f}</div></div>
+  <div class="content">
+
+  <!-- ═══════════ OVERVIEW ═══════════ -->
+  <div id="pane-overview" class="pane active">
+    <div class="stat-grid">
+      <div class="stat"><div class="val" id="st-total">-</div><div class="lbl">إجمالي المنشآت</div></div>
+      <div class="stat g"><div class="val" id="st-active">-</div><div class="lbl">نشطة</div></div>
+      <div class="stat y"><div class="val" id="st-trial">-</div><div class="lbl">تجريبي</div></div>
+      <div class="stat r"><div class="val" id="st-suspended">-</div><div class="lbl">موقوفة</div></div>
+      <div class="stat p"><div class="val" id="st-sessions">-</div><div class="lbl">جلسات نشطة الآن</div></div>
+      <div class="stat"><div class="val" id="st-revenue">-</div><div class="lbl">الإيرادات (ر.س)</div></div>
+    </div>
+    <div id="expiry-alerts"></div>
+    <div class="card">
+      <div class="card-hdr"><h3>آخر المنشآت المسجلة</h3></div>
+      <table><thead><tr><th>المنشأة</th><th>الخطة</th><th>الحالة</th><th>تاريخ التسجيل</th></tr></thead>
+      <tbody id="ov-recent"></tbody></table>
+    </div>
   </div>
 
-  <div class="card" id="clients">
-    <div class="card-title">المنشآت المسجلة</div>
-    <div style="display:flex;justify-content:flex-end;margin-bottom:16px;gap:10px">
-      <button onclick="showAddClient()" class="btn btn-primary">+ إضافة منشأة</button>
-      <button onclick="generateKey()" class="btn btn-success">+ مفتاح تفعيل</button>
-    </div>
-    <div id="key-result" style="display:none;background:#f0fdf4;padding:12px;border-radius:8px;margin-bottom:16px;font-weight:600;color:#16a34a;letter-spacing:2px"></div>
-    <div style="overflow-x:auto">
-    <table>
-      <thead><tr>
-        <th>المنشأة</th><th>الخطة</th><th>الحالة</th><th>التسجيل</th><th>إجراءات</th>
+  <!-- ═══════════ CLIENTS ═══════════ -->
+  <div id="pane-clients" class="pane">
+    <div class="card">
+      <div class="card-hdr">
+        <h3>جميع المنشآت</h3>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-p" onclick="openAddModal()">+ إضافة</button>
+          <button class="btn btn-g" onclick="generateKey()">+ مفتاح تفعيل</button>
+        </div>
+      </div>
+      <div id="key-result" style="display:none;background:#f0fdf4;padding:10px 14px;border-radius:8px;margin-bottom:14px;font-weight:700;color:#16a34a;letter-spacing:2px;font-size:.9rem"></div>
+      <div style="overflow-x:auto">
+      <table><thead><tr>
+        <th>المنشأة</th><th>الخطة</th><th>الحالة</th><th>انتهاء الاشتراك</th><th>تاريخ التسجيل</th><th>إجراءات</th>
       </tr></thead>
-      <tbody id="clients_body">{rows if rows else '<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:40px">لا توجد منشآت بعد</td></tr>'}</tbody>
-    </table>
+      <tbody id="clients-body"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ SESSIONS ═══════════ -->
+  <div id="pane-sessions" class="pane">
+    <div class="card">
+      <div class="card-hdr">
+        <h3>الجلسات النشطة الآن</h3>
+        <button class="btn btn-s" onclick="loadSessions()">&#8635; تحديث</button>
+      </div>
+      <table><thead><tr>
+        <th>المنشأة</th><th>وقت الدخول</th><th>المدة</th><th>إجراء</th>
+      </tr></thead>
+      <tbody id="sessions-body"></tbody></table>
+    </div>
+  </div>
+
+  <!-- ═══════════ SUBSCRIPTIONS ═══════════ -->
+  <div id="pane-subs" class="pane">
+    <div class="card">
+      <div class="card-hdr"><h3>إدارة الاشتراكات</h3><button class="btn btn-s" onclick="loadSubs()">&#8635; تحديث</button></div>
+      <div style="overflow-x:auto">
+      <table><thead><tr>
+        <th>المنشأة</th><th>الخطة</th><th>الحالة</th><th>بداية</th><th>نهاية</th><th>المتبقي</th><th>السعر</th><th>تعديل</th>
+      </tr></thead>
+      <tbody id="subs-body"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ EMPLOYEES ═══════════ -->
+  <div id="pane-employees" class="pane">
+    <div class="card">
+      <div class="card-hdr">
+        <h3>سجل الموظفين</h3>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select id="emp-filter" onchange="loadEmployees()" style="padding:6px 10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.8rem">
+            <option value="">كل المنشآت</option>
+          </select>
+          <button class="btn btn-s" onclick="loadEmployees()">&#8635; تحديث</button>
+        </div>
+      </div>
+      <table><thead><tr>
+        <th>المنشأة</th><th>الموظف</th><th>الدور</th><th>آخر نشاط</th><th>عدد المهام</th>
+      </tr></thead>
+      <tbody id="emp-body"></tbody></table>
+    </div>
+  </div>
+
+  <!-- ═══════════ MODULES ═══════════ -->
+  <div id="pane-modules" class="pane">
+    <div class="card">
+      <div class="card-hdr">
+        <h3>التحكم بالوحدات لكل منشأة</h3>
+        <select id="mod-client-sel" onchange="loadModules()" style="padding:6px 10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.8rem">
+          <option value="">-- اختر منشأة --</option>
+        </select>
+      </div>
+      <div id="modules-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:4px"></div>
+      <div id="modules-save-row" style="display:none;margin-top:16px;padding-top:14px;border-top:1px solid #f1f5f9">
+        <button class="btn btn-p" onclick="saveModules()">&#10003; حفظ التغييرات</button>
+        <span id="mod-saved" style="display:none;color:#16a34a;font-size:.8rem;margin-right:10px">&#10003; تم الحفظ</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ MARKETERS ═══════════ -->
+  <div id="pane-marketers" class="pane">
+    <div class="card">
+      <div class="card-hdr">
+        <h3>&#128279; المسوقون وروابطهم التسويقية</h3>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-p" onclick="openAddMktr()">+ إضافة مسوق</button>
+          <button class="btn btn-s" onclick="loadMarketers()">&#8635; تحديث</button>
+        </div>
+      </div>
+      <div id="mktr-link-info" style="display:none;background:#f0fdf4;padding:10px 14px;border-radius:8px;margin-bottom:14px;font-size:.8rem;color:#166534;word-break:break-all"></div>
+      <table><thead><tr>
+        <th>اسم المسوق</th><th>كود الإحالة</th><th>رابط التسجيل</th><th>التسجيلات</th><th>العمولة %</th><th>الحالة</th><th>إجراءات</th>
+      </tr></thead>
+      <tbody id="mktr-body"></tbody></table>
+    </div>
+  </div>
+
+  <!-- ═══════════ TICKETS ═══════════ -->
+  <div id="pane-tickets" class="pane">
+    <div class="card">
+      <div class="card-hdr"><h3>تذاكر الدعم</h3><button class="btn btn-s" onclick="loadTickets()">&#8635; تحديث</button></div>
+      <table><thead><tr>
+        <th>المنشأة</th><th>الموضوع</th><th>الحالة</th><th>التاريخ</th><th>رد</th>
+      </tr></thead>
+      <tbody id="tickets-body"></tbody></table>
+    </div>
+  </div>
+
+  </div>
+</div>
+
+<!-- Modal: Add Client -->
+<div class="modal-bg" id="modal-add">
+  <div class="modal">
+    <h4>إضافة منشأة جديدة</h4>
+    <div class="fg"><label>معرف المنشأة (ID)</label><input id="nc-id" placeholder="hotel-001"></div>
+    <div class="fg"><label>اسم المنشأة</label><input id="nc-name" placeholder="فندق النخبة"></div>
+    <div class="fg"><label>كلمة المرور</label><input id="nc-pass" type="password"></div>
+    <div class="fg"><label>الخطة</label>
+      <select id="nc-plan">
+        <option value="trial">تجريبي (trial)</option>
+        <option value="starter">مبدئي (starter)</option>
+        <option value="operations">تشغيلي (operations)</option>
+        <option value="professional">احترافي (professional)</option>
+        <option value="enterprise">مؤسسي (enterprise)</option>
+      </select>
+    </div>
+    <div id="nc-err" style="display:none;color:#dc2626;font-size:.8rem;margin-bottom:10px"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-p" style="flex:1" onclick="addClient()">إضافة</button>
+      <button class="btn btn-s" style="flex:1" onclick="closeModal('modal-add')">إلغاء</button>
     </div>
   </div>
 </div>
 
-<div id="modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center">
-  <div style="background:#fff;border-radius:16px;padding:32px;width:100%;max-width:500px">
-    <h3 style="margin-bottom:20px;color:#0F2640">إضافة منشأة جديدة</h3>
-    <div class="form-group"><label>معرف المنشأة (ID)</label><input id="nc_id" placeholder="hotel-001"></div>
-    <div class="form-group"><label>اسم المنشأة</label><input id="nc_name" placeholder="فندق النخبة"></div>
-    <div class="form-group"><label>كلمة المرور</label><input id="nc_pass" type="password"></div>
-    <div class="form-group"><label>الخطة</label>
-      <select id="nc_plan"><option>trial</option><option>starter</option><option>operations</option><option>professional</option><option>enterprise</option></select>
+<!-- Modal: Edit Subscription -->
+<div class="modal-bg" id="modal-sub">
+  <div class="modal">
+    <h4>تعديل اشتراك: <span id="sub-edit-name"></span></h4>
+    <input type="hidden" id="sub-edit-cid">
+    <div class="fg-row">
+      <div class="fg"><label>الخطة</label>
+        <select id="sub-plan">
+          <option value="trial">trial</option>
+          <option value="starter">starter</option>
+          <option value="operations">operations</option>
+          <option value="professional">professional</option>
+          <option value="enterprise">enterprise</option>
+        </select>
+      </div>
+      <div class="fg"><label>الحالة</label>
+        <select id="sub-status">
+          <option value="trial">تجريبي</option>
+          <option value="active">نشط</option>
+          <option value="suspended">موقوف</option>
+          <option value="expired">منتهي</option>
+        </select>
+      </div>
     </div>
-    <div id="nc_err" class="alert alert-error" style="display:none"></div>
-    <div style="display:flex;gap:10px;margin-top:20px">
-      <button onclick="addClient()" class="btn btn-primary" style="flex:1">إضافة</button>
-      <button onclick="document.getElementById('modal').style.display='none'" class="btn btn-outline" style="flex:1">إلغاء</button>
+    <div class="fg-row">
+      <div class="fg"><label>تاريخ البداية</label><input type="date" id="sub-start"></div>
+      <div class="fg"><label>تاريخ الانتهاء</label><input type="date" id="sub-end"></div>
+    </div>
+    <div class="fg"><label>السعر الشهري (ر.س)</label><input type="number" id="sub-price" min="0" step="0.01"></div>
+    <div id="sub-err" style="display:none;color:#dc2626;font-size:.8rem;margin-bottom:10px"></div>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="btn btn-p" style="flex:1" onclick="saveSub()">حفظ</button>
+      <button class="btn btn-s" style="flex:1" onclick="closeModal('modal-sub')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Client Detail (employees + password reset) -->
+<div class="modal-bg" id="modal-client-detail">
+  <div class="modal" style="max-width:680px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+      <h4 id="detail-title" style="margin:0">تفاصيل المنشأة</h4>
+      <button onclick="closeModal('modal-client-detail')" style="background:none;border:none;cursor:pointer;font-size:1.3rem;color:#94a3b8">&#10005;</button>
+    </div>
+    <!-- Manager section -->
+    <div style="background:#f8fafc;border-radius:10px;padding:14px 16px;margin-bottom:16px">
+      <div style="font-size:.8rem;font-weight:700;color:#0F2640;margin-bottom:10px">&#128272; بيانات المدير / الدخول</div>
+      <div class="fg-row">
+        <div class="fg"><label>كلمة مرور جديدة</label><input type="password" id="mgr-pass" placeholder="اتركها فارغة للإبقاء"></div>
+        <div class="fg" style="display:flex;align-items:flex-end">
+          <button class="btn btn-y" style="width:100%" onclick="resetManagerPass()">&#128274; تغيير كلمة المرور</button>
+        </div>
+      </div>
+      <div id="mgr-msg" style="font-size:.8rem;margin-top:6px;display:none"></div>
+    </div>
+    <!-- Employees section -->
+    <div style="font-size:.8rem;font-weight:700;color:#0F2640;margin-bottom:10px">&#128188; الموظفون في هذه المنشأة</div>
+    <div style="overflow-x:auto;max-height:280px;overflow-y:auto">
+    <table><thead><tr><th>الاسم</th><th>الدور</th><th>آخر نشاط</th><th>عدد المهام</th></tr></thead>
+    <tbody id="detail-emp-body"></tbody></table>
+    </div>
+    <input type="hidden" id="detail-cid">
+  </div>
+</div>
+
+<!-- Modal: Add Marketer -->
+<div class="modal-bg" id="modal-mktr">
+  <div class="modal">
+    <h4>إضافة مسوق جديد</h4>
+    <div class="fg"><label>الاسم</label><input id="mk-name" placeholder="اسم المسوق"></div>
+    <div class="fg-row">
+      <div class="fg"><label>كود الإحالة (اختياري)</label><input id="mk-code" placeholder="ABC123 — يُولَّد تلقائياً"></div>
+      <div class="fg"><label>نسبة العمولة %</label><input type="number" id="mk-comm" value="10" min="0" max="100"></div>
+    </div>
+    <div class="fg-row">
+      <div class="fg"><label>رقم الهاتف</label><input id="mk-phone" placeholder="+9665xxxxxxxx"></div>
+      <div class="fg"><label>البريد الإلكتروني</label><input id="mk-email" placeholder="marketer@email.com"></div>
+    </div>
+    <div class="fg"><label>ملاحظات</label><input id="mk-notes" placeholder="ملاحظات اختيارية"></div>
+    <div id="mk-err" style="display:none;color:#dc2626;font-size:.8rem;margin-bottom:10px"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-p" style="flex:1" onclick="addMarketer()">إضافة</button>
+      <button class="btn btn-s" style="flex:1" onclick="closeModal('modal-mktr')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Marketer Referrals -->
+<div class="modal-bg" id="modal-refs">
+  <div class="modal" style="max-width:640px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h4 id="refs-title" style="margin:0">تسجيلات المسوق</h4>
+      <button onclick="closeModal('modal-refs')" style="background:none;border:none;cursor:pointer;font-size:1.3rem;color:#94a3b8">&#10005;</button>
+    </div>
+    <div id="refs-link" style="background:#f0fdf4;padding:10px 14px;border-radius:8px;margin-bottom:14px;font-size:.8rem;color:#166534;word-break:break-all"></div>
+    <table><thead><tr><th>المنشأة</th><th>الخطة</th><th>تاريخ التسجيل</th></tr></thead>
+    <tbody id="refs-body"></tbody></table>
+  </div>
+</div>
+
+<!-- Modal: Ticket Reply -->
+<div class="modal-bg" id="modal-ticket">
+  <div class="modal">
+    <h4>الرد على التذكرة</h4>
+    <input type="hidden" id="tk-id">
+    <div class="fg"><label>الرد</label><textarea id="tk-reply" rows="4" style="width:100%;padding:8px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.875rem;resize:vertical"></textarea></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-p" style="flex:1" onclick="sendReply()">إرسال</button>
+      <button class="btn btn-s" style="flex:1" onclick="closeModal('modal-ticket')">إلغاء</button>
     </div>
   </div>
 </div>
 
 <script>
-function showAddClient(){{var m=document.getElementById('modal');m.style.display='flex';}}
-async function addClient(){{
-  const id=document.getElementById('nc_id').value.trim();
-  const name=document.getElementById('nc_name').value.trim();
-  const pass=document.getElementById('nc_pass').value;
-  const plan=document.getElementById('nc_plan').value;
-  const err=document.getElementById('nc_err');
-  if(!id||!name||!pass){{err.textContent='جميع الحقول مطلوبة';err.style.display='block';return}}
-  const r=await fetch('/api/admin/clients',{{method:'POST',headers:{{'Content-Type':'application/json'}},body:JSON.stringify({{id,name,password:pass,plan}})}});
+const PLANS={trial:'تجريبي',starter:'مبدئي',operations:'تشغيلي',professional:'احترافي',enterprise:'مؤسسي'};
+const STATUS_AR={active:'نشط',trial:'تجريبي',suspended:'موقوف',expired:'منتهي'};
+const STATUS_CLS={active:'bg',trial:'by',suspended:'br',expired:'br'};
+let _clients=[];
+
+function tick(){
+  const n=new Date();
+  document.getElementById('clock').textContent=n.toLocaleDateString('ar-SA',{weekday:'short',year:'numeric',month:'short',day:'numeric'})+' '+n.toLocaleTimeString('ar-SA');
+}
+setInterval(tick,1000);tick();
+
+function nav(id,el){
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sidebar a').forEach(a=>a.classList.remove('active'));
+  document.getElementById('pane-'+id).classList.add('active');
+  if(el){el.classList.add('active');}
+  const titles={overview:'الرئيسية',clients:'المنشآت',sessions:'الجلسات النشطة',subs:'الاشتراكات',employees:'الموظفون',modules:'التحكم بالوحدات',tickets:'تذاكر الدعم',marketers:'المسوقون'};
+  document.getElementById('page-title').textContent=titles[id]||id;
+  if(id==='clients')loadClients();
+  else if(id==='sessions')loadSessions();
+  else if(id==='subs')loadSubs();
+  else if(id==='employees')loadEmployees();
+  else if(id==='modules')initModulesPane();
+  else if(id==='tickets')loadTickets();
+  else if(id==='marketers')loadMarketers();
+}
+
+function refreshAll(){loadOverview();const active=document.querySelector('.pane.active')?.id?.replace('pane-','');if(active&&active!=='overview')nav(active);}
+
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function openAddModal(){document.getElementById('nc-id').value='';document.getElementById('nc-name').value='';document.getElementById('nc-pass').value='';document.getElementById('nc-err').style.display='none';openModal('modal-add');}
+
+// ─── Overview ───────────────────────────────────────────────
+async function loadOverview(){
+  const [cr,sr]=await Promise.all([
+    fetch('/api/admin/clients').then(r=>r.json()).catch(()=>({})),
+    fetch('/api/admin/sessions').then(r=>r.json()).catch(()=>({}))
+  ]);
+  const clients=cr.clients||[];_clients=clients;
+  const total=clients.length;
+  const active=clients.filter(c=>c.status==='active').length;
+  const trial=clients.filter(c=>c.status==='trial').length;
+  const susp=clients.filter(c=>c.status==='suspended').length;
+  const sessions=(sr.sessions||[]).length;
+  document.getElementById('st-total').textContent=total;
+  document.getElementById('st-active').textContent=active;
+  document.getElementById('st-trial').textContent=trial;
+  document.getElementById('st-suspended').textContent=susp;
+  document.getElementById('st-sessions').textContent=sessions;
+  // revenue from subscriptions
+  let rev=0;
+  clients.forEach(c=>{if(c.sub_price)rev+=parseFloat(c.sub_price)||0;});
+  document.getElementById('st-revenue').textContent=rev.toLocaleString('ar-SA',{minimumFractionDigits:0});
+  // expiry alerts
+  const alerts=document.getElementById('expiry-alerts');
+  alerts.innerHTML='';
+  const today=new Date();
+  clients.forEach(c=>{
+    if(c.sub_end){
+      const end=new Date(c.sub_end);
+      const days=Math.ceil((end-today)/86400000);
+      if(days<=14&&days>=0){
+        alerts.innerHTML+=`<div class="alert-exp">⚠️ <strong>${c.name||c.id}</strong> — اشتراكه ينتهي خلال <strong>${days}</strong> يوم (${c.sub_end})</div>`;
+      }else if(days<0){
+        alerts.innerHTML+=`<div class="alert-exp" style="background:#fee2e2;border-color:#fca5a5;color:#7f1d1d">🔴 <strong>${c.name||c.id}</strong> — اشتراكه انتهى منذ ${Math.abs(days)} يوم</div>`;
+      }
+    }
+  });
+  // recent
+  const recent=[...clients].sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0)).slice(0,5);
+  document.getElementById('ov-recent').innerHTML=recent.map(c=>{
+    const sc=STATUS_CLS[c.status]||'bb';
+    return `<tr><td><strong>${c.name||c.id}</strong><br><small style="color:#94a3b8">${c.id}</small></td>
+      <td><span class="badge bb">${PLANS[c.plan]||c.plan||'—'}</span></td>
+      <td><span class="badge ${sc}">${STATUS_AR[c.status]||c.status}</span></td>
+      <td>${(c.created_at||'').substring(0,10)||'—'}</td></tr>`;
+  }).join('')||'<tr><td colspan="4" style="text-align:center;color:#94a3b8;padding:24px">لا توجد بيانات</td></tr>';
+}
+
+// ─── Clients ────────────────────────────────────────────────
+async function loadClients(){
+  const r=await fetch('/api/admin/clients').then(r=>r.json()).catch(()=>({}));
+  const clients=r.clients||[];_clients=clients;
+  document.getElementById('clients-body').innerHTML=clients.map(c=>{
+    const sc=STATUS_CLS[c.status]||'bb';
+    const end=c.sub_end?`<span style="font-weight:600">${c.sub_end}</span>`:'<span style="color:#94a3b8">—</span>';
+    const days=c.sub_end?Math.ceil((new Date(c.sub_end)-new Date())/86400000):null;
+    const daysTag=days!==null?(days<0?`<span class="tag" style="background:#fee2e2;color:#dc2626">منتهي</span>`:(days<=14?`<span class="tag" style="background:#fef3c7;color:#92400e">${days}y</span>`:`<span class="tag" style="background:#dcfce7;color:#16a34a">${days}y</span>`)): '';
+    return `<tr>
+      <td><strong>${c.name||c.id}</strong><br><small style="color:#94a3b8;font-size:11px">${c.id}</small></td>
+      <td><span class="badge bb">${PLANS[c.plan]||c.plan||'—'}</span></td>
+      <td><span class="badge ${sc}">${STATUS_AR[c.status]||c.status}</span></td>
+      <td>${end} ${daysTag}</td>
+      <td>${(c.created_at||'').substring(0,10)||'—'}</td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-p" onclick="openClientDetail('${c.id}')" style="margin-left:4px">&#128065; تفاصيل</button>
+        <button class="btn btn-s" onclick="editSub('${c.id}')" style="margin-left:4px">&#9998; اشتراك</button>
+        <button class="btn btn-s" onclick="toggleClient('${c.id}')" style="margin-left:4px">تبديل</button>
+        <button class="btn btn-r" onclick="deleteClient('${c.id}')">حذف</button>
+      </td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="6" style="text-align:center;color:#94a3b8;padding:32px">لا توجد منشآت</td></tr>';
+}
+
+async function addClient(){
+  const id=document.getElementById('nc-id').value.trim();
+  const name=document.getElementById('nc-name').value.trim();
+  const pass=document.getElementById('nc-pass').value;
+  const plan=document.getElementById('nc-plan').value;
+  const err=document.getElementById('nc-err');
+  if(!id||!name||!pass){err.textContent='جميع الحقول مطلوبة';err.style.display='block';return;}
+  const r=await fetch('/api/admin/clients',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,name,password:pass,plan})});
   const d=await r.json();
-  if(d.success){{location.reload()}}else{{err.textContent=d.error||'خطأ';err.style.display='block'}}
-}}
-async function toggleClient(id){{
-  await fetch('/api/admin/clients/'+id+'/toggle',{{method:'POST'}});
-  location.reload();
-}}
-async function deleteClient(id){{
-  if(!confirm('هل تريد حذف هذه المنشأة؟'))return;
-  await fetch('/api/admin/clients/'+id,{{method:'DELETE'}});
-  location.reload();
-}}
-async function generateKey(){{
+  if(d.success){closeModal('modal-add');loadClients();loadOverview();}
+  else{err.textContent=d.error||'خطأ';err.style.display='block';}
+}
+
+async function toggleClient(id){
+  await fetch('/api/admin/clients/'+id+'/toggle',{method:'POST'});
+  loadClients();loadOverview();
+}
+
+async function deleteClient(id){
+  if(!confirm('هل تريد حذف هذه المنشأة نهائياً؟'))return;
+  await fetch('/api/admin/clients/'+id,{method:'DELETE'});
+  loadClients();loadOverview();
+}
+
+async function generateKey(){
   const plan=prompt('الخطة (trial/starter/operations/professional/enterprise):','trial');
   if(!plan)return;
   const days=parseInt(prompt('عدد الأيام:','30'))||30;
-  const r=await fetch('/api/admin/keys/generate',{{method:'POST',headers:{{'Content-Type':'application/json'}},body:JSON.stringify({{plan,days}})}});
+  const r=await fetch('/api/admin/keys/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({plan,days})});
   const d=await r.json();
-  if(d.key){{const el=document.getElementById('key-result');el.style.display='block';el.textContent='المفتاح: '+d.key;}}
-}}
+  if(d.key){const el=document.getElementById('key-result');el.style.display='block';el.textContent='🔑 المفتاح: '+d.key;}
+}
+
+// ─── Sessions ───────────────────────────────────────────────
+async function loadSessions(){
+  const r=await fetch('/api/admin/sessions').then(r=>r.json()).catch(()=>({}));
+  const sessions=r.sessions||[];
+  document.getElementById('st-sessions').textContent=sessions.length;
+  const now=new Date();
+  document.getElementById('sessions-body').innerHTML=sessions.map(s=>{
+    const created=new Date(s.created_at);
+    const mins=Math.floor((now-created)/60000);
+    const dur=mins<60?`${mins} دقيقة`:`${Math.floor(mins/60)}س ${mins%60}د`;
+    return `<tr>
+      <td><strong>${s.client_name||s.client_id}</strong><br><small style="color:#94a3b8">${s.client_id}</small></td>
+      <td>${s.created_at.replace('T',' ').substring(0,19)}</td>
+      <td><span class="dot dot-g"></span>${dur}</td>
+      <td><button class="btn btn-r" style="padding:4px 10px;font-size:.75rem" onclick="revokeSession('${s.token_prefix}')">إنهاء</button></td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="4" style="text-align:center;color:#94a3b8;padding:32px">لا توجد جلسات نشطة</td></tr>';
+}
+
+async function revokeSession(prefix){
+  if(!confirm('هل تريد إنهاء هذه الجلسة؟'))return;
+  await fetch('/api/admin/sessions/'+prefix+'/revoke',{method:'POST'});
+  loadSessions();
+}
+
+// ─── Subscriptions ──────────────────────────────────────────
+async function loadSubs(){
+  const r=await fetch('/api/admin/subscriptions').then(r=>r.json()).catch(()=>({}));
+  const subs=r.subscriptions||[];
+  const today=new Date();
+  document.getElementById('subs-body').innerHTML=subs.map(s=>{
+    const end=s.sub_end?new Date(s.sub_end):null;
+    const days=end?Math.ceil((end-today)/86400000):null;
+    let daysHtml='—';
+    if(days!==null){
+      if(days<0)daysHtml=`<span style="color:#dc2626;font-weight:600">انتهى منذ ${Math.abs(days)}ي</span>`;
+      else if(days<=14)daysHtml=`<span style="color:#d97706;font-weight:600">${days} يوم</span>`;
+      else daysHtml=`<span style="color:#16a34a;font-weight:600">${days} يوم</span>`;
+    }
+    const sc=STATUS_CLS[s.status]||'bb';
+    return `<tr>
+      <td><strong>${s.name||s.client_id}</strong><br><small style="color:#94a3b8">${s.client_id}</small></td>
+      <td><span class="badge bb">${PLANS[s.plan]||s.plan||'—'}</span></td>
+      <td><span class="badge ${sc}">${STATUS_AR[s.status]||s.status}</span></td>
+      <td>${s.sub_start||'—'}</td>
+      <td>${s.sub_end||'—'}</td>
+      <td>${daysHtml}</td>
+      <td>${s.price?parseFloat(s.price).toLocaleString('ar-SA'):'—'} ر.س</td>
+      <td><button class="btn btn-y" onclick="editSub('${s.client_id}')">&#9998; تعديل</button></td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="8" style="text-align:center;color:#94a3b8;padding:32px">لا توجد اشتراكات</td></tr>';
+}
+
+function editSub(cid){
+  const c=_clients.find(x=>x.id===cid)||{id:cid};
+  document.getElementById('sub-edit-cid').value=cid;
+  document.getElementById('sub-edit-name').textContent=c.name||cid;
+  document.getElementById('sub-plan').value=c.plan||'trial';
+  document.getElementById('sub-status').value=c.status||'trial';
+  document.getElementById('sub-start').value=c.sub_start||'';
+  document.getElementById('sub-end').value=c.sub_end||'';
+  document.getElementById('sub-price').value=c.sub_price||'';
+  document.getElementById('sub-err').style.display='none';
+  openModal('modal-sub');
+}
+
+async function saveSub(){
+  const cid=document.getElementById('sub-edit-cid').value;
+  const body={
+    plan:document.getElementById('sub-plan').value,
+    status:document.getElementById('sub-status').value,
+    sub_start:document.getElementById('sub-start').value,
+    sub_end:document.getElementById('sub-end').value,
+    sub_price:parseFloat(document.getElementById('sub-price').value)||0
+  };
+  const r=await fetch('/api/admin/subscriptions/'+cid,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const d=await r.json();
+  if(d.success){closeModal('modal-sub');loadClients();loadSubs();loadOverview();}
+  else{const e=document.getElementById('sub-err');e.textContent=d.error||'خطأ';e.style.display='block';}
+}
+
+// ─── Employees ──────────────────────────────────────────────
+async function loadEmployees(){
+  const filterCid=document.getElementById('emp-filter').value;
+  const url='/api/admin/employees'+(filterCid?'?client_id='+filterCid:'');
+  const r=await fetch(url).then(r=>r.json()).catch(()=>({}));
+  const emps=r.employees||[];
+  // populate filter
+  const sel=document.getElementById('emp-filter');
+  const cur=sel.value;
+  if(sel.options.length<=1){
+    _clients.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.name||c.id;sel.appendChild(o);});
+    sel.value=cur;
+  }
+  document.getElementById('emp-body').innerHTML=emps.map(e=>{
+    return `<tr>
+      <td><strong>${e.client_name||e.client_id}</strong></td>
+      <td>${e.name||'—'}</td>
+      <td><span class="badge bb">${e.role||'—'}</span></td>
+      <td>${e.last_active?(e.last_active.replace('T',' ').substring(0,19)):'—'}</td>
+      <td>${e.task_count||0}</td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:32px">لا توجد بيانات</td></tr>';
+}
+
+// ─── Tickets ────────────────────────────────────────────────
+async function loadTickets(){
+  const r=await fetch('/api/admin/tickets').then(r=>r.json()).catch(()=>({}));
+  const tickets=r.tickets||[];
+  document.getElementById('tickets-body').innerHTML=tickets.map(t=>{
+    const sc=t.status==='open'?'br':'bg';
+    return `<tr>
+      <td>${t.client_id||'—'}</td>
+      <td>${t.subject||'—'}</td>
+      <td><span class="badge ${sc}">${t.status==='open'?'مفتوح':'مغلق'}</span></td>
+      <td>${(t.created_at||'').substring(0,10)}</td>
+      <td><button class="btn btn-s" style="padding:4px 10px;font-size:.75rem" onclick="openReply('${t.id}')">رد</button></td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:32px">لا توجد تذاكر</td></tr>';
+}
+
+function openReply(id){document.getElementById('tk-id').value=id;document.getElementById('tk-reply').value='';openModal('modal-ticket');}
+async function sendReply(){
+  const id=document.getElementById('tk-id').value;
+  const reply=document.getElementById('tk-reply').value.trim();
+  if(!reply)return;
+  await fetch('/api/admin/tickets/reply',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,reply})});
+  closeModal('modal-ticket');loadTickets();
+}
+
+// ─── Client Detail (Manager + Employees) ────────────────────
+async function openClientDetail(cid){
+  const c=_clients.find(x=>x.id===cid)||{id:cid,name:cid};
+  document.getElementById('detail-cid').value=cid;
+  document.getElementById('detail-title').textContent='تفاصيل: '+(c.name||cid);
+  document.getElementById('mgr-pass').value='';
+  document.getElementById('mgr-msg').style.display='none';
+  document.getElementById('detail-emp-body').innerHTML='<tr><td colspan="4" style="text-align:center;padding:20px;color:#94a3b8">جاري التحميل...</td></tr>';
+  openModal('modal-client-detail');
+  // load employees for this client
+  const r=await fetch('/api/admin/employees?client_id='+cid).then(r=>r.json()).catch(()=>({}));
+  const emps=r.employees||[];
+  document.getElementById('detail-emp-body').innerHTML=emps.length?emps.map(e=>`<tr>
+    <td><strong>${e.name||'—'}</strong></td>
+    <td><span class="badge bb">${e.role||'—'}</span></td>
+    <td>${e.last_active?(e.last_active.replace('T',' ').substring(0,19)):'لم يسجل نشاط'}</td>
+    <td>${e.task_count||0}</td>
+  </tr>`).join(''):'<tr><td colspan="4" style="text-align:center;padding:20px;color:#94a3b8">لا يوجد موظفون مسجلون</td></tr>';
+}
+
+async function resetManagerPass(){
+  const cid=document.getElementById('detail-cid').value;
+  const pass=document.getElementById('mgr-pass').value.trim();
+  const msg=document.getElementById('mgr-msg');
+  if(!pass){msg.textContent='أدخل كلمة المرور الجديدة';msg.style.color='#dc2626';msg.style.display='block';return;}
+  const r=await fetch('/api/admin/clients/'+cid+'/reset-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pass})});
+  const d=await r.json();
+  if(d.success){msg.textContent='✓ تم تغيير كلمة المرور بنجاح';msg.style.color='#16a34a';}
+  else{msg.textContent=d.error||'خطأ';msg.style.color='#dc2626';}
+  msg.style.display='block';
+  document.getElementById('mgr-pass').value='';
+}
+
+// ─── Modules ────────────────────────────────────────────────
+const ALL_MODULES=[
+  {id:'M01',name:'الاستقبال'},{id:'M02',name:'النزلاء'},{id:'M03',name:'الفواتير'},
+  {id:'M04',name:'نقطة البيع'},{id:'M05',name:'الإشراف الداخلي'},{id:'M06',name:'المستودع'},
+  {id:'M07',name:'الصيانة'},{id:'M08',name:'واتساب'},{id:'M09',name:'الحجوزات'},
+  {id:'M10',name:'التسويق'},{id:'M11',name:'إدارة القنوات'},{id:'M12',name:'الذكاء الاصطناعي'},
+  {id:'M13',name:'التقارير'},{id:'M14',name:'الموظفون'},{id:'M15',name:'السياحة'},
+  {id:'M16',name:'المفاتيح الإلكترونية'},{id:'M17',name:'الحجوزات الخارجية'},
+];
+const PLAN_MODULES={
+  trial:['M01','M02'],
+  starter:['M01','M02','M07'],
+  operations:['M01','M02','M05','M07','M08','M13'],
+  professional:['M01','M02','M03','M04','M05','M06','M07','M08','M11','M13'],
+  enterprise:ALL_MODULES.map(m=>m.id)
+};
+
+function initModulesPane(){
+  const sel=document.getElementById('mod-client-sel');
+  if(sel.options.length<=1){
+    _clients.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=(c.name||c.id)+' ('+c.plan+')';sel.appendChild(o);});
+  }
+}
+
+function loadModules(){
+  const cid=document.getElementById('mod-client-sel').value;
+  const grid=document.getElementById('modules-grid');
+  if(!cid){grid.innerHTML='';document.getElementById('modules-save-row').style.display='none';return;}
+  const c=_clients.find(x=>x.id===cid)||{plan:'trial'};
+  const enabledByPlan=PLAN_MODULES[c.plan]||[];
+  const customEnabled=c.enabled_modules||enabledByPlan;
+  grid.innerHTML=ALL_MODULES.map(m=>{
+    const checked=customEnabled.includes(m.id);
+    const byPlan=enabledByPlan.includes(m.id);
+    return `<label style="display:flex;align-items:center;gap:8px;background:${checked?'#f0fdf4':'#f8fafc'};border:1.5px solid ${checked?'#86efac':'#e2e8f0'};border-radius:10px;padding:12px 14px;cursor:pointer;transition:.2s">
+      <input type="checkbox" value="${m.id}" ${checked?'checked':''} onchange="onModuleToggle()" style="width:16px;height:16px;accent-color:#10B981">
+      <div>
+        <div style="font-weight:600;font-size:.82rem;color:#0F2640">${m.id}</div>
+        <div style="font-size:.75rem;color:#64748b">${m.name}</div>
+        ${byPlan?'<span style="font-size:.65rem;color:#059669">✓ مشمول في الخطة</span>':''}
+      </div>
+    </label>`;
+  }).join('');
+  document.getElementById('modules-save-row').style.display='block';
+  document.getElementById('mod-saved').style.display='none';
+}
+
+function onModuleToggle(){
+  const checkboxes=document.querySelectorAll('#modules-grid input[type=checkbox]');
+  checkboxes.forEach(cb=>{
+    const lbl=cb.closest('label');
+    const on=cb.checked;
+    lbl.style.background=on?'#f0fdf4':'#f8fafc';
+    lbl.style.borderColor=on?'#86efac':'#e2e8f0';
+  });
+}
+
+async function saveModules(){
+  const cid=document.getElementById('mod-client-sel').value;
+  if(!cid)return;
+  const enabled=[...document.querySelectorAll('#modules-grid input[type=checkbox]:checked')].map(cb=>cb.value);
+  const r=await fetch('/api/admin/clients/'+cid+'/modules',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled_modules:enabled})});
+  const d=await r.json();
+  if(d.success){
+    const saved=document.getElementById('mod-saved');
+    saved.style.display='inline';
+    setTimeout(()=>saved.style.display='none',3000);
+    // update local cache
+    const c=_clients.find(x=>x.id===cid);
+    if(c)c.enabled_modules=enabled;
+  }
+}
+
+// ─── Marketers ──────────────────────────────────────────────
+function _refLink(code){return location.origin+'/ref/'+code;}
+
+async function loadMarketers(){
+  const r=await fetch('/api/admin/marketers').then(r=>r.json()).catch(()=>({}));
+  const mkts=r.marketers||[];
+  document.getElementById('mktr-body').innerHTML=mkts.map(m=>{
+    const link=_refLink(m.ref_code);
+    const sc=m.status==='active'?'bg':'br';
+    return `<tr>
+      <td><strong>${m.name}</strong>${m.phone?`<br><small style="color:#94a3b8">${m.phone}</small>`:''}</td>
+      <td><code style="background:#f1f5f9;padding:2px 8px;border-radius:4px;font-size:.8rem">${m.ref_code}</code></td>
+      <td>
+        <input readonly value="${link}" style="width:200px;font-size:.72rem;padding:4px 8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc">
+        <button onclick="copyLink('${link}')" style="background:#185FA5;color:#fff;border:none;padding:4px 8px;border-radius:5px;cursor:pointer;font-size:.72rem;margin-right:4px">نسخ</button>
+      </td>
+      <td><span style="font-weight:700;color:#185FA5">${m.referral_count||0}</span> تسجيل</td>
+      <td>${m.commission_rate||10}%</td>
+      <td><span class="badge ${sc}">${m.status==='active'?'نشط':'موقوف'}</span></td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-p" onclick="viewRefs(${m.id},'${m.name}','${m.ref_code}')" style="margin-left:4px">&#128065; عرض</button>
+        <button class="btn btn-r" onclick="deactivateMktr(${m.id})">تعطيل</button>
+      </td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="7" style="text-align:center;color:#94a3b8;padding:32px">لا يوجد مسوقون</td></tr>';
+}
+
+function copyLink(link){navigator.clipboard.writeText(link).catch(()=>{});const el=document.getElementById('mktr-link-info');el.style.display='block';el.textContent='✓ تم نسخ الرابط: '+link;setTimeout(()=>el.style.display='none',4000);}
+
+function openAddMktr(){['mk-name','mk-code','mk-email','mk-phone','mk-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('mk-comm').value='10';document.getElementById('mk-err').style.display='none';openModal('modal-mktr');}
+
+async function addMarketer(){
+  const name=document.getElementById('mk-name').value.trim();
+  const err=document.getElementById('mk-err');
+  if(!name){err.textContent='الاسم مطلوب';err.style.display='block';return;}
+  const body={name,phone:document.getElementById('mk-phone').value,email:document.getElementById('mk-email').value,ref_code:document.getElementById('mk-code').value.trim().toUpperCase()||'',commission_rate:parseFloat(document.getElementById('mk-comm').value)||10,notes:document.getElementById('mk-notes').value};
+  const r=await fetch('/api/admin/marketers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const d=await r.json();
+  if(d.success){closeModal('modal-mktr');loadMarketers();const link=_refLink(d.marketer.ref_code);const el=document.getElementById('mktr-link-info');el.style.display='block';el.textContent='✓ أُضيف المسوق — الرابط: '+link;}
+  else{err.textContent=d.error||'خطأ';err.style.display='block';}
+}
+
+async function deactivateMktr(id){if(!confirm('تعطيل هذا المسوق؟'))return;await fetch('/api/admin/marketers/'+id,{method:'DELETE'});loadMarketers();}
+
+async function viewRefs(id,name,code){
+  document.getElementById('refs-title').textContent='تسجيلات: '+name;
+  document.getElementById('refs-link').textContent='رابط الإحالة: '+_refLink(code);
+  openModal('modal-refs');
+  const r=await fetch('/api/admin/marketers/'+id+'/referrals').then(r=>r.json()).catch(()=>({}));
+  const refs=r.referrals||[];
+  document.getElementById('refs-body').innerHTML=refs.length?refs.map(ref=>`<tr>
+    <td><strong>${ref.client_name||ref.client_id}</strong></td>
+    <td><span class="badge bb">${PLANS[ref.plan]||ref.plan||'trial'}</span></td>
+    <td>${(ref.converted_at||'').substring(0,10)}</td>
+  </tr>`).join(''):'<tr><td colspan="3" style="text-align:center;color:#94a3b8;padding:24px">لا توجد تسجيلات بعد</td></tr>';
+}
+
+// Auto-refresh overview every 30s
+setInterval(loadOverview,30000);
+loadOverview();
 </script>
 </body>
 </html>"""
@@ -1100,11 +1808,7 @@ async def admin_page(request: Request):
     if not is_auth:
         return HTMLResponse(_admin_login_page())
 
-    store: "DataStore" = request.app.state.store
-    clients = store.get_all_clients()
-    active = sum(1 for c in clients if c.get("status") == "active")
-    stats = {"total": len(clients), "active": active, "revenue": 0}
-    return HTMLResponse(_admin_dashboard(clients, stats))
+    return HTMLResponse(_admin_dashboard([], {}))
 
 
 @app.get("/guests", response_class=HTMLResponse)
@@ -1136,6 +1840,10 @@ def _serve_module(path: str) -> HTMLResponse:
         with open(full, encoding="utf-8") as f:
             return HTMLResponse(f.read())
     return RedirectResponse("/")
+
+@app.get("/static/dheuof/modules/01-guests/checkin.html")
+async def redirect_checkin():
+    return RedirectResponse("/static/dheuof/modules/01-guests/index.html", status_code=301)
 
 @app.get("/dheuof",   response_class=HTMLResponse)
 @app.get("/guests-module", response_class=HTMLResponse)
@@ -1253,6 +1961,11 @@ async def admin_logout_post():
 async def admin_clients(request: Request, _=Depends(require_admin)):
     store: "DataStore" = request.app.state.store
     clients = store.get_all_clients()
+    # Normalize subscription fields for the dashboard
+    for c in clients:
+        c.setdefault("sub_end", c.get("subscription_expires", c.get("trial_end", "")))
+        c.setdefault("sub_start", "")
+        c.setdefault("sub_price", 0)
     return {"success": True, "clients": clients}
 
 
@@ -1362,8 +2075,17 @@ async def client_login(request: Request):
 async def client_logout(request: Request):
     token = _get_client_token(request)
     if token:
+        session = None
         with _lock:
-            _client_sessions.pop(token, None)
+            session = _client_sessions.pop(token, None)
+        # Finding #8: persist revocation so other servers/restarts honor it
+        try:
+            from db.security import revoke_token
+            db = request.app.state.db
+            cid = (session or {}).get("client_id", "")
+            revoke_token(db, token, cid, reason="logout")
+        except Exception:
+            pass
     response = RedirectResponse("/login", status_code=303)
     response.delete_cookie("client_token")
     return response
@@ -1557,11 +2279,13 @@ async def save_room(request: Request, session=Depends(require_client)):
 # ──────────────────────────────────────────────────────────────
 @app.get("/api/channels/status/{client_id}")
 async def channels_status(client_id: str, request: Request, session=Depends(require_client)):
+    # Finding #2 BOLA fix: ignore path client_id — always use session's client_id
+    cid = session["client_id"]
     channels = request.app.state.channels
     if not channels:
         return {"success": True, "data": {}}
     try:
-        status = channels.get_status(client_id)
+        status = channels.get_status(cid)
         return {"success": True, "data": status}
     except Exception as e:
         return JSONResponse({"success": False, "error": str(e)}, status_code=500)
@@ -1634,11 +2358,13 @@ async def mawasim_settings(request: Request, session=Depends(require_client)):
 
 @app.get("/api/channels/sync-log/{client_id}")
 async def sync_log(client_id: str, request: Request, session=Depends(require_client)):
+    # Finding #2 BOLA fix: always use session's client_id
+    cid = session["client_id"]
     db = request.app.state.db
     try:
         rows = db.execute(
             "SELECT * FROM channel_sync_log WHERE client_id=%s ORDER BY created_at DESC LIMIT 50",
-            (client_id,), fetch="all"
+            (cid,), fetch="all"
         )
         return {"success": True, "data": [dict(r) for r in (rows or [])]}
     except Exception as e:
@@ -1647,11 +2373,13 @@ async def sync_log(client_id: str, request: Request, session=Depends(require_cli
 
 @app.get("/api/channels/revenue-split/{client_id}")
 async def revenue_split(client_id: str, request: Request, days: int = 30, session=Depends(require_client)):
+    # Finding #2 BOLA fix: always use session's client_id
+    cid = session["client_id"]
     channels = request.app.state.channels
     if not channels:
         return {"success": True, "data": {}}
     try:
-        data = channels.get_revenue_split(client_id, days)
+        data = channels.get_revenue_split(cid, days)
         return {"success": True, "data": data}
     except Exception as e:
         return JSONResponse({"success": False, "error": str(e)}, status_code=500)
@@ -1662,14 +2390,16 @@ async def revenue_split(client_id: str, request: Request, days: int = 30, sessio
 # ──────────────────────────────────────────────────────────────
 @app.get("/api/pricing/rules/{client_id}")
 async def get_pricing_rules(client_id: str, request: Request, room_id: Optional[int] = None, session=Depends(require_client)):
+    # Finding #2 BOLA fix: always use session's client_id
+    cid = session["client_id"]
     pricing = request.app.state.pricing
     if not pricing:
         return {"success": True, "data": []}
     try:
         if room_id:
-            data = pricing.get_or_save_rules(client_id, room_id)
+            data = pricing.get_or_save_rules(cid, room_id)
         else:
-            data = pricing._get_rooms_with_rules(client_id)
+            data = pricing._get_rooms_with_rules(cid)
         return {"success": True, "data": data}
     except Exception as e:
         return JSONResponse({"success": False, "error": str(e)}, status_code=500)
@@ -1681,7 +2411,8 @@ async def save_pricing_rules(request: Request, session=Depends(require_client)):
     pricing = request.app.state.pricing
     if not pricing:
         return JSONResponse({"success": False, "error": "خدمة التسعير غير متاحة"}, status_code=503)
-    cid = data.get("client_id") or session["client_id"]
+    # Finding #2 BOLA fix: never accept client_id from request body
+    cid = session["client_id"]
     room_id = data.get("room_id")
     if not room_id:
         return JSONResponse({"success": False, "error": "room_id مطلوب"}, status_code=400)
@@ -1694,13 +2425,15 @@ async def save_pricing_rules(request: Request, session=Depends(require_client)):
 
 @app.get("/api/pricing/calendar/{client_id}")
 async def pricing_calendar(client_id: str, request: Request, room_id: int = 0, days: int = 30, session=Depends(require_client)):
+    # Finding #2 BOLA fix: always use session's client_id
+    cid = session["client_id"]
     pricing = request.app.state.pricing
     if not pricing:
         return {"success": True, "data": []}
     if not room_id:
         return JSONResponse({"success": False, "error": "room_id مطلوب"}, status_code=400)
     try:
-        data = pricing.get_pricing_calendar(client_id, room_id, days)
+        data = pricing.get_pricing_calendar(cid, room_id, days)
         return {"success": True, "data": data}
     except Exception as e:
         return JSONResponse({"success": False, "error": str(e)}, status_code=500)
@@ -1920,6 +2653,148 @@ async def admin_close_ticket(request: Request, _=Depends(require_admin)):
     return {"success": True}
 
 
+@app.get("/api/admin/sessions")
+async def admin_list_sessions(request: Request, _=Depends(require_admin)):
+    """قائمة الجلسات النشطة لجميع المنشآت"""
+    store: "DataStore" = request.app.state.store
+    with _lock:
+        raw = dict(_client_sessions)
+    result = []
+    for token, sess in raw.items():
+        cid = sess.get("client_id", "")
+        client = store.get_client(cid) or {}
+        result.append({
+            "token_prefix": token[:8],
+            "client_id": cid,
+            "client_name": client.get("name", client.get("hotel_name", cid)),
+            "plan": client.get("plan", "trial"),
+            "created_at": sess.get("created_at", ""),
+        })
+    result.sort(key=lambda x: x["created_at"], reverse=True)
+    return {"success": True, "sessions": result}
+
+
+@app.post("/api/admin/sessions/{token_prefix}/revoke")
+async def admin_revoke_session(token_prefix: str, request: Request, _=Depends(require_admin)):
+    """إنهاء جلسة نشطة بواسطة المدير"""
+    with _lock:
+        to_remove = [t for t in _client_sessions if t.startswith(token_prefix)]
+        for t in to_remove:
+            _client_sessions.pop(t, None)
+    return {"success": True, "revoked": len(to_remove)}
+
+
+@app.get("/api/admin/subscriptions")
+async def admin_list_subscriptions(request: Request, _=Depends(require_admin)):
+    """قائمة اشتراكات جميع المنشآت"""
+    store: "DataStore" = request.app.state.store
+    clients = store.get_all_clients()
+    subs = []
+    for c in clients:
+        subs.append({
+            "client_id": c.get("id", ""),
+            "name": c.get("name", c.get("hotel_name", c.get("id", ""))),
+            "plan": c.get("plan", "trial"),
+            "status": c.get("status", "trial"),
+            "sub_start": c.get("sub_start", ""),
+            "sub_end": c.get("sub_end", c.get("subscription_expires", c.get("trial_end", ""))),
+            "price": c.get("sub_price", 0),
+        })
+    subs.sort(key=lambda x: x.get("sub_end") or "", reverse=False)
+    return {"success": True, "subscriptions": subs}
+
+
+@app.put("/api/admin/subscriptions/{client_id}")
+async def admin_update_subscription(client_id: str, request: Request, _=Depends(require_admin)):
+    """تحديث اشتراك منشأة"""
+    store: "DataStore" = request.app.state.store
+    client = store.get_client(client_id)
+    if not client:
+        raise HTTPException(status_code=404, detail="المنشأة غير موجودة")
+    body = await request.json()
+    for field in ["plan", "status", "sub_start", "sub_end", "sub_price"]:
+        if field in body:
+            client[field] = body[field]
+    # sync status on the client record as well
+    if "status" in body:
+        client["status"] = body["status"]
+    store.save_client(client)
+    return {"success": True, "client_id": client_id}
+
+
+@app.post("/api/admin/clients/{client_id}/reset-password")
+async def admin_reset_client_password(client_id: str, request: Request, _=Depends(require_admin)):
+    """إعادة تعيين كلمة مرور مدير المنشأة"""
+    store: "DataStore" = request.app.state.store
+    client = store.get_client(client_id)
+    if not client:
+        raise HTTPException(status_code=404, detail="المنشأة غير موجودة")
+    body = await request.json()
+    password = str(body.get("password", "")).strip()
+    if len(password) < 4:
+        return JSONResponse({"success": False, "error": "كلمة المرور قصيرة جداً"}, status_code=400)
+    cfg = request.app.state.cfg
+    client["pass_hash"] = _hash_password(password, cfg.pass_salt)
+    store.save_client(client)
+    return {"success": True}
+
+
+@app.put("/api/admin/clients/{client_id}/modules")
+async def admin_update_modules(client_id: str, request: Request, _=Depends(require_admin)):
+    """تحديث الوحدات المفعّلة لمنشأة"""
+    store: "DataStore" = request.app.state.store
+    client = store.get_client(client_id)
+    if not client:
+        raise HTTPException(status_code=404, detail="المنشأة غير موجودة")
+    body = await request.json()
+    client["enabled_modules"] = body.get("enabled_modules", [])
+    store.save_client(client)
+    return {"success": True, "enabled_modules": client["enabled_modules"]}
+
+
+@app.get("/api/admin/employees")
+async def admin_list_employees(request: Request, client_id: Optional[str] = None, _=Depends(require_admin)):
+    """قائمة الموظفين من قاعدة البيانات مع آخر نشاط"""
+    db = request.app.state.db
+    store: "DataStore" = request.app.state.store
+    if not db.use_postgres:
+        return {"success": True, "employees": []}
+    try:
+        if client_id:
+            rows = db.execute("""
+                SELECT e.client_id, e.name, e.role, e.id,
+                       MAX(ra.created_at) as last_active,
+                       COUNT(ra.id) as task_count
+                FROM employees e
+                LEFT JOIN room_actions ra ON ra.client_id=e.client_id AND ra.performed_by=e.name
+                WHERE e.client_id=%s
+                GROUP BY e.client_id, e.name, e.role, e.id
+                ORDER BY last_active DESC NULLS LAST
+            """, (client_id,), fetch="all")
+        else:
+            rows = db.execute("""
+                SELECT e.client_id, e.name, e.role, e.id,
+                       MAX(ra.created_at) as last_active,
+                       COUNT(ra.id) as task_count
+                FROM employees e
+                LEFT JOIN room_actions ra ON ra.client_id=e.client_id AND ra.performed_by=e.name
+                GROUP BY e.client_id, e.name, e.role, e.id
+                ORDER BY last_active DESC NULLS LAST
+                LIMIT 200
+            """, fetch="all")
+        clients_map = {c["id"]: c.get("name", c.get("hotel_name", c["id"])) for c in store.get_all_clients()}
+        result = []
+        for r in (rows or []):
+            d = dict(r)
+            d["client_name"] = clients_map.get(d.get("client_id", ""), d.get("client_id", ""))
+            if d.get("last_active"):
+                d["last_active"] = str(d["last_active"])
+            result.append(d)
+        return {"success": True, "employees": result}
+    except Exception as e:
+        return {"success": True, "employees": [], "warning": str(e)}
+
+
 @app.get("/api/admin/settings")
 async def admin_get_settings(request: Request, _=Depends(require_admin)):
     store: "DataStore" = request.app.state.store
@@ -1996,6 +2871,25 @@ async def client_register(request: Request):
         "settings": {},
     }
     store.save_client(client)
+
+    # تسجيل إحالة المسوق إن وُجدت
+    ref_code = str(body.get("ref_code", "")).strip().upper()
+    if ref_code:
+        db = request.app.state.db
+        if db.use_postgres:
+            try:
+                row = db.execute(
+                    "SELECT id FROM marketers WHERE ref_code=%s AND status='active'",
+                    (ref_code,), fetch="one"
+                )
+                if row:
+                    db.execute(
+                        """INSERT INTO marketer_referrals (marketer_id,client_id,plan,ref_code)
+                           VALUES (%s,%s,%s,%s) ON CONFLICT DO NOTHING""",
+                        (row["id"], client_id, plan, ref_code)
+                    )
+            except Exception as e:
+                log.warning(f"ref tracking: {e}")
 
     token = _new_token()
     with _lock:
@@ -2233,6 +3127,122 @@ async def dashboard_page(request: Request):
         with open(dash_path, "r", encoding="utf-8") as f:
             return HTMLResponse(f.read())
     return RedirectResponse("/")
+
+
+# ──────────────────────────────────────────────────────────────
+#  SEO Routes
+# ──────────────────────────────────────────────────────────────
+@app.get("/robots.txt")
+async def robots_txt():
+    from fastapi.responses import PlainTextResponse
+    return PlainTextResponse(
+        "User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api/\n"
+        "Sitemap: https://dheuof.com/sitemap.xml\n"
+    )
+
+
+@app.get("/sitemap.xml")
+async def sitemap():
+    from fastapi.responses import Response
+    xml = """<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://dheuof.com/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://dheuof.com/marketing</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+</urlset>"""
+    return Response(content=xml, media_type="application/xml")
+
+
+@app.get("/ref/{code}", response_class=HTMLResponse)
+async def referral_redirect(code: str):
+    """رابط الإحالة — يفتح صفحة التسجيل مع كود المسوق محمّل تلقائياً"""
+    return HTMLResponse(_login_page(ref_code=code.upper()))
+
+
+# ──────────────────────────────────────────────────────────────
+#  Admin — Marketers (المسوقون)
+# ──────────────────────────────────────────────────────────────
+@app.get("/api/admin/marketers")
+async def admin_list_marketers(request: Request, _=Depends(require_admin)):
+    db = request.app.state.db
+    if not db.use_postgres:
+        return {"success": True, "marketers": []}
+    try:
+        rows = db.execute("""
+            SELECT m.*,
+                   COUNT(r.id) AS referral_count,
+                   COALESCE(SUM(0), 0) AS total_earnings
+            FROM marketers m
+            LEFT JOIN marketer_referrals r ON r.marketer_id = m.id
+            GROUP BY m.id
+            ORDER BY referral_count DESC
+        """, fetch="all")
+        return {"success": True, "marketers": [dict(r) for r in (rows or [])]}
+    except Exception as e:
+        return {"success": True, "marketers": [], "warning": str(e)}
+
+
+@app.post("/api/admin/marketers")
+async def admin_create_marketer(request: Request, _=Depends(require_admin)):
+    body = await request.json()
+    name = str(body.get("name", "")).strip()
+    if not name:
+        return JSONResponse({"success": False, "error": "الاسم مطلوب"}, status_code=400)
+    db = request.app.state.db
+    # توليد كود فريد إذا لم يُحدَّد
+    ref_code = str(body.get("ref_code", "")).strip().upper()
+    if not ref_code:
+        ref_code = secrets.token_hex(4).upper()
+    try:
+        row = db.execute("""
+            INSERT INTO marketers (name, phone, email, ref_code, commission_rate, notes)
+            VALUES (%s, %s, %s, %s, %s, %s) RETURNING *
+        """, (name, body.get("phone",""), body.get("email",""),
+              ref_code, float(body.get("commission_rate", 10)),
+              body.get("notes","")), fetch="one")
+        return {"success": True, "marketer": dict(row)}
+    except Exception as e:
+        return JSONResponse({"success": False, "error": str(e)}, status_code=500)
+
+
+@app.put("/api/admin/marketers/{mktr_id}")
+async def admin_update_marketer(mktr_id: int, request: Request, _=Depends(require_admin)):
+    body = await request.json()
+    db = request.app.state.db
+    fields = []
+    vals = []
+    for f in ["name", "phone", "email", "commission_rate", "status", "notes"]:
+        if f in body:
+            fields.append(f"{f}=%s")
+            vals.append(body[f])
+    if not fields:
+        return {"success": True}
+    vals.append(mktr_id)
+    db.execute(f"UPDATE marketers SET {', '.join(fields)} WHERE id=%s", vals)
+    return {"success": True}
+
+
+@app.delete("/api/admin/marketers/{mktr_id}")
+async def admin_delete_marketer(mktr_id: int, request: Request, _=Depends(require_admin)):
+    db = request.app.state.db
+    db.execute("UPDATE marketers SET status='inactive' WHERE id=%s", (mktr_id,))
+    return {"success": True}
+
+
+@app.get("/api/admin/marketers/{mktr_id}/referrals")
+async def admin_marketer_referrals(mktr_id: int, request: Request, _=Depends(require_admin)):
+    db = request.app.state.db
+    store: "DataStore" = request.app.state.store
+    try:
+        rows = db.execute("""
+            SELECT r.*, c.name as client_name
+            FROM marketer_referrals r
+            LEFT JOIN clients c ON c.id = r.client_id
+            WHERE r.marketer_id = %s
+            ORDER BY r.converted_at DESC
+        """, (mktr_id,), fetch="all")
+        return {"success": True, "referrals": [dict(r) for r in (rows or [])]}
+    except Exception as e:
+        return {"success": True, "referrals": [], "warning": str(e)}
 
 
 # ──────────────────────────────────────────────────────────────

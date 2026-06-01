@@ -302,6 +302,62 @@ CREATE TABLE IF NOT EXISTS payments (
 );
 
 -- ================================================================
+-- جداول الأمان — Security Tables (Isolation Audit)
+-- ================================================================
+
+-- Finding #8: إبطال الجلسات الفوري
+CREATE TABLE IF NOT EXISTS revoked_sessions (
+    token_hash  VARCHAR(128) PRIMARY KEY,
+    client_id   VARCHAR(50),
+    revoked_at  TIMESTAMPTZ DEFAULT NOW(),
+    reason      VARCHAR(100) DEFAULT 'logout'
+);
+CREATE INDEX IF NOT EXISTS idx_revoked_client ON revoked_sessions(client_id);
+
+-- Finding #4: جلسات الضيوف المعزولة
+CREATE TABLE IF NOT EXISTS guest_sessions (
+    token_hash  VARCHAR(128) PRIMARY KEY,
+    client_id   VARCHAR(50) REFERENCES clients(id) ON DELETE CASCADE,
+    guest_id    INTEGER REFERENCES guests(id) ON DELETE CASCADE,
+    booking_id  VARCHAR(50) REFERENCES bookings(id) ON DELETE CASCADE,
+    actor_type  VARCHAR(20) DEFAULT 'guest',
+    created_at  TIMESTAMPTZ DEFAULT NOW(),
+    expires_at  TIMESTAMPTZ DEFAULT NOW() + INTERVAL '48 hours'
+);
+CREATE INDEX IF NOT EXISTS idx_gs_expires ON guest_sessions(expires_at);
+
+-- ================================================================
+-- نظام المسوقين — Affiliate Marketing
+-- ================================================================
+
+-- جدول المسوقين
+CREATE TABLE IF NOT EXISTS marketers (
+    id              SERIAL PRIMARY KEY,
+    name            VARCHAR(150) NOT NULL,
+    phone           VARCHAR(30),
+    email           VARCHAR(150),
+    ref_code        VARCHAR(30) UNIQUE NOT NULL,
+    commission_rate DECIMAL(5,2) DEFAULT 10.0,
+    total_earnings  DECIMAL(12,2) DEFAULT 0,
+    status          VARCHAR(20) DEFAULT 'active',
+    notes           TEXT,
+    created_at      TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_mktr_code ON marketers(ref_code, status);
+
+-- جدول التسجيلات من رابط المسوق
+CREATE TABLE IF NOT EXISTS marketer_referrals (
+    id              SERIAL PRIMARY KEY,
+    marketer_id     INTEGER REFERENCES marketers(id) ON DELETE CASCADE,
+    client_id       VARCHAR(50) REFERENCES clients(id) ON DELETE CASCADE,
+    plan            VARCHAR(50),
+    ref_code        VARCHAR(30),
+    converted_at    TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(client_id)
+);
+CREATE INDEX IF NOT EXISTS idx_ref_marketer ON marketer_referrals(marketer_id);
+
+-- ================================================================
 -- TRIGGERS — تحديث updated_at تلقائياً
 -- ================================================================
 CREATE OR REPLACE FUNCTION update_updated_at()

@@ -64,7 +64,9 @@ async def update_task_status(task_id: int, request: Request,
         elif new_status == "completed":
             extra = ", completed_at = NOW()"
         db.execute(
-            f"UPDATE housekeeping_tasks SET status=%s, assigned_to=COALESCE(NULLIF(%s,''),assigned_to){extra} WHERE id=%s AND client_id=%s",
+            f"UPDATE housekeeping_tasks SET status=%s, "
+            f"assigned_to=COALESCE(NULLIF(%s,''),assigned_to){extra} "
+            f"WHERE id=%s AND client_id=%s",
             (new_status, staff_name, task_id, cid))
     return {"success": True}
 
@@ -97,19 +99,18 @@ async def checkout_room(room_number: str, request: Request,
     يُسجّل اسم الموظف الذي أجرى الفحص ويُحوّل الغرفة إلى وضع التنظيف.
     """
     data = await request.json()
-    staff_name   = (data.get("staff_name") or "").strip()
-    confirmed    = data.get("confirmed_clean", False)
+    staff_name = (data.get("staff_name") or "").strip()
+    confirmed = data.get("confirmed_clean", False)
 
     if not staff_name:
         raise HTTPException(400, "اسم الموظف مطلوب")
     if not confirmed:
         raise HTTPException(400, "يجب تأكيد نظافة الغرفة قبل تسجيل الخروج")
 
-    db  = request.app.state.db
+    db = request.app.state.db
     cid = session["client_id"]
 
     if db.use_postgres:
-        # جلب الحالة الحالية للتأكد
         room = db.execute(
             "SELECT id, status, current_guest FROM rooms WHERE room_number=%s AND client_id=%s",
             (room_number, cid), fetch="one")
@@ -118,7 +119,6 @@ async def checkout_room(room_number: str, request: Request,
 
         prev_status = room["status"]
 
-        # تحديث حالة الغرفة → تنظيف
         db.execute("""
             UPDATE rooms
             SET status        = 'cleaning',
@@ -129,7 +129,6 @@ async def checkout_room(room_number: str, request: Request,
             WHERE room_number = %s AND client_id = %s
         """, (staff_name, room_number, cid))
 
-        # تسجيل الإجراء في سجل المساءلة
         db.execute("""
             INSERT INTO room_actions
                 (client_id, room_number, action_type, performed_by,
@@ -138,7 +137,6 @@ async def checkout_room(room_number: str, request: Request,
         """, (cid, room_number, staff_name, prev_status,
               f"فحص النظافة وتسجيل الخروج — الضيف: {room.get('current_guest') or 'غير محدد'}"))
 
-        # إنشاء مهمة تنظيف مُعيَّنة باسم الموظف
         db.execute("""
             INSERT INTO housekeeping_tasks
                 (client_id, room_id, task_type, priority, assigned_to, status, notes)
@@ -162,9 +160,12 @@ async def checkout_room(room_number: str, request: Request,
 async def mark_room_clean(room_number: str, request: Request,
                            session=Depends(_require_client)):
     """تسجيل اكتمال التنظيف — الغرفة تصبح جاهزة"""
-    data = await request.json() if request.headers.get("content-type","").startswith("application/json") else {}
+    try:
+        data = await request.json() if request.headers.get("content-type", "").startswith("application/json") else {}
+    except Exception:
+        data = {}
     staff_name = (data.get("staff_name") or "").strip() if data else ""
-    db  = request.app.state.db
+    db = request.app.state.db
     cid = session["client_id"]
 
     if db.use_postgres:
@@ -190,7 +191,6 @@ async def mark_room_clean(room_number: str, request: Request,
                 VALUES (%s, %s, 'cleaning_done', %s, %s, 'available', 'اكتمل التنظيف')
             """, (cid, room_number, staff_name, room["status"]))
 
-        # إغلاق مهمة التنظيف
         db.execute("""
             UPDATE housekeeping_tasks
             SET status       = 'completed',
@@ -206,7 +206,7 @@ async def mark_room_clean(room_number: str, request: Request,
 async def room_history(room_number: str, request: Request,
                         session=Depends(_require_client)):
     """سجل الإجراءات على غرفة معينة مع أسماء الموظفين"""
-    db  = request.app.state.db
+    db = request.app.state.db
     cid = session["client_id"]
     if db.use_postgres:
         rows = db.execute("""
@@ -224,7 +224,7 @@ async def room_history(room_number: str, request: Request,
 
 @router.get("/lost-found")
 async def list_lost_found(request: Request, session=Depends(_require_client)):
-    db  = request.app.state.db
+    db = request.app.state.db
     cid = session["client_id"]
     if db.use_postgres:
         rows = db.execute(
@@ -237,8 +237,8 @@ async def list_lost_found(request: Request, session=Depends(_require_client)):
 @router.post("/lost-found")
 async def add_lost_found(request: Request, session=Depends(_require_client)):
     data = await request.json()
-    db   = request.app.state.db
-    cid  = session["client_id"]
+    db = request.app.state.db
+    cid = session["client_id"]
     if db.use_postgres:
         row = db.execute("""
             INSERT INTO lost_and_found
