@@ -176,6 +176,103 @@
 
 .cfg-add-floor{background:var(--paper-tint);border:2px dashed var(--hairline);border-radius:12px;padding:16px;text-align:center;cursor:pointer;transition:all 140ms;color:var(--fg-2);font-size:13px;font-weight:500}
 .cfg-add-floor:hover{border-color:var(--brand-400);color:var(--brand-700);background:var(--brand-50)}
+
+/* ── Check-in 4-step extended styles ───────────────────────── */
+.fd-steps-ext{display:flex;align-items:center;gap:4px}
+.fd-step-ext{width:26px;height:26px;border-radius:999px;display:grid;place-items:center;font-size:11px;font-weight:700;border:2px solid var(--hairline);color:var(--fg-3);flex-shrink:0;transition:all 200ms}
+.fd-step-ext.is-on{border-color:var(--brand-700);background:var(--brand-700);color:var(--paper)}
+.fd-step-ext.is-done{border-color:var(--success-600);background:var(--success-600);color:var(--paper)}
+.fd-step-line{height:2px;width:16px;background:var(--hairline);flex-shrink:0;transition:background 200ms}
+.fd-step-line.done{background:var(--success-600)}
+
+/* Field groups */
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field-grid.cols3{grid-template-columns:1fr 1fr 1fr}
+.field-group{display:flex;flex-direction:column;gap:4px}
+.field-group label{font-size:11px;font-weight:600;color:var(--fg-2);letter-spacing:.03em}
+.field-section-title{font-size:11px;font-weight:700;color:var(--brand-700);letter-spacing:.05em;text-transform:uppercase;margin:14px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--brand-100)}
+.ci-inp{padding:7px 10px;border:1.5px solid var(--ink-100);border-radius:7px;font-family:var(--font-ar);font-size:13px;background:var(--white);outline:none;width:100%;box-sizing:border-box;transition:border-color 150ms}
+.ci-inp:focus{border-color:var(--brand-500);box-shadow:0 0 0 3px rgba(0,100,60,.07)}
+.ci-sel{padding:7px 8px;border:1.5px solid var(--ink-100);border-radius:7px;font-family:var(--font-ar);font-size:12px;background:var(--white);outline:none;width:100%;transition:border-color 150ms}
+.ci-sel:focus{border-color:var(--brand-500)}
+
+/* Companion rows */
+.companion-list{display:flex;flex-direction:column;gap:6px;min-height:32px}
+.companion-row{display:grid;grid-template-columns:1.4fr 80px 1fr 28px;gap:6px;align-items:center;background:var(--paper-tint);border:1px solid var(--hairline);border-radius:8px;padding:8px 10px}
+.del-comp{width:26px;height:26px;border-radius:5px;border:1px solid var(--danger-100);background:transparent;color:var(--danger-400);cursor:pointer;font-size:13px;display:grid;place-items:center;flex-shrink:0}
+.del-comp:hover{background:var(--danger-50);color:var(--danger-700)}
+
+/* Payment breakdown */
+.pay-breakdown{background:var(--paper-tint);border:1px solid var(--hairline);border-radius:10px;overflow:hidden}
+.pay-row{display:flex;justify-content:space-between;align-items:center;padding:9px 14px;border-top:1px solid var(--hairline);font-size:13px}
+.pay-row:first-child{border-top:none}
+.pay-row .pk{color:var(--fg-2)}
+.pay-row .pv{font-weight:600;font-family:var(--font-en);font-size:13px;direction:ltr}
+.pay-row.total{background:var(--brand-700);color:var(--paper)}
+.pay-row.total .pk{color:rgba(255,255,255,.8);font-weight:600;font-size:14px}
+.pay-row.total .pv{color:var(--paper);font-size:18px;font-weight:700}
+.pay-methods{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.pay-method{border:1.5px solid var(--hairline);border-radius:10px;padding:10px 6px;text-align:center;cursor:pointer;transition:all 140ms;background:var(--white)}
+.pay-method:hover{border-color:var(--brand-400);background:var(--brand-50)}
+.pay-method.on{border-color:var(--brand-700);background:var(--brand-700);color:var(--paper)}
+.pay-method .pm-ic{font-size:20px;display:block;margin-bottom:4px}
+.pay-method .pm-lbl{font-size:11px;font-weight:600}
+.pay-cash-row{display:flex;gap:8px;align-items:center}
+.pay-cash-row label{font-size:12px;color:var(--fg-2);white-space:nowrap;flex-shrink:0}
+.pay-cash-input{padding:8px 12px;border:1.5px solid var(--ink-100);border-radius:8px;font-family:var(--font-en);font-size:15px;font-weight:600;width:130px;text-align:left;direction:ltr;outline:none}
+.pay-cash-input:focus{border-color:var(--brand-500)}
+.pay-change{flex:1;border:1px solid var(--success-200);border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;color:var(--success-700);text-align:center;background:var(--success-50)}
+
+/* Signature pad */
+.sig-pad-wrap{border:1.5px solid var(--hairline);border-radius:10px;background:var(--white);overflow:hidden;position:relative}
+.sig-pad-wrap canvas{display:block;cursor:crosshair;touch-action:none;width:100%}
+.sig-clear{position:absolute;top:8px;left:8px;background:rgba(255,255,255,.9);border:1px solid var(--hairline);border-radius:6px;padding:4px 10px;font-family:var(--font-ar);font-size:11px;color:var(--fg-2);cursor:pointer;backdrop-filter:blur(2px)}
+.sig-clear:hover{color:var(--danger-600);border-color:var(--danger-300)}
+.sig-prompt{position:absolute;bottom:10px;right:0;left:0;text-align:center;font-size:12px;color:var(--fg-3);pointer-events:none}
+
+/* WhatsApp toggles */
+.wa-toggle-row{display:flex;align-items:center;gap:10px;background:var(--paper-tint);border:1px solid var(--hairline);border-radius:9px;padding:11px 14px}
+.wa-toggle-row .wa-ic{font-size:18px;flex-shrink:0}
+.wa-toggle-row .wa-txt{flex:1}
+.wa-toggle-row .wa-lbl{font-size:13px;color:var(--ink-900);font-weight:500}
+.wa-toggle-row .wa-sub{font-size:11px;color:var(--fg-3);margin-top:2px}
+.toggle{position:relative;width:38px;height:22px;flex-shrink:0;display:inline-block}
+.toggle input{opacity:0;width:0;height:0;position:absolute}
+.toggle .track{position:absolute;inset:0;background:var(--ink-100);border-radius:999px;cursor:pointer;transition:background 200ms}
+.toggle input:checked+.track{background:var(--success-600)}
+.toggle .thumb{position:absolute;top:3px;left:3px;width:16px;height:16px;background:var(--paper);border-radius:999px;box-shadow:0 1px 3px rgba(0,0,0,.22);transition:left 200ms;pointer-events:none}
+.toggle input:checked~.thumb{left:19px}
+
+/* ── New Booking Modal ──────────────────────────────────────── */
+.nb-modal{position:fixed;inset:0;z-index:8500;display:flex;align-items:center;justify-content:center;padding:20px}
+.nb-overlay{position:absolute;inset:0;background:rgba(14,42,34,.6);backdrop-filter:blur(4px)}
+.nb-box{position:relative;background:var(--white);border-radius:18px;width:min(560px,95vw);box-shadow:0 24px 80px rgba(0,0,0,.32);overflow:hidden;animation:nb-in 220ms ease}
+@keyframes nb-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.nb-head{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;background:var(--brand-900)}
+.nb-title{font-family:var(--font-ar-display);font-size:18px;font-weight:700;color:var(--paper)}
+.nb-sub{font-size:12px;color:var(--gold-400);margin-top:3px}
+.nb-close-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:var(--paper);width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:15px;display:grid;place-items:center;flex-shrink:0}
+.nb-close-btn:hover{background:rgba(255,255,255,.22)}
+.nb-cards{display:flex;flex-direction:column;gap:1px;background:var(--hairline)}
+.nb-card{display:grid;grid-template-columns:52px 1fr 20px;align-items:center;gap:14px;padding:18px 22px;background:var(--white);cursor:pointer;text-decoration:none;color:inherit;transition:background 140ms}
+.nb-card:hover{background:var(--brand-50)}
+.nb-card-ic{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;font-size:24px;flex-shrink:0}
+.nb-card-t{font-size:14px;font-weight:600;color:var(--ink-900)}
+.nb-card-s{font-size:12px;color:var(--fg-3);margin-top:3px}
+.nb-card-arr{font-size:16px;color:var(--fg-3);transform:rotate(180deg)}
+.nb-card:hover .nb-card-arr{color:var(--brand-700)}
+
+/* OTA section */
+.nb-ota{padding:16px 22px;border-top:1px solid var(--hairline);background:var(--paper-tint)}
+.nb-ota-title{font-size:11px;font-weight:700;color:var(--fg-2);letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px}
+.ota-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.ota-btn{padding:9px 6px;border:1.5px solid var(--hairline);border-radius:9px;background:var(--white);font-family:var(--font-ar);font-size:12px;font-weight:500;cursor:pointer;transition:all 140ms;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px}
+.ota-btn:hover{border-color:var(--brand-400);background:var(--brand-50);color:var(--brand-700)}
+.ota-btn .oi{font-size:18px}
+.ota-ical-row{display:flex;gap:8px;align-items:center}
+.ota-ical-row input{flex:1;padding:8px 12px;border:1.5px solid var(--ink-100);border-radius:7px;font-family:var(--font-en);font-size:13px;outline:none;direction:ltr}
+.ota-ical-row input:focus{border-color:var(--brand-500)}
+.nb-ota-hint{font-size:11px;color:var(--fg-3);margin-top:6px}
 </style>
 </head>
 <body>
@@ -287,6 +384,7 @@
           <p class="sub">نظرة شاملة على عمليات الاستقبال اليوم</p>
         </div>
         <div class="actions">
+          <button class="btn-sm sec" onclick="openNewBooking()" style="display:inline-flex;align-items:center;gap:6px"><span style="font-size:15px">＋</span> تسجيل ضيف جديد</button>
           <button class="btn-sm primary" onclick="showView('checkin')">⚡ تسجيل دخول سريع</button>
         </div>
       </div>
@@ -309,7 +407,12 @@
         <div class="dash-kpi"><div class="lbl">إيراد اليوم</div><div class="v ok">٤٢٬٥٠٠</div><div class="meta">ريال · ↑٨٪ مقارنة بالأمس</div></div>
       </div>
 
-      <div class="dash-quick">
+      <div class="dash-quick" style="grid-template-columns:repeat(5,1fr)">
+        <div class="dash-q" onclick="openNewBooking()" style="border-color:var(--brand-200);background:linear-gradient(135deg,var(--brand-50),var(--white))">
+          <div class="q-ic" style="background:var(--brand-700);color:var(--paper);font-size:22px;font-weight:300">＋</div>
+          <div class="q-lbl" style="color:var(--brand-700)">تسجيل ضيف جديد</div>
+          <div class="q-sub">Walk-in · OTA · هاتفي</div>
+        </div>
         <div class="dash-q" onclick="showView('checkin')">
           <div class="q-ic" style="background:var(--brand-50);color:var(--brand-700)">🔑</div>
           <div class="q-lbl">تسجيل دخول سريع</div>
@@ -357,6 +460,7 @@
           <p class="sub">٨ حجوزات اليوم — ٣٠ مايو ٢٠٢٦</p>
         </div>
         <div class="actions">
+          <button class="btn-sm sec" onclick="openNewBooking()" style="display:inline-flex;align-items:center;gap:6px"><span style="font-size:15px">＋</span> حجز جديد</button>
           <button class="btn-sm primary" onclick="showView('checkin')">⚡ تسجيل دخول سريع</button>
         </div>
       </div>
@@ -389,6 +493,9 @@
           <div class="num-row"><span class="num">01 · CHECK-IN</span><span class="en-tag">Quick Check-in · 3 steps</span></div>
           <h1>تسجيل دخول سريع</h1>
           <p class="sub">اختر الضيف من القائمة أو ابحث بالاسم · ٣ خطوات حتى تسليم المفتاح</p>
+        </div>
+        <div class="actions">
+          <button class="btn-sm sec" onclick="openNewBooking()" style="display:inline-flex;align-items:center;gap:6px"><span style="font-size:15px">＋</span> تسجيل ضيف جديد</button>
         </div>
       </div>
 
@@ -439,7 +546,8 @@
               <div style="text-align:center;margin:12px 0;color:var(--fg-3);font-size:12px">— أو اختر من القائمة على اليسار —</div>
             </div>
             <div class="fd-foot">
-              <span style="font-size:12px;color:var(--fg-3)">اختر ضيفاً للمتابعة</span>
+              <a class="btn-sm primary" href="/static/dheuof/modules/01-guests/registration.html" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none"><span style="font-size:15px">＋</span> نزيل جديد / Walk-in</a>
+              <span style="font-size:12px;color:var(--fg-3)">أو اختر من القائمة</span>
             </div>
           </div>
 
@@ -496,6 +604,9 @@
           <h1>النزلاء الحاليون</h1>
           <p class="sub">١٢ نزيل داخل الفندق الآن</p>
         </div>
+        <div class="actions">
+          <button class="btn-sm sec" onclick="openNewBooking()" style="display:inline-flex;align-items:center;gap:6px"><span style="font-size:15px">＋</span> نزيل جديد</button>
+        </div>
       </div>
       <div class="guests-tbl">
         <div class="g-tr hd"><span></span><span>النزيل</span><span>الغرفة</span><span>وصل</span><span>مغادرة</span><span></span></div>
@@ -514,6 +625,7 @@
           <p class="sub" id="rooms-subtitle">خريطة الغرف الكاملة</p>
         </div>
         <div class="actions">
+          <button class="btn-sm sec" onclick="openNewBooking()" style="display:inline-flex;align-items:center;gap:6px"><span style="font-size:15px">＋</span> تسجيل ضيف جديد</button>
           <button class="btn-sm sec" onclick="openRoomSettings()" style="display:inline-flex;align-items:center;gap:6px">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
             تخصيص الغرف والأدوار
@@ -1000,6 +1112,55 @@ window.saveRoomSettings = function(){
 /* ════════════════════════════════════════
    INIT
 ════════════════════════════════════════ */
+/* ════════════════════════════════════════
+   NEW BOOKING MODAL
+════════════════════════════════════════ */
+window.openNewBooking = function(){
+  var m = document.getElementById('nb-modal');
+  if(m){ m.style.display='flex'; document.getElementById('nb-ota-panel').style.display='none'; }
+};
+
+window.closeNewBooking = function(){
+  var m = document.getElementById('nb-modal');
+  if(m) m.style.display='none';
+};
+
+window.toggleOTA = function(){
+  var p = document.getElementById('nb-ota-panel');
+  var a = document.getElementById('ota-arr');
+  if(!p) return;
+  var open = p.style.display !== 'none';
+  p.style.display = open ? 'none' : 'block';
+  if(a) a.textContent = open ? '→' : '↓';
+};
+
+window.selectOTA = function(platform){
+  var inp = document.getElementById('ical-url');
+  if(!inp) return;
+  var hints = {
+    'Booking.com':'https://admin.booking.com/hotel/hoteladmin/ical.html?hotel_id=XXXXX',
+    'Airbnb':'https://www.airbnb.com/calendar/ical/XXXXX.ics?s=XXXXXX',
+    'Agoda':'https://www.agoda.com/hotels/ical/XXXXX',
+    'Expedia':'https://apps.expediapartnercentral.com/ical/XXXXX',
+    'Almosafer':'https://host.almosafer.com/ical/XXXXX',
+    'iCal':'',
+  };
+  inp.value = hints[platform] || '';
+  inp.focus();
+  toast('اختر رابط iCal من لوحة تحكم '+platform+' وألصقه أدناه');
+};
+
+window.syncICal = function(){
+  var url = (document.getElementById('ical-url')||{value:''}).value.trim();
+  if(!url){ toast('أدخل رابط iCal صحيح',true); return; }
+  var res = document.getElementById('ota-result');
+  if(res){ res.style.cssText='padding:10px 12px;background:var(--brand-50);border:1px solid var(--brand-200);border-radius:8px;font-size:13px;color:var(--brand-700)'; res.textContent='⏳ جاري المزامنة...'; }
+  setTimeout(function(){
+    if(res){ res.textContent='✓ تمت المزامنة — ٣ حجوزات جديدة استُوردت · آخر مزامنة الآن'; res.style.background='var(--success-50)'; res.style.borderColor='var(--success-200)'; res.style.color='var(--success-700)'; }
+    toast('تمت مزامنة iCal — ٣ حجوزات استُوردت ✓');
+  }, 1600);
+};
+
 renderResTable(RESERVATIONS);
 renderCIList('');
 renderGuests();
@@ -1014,6 +1175,69 @@ showView('checkin'); // default view = check-in
 
 })();
 </script>
+
+<!-- ═══ NEW BOOKING MODAL ═════════════════════════════════════ -->
+<div id="nb-modal" style="display:none" class="nb-modal">
+  <div class="nb-overlay" onclick="closeNewBooking()"></div>
+  <div class="nb-box" dir="rtl">
+    <div class="nb-head">
+      <div>
+        <div class="nb-title">تسجيل ضيف جديد</div>
+        <div class="nb-sub">اختر طريقة الإضافة — New guest registration</div>
+      </div>
+      <button class="nb-close-btn" onclick="closeNewBooking()">✕</button>
+    </div>
+
+    <div class="nb-cards">
+      <!-- Walk-in -->
+      <a class="nb-card" href="/static/dheuof/modules/01-guests/registration.html">
+        <div class="nb-card-ic" style="background:#E8F5E9">🚶</div>
+        <div>
+          <div class="nb-card-t">نزيل مباشر (Walk-in)</div>
+          <div class="nb-card-s">تسجيل يدوي كامل · هوية + مرافقون + عقد + دفع</div>
+        </div>
+        <div class="nb-card-arr">→</div>
+      </a>
+      <!-- OTA Import -->
+      <div class="nb-card" onclick="toggleOTA()">
+        <div class="nb-card-ic" style="background:#E3F2FD">🌐</div>
+        <div>
+          <div class="nb-card-t">استيراد من منصة حجوزات (OTA)</div>
+          <div class="nb-card-s">Booking.com · Airbnb · Agoda · Expedia · Almosafer · iCal</div>
+        </div>
+        <div class="nb-card-arr" id="ota-arr">→</div>
+      </div>
+      <!-- Phone/Email booking -->
+      <a class="nb-card" href="/static/dheuof/modules/01-guests/registration.html">
+        <div class="nb-card-ic" style="background:#FFF3E0">📞</div>
+        <div>
+          <div class="nb-card-t">حجز هاتفي / واتساب / بريد</div>
+          <div class="nb-card-s">أدخل تفاصيل الحجز المُستلم يدوياً</div>
+        </div>
+        <div class="nb-card-arr">→</div>
+      </a>
+    </div>
+
+    <!-- OTA panel (collapsible) -->
+    <div id="nb-ota-panel" style="display:none" class="nb-ota">
+      <div class="nb-ota-title">اختر المنصة أو أدخل رابط iCal</div>
+      <div class="ota-grid">
+        <button class="ota-btn" onclick="selectOTA('Booking.com')"><span class="oi">🔵</span>Booking.com</button>
+        <button class="ota-btn" onclick="selectOTA('Airbnb')"><span class="oi">🔴</span>Airbnb</button>
+        <button class="ota-btn" onclick="selectOTA('Agoda')"><span class="oi">🟠</span>Agoda</button>
+        <button class="ota-btn" onclick="selectOTA('Expedia')"><span class="oi">🟣</span>Expedia</button>
+        <button class="ota-btn" onclick="selectOTA('Almosafer')"><span class="oi">🟡</span>Almosafer</button>
+        <button class="ota-btn" onclick="selectOTA('iCal')"><span class="oi">📅</span>iCal رابط</button>
+      </div>
+      <div class="ota-ical-row" style="margin-top:10px">
+        <input type="url" id="ical-url" placeholder="https://booking.com/ical/property.ics"/>
+        <button class="btn-sm primary" onclick="syncICal()" style="white-space:nowrap">↓ مزامنة</button>
+      </div>
+      <div class="nb-ota-hint">تُزامَن الحجوزات تلقائياً كل ساعة · الإلغاءات والتعديلات تُطبَّق فوراً</div>
+      <div id="ota-result" style="margin-top:8px"></div>
+    </div>
+  </div>
+</div>
 
 <!-- ═══ ROOM SETTINGS DRAWER ══════════════════════════════════ -->
 <div class="cfg-overlay" id="cfg-overlay" onclick="if(event.target===this)closeRoomSettings()">
