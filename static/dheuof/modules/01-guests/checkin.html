@@ -945,7 +945,7 @@ function renderFloors(){
       var statusLabel = {occ:'مشغولة',clean:'جاهزة',dirty:'تنظيف',maint:'صيانة'}[r.status];
       var actions = '';
       if(r.status==='dirty') actions = '<div class="rack"><button onclick="markClean(\''+r.no+'\',\''+fl.floor+'\')">تنظيف ✓</button><button onclick="markMaint(\''+r.no+'\',\''+fl.floor+'\')">صيانة</button></div>';
-      if(r.status==='clean') actions = '<div class="rack"><button onclick="markMaint(\''+r.no+'\',\''+fl.floor+'\')">صيانة</button></div>';
+      if(r.status==='clean') actions = '<div class="rack"><button onclick="registerInRoom(\''+r.no+'\',\''+r.type+'\')" style="background:var(--brand-700);border-color:var(--brand-700);color:var(--paper);font-weight:600">＋ تسجيل ضيف</button><button onclick="markMaint(\''+r.no+'\',\''+fl.floor+'\')">صيانة</button></div>';
       if(r.status==='maint') actions = '<div class="rack"><button onclick="markClean(\''+r.no+'\',\''+fl.floor+'\')">انتهت ✓</button></div>';
       if(r.status==='occ')   actions = '<div class="rack"><button>تواصل</button><button>طلب</button></div>';
       return '<div class="room-card '+r.status+'" id="room-'+r.no+'">'
@@ -1115,6 +1115,11 @@ window.saveRoomSettings = function(){
 /* ════════════════════════════════════════
    NEW BOOKING MODAL
 ════════════════════════════════════════ */
+window.registerInRoom = function(roomNo, roomType){
+  // Navigate to registration page with room pre-selected in URL params
+  window.location.href = '/static/dheuof/modules/01-guests/registration.html?room='+encodeURIComponent(roomNo)+'&type='+encodeURIComponent(roomType);
+};
+
 window.openNewBooking = function(){
   var m = document.getElementById('nb-modal');
   if(m){ m.style.display='flex'; document.getElementById('nb-ota-panel').style.display='none'; }
@@ -1189,12 +1194,21 @@ showView('checkin'); // default view = check-in
     </div>
 
     <div class="nb-cards">
+      <!-- Choose room first -->
+      <div class="nb-card" onclick="closeNewBooking();showView('rooms')">
+        <div class="nb-card-ic" style="background:#FFF3E0">🏨</div>
+        <div>
+          <div class="nb-card-t">اختر الغرفة أولاً ← ثم سجّل الضيف</div>
+          <div class="nb-card-s">خريطة الغرف · اضغط غرفة جاهزة → + تسجيل ضيف</div>
+        </div>
+        <div class="nb-card-arr">→</div>
+      </div>
       <!-- Walk-in -->
       <a class="nb-card" href="/static/dheuof/modules/01-guests/registration.html">
         <div class="nb-card-ic" style="background:#E8F5E9">🚶</div>
         <div>
-          <div class="nb-card-t">نزيل مباشر (Walk-in)</div>
-          <div class="nb-card-s">تسجيل يدوي كامل · هوية + مرافقون + عقد + دفع</div>
+          <div class="nb-card-t">تسجيل مباشر (Walk-in)</div>
+          <div class="nb-card-s">نموذج كامل · هوية + مرافقون + عقد + دفع</div>
         </div>
         <div class="nb-card-arr">→</div>
       </a>

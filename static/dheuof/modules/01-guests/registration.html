@@ -1355,5 +1355,38 @@ setTimeout(function(){
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
 })();
 </script>
+
+<script>
+/* ── URL Params: pre-fill room from checkin.html → rooms view ── */
+(function(){
+  var params = new URLSearchParams(window.location.search);
+  var room = params.get('room'), type = params.get('type');
+  if(!room && !type) return;
+  setTimeout(function(){
+    // Pre-select room type in the stay section
+    var typeSelects = document.querySelectorAll('select');
+    typeSelects.forEach(function(sel){
+      Array.prototype.forEach.call(sel.options, function(opt){
+        if(type && opt.text.indexOf(type) >= 0){ sel.value = opt.value; }
+      });
+    });
+    // Pre-fill room number select
+    var roomSelects = document.querySelectorAll('select');
+    roomSelects.forEach(function(sel){
+      Array.prototype.forEach.call(sel.options, function(opt){
+        if(room && opt.text.indexOf(room) >= 0){ sel.value = opt.value; }
+      });
+    });
+    // Show banner
+    if(room){
+      var banner = document.createElement('div');
+      banner.style.cssText = 'position:fixed;top:68px;right:50%;transform:translateX(50%);background:var(--brand-700);color:var(--paper);padding:10px 20px;border-radius:8px;font-family:var(--font-ar);font-size:13px;font-weight:600;z-index:999;box-shadow:0 4px 20px rgba(0,0,0,.2)';
+      banner.textContent = '🏨 الغرفة ' + room + ' — ' + (type||'') + ' · أدخل بيانات الضيف للمتابعة';
+      document.body.appendChild(banner);
+      setTimeout(function(){ banner.style.opacity='0'; banner.style.transition='opacity .5s'; setTimeout(function(){ banner.remove(); }, 500); }, 4000);
+    }
+  }, 200);
+})();
+</script>
 </body>
 </html>
