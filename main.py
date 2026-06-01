@@ -579,6 +579,7 @@ tr:hover td{background:#fafbfc}
         <div style="display:flex;gap:8px">
           <button class="btn btn-p" onclick="openAddModal()">+ إضافة</button>
           <button class="btn btn-g" onclick="generateKey()">+ مفتاح تفعيل</button>
+          <button class="btn" style="background:#fef3c7;color:#92400e;border-color:#fcd34d" onclick="openOwnerSetup()">&#128081; حساب المالك</button>
         </div>
       </div>
       <div id="key-result" style="display:none;background:#f0fdf4;padding:10px 14px;border-radius:8px;margin-bottom:14px;font-weight:700;color:#16a34a;letter-spacing:2px;font-size:.9rem"></div>
@@ -692,6 +693,7 @@ tr:hover td{background:#fafbfc}
     <h4>إضافة منشأة جديدة</h4>
     <div class="fg"><label>معرف المنشأة (ID)</label><input id="nc-id" placeholder="hotel-001"></div>
     <div class="fg"><label>اسم المنشأة</label><input id="nc-name" placeholder="فندق النخبة"></div>
+    <div class="fg"><label>البريد الإلكتروني</label><input id="nc-email" type="email" placeholder="hotel@example.com"></div>
     <div class="fg"><label>كلمة المرور</label><input id="nc-pass" type="password"></div>
     <div class="fg"><label>الخطة</label>
       <select id="nc-plan">
@@ -706,6 +708,23 @@ tr:hover td{background:#fafbfc}
     <div style="display:flex;gap:10px">
       <button class="btn btn-p" style="flex:1" onclick="addClient()">إضافة</button>
       <button class="btn btn-s" style="flex:1" onclick="closeModal('modal-add')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Owner Account Setup -->
+<div class="modal-bg" id="modal-owner">
+  <div class="modal">
+    <h4 style="color:#92400e">&#128081; إعداد حساب المالك</h4>
+    <p style="font-size:.8rem;color:#6b7280;margin-bottom:14px">يُنشئ أو يُحدِّث حساباً بخطة Enterprise مدى الحياة مع تمييز خاص في لوحة التحكم.</p>
+    <div class="fg"><label>معرف الحساب (ID)</label><input id="own-id" placeholder="dheuof-owner" value="dheuof"></div>
+    <div class="fg"><label>اسم المنشأة</label><input id="own-name" placeholder="ضيوف للاستضافة الذكية" value="ضيوف للاستضافة الذكية"></div>
+    <div class="fg"><label>البريد الإلكتروني</label><input id="own-email" type="email" placeholder="abdulellah.sh11@gmail.com" value="abdulellah.sh11@gmail.com"></div>
+    <div class="fg"><label>كلمة المرور</label><input id="own-pass" type="password" placeholder="اختر كلمة مرور قوية"></div>
+    <div id="own-result" style="display:none;padding:10px;border-radius:8px;font-size:.8rem;margin-bottom:10px"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn" style="flex:1;background:#fef3c7;color:#92400e;border-color:#fcd34d" onclick="saveOwnerSetup()">&#10003; حفظ حساب المالك</button>
+      <button class="btn btn-s" style="flex:1" onclick="closeModal('modal-owner')">إلغاء</button>
     </div>
   </div>
 </div>
@@ -855,7 +874,20 @@ function refreshAll(){loadOverview();const active=document.querySelector('.pane.
 
 function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
-function openAddModal(){document.getElementById('nc-id').value='';document.getElementById('nc-name').value='';document.getElementById('nc-pass').value='';document.getElementById('nc-err').style.display='none';openModal('modal-add');}
+function openAddModal(){['nc-id','nc-name','nc-email','nc-pass'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('nc-err').style.display='none';openModal('modal-add');}
+function openOwnerSetup(){document.getElementById('own-result').style.display='none';openModal('modal-owner');}
+async function saveOwnerSetup(){
+  const cid=document.getElementById('own-id').value.trim();
+  const name=document.getElementById('own-name').value.trim();
+  const email=document.getElementById('own-email').value.trim();
+  const pass=document.getElementById('own-pass').value;
+  const res=document.getElementById('own-result');
+  if(!cid||!name||!pass){res.style.display='block';res.style.background='#fee2e2';res.style.color='#dc2626';res.textContent='جميع الحقول مطلوبة';return;}
+  const r=await fetch('/api/admin/owner-setup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({client_id:cid,name,email,password:pass})});
+  const d=await r.json();
+  if(d.success){res.style.display='block';res.style.background='#f0fdf4';res.style.color='#16a34a';res.textContent='✓ تم إنشاء حساب المالك — ينتهي الاشتراك: '+d.sub_end;loadClients();loadSubs();}
+  else{res.style.display='block';res.style.background='#fee2e2';res.style.color='#dc2626';res.textContent=d.error||'خطأ';}
+}
 
 // ─── Overview ───────────────────────────────────────────────
 async function loadOverview(){
@@ -913,8 +945,9 @@ async function loadClients(){
     const end=c.sub_end?`<span style="font-weight:600">${c.sub_end}</span>`:'<span style="color:#94a3b8">—</span>';
     const days=c.sub_end?Math.ceil((new Date(c.sub_end)-new Date())/86400000):null;
     const daysTag=days!==null?(days<0?`<span class="tag" style="background:#fee2e2;color:#dc2626">منتهي</span>`:(days<=14?`<span class="tag" style="background:#fef3c7;color:#92400e">${days}y</span>`:`<span class="tag" style="background:#dcfce7;color:#16a34a">${days}y</span>`)): '';
-    return `<tr>
-      <td><strong>${c.name||c.id}</strong><br><small style="color:#94a3b8;font-size:11px">${c.id}</small></td>
+    const ownerBadge=c.is_owner?'<span class="badge" style="background:#fef3c7;color:#92400e;margin-right:4px">&#128081; مالك</span>':''
+    return `<tr${c.is_owner?' style="background:#fffbeb"':''}>
+      <td><strong>${c.name||c.id}</strong>${ownerBadge}<br><small style="color:#94a3b8;font-size:11px">${c.id}</small>${c.email?`<br><small style="color:#6b7280;font-size:10px">&#9993; ${c.email}</small>`:''}</td>
       <td><span class="badge bb">${PLANS[c.plan]||c.plan||'—'}</span></td>
       <td><span class="badge ${sc}">${STATUS_AR[c.status]||c.status}</span></td>
       <td>${end} ${daysTag}</td>
@@ -932,11 +965,12 @@ async function loadClients(){
 async function addClient(){
   const id=document.getElementById('nc-id').value.trim();
   const name=document.getElementById('nc-name').value.trim();
+  const email=document.getElementById('nc-email').value.trim();
   const pass=document.getElementById('nc-pass').value;
   const plan=document.getElementById('nc-plan').value;
   const err=document.getElementById('nc-err');
   if(!id||!name||!pass){err.textContent='جميع الحقول مطلوبة';err.style.display='block';return;}
-  const r=await fetch('/api/admin/clients',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,name,password:pass,plan})});
+  const r=await fetch('/api/admin/clients',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,name,email,password:pass,plan})});
   const d=await r.json();
   if(d.success){closeModal('modal-add');loadClients();loadOverview();}
   else{err.textContent=d.error||'خطأ';err.style.display='block';}
@@ -1002,8 +1036,9 @@ async function loadSubs(){
       else daysHtml=`<span style="color:#16a34a;font-weight:600">${days} يوم</span>`;
     }
     const sc=STATUS_CLS[s.status]||'bb';
-    return `<tr>
-      <td><strong>${s.name||s.client_id}</strong><br><small style="color:#94a3b8">${s.client_id}</small></td>
+    const ownerTag=s.is_owner?'<span class="badge" style="background:#fef3c7;color:#92400e;margin-right:4px">&#128081;</span>':'';
+    return `<tr${s.is_owner?' style="background:#fffbeb"':''}>
+      <td><strong>${ownerTag}${s.name||s.client_id}</strong><br><small style="color:#94a3b8">${s.client_id}</small></td>
       <td><span class="badge bb">${PLANS[s.plan]||s.plan||'—'}</span></td>
       <td><span class="badge ${sc}">${STATUS_AR[s.status]||s.status}</span></td>
       <td>${s.sub_start||'—'}</td>
@@ -1888,7 +1923,6 @@ async def mod_st():        return _serve_module("13-staff-tracker")
 @app.get("/goals",    response_class=HTMLResponse)
 async def mod_go():        return _serve_module("14-manager-goals")
 
-@app.get("/bookings",       response_class=HTMLResponse)
 @app.get("/ota-bookings",   response_class=HTMLResponse)
 async def mod_bookings():  return _serve_module("17-bookings")
 
@@ -1959,13 +1993,15 @@ async def admin_logout_post():
 # ──────────────────────────────────────────────────────────────
 @app.get("/api/admin/clients")
 async def admin_clients(request: Request, _=Depends(require_admin)):
+    cfg = request.app.state.cfg
     store: "DataStore" = request.app.state.store
     clients = store.get_all_clients()
-    # Normalize subscription fields for the dashboard
+    owner_id = getattr(cfg, "owner_client_id", "") or ""
     for c in clients:
         c.setdefault("sub_end", c.get("subscription_expires", c.get("trial_end", "")))
         c.setdefault("sub_start", "")
         c.setdefault("sub_price", 0)
+        c["is_owner"] = (str(c.get("id", "")) == owner_id)
     return {"success": True, "clients": clients}
 
 
@@ -1976,6 +2012,7 @@ async def admin_create_client(request: Request, _=Depends(require_admin)):
     name = str(data.get("name", "")).strip()
     password = str(data.get("password", "")).strip()
     plan = str(data.get("plan", "starter")).strip()
+    email = str(data.get("email", "")).strip()
 
     if not all([client_id, name, password]):
         return JSONResponse({"success": False, "error": "id و name و password مطلوبة"}, status_code=400)
@@ -1988,18 +2025,66 @@ async def admin_create_client(request: Request, _=Depends(require_admin)):
         return JSONResponse({"success": False, "error": "المعرف مستخدم بالفعل"}, status_code=400)
 
     pass_hash = _hash_password(password, cfg.pass_salt)
+    from datetime import timedelta
+    sub_end = (datetime.now() + timedelta(days=30)).strftime("%Y-%m-%d")
     client = {
         "id": client_id,
         "name": name,
         "hotel_name": name,
+        "email": email,
         "plan": plan,
         "status": "trial",
         "pass_hash": pass_hash,
+        "sub_end": sub_end,
+        "sub_start": datetime.now().strftime("%Y-%m-%d"),
+        "sub_price": 0,
         "created_at": datetime.now().isoformat(),
         "settings": {},
     }
     store.save_client(client)
     return JSONResponse({"success": True, "client": client})
+
+
+@app.post("/api/admin/owner-setup")
+async def admin_owner_setup(request: Request, _=Depends(require_admin)):
+    """إنشاء أو تحديث حساب المالك — enterprise مدى الحياة"""
+    data = await request.json()
+    client_id = str(data.get("client_id", "")).strip()
+    name = str(data.get("name", "")).strip()
+    password = str(data.get("password", "")).strip()
+    email = str(data.get("email", "")).strip()
+
+    if not all([client_id, name, password]):
+        return JSONResponse({"success": False, "error": "client_id و name و password مطلوبة"}, status_code=400)
+
+    cfg = request.app.state.cfg
+    store: "DataStore" = request.app.state.store
+
+    pass_hash = _hash_password(password, cfg.pass_salt)
+    from datetime import timedelta
+    sub_end = (datetime.now() + timedelta(days=36500)).strftime("%Y-%m-%d")  # 100 years
+    client = store.get_client(client_id) or {}
+    client.update({
+        "id": client_id,
+        "name": name,
+        "hotel_name": name,
+        "email": email,
+        "plan": "enterprise",
+        "status": "active",
+        "pass_hash": pass_hash,
+        "sub_end": sub_end,
+        "sub_start": datetime.now().strftime("%Y-%m-%d"),
+        "sub_price": 0,
+        "is_owner_account": True,
+        "settings": client.get("settings", {}),
+        "created_at": client.get("created_at", datetime.now().isoformat()),
+    })
+    store.save_client(client)
+
+    # persist owner_client_id to cfg so the flag shows up immediately
+    cfg.owner_client_id = client_id
+    log.info(f"Owner account set: {client_id} ({email})")
+    return JSONResponse({"success": True, "client_id": client_id, "sub_end": sub_end})
 
 
 @app.get("/api/admin/clients/{client_id}")
@@ -2687,8 +2772,10 @@ async def admin_revoke_session(token_prefix: str, request: Request, _=Depends(re
 @app.get("/api/admin/subscriptions")
 async def admin_list_subscriptions(request: Request, _=Depends(require_admin)):
     """قائمة اشتراكات جميع المنشآت"""
+    cfg = request.app.state.cfg
     store: "DataStore" = request.app.state.store
     clients = store.get_all_clients()
+    owner_id = getattr(cfg, "owner_client_id", "") or ""
     subs = []
     for c in clients:
         subs.append({
@@ -2699,8 +2786,9 @@ async def admin_list_subscriptions(request: Request, _=Depends(require_admin)):
             "sub_start": c.get("sub_start", ""),
             "sub_end": c.get("sub_end", c.get("subscription_expires", c.get("trial_end", ""))),
             "price": c.get("sub_price", 0),
+            "is_owner": (str(c.get("id", "")) == owner_id),
         })
-    subs.sort(key=lambda x: x.get("sub_end") or "", reverse=False)
+    subs.sort(key=lambda x: (0 if x.get("is_owner") else 1, x.get("sub_end") or ""))
     return {"success": True, "subscriptions": subs}
 
 
@@ -2762,23 +2850,27 @@ async def admin_list_employees(request: Request, client_id: Optional[str] = None
     try:
         if client_id:
             rows = db.execute("""
-                SELECT e.client_id, e.name, e.role, e.id,
+                SELECT e.client_id, e.id,
+                       COALESCE(e.full_name_ar, e.full_name_en, '') AS name,
+                       COALESCE(e.position, '') AS role,
                        MAX(ra.created_at) as last_active,
                        COUNT(ra.id) as task_count
                 FROM employees e
-                LEFT JOIN room_actions ra ON ra.client_id=e.client_id AND ra.performed_by=e.name
+                LEFT JOIN room_actions ra ON ra.client_id=e.client_id AND ra.performed_by=COALESCE(e.full_name_ar, e.full_name_en)
                 WHERE e.client_id=%s
-                GROUP BY e.client_id, e.name, e.role, e.id
+                GROUP BY e.client_id, e.id, e.full_name_ar, e.full_name_en, e.position
                 ORDER BY last_active DESC NULLS LAST
             """, (client_id,), fetch="all")
         else:
             rows = db.execute("""
-                SELECT e.client_id, e.name, e.role, e.id,
+                SELECT e.client_id, e.id,
+                       COALESCE(e.full_name_ar, e.full_name_en, '') AS name,
+                       COALESCE(e.position, '') AS role,
                        MAX(ra.created_at) as last_active,
                        COUNT(ra.id) as task_count
                 FROM employees e
-                LEFT JOIN room_actions ra ON ra.client_id=e.client_id AND ra.performed_by=e.name
-                GROUP BY e.client_id, e.name, e.role, e.id
+                LEFT JOIN room_actions ra ON ra.client_id=e.client_id AND ra.performed_by=COALESCE(e.full_name_ar, e.full_name_en)
+                GROUP BY e.client_id, e.id, e.full_name_ar, e.full_name_en, e.position
                 ORDER BY last_active DESC NULLS LAST
                 LIMIT 200
             """, fetch="all")

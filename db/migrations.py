@@ -357,6 +357,33 @@ CREATE TABLE IF NOT EXISTS marketer_referrals (
 );
 CREATE INDEX IF NOT EXISTS idx_ref_marketer ON marketer_referrals(marketer_id);
 
+-- إعدادات القنوات (Booking.com, Mawasim, etc.)
+CREATE TABLE IF NOT EXISTS channel_configs (
+    id              SERIAL PRIMARY KEY,
+    client_id       VARCHAR(50) REFERENCES clients(id) ON DELETE CASCADE,
+    channel_name    VARCHAR(50) NOT NULL,
+    credentials     JSONB DEFAULT '{}',
+    is_enabled      BOOLEAN DEFAULT TRUE,
+    last_sync_at    TIMESTAMPTZ,
+    created_at      TIMESTAMPTZ DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(client_id, channel_name)
+);
+CREATE INDEX IF NOT EXISTS idx_chan_cfg_client ON channel_configs(client_id);
+
+-- سجل مزامنة القنوات
+CREATE TABLE IF NOT EXISTS channel_sync_log (
+    id              SERIAL PRIMARY KEY,
+    client_id       VARCHAR(50) REFERENCES clients(id) ON DELETE CASCADE,
+    channel_name    VARCHAR(50),
+    sync_type       VARCHAR(50),
+    status          VARCHAR(20) DEFAULT 'success',
+    records_synced  INTEGER DEFAULT 0,
+    error_message   TEXT,
+    created_at      TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_chan_log_client ON channel_sync_log(client_id, created_at DESC);
+
 -- ================================================================
 -- TRIGGERS — تحديث updated_at تلقائياً
 -- ================================================================

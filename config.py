@@ -38,6 +38,9 @@ class Config:
     # ── الميزات ──────────────────────────────────────────────
     dual_write: bool = True         # يُوقف بعد 48h من نجاح PostgreSQL
 
+    # ── حساب المالك ─────────────────────────────────────────
+    owner_client_id: str = ""       # معرف حساب المالك — يُميَّز بشارة في لوحة الإدارة
+
     @classmethod
     def from_env(cls) -> "Config":
         """يُنشئ Config من Railway Environment Variables مع validation"""
@@ -71,6 +74,7 @@ class Config:
             pass_salt=os.environ.get("PASS_SALT", "HotelSaaS2025"),
             secret_key=secret_key,
             dual_write=os.environ.get("DUAL_WRITE", "true").lower() == "true",
+            owner_client_id=os.environ.get("OWNER_CLIENT_ID", ""),
         )
 
     @property
