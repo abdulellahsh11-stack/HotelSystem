@@ -447,6 +447,17 @@
           <div style="display:flex;align-items:center;gap:14px;padding:10px 0"><span style="font-size:18px">📞</span><div><div style="font-size:13px;font-weight:600;color:var(--ink-900)">طلب خدمة — الغرفة ٤٠٢</div><div style="font-size:11px;color:var(--fg-3)">وسائد إضافية · قيد التنفيذ · منذ ساعتين</div></div></div>
         </div>
       </div>
+
+      <!-- Tasks panel -->
+      <div class="dh-card">
+        <div class="dh-card-head">
+          <div>
+            <div class="ttl">المهام الجارية <span id="tasks-badge" style="background:var(--warning-500);color:var(--paper);font-size:10px;font-family:var(--font-en);font-weight:700;padding:2px 7px;border-radius:999px;margin-inline-start:6px"></span></div>
+            <div class="sub">تنظيف · صيانة — تُحدَّث تلقائياً عند تغيير حالة الغرفة</div>
+          </div>
+        </div>
+        <div id="tasks-feed"></div>
+      </div>
     </section>
 
     <!-- ══════════════════════════════════════════════════════════
@@ -708,6 +719,55 @@ var FLOORS = [
 ];
 
 /* ════════════════════════════════════════
+   STAFF ROLES (for auto-assignment)
+════════════════════════════════════════ */
+var HOTEL_ROLES = {
+  housekeeping: {name:'Maria Santos',     phone:'+966 55 000 1111'},
+  maintenance:  {name:'محمد العتيبي',   phone:'+966 55 000 2222'},
+};
+var TASKS = [];
+var taskCounter = 1;
+
+function autoAssignTask(roomNo, roomType, taskType){
+  // Remove existing pending task for same room+type
+  TASKS = TASKS.filter(function(t){ return !(t.room===roomNo && t.taskType===taskType && t.status==='pending'); });
+  var role = taskType==='cleaning' ? 'housekeeping' : 'maintenance';
+  var staff = HOTEL_ROLES[role];
+  var now = new Date();
+  var timeStr = now.getHours()+':'+(now.getMinutes()<10?'0':'')+now.getMinutes();
+  TASKS.push({id:taskCounter++, room:roomNo, type:roomType, taskType:taskType, staffName:staff?staff.name:'—', status:'pending', time:timeStr});
+  var emoji = taskType==='cleaning'?'🧹':'🔧';
+  var label = taskType==='cleaning'?'تنظيف':'صيانة';
+  toast(emoji+' طلب '+label+' — الغرفة '+roomNo+(staff?' · أُرسل لـ '+staff.name:' · لا يوجد موظف'));
+  renderTasks();
+}
+
+function renderTasks(){
+  var el = document.getElementById('tasks-feed'); if(!el) return;
+  var pending = TASKS.filter(function(t){ return t.status==='pending'; });
+  var badge = document.getElementById('tasks-badge');
+  if(badge) badge.textContent = pending.length || '';
+  if(!pending.length){
+    el.innerHTML='<div style="text-align:center;padding:20px;color:var(--fg-3);font-size:13px">✓ لا توجد مهام معلقة</div>';
+    return;
+  }
+  el.innerHTML = pending.map(function(t){
+    var emoji = t.taskType==='cleaning'?'🧹':'🔧';
+    var bg    = t.taskType==='cleaning'?'var(--warning-50)':'var(--danger-50)';
+    var clr   = t.taskType==='cleaning'?'var(--warning-700)':'var(--danger-600)';
+    var lbl   = t.taskType==='cleaning'?'تنظيف':'صيانة';
+    return '<div style="display:flex;align-items:center;gap:14px;padding:11px 20px;border-bottom:1px solid var(--hairline)">'
+      +'<span style="font-size:20px">'+emoji+'</span>'
+      +'<div style="flex:1">'
+        +'<div style="font-size:13px;font-weight:600;color:var(--ink-900)">الغرفة '+t.room+' · '+t.type+' — '+lbl+'</div>'
+        +'<div style="font-size:11px;color:var(--fg-3)">مُسند إلى: <strong>'+t.staffName+'</strong> · '+t.time+'</div>'
+      +'</div>'
+      +'<span style="font-size:11px;font-weight:600;color:'+clr+';background:'+bg+';padding:3px 9px;border-radius:5px">'+lbl+'</span>'
+      +'</div>';
+  }).join('');
+}
+
+/* ════════════════════════════════════════
    VIEW NAVIGATION
 ════════════════════════════════════════ */
 var VIEWS = ['dashboard','reservations','checkin','guests','rooms'];
@@ -926,7 +986,8 @@ function renderGuests(){
       +'<div style="font-weight:600">'+g.room+' <span style="font-weight:400;font-size:11px;color:var(--fg-3)">'+g.type+'</span></div>'
       +'<div style="font-family:var(--font-mono);font-size:12px">'+g.since+'</div>'
       +'<div style="font-family:var(--font-mono);font-size:12px">'+g.until+'</div>'
-      +'<div><button class="btn-sm sec">تفاصيل</button></div>'
+      +'<div style="display:flex;gap:6px"><button class="btn-sm sec">تفاصيل</button>'
+      +'<button class="btn-sm sec" style="color:var(--warning-700);border-color:var(--warning-200)" onclick="doCheckout('+g.id+')">خروج 🚪</button></div>'
       +'</div>';
   }).join('');
 }
@@ -972,7 +1033,10 @@ window.markClean = function(no, floorId){
   if(!fl) return;
   var r = fl.rooms.find(function(x){ return x.no===no; });
   if(r){ r.status='clean'; delete r.guest; }
+  // Close pending cleaning task
+  TASKS.forEach(function(t){ if(t.room===no && t.status==='pending') t.status='done'; });
   renderFloors();
+  renderTasks();
   toast('الغرفة '+no+' — جاهزة للإشغال ✓');
 };
 
@@ -982,7 +1046,28 @@ window.markMaint = function(no, floorId){
   var r = fl.rooms.find(function(x){ return x.no===no; });
   if(r){ r.status='maint'; }
   renderFloors();
-  toast('الغرفة '+no+' — أُحيلت للصيانة');
+  autoAssignTask(no, r ? r.type : '', 'maintenance');
+};
+
+window.doCheckout = function(gid){
+  var g = GUESTS.find(function(x){ return x.id===gid; });
+  if(!g) return;
+  if(!confirm('تسجيل خروج '+g.name+' من غرفة '+g.room+'؟')) return;
+  var roomNo = g.room;
+  var roomType = g.type;
+  // Change room to dirty
+  FLOORS.forEach(function(fl){
+    fl.rooms.forEach(function(r){
+      if(r.no===roomNo && r.status==='occ'){ r.status='dirty'; delete r.guest; }
+    });
+  });
+  GUESTS = GUESTS.filter(function(x){ return x.id!==gid; });
+  renderGuests();
+  renderFloors();
+  updateBadge();
+  // Auto-assign cleaning task
+  autoAssignTask(roomNo, roomType, 'cleaning');
+  toast('تم تسجيل خروج '+g.name+' — الغرفة '+roomNo+' أُحيلت للتنظيف تلقائياً 🧹');
 };
 
 /* ════════════════════════════════════════
@@ -1175,7 +1260,16 @@ renderFloors();
   var sub = document.getElementById('rooms-subtitle');
   if(sub) sub.textContent = 'خريطة الغرف الكاملة — '+total+' غرفة على '+FLOORS.length+' طوابق';
 })();
-showView('checkin'); // default view = check-in
+// Auto-assign tasks for existing dirty/maint rooms on load
+(function(){
+  FLOORS.forEach(function(fl){
+    fl.rooms.forEach(function(r){
+      if(r.status==='dirty') autoAssignTask(r.no, r.type, 'cleaning');
+      if(r.status==='maint') autoAssignTask(r.no, r.type, 'maintenance');
+    });
+  });
+})();
+showView('dashboard'); // default view = dashboard
 
 })();
 </script>
