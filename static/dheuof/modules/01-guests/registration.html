@@ -552,17 +552,30 @@
 
             <!-- Custom installments builder -->
             <div class="pay-builder">
-              <div class="pay-builder-head">
-                <div>
-                  <div class="ar">جدول الدفعات</div>
-                  <div class="en">Payment schedule — ٣ دفعات · إجمالي ٩٬٠٩٤٫٥٠ ر.س</div>
+              <div class="pay-builder-head" style="flex-direction:column;align-items:stretch;gap:12px">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <div>
+                    <div class="ar">جدول الدفعات</div>
+                    <div class="en" id="pay-schedule-en">Payment schedule — ٣ دفعات · إجمالي ٩٬٠٩٤٫٥٠ ر.س</div>
+                  </div>
+                  <div style="font-size:11px;color:var(--fg-3)">طرق الدفع المقبولة لهذا الحجز</div>
                 </div>
-                <div class="pay-method-row">
-                  <span class="pm">MADA</span>
-                  <span class="pm">Visa</span>
-                  <span class="pm">Apple Pay</span>
-                  <span class="pm">STC Pay</span>
-                  <span class="pm is-on">+ تخصيص</span>
+                <!-- ── Multi-select payment methods ── -->
+                <div id="pmm-grid" style="display:flex;flex-wrap:wrap;gap:7px">
+                  <button class="pmm-btn is-on" data-method="MADA" onclick="togglePayMethod(this)"><span>💳</span> MADA</button>
+                  <button class="pmm-btn is-on" data-method="Visa/MC" onclick="togglePayMethod(this)"><span>💳</span> Visa / MC</button>
+                  <button class="pmm-btn is-on" data-method="Apple Pay" onclick="togglePayMethod(this)"><span></span> Apple Pay</button>
+                  <button class="pmm-btn" data-method="STC Pay" onclick="togglePayMethod(this)"><span>📱</span> STC Pay</button>
+                  <button class="pmm-btn" data-method="نقدي" onclick="togglePayMethod(this)"><span>💵</span> نقدي</button>
+                  <button class="pmm-btn" data-method="تحويل بنكي" onclick="togglePayMethod(this)"><span>🏦</span> تحويل بنكي</button>
+                  <button class="pmm-btn" data-method="رابط SMS" onclick="togglePayMethod(this)"><span>📲</span> رابط SMS</button>
+                  <button class="pmm-btn" data-method="شيك بنكي" onclick="togglePayMethod(this)"><span>📄</span> شيك بنكي</button>
+                  <button class="pmm-btn" data-method="آجل / شركة" onclick="togglePayMethod(this)"><span>🏢</span> آجل / شركة</button>
+                  <button class="pmm-btn pmm-add-btn" onclick="addCustomPayMethod()" style="border-style:dashed;color:var(--brand-600);border-color:var(--brand-300)"><span>＋</span> إضافة طريقة</button>
+                </div>
+                <!-- ── Active methods summary ── -->
+                <div id="pmm-summary" style="font-size:11px;color:var(--fg-3);padding:6px 10px;background:var(--brand-50);border-radius:6px;border:1px solid var(--brand-100)">
+                  مقبول حالياً: <strong id="pmm-active-list">MADA · Visa/MC · Apple Pay</strong>
                 </div>
               </div>
 
@@ -572,7 +585,7 @@
                   <div class="gr-field"><label>الوصف</label><input value="عربون عند الحجز"/></div>
                   <div class="gr-field"><label>الاستحقاق</label><input class="is-mono" value="2025-05-26" dir="ltr"/></div>
                   <div class="gr-field"><label>طريقة الدفع</label>
-                    <select><option>رابط دفع — SMS</option><option>MADA</option><option>Visa</option><option>تحويل بنكي</option><option>نقدي</option><option>تخصيص</option></select>
+                    <select><option>MADA 💳</option><option>Visa / Mastercard 💳</option><option>Apple Pay </option><option>STC Pay 📱</option><option>نقدي 💵</option><option>تحويل بنكي 🏦</option><option>رابط دفع SMS 📲</option><option>شيك بنكي 📄</option><option>آجل / شركة 🏢</option><option>تخصيص ✏️</option></select>
                   </div>
                   <div class="gr-field amt"><label>المبلغ (ر.س)</label><input class="is-mono" value="3,000.00" dir="ltr"/></div>
                   <div class="pay-state is-paid">مدفوع</div>
@@ -583,7 +596,7 @@
                   <div class="gr-field"><label>الوصف</label><input value="الدفعة الثانية — منتصف الإقامة"/></div>
                   <div class="gr-field"><label>الاستحقاق</label><input class="is-mono" value="2025-05-29" dir="ltr"/></div>
                   <div class="gr-field"><label>طريقة الدفع</label>
-                    <select><option>رابط دفع — SMS</option><option>MADA</option><option>Visa</option><option>تحويل بنكي</option><option>نقدي</option><option>تخصيص</option></select>
+                    <select><option>MADA 💳</option><option>Visa / Mastercard 💳</option><option>Apple Pay </option><option>STC Pay 📱</option><option>نقدي 💵</option><option>تحويل بنكي 🏦</option><option>رابط دفع SMS 📲</option><option>شيك بنكي 📄</option><option>آجل / شركة 🏢</option><option>تخصيص ✏️</option></select>
                   </div>
                   <div class="gr-field amt"><label>المبلغ (ر.س)</label><input class="is-mono" value="3,000.00" dir="ltr"/></div>
                   <div class="pay-state is-link">بانتظار SMS</div>
@@ -651,35 +664,67 @@
               </div>
             </div>
 
-            <div style="margin-top: 16px; background: var(--paper-tint); border: 1px solid var(--hairline); border-radius: 10px; overflow: hidden;">
+            <div style="margin-top: 16px; background: var(--paper-tint); border: 1px solid var(--hairline); border-radius: 10px; overflow: hidden;" id="inv-block">
               <div style="padding: 14px 18px; border-bottom: 1px solid var(--hairline); display: flex; justify-content: space-between; align-items: center;">
                 <div style="font-family: var(--font-ar-display); font-weight: 600; font-size: 14px; color: var(--ink-900);">تفصيل الفاتورة</div>
                 <div style="font-family: var(--font-en); font-size: 11px; color: var(--fg-3); letter-spacing: 0.04em;">INVOICE BREAKDOWN · SAR</div>
               </div>
               <div style="padding: 6px 18px;">
-                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--hairline); font-size: 13px;">
+                <!-- Base lines -->
+                <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--hairline);font-size:13px">
                   <span>سعر الغرفة × ٣ ليالٍ (جناح ملكي)</span>
-                  <span style="font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 600;">٧٬٢٠٠٫٠٠</span>
+                  <span style="font-family:var(--font-mono);font-weight:600">٧٬٢٠٠٫٠٠</span>
                 </div>
-                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--hairline); font-size: 13px;">
+                <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--hairline);font-size:13px">
                   <span>فطور بوفيه × ٣ أيام × ٣ أشخاص</span>
-                  <span style="font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 600;">٥٤٠٫٠٠</span>
+                  <span style="font-family:var(--font-mono);font-weight:600">٥٤٠٫٠٠</span>
                 </div>
-                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--hairline); font-size: 13px;">
-                  <span style="color: var(--fg-2);">المجموع قبل الضرائب</span>
-                  <span style="font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 600;">٧٬٧٤٠٫٠٠</span>
+                <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:2px solid var(--hairline);font-size:13px">
+                  <span style="color:var(--fg-2)">المجموع قبل الضرائب</span>
+                  <span style="font-family:var(--font-mono);font-weight:600">٧٬٧٤٠٫٠٠</span>
                 </div>
-                <div style="display: flex; justify-content: space-between; padding: 8px 0; font-size: 12px; color: var(--fg-2);">
-                  <span>ضريبة القيمة المضافة (VAT) ١٥٪</span>
-                  <span style="font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 600; color: var(--ink-800);">١٬١٦١٫٠٠</span>
+
+                <!-- ── ضريبة القيمة المضافة ── -->
+                <div id="tax-vat-row" style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--hairline);gap:8px;transition:opacity 200ms">
+                  <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
+                    <span style="font-size:11px;font-weight:700;background:var(--brand-100);color:var(--brand-800);padding:2px 7px;border-radius:4px;white-space:nowrap">VAT</span>
+                    <span style="font-size:12.5px;color:var(--ink-900);font-weight:500">ضريبة القيمة المضافة — ١٥٪</span>
+                    <button id="vat-mode-btn" onclick="toggleTaxMode('vat')" title="اضغط للتبديل بين مضافة وشاملة" style="font-size:10px;font-weight:700;padding:2px 9px;border-radius:4px;border:1.5px solid var(--brand-300);background:var(--brand-50);color:var(--brand-700);cursor:pointer;white-space:nowrap;font-family:var(--font-ar)">مضافة ✦</button>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+                    <span id="vat-amt" style="font-family:var(--font-mono);font-weight:600;font-size:13px;color:var(--ink-900)">١٬١٦١٫٠٠</span>
+                    <label style="position:relative;width:40px;height:22px;display:inline-block;flex-shrink:0">
+                      <input type="checkbox" id="vat-on" checked onchange="recalcInvoice()" style="opacity:0;width:0;height:0;position:absolute"/>
+                      <span id="vat-track" style="position:absolute;inset:0;background:var(--brand-600);border-radius:999px;cursor:pointer;transition:background 200ms"></span>
+                      <span id="vat-thumb" style="position:absolute;top:3px;right:3px;width:16px;height:16px;background:var(--paper);border-radius:999px;box-shadow:0 1px 3px rgba(0,0,0,.22);transition:right 200ms;pointer-events:none"></span>
+                    </label>
+                  </div>
                 </div>
-                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--hairline); font-size: 12px; color: var(--fg-2);">
-                  <span>ضريبة السياحة (Tourism Levy) ٢٫٥٪</span>
-                  <span style="font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 600; color: var(--ink-800);">١٩٣٫٥٠</span>
+
+                <!-- ── ضريبة السياحة ── -->
+                <div id="tax-tour-row" style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:2px solid var(--hairline);gap:8px;transition:opacity 200ms">
+                  <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
+                    <span style="font-size:11px;font-weight:700;background:#E0F2FE;color:#0369A1;padding:2px 7px;border-radius:4px;white-space:nowrap">سياحة</span>
+                    <span style="font-size:12.5px;color:var(--ink-900);font-weight:500">ضريبة السياحة (Tourism Levy) — ٢٫٥٪</span>
+                    <button id="tour-mode-btn" onclick="toggleTaxMode('tourism')" title="اضغط للتبديل بين مضافة وشاملة" style="font-size:10px;font-weight:700;padding:2px 9px;border-radius:4px;border:1.5px solid #7DD3FC;background:#F0F9FF;color:#0369A1;cursor:pointer;white-space:nowrap;font-family:var(--font-ar)">مضافة ✦</button>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+                    <span id="tour-amt" style="font-family:var(--font-mono);font-weight:600;font-size:13px;color:var(--ink-900)">١٩٣٫٥٠</span>
+                    <label style="position:relative;width:40px;height:22px;display:inline-block;flex-shrink:0">
+                      <input type="checkbox" id="tour-on" checked onchange="recalcInvoice()" style="opacity:0;width:0;height:0;position:absolute"/>
+                      <span id="tour-track" style="position:absolute;inset:0;background:#0284C7;border-radius:999px;cursor:pointer;transition:background 200ms"></span>
+                      <span id="tour-thumb" style="position:absolute;top:3px;right:3px;width:16px;height:16px;background:var(--paper);border-radius:999px;box-shadow:0 1px 3px rgba(0,0,0,.22);transition:right 200ms;pointer-events:none"></span>
+                    </label>
+                  </div>
                 </div>
-                <div style="display: flex; justify-content: space-between; padding: 14px 0 16px; background: var(--gold-100); margin: 8px -18px -6px; padding-inline: 18px; border-radius: 0 0 8px 8px;">
-                  <span style="font-family: var(--font-ar-display); font-weight: 600; font-size: 15px; color: var(--gold-900);">الإجمالي النهائي</span>
-                  <span style="font-family: var(--font-en); font-variant-numeric: tabular-nums; font-weight: 700; font-size: 18px; color: var(--gold-900);">٩٬٠٩٤٫٥٠ <span style="font-size: 12px; color: var(--gold-700); font-family: var(--font-ar); font-weight: 400;">ر.س</span></span>
+
+                <!-- ── الإجمالي ── -->
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0 16px;background:var(--gold-100);margin:6px -18px -6px;padding-inline:18px;border-radius:0 0 8px 8px">
+                  <div>
+                    <div style="font-family:var(--font-ar-display);font-weight:600;font-size:15px;color:var(--gold-900)">الإجمالي النهائي</div>
+                    <div id="inv-tax-note" style="font-size:10px;color:var(--gold-700);margin-top:2px">شامل VAT ١٥٪ + ضريبة السياحة ٢٫٥٪</div>
+                  </div>
+                  <div id="inv-total" style="font-family:var(--font-en);font-variant-numeric:tabular-nums;font-weight:700;font-size:18px;color:var(--gold-900)">٩٬٠٩٤٫٥٠ <span style="font-size:12px;color:var(--gold-700);font-family:var(--font-ar);font-weight:400">ر.س</span></div>
                 </div>
               </div>
             </div>
@@ -1106,9 +1151,16 @@ setTimeout(function(){
         +'<div class="gr-field"><label>الوصف</label><input value="دفعة جديدة"/></div>'
         +'<div class="gr-field"><label>الاستحقاق</label><input class="is-mono" placeholder="YYYY-MM-DD" dir="ltr"/></div>'
         +'<div class="gr-field"><label>طريقة الدفع</label><select>'
-          +'<option>نقدي 💵</option><option>رابط دفع — SMS</option><option>MADA</option>'
-          +'<option>Visa / Mastercard</option><option>Apple Pay</option><option>STC Pay</option>'
-          +'<option>تحويل بنكي</option><option>شيك</option><option>تخصيص</option>'
+          +'<option>MADA 💳</option>'
+          +'<option>Visa / Mastercard 💳</option>'
+          +'<option>Apple Pay </option>'
+          +'<option>STC Pay 📱</option>'
+          +'<option>نقدي 💵</option>'
+          +'<option>تحويل بنكي 🏦</option>'
+          +'<option>رابط دفع SMS 📲</option>'
+          +'<option>شيك بنكي 📄</option>'
+          +'<option>آجل / شركة 🏢</option>'
+          +'<option>تخصيص ✏️</option>'
         +'</select></div>'
         +'<div class="gr-field amt"><label>المبلغ (ر.س)</label><input class="is-mono" value="0.00" dir="ltr"/></div>'
         +'<div class="pay-state is-due">معلّقة</div>'
@@ -1386,6 +1438,188 @@ setTimeout(function(){
       setTimeout(function(){ banner.style.opacity='0'; banner.style.transition='opacity .5s'; setTimeout(function(){ banner.remove(); }, 500); }, 4000);
     }
   }, 200);
+})();
+</script>
+
+<style>
+/* ── Tax toggles ─────────────────────────────────────────────── */
+#vat-on:checked + #vat-track  { background: var(--brand-600) }
+#vat-on:not(:checked) + #vat-track { background: var(--ink-100) }
+#tour-on:checked + #tour-track { background: #0284C7 }
+#tour-on:not(:checked) + #tour-track { background: var(--ink-100) }
+
+/* ── Payment method multi-select grid ─────────────────────────── */
+.pmm-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 13px; border-radius: 7px; border: 1.5px solid var(--hairline);
+  background: var(--white); font-family: var(--font-ar); font-size: 12px;
+  font-weight: 500; cursor: pointer; transition: all 140ms; color: var(--fg-2);
+}
+.pmm-btn:hover { border-color: var(--brand-400); color: var(--brand-700); background: var(--brand-50); }
+.pmm-btn.is-on {
+  background: var(--brand-700); color: var(--paper);
+  border-color: var(--brand-700); font-weight: 600;
+}
+.pmm-btn.pmm-add-btn { border-style: dashed; }
+</style>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   TAX ENGINE — ضريبة القيمة المضافة ١٥٪ + ضريبة السياحة ٢٫٥٪
+═══════════════════════════════════════════════════════════════ */
+(function(){
+  var INV_BASE = 7740; // المجموع قبل الضرائب
+
+  var TAX = {
+    vat:     { rate: 0.15,  mode: 'added', labelAr: 'VAT ١٥٪' },
+    tourism: { rate: 0.025, mode: 'added', labelAr: 'ضريبة السياحة ٢٫٥٪' }
+  };
+
+  function toSAR(n){
+    // Format as Arabic numerals with commas
+    var s = n.toFixed(2);
+    var parts = s.split('.');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '٬');
+    return parts.join('٫')
+      .replace(/0/g,'٠').replace(/1/g,'١').replace(/2/g,'٢').replace(/3/g,'٣')
+      .replace(/4/g,'٤').replace(/5/g,'٥').replace(/6/g,'٦').replace(/7/g,'٧')
+      .replace(/8/g,'٨').replace(/9/g,'٩');
+  }
+
+  function getEl(id){ return document.getElementById(id); }
+
+  function syncThumb(checkId, thumbId){
+    var cb = getEl(checkId), th = getEl(thumbId); if(!cb||!th) return;
+    th.style.right = cb.checked ? '21px' : '3px';
+  }
+
+  window.recalcInvoice = function(){
+    var vatCb   = getEl('vat-on');
+    var tourCb  = getEl('tour-on');
+    var vatOn   = vatCb  && vatCb.checked;
+    var tourOn  = tourCb && tourCb.checked;
+
+    /* Sync toggle thumb positions */
+    syncThumb('vat-on',  'vat-thumb');
+    syncThumb('tour-on', 'tour-thumb');
+
+    /* Dim disabled tax rows */
+    var vatRow  = getEl('tax-vat-row');
+    var tourRow = getEl('tax-tour-row');
+    if(vatRow)  vatRow.style.opacity  = vatOn  ? '1' : '0.38';
+    if(tourRow) tourRow.style.opacity = tourOn ? '1' : '0.38';
+
+    var vatAmt = 0, tourAmt = 0;
+
+    /* ── VAT ── */
+    if(vatOn){
+      if(TAX.vat.mode === 'added'){
+        vatAmt = INV_BASE * TAX.vat.rate;
+      } else {
+        /* شاملة: السعر يتضمن الضريبة، نُظهرها استخلاصاً فقط */
+        vatAmt = INV_BASE - (INV_BASE / (1 + TAX.vat.rate));
+      }
+    }
+
+    /* ── السياحة ── */
+    if(tourOn){
+      if(TAX.tourism.mode === 'added'){
+        tourAmt = INV_BASE * TAX.tourism.rate;
+      } else {
+        tourAmt = INV_BASE - (INV_BASE / (1 + TAX.tourism.rate));
+      }
+    }
+
+    /* تحديث المبالغ */
+    var vatAmtEl  = getEl('vat-amt');
+    var tourAmtEl = getEl('tour-amt');
+    if(vatAmtEl)  vatAmtEl.textContent  = vatOn  ? toSAR(vatAmt) : '—';
+    if(tourAmtEl) tourAmtEl.textContent = tourOn ? toSAR(tourAmt) : '—';
+
+    /* الإجمالي */
+    var total = INV_BASE;
+    if(vatOn  && TAX.vat.mode  === 'added') total += vatAmt;
+    if(tourOn && TAX.tourism.mode === 'added') total += tourAmt;
+
+    var totalEl = getEl('inv-total');
+    if(totalEl) totalEl.innerHTML = toSAR(total) + ' <span style="font-size:12px;color:var(--gold-700);font-family:var(--font-ar);font-weight:400">ر.س</span>';
+
+    /* ملاحظة الإجمالي */
+    var noteEl = getEl('inv-tax-note');
+    if(noteEl){
+      var parts = [];
+      if(vatOn)  parts.push(TAX.vat.mode  === 'added' ? 'مضاف VAT ١٥٪'  : 'شامل VAT ١٥٪');
+      if(tourOn) parts.push(TAX.tourism.mode === 'added' ? 'مضافة سياحة ٢٫٥٪' : 'شاملة سياحة ٢٫٥٪');
+      if(!parts.length) parts.push('بدون ضرائب — المبلغ صافٍ');
+      noteEl.textContent = parts.join(' + ');
+    }
+  };
+
+  window.toggleTaxMode = function(which){
+    var t = TAX[which];
+    t.mode = (t.mode === 'added') ? 'inclusive' : 'added';
+    var btnId = which === 'vat' ? 'vat-mode-btn' : 'tour-mode-btn';
+    var btn = getEl(btnId); if(!btn) return;
+    if(t.mode === 'added'){
+      btn.textContent = 'مضافة ✦';
+      btn.style.borderColor = which === 'vat' ? 'var(--brand-300)' : '#7DD3FC';
+      btn.style.background  = which === 'vat' ? 'var(--brand-50)' : '#F0F9FF';
+      btn.style.color       = which === 'vat' ? 'var(--brand-700)' : '#0369A1';
+    } else {
+      btn.textContent = 'شاملة ◉';
+      btn.style.borderColor = '#86EFAC';
+      btn.style.background  = '#F0FDF4';
+      btn.style.color       = '#15803D';
+    }
+    window.recalcInvoice();
+  };
+
+  /* تهيئة أولية لمزامنة أزرار التبديل */
+  document.addEventListener('DOMContentLoaded', function(){
+    syncThumb('vat-on',  'vat-thumb');
+    syncThumb('tour-on', 'tour-thumb');
+  });
+
+})();
+
+/* ══════════════════════════════════════════════════════════════
+   PAYMENT METHODS — متعددة وقابلة للتخصيص
+═══════════════════════════════════════════════════════════════ */
+(function(){
+
+  window.togglePayMethod = function(btn){
+    btn.classList.toggle('is-on');
+    updateMethodSummary();
+  };
+
+  function updateMethodSummary(){
+    var btns = document.querySelectorAll('#pmm-grid .pmm-btn:not(.pmm-add-btn)');
+    var active = [];
+    btns.forEach(function(b){ if(b.classList.contains('is-on')) active.push(b.dataset.method); });
+    var list = document.getElementById('pmm-active-list');
+    if(list) list.textContent = active.length ? active.join(' · ') : 'لا توجد طريقة دفع مختارة';
+  }
+
+  window.addCustomPayMethod = function(){
+    var name = prompt('اسم طريقة الدفع الجديدة (مثال: Tabby · مدى الإنترنت · بطاقة هدية):');
+    if(!name || !name.trim()) return;
+    name = name.trim();
+    var grid = document.getElementById('pmm-grid'); if(!grid) return;
+    var addBtn = grid.querySelector('.pmm-add-btn');
+    var btn = document.createElement('button');
+    btn.className = 'pmm-btn is-on';
+    btn.dataset.method = name;
+    btn.onclick = function(){ window.togglePayMethod(btn); };
+    btn.innerHTML = '<span>✏️</span> ' + name;
+    grid.insertBefore(btn, addBtn);
+    updateMethodSummary();
+  };
+
+  /* تهيئة أولية */
+  document.addEventListener('DOMContentLoaded', function(){
+    updateMethodSummary();
+  });
+
 })();
 </script>
 </body>
