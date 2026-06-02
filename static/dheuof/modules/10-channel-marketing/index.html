@@ -96,6 +96,26 @@
   .ch-pr-row .rate.na     { color: var(--ink-200); }
   .ch-pr-row .rate small  { font-size: 10px; opacity: 0.7; font-family: var(--font-ar); }
   .ch-pr-row .status { text-align: end; }
+
+  /* ── Integrations panel (optional linking) ── */
+  .ch-integrations { background: var(--white); border: 1px solid var(--hairline); border-radius: 12px; padding: 18px 22px; margin-bottom: 22px; }
+  .ch-integrations .ci-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+  .ch-integrations .ci-ttl { font-family: var(--font-ar); font-size: 15px; font-weight: 700; color: var(--ink-900); }
+  .ch-integrations .ci-sub { font-size: 11px; color: var(--fg-3); margin-bottom: 16px; }
+  .ci-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .ci-item { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border: 1px solid var(--hairline); border-radius: 10px; transition: border-color 160ms, background 160ms; }
+  .ci-item.is-on { border-color: var(--brand-300); background: var(--brand-50); }
+  .ci-item .ci-ic { font-size: 22px; line-height: 1; flex-shrink: 0; }
+  .ci-item .ci-body { flex: 1; min-width: 0; }
+  .ci-item .ci-name { font-family: var(--font-ar); font-size: 13px; font-weight: 600; color: var(--ink-900); }
+  .ci-item .ci-desc { font-size: 10.5px; color: var(--fg-3); margin-top: 2px; line-height: 1.4; }
+  /* toggle switch */
+  .ci-switch { position: relative; width: 42px; height: 24px; flex-shrink: 0; cursor: pointer; }
+  .ci-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+  .ci-track { position: absolute; inset: 0; background: var(--ink-200, #cbd5e1); border-radius: 999px; transition: background 180ms; }
+  .ci-thumb { position: absolute; top: 3px; inset-inline-start: 3px; width: 18px; height: 18px; background: #fff; border-radius: 999px; transition: transform 180ms; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+  .ci-switch input:checked + .ci-track { background: var(--brand-600, #2f7d63); }
+  .ci-switch input:checked + .ci-track .ci-thumb { transform: translateX(-18px); }
 </style>
 </head>
 <body>
@@ -135,6 +155,18 @@
           <div class="v-lbl">حجوزات هذا الشهر</div>
         </div>
         <button>مزامنة فورية</button>
+      </div>
+
+      <!-- ═══ Optional Integrations Panel ═══ -->
+      <div class="ch-integrations" data-m-rise>
+        <div class="ci-head">
+          <div class="ci-ttl">🔗 الربط مع البرامج الأخرى</div>
+          <span style="font-size:11px;color:var(--fg-2);background:var(--brand-50);padding:4px 10px;border-radius:6px">اختياري — يتحكم به مدير الحساب</span>
+        </div>
+        <div class="ci-sub">فعّل أو أوقف تدفّق بيانات الحجوزات والإيرادات من القنوات إلى كل برنامج. تُحفظ إعداداتك تلقائياً.</div>
+        <div class="ci-grid" id="ci-grid">
+          <!-- items injected by JS -->
+        </div>
       </div>
 
       <div class="mod-stats" style="--cols: 4">
@@ -632,7 +664,7 @@ window.exportPDF = function(){
     +'</style></head><body>'
     +'<h1>📡 تقرير أداء القنوات</h1>'
     +'<p class="sub">'+new Date().toLocaleDateString('ar-SA')+' · قنوات الحجز الخارجية</p>'
-    +statsHtml+
+    +statsHtml
     +'<table><thead><tr><th>القناة</th><th>الحالة</th><th>الحجوزات</th><th>الإيرادات (ر.س)</th><th>العمولة</th><th>العمولة المدفوعة</th></tr></thead>'
     +'<tbody>'+rows+'</tbody></table>'
     +'<div class="footer">نظام ضيوف · تقرير القنوات · '+new Date().toLocaleString('ar-SA')+'</div>'
@@ -691,6 +723,47 @@ window.doBulkSync = function(){
     setTimeout(function(){ res.style.display='none'; }, 4000);
   }, 1800);
 };
+
+// ── Optional Integrations (link channels to other programs) ─────────
+var CH_INTEGRATIONS = [
+  { key:'guests',     icon:'🛎',  name:'ضيوف',          desc:'ترحيل حجوزات القنوات تلقائياً كنزلاء جدد',     def:true  },
+  { key:'accounting', icon:'📊',  name:'المحاسبة',      desc:'قيد الإيرادات والعمولات في الحسابات تلقائياً', def:true  },
+  { key:'reports',    icon:'📄',  name:'التقارير',      desc:'تضمين بيانات القنوات في التقارير الموحّدة',     def:true  },
+  { key:'kpis',       icon:'📈',  name:'مؤشرات الأداء', desc:'احتساب أداء القنوات ضمن مؤشرات الأداء',        def:true  },
+  { key:'analytics',  icon:'🧠',  name:'تحليل البيانات', desc:'تغذية لوحة التحليلات ببيانات القنوات',         def:true  },
+  { key:'smartkey',   icon:'🔑',  name:'المفتاح الذكي', desc:'إصدار مفاتيح رقمية لحجوزات القنوات',           def:false },
+];
+
+function ciStorageKey(k){ return 'ch-integration-' + k; }
+function ciIsOn(item){
+  var v = localStorage.getItem(ciStorageKey(item.key));
+  return v === null ? item.def : v === '1';
+}
+
+function renderIntegrations(){
+  var grid = document.getElementById('ci-grid');
+  if(!grid) return;
+  grid.innerHTML = CH_INTEGRATIONS.map(function(item){
+    var on = ciIsOn(item);
+    return '<label class="ci-item'+(on?' is-on':'')+'" data-key="'+item.key+'">'
+      +'<span class="ci-ic">'+item.icon+'</span>'
+      +'<span class="ci-body"><span class="ci-name">'+item.name+'</span><span class="ci-desc">'+item.desc+'</span></span>'
+      +'<span class="ci-switch"><input type="checkbox"'+(on?' checked':'')+' onchange="toggleIntegration(\''+item.key+'\',this)"/><span class="ci-track"><span class="ci-thumb"></span></span></span>'
+      +'</label>';
+  }).join('');
+}
+
+window.toggleIntegration = function(key, input){
+  var on = input.checked;
+  localStorage.setItem(ciStorageKey(key), on ? '1' : '0');
+  var item = input.closest('.ci-item');
+  if(item) item.classList.toggle('is-on', on);
+  var meta = CH_INTEGRATIONS.filter(function(i){ return i.key===key; })[0];
+  var nm = meta ? meta.name : key;
+  toast(on ? ('تم ربط القنوات بـ «'+nm+'» ✓') : ('تم إيقاف الربط مع «'+nm+'»'), !on);
+};
+
+renderIntegrations();
 
 // ── Feature 4: GDS Connections ──────────────────────────────────────
 window.connectGDS = function(btn, name){
