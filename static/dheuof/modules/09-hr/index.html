@@ -25,9 +25,10 @@
 </style>
 </head>
 <body>
-<div id="sidebar-mount"></div>
-<div class="dh-content">
-  <div id="topbar-mount"></div>
+<div class="dh-app">
+<div id="sidebar-slot"></div>
+<div>
+  <div id="topbar-slot"></div>
   <main class="dh-main">
 
     <!-- Page head -->
@@ -188,16 +189,12 @@
 
   </main>
 </div>
+</div>
 
 <script src="/static/dheuof/shared/sidebar.js"></script>
 <script>
 // ── Mount chrome ────────────────────────────────────────────────
-(function(){
-  var sb = document.getElementById('sidebar-mount');
-  if(sb && window.StaticSidebar) sb.outerHTML = StaticSidebar.render('09-hr');
-  var tb = document.getElementById('topbar-mount');
-  if(tb && window.StaticSidebar) tb.outerHTML = StaticSidebar.topBar({placeholder:'بحث عن موظف، رقم إقامة، قسم...'});
-})();
+if(window.StaticSidebar) StaticSidebar.mount({ activeId:'09-hr', placeholder:'بحث عن موظف، رقم إقامة، قسم...' });
 
 // ── Staff data ──────────────────────────────────────────────────
 var STAFF = [
