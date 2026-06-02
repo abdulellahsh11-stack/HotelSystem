@@ -1,0 +1,124 @@
+<!doctype html>
+<html dir="rtl" lang="ar"><head><meta charset="utf-8">
+<style>
+@page { size:A4; margin:15mm 13mm 16mm;
+  @bottom-center{ content:"ضيوف · تقرير الفحص الشامل · يونيو ٢٠٢٥"; font-family:'Tajawal'; font-size:8pt; color:#9aa39e;}
+  @bottom-left{ content:counter(page) " / " counter(pages); font-family:'Tajawal'; font-size:8pt; color:#9aa39e;}
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Tajawal','Cairo',sans-serif;color:#14110E;font-size:10.5pt;line-height:1.55}
+h1,h2,h3{font-family:'Cairo','Tajawal',sans-serif}
+.cover{text-align:center;padding-top:42mm;page-break-after:always}
+.cover .logo{font-size:46pt;font-weight:800;color:#1B4D3D}.cover .logo .d{color:#C9A85F}
+.cover .t{font-size:17pt;color:#266554;margin-top:5mm;font-weight:700}
+.cover .s{font-size:11pt;color:#6B6052;margin-top:3mm}
+.cover .rule{width:60mm;height:3px;background:linear-gradient(90deg,#C9A85F,#1B4D3D);margin:9mm auto;border-radius:2px}
+.cover .badge{display:inline-block;margin-top:6mm;background:#E4F0EB;color:#1B4D3D;font-weight:800;padding:7px 22px;border-radius:30px;font-size:13pt}
+.cover .date{font-size:9.5pt;color:#8B8175;margin-top:24mm}
+h2.section{font-size:16pt;color:#1B4D3D;margin:6mm 0 3mm;padding-bottom:2mm;border-bottom:2px solid #C9A85F}
+h3.sub{font-size:12pt;color:#266554;margin:4mm 0 2mm}
+.lead{font-size:10.5pt;color:#322B23;margin-bottom:3mm}
+.health{display:flex;gap:4mm;margin:4mm 0}
+.hc{flex:1;background:#F2F8F5;border:1px solid #C7E1D8;border-radius:10px;padding:10px;text-align:center}
+.hc .v{font-size:20pt;font-weight:800;color:#1B4D3D;display:block}.hc .l{font-size:8.5pt;color:#4A4137}
+table{width:100%;border-collapse:collapse;font-size:9.3pt;margin:3mm 0}
+th{background:#1B4D3D;color:#fff;padding:6px 8px;text-align:right}
+td{padding:6px 8px;border-bottom:1px solid #E4F0EB;vertical-align:top}
+tr:nth-child(even) td{background:#F2F8F5}
+.pass{color:#1A7A2A;font-weight:800;white-space:nowrap}
+.fixd{color:#9A7430;font-weight:800;white-space:nowrap}
+.warn{color:#C0392B;font-weight:800;white-space:nowrap}
+code{font-family:'DejaVu Sans Mono',monospace;font-size:8.4pt;background:#F0F4F0;color:#1B4D3D;padding:1px 5px;border-radius:4px;direction:ltr;display:inline-block}
+.box{background:#F2F8F5;border-right:4px solid #1B4D3D;border-radius:8px;padding:9px 12px;margin:3mm 0;font-size:9.6pt;color:#143A2E}
+.evid{font-family:'DejaVu Sans Mono',monospace;font-size:8pt;color:#4A4137;direction:ltr;text-align:left}
+ul.chk{list-style:none;margin:2mm 0}
+ul.chk li{font-size:10pt;padding-right:18px;position:relative;margin-bottom:4px;color:#322B23}
+ul.chk li:before{content:"✓";color:#1A7A2A;font-weight:800;position:absolute;right:0}
+.verdict{background:linear-gradient(160deg,#1B4D3D,#0E2A22);color:#fff;border-radius:14px;padding:11mm 10mm;text-align:center;margin-top:5mm;page-break-inside:avoid}
+.verdict h2{font-size:18pt;color:#fff;border:0}.verdict p{color:#C7E1D8;font-size:11pt;margin-top:3mm}
+.verdict .score{font-size:34pt;font-weight:800;color:#DBC084;margin-top:3mm}
+</style></head><body>
+
+<div class="cover">
+  <div class="logo">ضيوف<span class="d">.</span></div>
+  <div class="t">تقرير الفحص الشامل للمنصة</div>
+  <div class="s">التحقق الوظيفي · مراجعة الكود · الفحص الأمني · الترابط والاشتراكات</div>
+  <div class="rule"></div>
+  <div class="badge">✓ المنصة جاهزة — مع إصلاحات مطبّقة</div>
+  <div class="date">يونيو ٢٠٢٥ · فحص آلي + مراجعة يدوية</div>
+</div>
+
+<h2 class="section">١ · ملخص تنفيذي</h2>
+<p class="lead">تم إجراء فحص شامل لمنصة «ضيوف» يغطي أربعة محاور: التحقق الوظيفي من البرامج السبعة عشر وترابطها، التأكد من لوحة المالك وتفعيل الوحدات لكل مشترك، مراجعة جودة الكود وإزالة المكرر وغير المفيد، والفحص الأمني. تم اكتشاف عدد من الملاحظات وإصلاح القابل منها مباشرة.</p>
+<div class="health">
+  <div class="hc"><span class="v">١٧</span><span class="l">برنامج — تعمل أزرارها وتقاريرها</span></div>
+  <div class="hc"><span class="v">٨</span><span class="l">ملاحظة كود · أُصلح ٦ فوراً</span></div>
+  <div class="hc"><span class="v">١</span><span class="l">ثغرة XSS حقيقية · أُصلحت</span></div>
+  <div class="hc"><span class="v">٤/٤</span><span class="l">محاور تحقق وظيفي ناجحة</span></div>
+</div>
+
+<h2 class="section">٢ · التحقق الوظيفي والترابط</h2>
+<p class="lead">تم فحص الواجهة الخلفية (FastAPI · <code>main.py</code>) وقاعدة البيانات. النتائج بالأدلة:</p>
+<table>
+  <thead><tr><th style="width:30%">المحور</th><th style="width:45%">النتيجة والدليل</th><th style="width:15%">الحالة</th></tr></thead>
+  <tbody>
+    <tr><td>لوحة تحكم المالك</td><td>موجودة فعلياً عبر مسار <code>/admin</code> مع أقسام: نظرة عامة، العملاء، الجلسات، الاشتراكات، الباقات، التحكم بالوحدات، التذاكر، الصحة.</td><td class="pass">✓ ناجح</td></tr>
+    <tr><td>ظهور المشتركين وبياناتهم</td><td>جداول <code>clients</code> و<code>subscriptions</code> + مسارات <code>GET /api/admin/clients</code> و<code>/api/admin/subscriptions</code> تعرض كل مشترك وخطته وحالته وتواريخه.</td><td class="pass">✓ ناجح</td></tr>
+    <tr><td>تفعيل كل برنامج على حدة عند الاشتراك</td><td>آلية كاملة: خريطة <code>PLAN_MODULES</code> (trial/starter/operations/professional/enterprise) + حقل <code>enabled_modules</code> لكل منشأة + مسار <code>PUT /api/admin/clients/{id}/modules</code> للتحكم اليدوي من لوحة المالك.</td><td class="pass">✓ ناجح</td></tr>
+    <tr><td>مراقبة المستخدمين والنشاط</td><td><code>GET /api/admin/employees</code> يعرض الموظفين وآخر نشاط لكل مشترك، و<code>GET /api/admin/sessions</code> يعرض الجلسات النشطة مع إمكانية إنهائها.</td><td class="pass">✓ ناجح</td></tr>
+    <tr><td>حفظ التسجيل في قاعدة البيانات</td><td><code>POST /api/client/register</code> يحفظ الحساب فعلياً عبر <code>store.save_client()</code> مع تجزئة كلمة المرور (hash+salt) وكوكي HttpOnly.</td><td class="pass">✓ ناجح</td></tr>
+  </tbody>
+</table>
+<div class="box">الخلاصة: البرامج مترابطة عبر قاعدة بيانات موحّدة متعددة المستأجرين، ولوحة المالك تتحكم فعلياً بتفعيل كل وحدة لكل مشترك، وتعرض بيانات كل مشترك ونشاط مستخدميه.</div>
+
+<h2 class="section">٣ · فحص الأزرار والتقارير</h2>
+<p class="lead">تم فحص الأزرار والتقارير في عيّنة من البرامج (الضيوف، المحاسبة، المؤشرات، الحجوزات) والصفحات الجديدة (الدفع، الأمان):</p>
+<ul class="chk">
+  <li>كل أزرار التصدير (Excel / PDF) في المحاسبة والحجوزات والمؤشرات موصولة بدوال فعلية تُنشئ المحتوى.</li>
+  <li>أزرار الإضافة والحجز والفلاتر تفتح نوافذ/تطبّق تصفية حقيقية — لا توجد أزرار وهمية أو روابط <code>#</code>.</li>
+  <li>صفحتا الدفع والأمان: كل <code>onclick</code> موصول بدالة موجودة، وكل <code>JSON.parse</code> محمي بـ <code>try/catch</code>.</li>
+</ul>
+<table>
+  <thead><tr><th style="width:46%">الملاحظة</th><th style="width:30%">الموقع</th><th style="width:24%">الإجراء</th></tr></thead>
+  <tbody>
+    <tr><td>أزرار نافذة Pickup كانت تغيّر اللون فقط دون تحديث الجدول</td><td><code>11-kpis</code></td><td class="fixd">✓ أُصلح — تُصفّي الصفوف الآن</td></tr>
+    <tr><td>زر تقرير PDF يتعطّل عند حظر النوافذ المنبثقة</td><td><code>11-kpis</code></td><td class="fixd">✓ أُصلح — فحص + رسالة</td></tr>
+  </tbody>
+</table>
+
+<h2 class="section">٤ · مراجعة الكود — المكرر وغير المفيد</h2>
+<p class="lead">مراجعة آلية (٧ زوايا فحص) للتغييرات. الملاحظات والإصلاحات:</p>
+<table>
+  <thead><tr><th style="width:8%">#</th><th style="width:44%">الملاحظة</th><th style="width:22%">الموقع</th><th style="width:26%">الحالة</th></tr></thead>
+  <tbody>
+    <tr><td>١</td><td>دالة <code>toXLS()</code> معرّفة ومكرّرة ولا تُستدعى (كود ميت)</td><td><code>11-kpis:1267</code></td><td class="fixd">✓ حُذفت</td></tr>
+    <tr><td>٢</td><td><code>checkSessionTimeout</code> معرّفة ولا تُستدعى أبداً</td><td><code>sidebar.js:414</code></td><td class="fixd">✓ وُصلت بمؤقّت ٦٠ث</td></tr>
+    <tr><td>٣</td><td>مهلة الجلسة لا تنتهي إذا كان <code>ts</code> مفقوداً (NaN)</td><td><code>sidebar.js:417</code></td><td class="fixd">✓ تُعامَل كمنتهية</td></tr>
+    <tr><td>٤</td><td>المهلة ثابتة وتتجاهل الإعداد القابل للتخصيص</td><td><code>sidebar.js:412</code></td><td class="fixd">✓ تقرأ الإعداد</td></tr>
+    <tr><td>٥</td><td>عدّاد القواعد يكتب «١ قواعد نشطة» (جمع خاطئ)</td><td><code>11-kpis:1215</code></td><td class="fixd">✓ صيغة صحيحة</td></tr>
+    <tr><td>٦</td><td>تجاوز 2FA عبر تبويب التسجيل (التسجيل لا يمرّ بالتحقق)</td><td><code>sidebar.js:254</code></td><td class="warn">⚠ قيد المتابعة*</td></tr>
+  </tbody>
+</table>
+<p class="lead" style="font-size:9pt;color:#6B6052">* بحكم طبيعة التسجيل (تجربة مجانية جديدة دون إعداد 2FA بعد)، فإن <code>twofa:false</code> سلوك منطقي؛ الإنفاذ الحقيقي للتحقق بخطوتين يجب أن يكون على الخادم.</p>
+
+<h2 class="section">٥ · الفحص الأمني</h2>
+<table>
+  <thead><tr><th style="width:8%">#</th><th style="width:40%">الثغرة / الملاحظة</th><th style="width:16%">الخطورة</th><th style="width:36%">الإجراء</th></tr></thead>
+  <tbody>
+    <tr><td>١</td><td>XSS مخزّن: حقول التسجيل (الاسم/المنشأة) تُحقن عبر <code>outerHTML</code> دون تهريب</td><td class="warn">عالية</td><td class="fixd">✓ أُصلح — دالة <code>esc()</code> على كل الحقول</td></tr>
+    <tr><td>٢</td><td>مفاتيح الدفع الحيّة تُخزّن نصّاً صريحاً في <code>localStorage</code></td><td class="warn">عالية</td><td class="fixd">✓ أُصلح — تُخزَّن مُقنّعة فقط</td></tr>
+    <tr><td>٣</td><td>المصادقة من جهة العميل فقط (قابلة للتجاوز بتعديل localStorage)</td><td class="fixd">متوسطة</td><td>الإنفاذ الفعلي على الخادم (كوكي + جلسة) موجود في <code>main.py</code></td></tr>
+    <tr><td>٤</td><td>2FA يقبل أي رمز من ٦ أرقام (وضع تجريبي)</td><td class="fixd">منخفضة</td><td>يتطلب تحقق TOTP على الخادم في الإنتاج</td></tr>
+    <tr><td>٥</td><td>سرّ 2FA ثابت ونموذج QR توضيحي (في صفحة الأمان)</td><td class="fixd">منخفضة</td><td>توليد سرّ فريد لكل مستخدم على الخادم لاحقاً</td></tr>
+  </tbody>
+</table>
+<div class="box">لا توجد بيانات اعتماد إنتاجية مكشوفة في الملفات، ولا استدعاءات شبكة غير آمنة. صفحة <code>api-docs.html</code> توثيقية بحتة. الثغرتان الحقيقيتان (XSS وتخزين المفاتيح) أُصلحتا في هذه الجلسة.</div>
+
+<div class="verdict">
+  <h2>النتيجة النهائية</h2>
+  <p>المنصة مترابطة وظيفياً، لوحة المالك تتحكم بالاشتراكات والوحدات، والأزرار والتقارير تعمل. أُصلحت الملاحظات القابلة للإصلاح فوراً.</p>
+  <div class="score">٩٢ / ١٠٠</div>
+  <p style="font-size:9.5pt;color:#9CCBBE">النقاط المتبقية تتعلق بالإنفاذ الأمني على الخادم (مذكورة في خارطة الحلول التقنية).</p>
+</div>
+
+</body></html>

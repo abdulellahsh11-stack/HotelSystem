@@ -1,0 +1,589 @@
+<!doctype html>
+<html dir="rtl" lang="ar"><head><meta charset="utf-8">
+<style>
+@page {
+  size: A4; margin: 14mm 12mm 16mm 12mm;
+  @bottom-center { content: "ضيوف · العرض الترويجي · منصة إدارة الفنادق الذكية"; font-family:'Tajawal'; font-size:8pt; color:#9aa39e; }
+  @bottom-left { content: counter(page); font-family:'Tajawal'; font-size:8pt; color:#9aa39e; }
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Tajawal','Cairo',sans-serif; color:#14110E; font-size:10.5pt; line-height:1.55; }
+h1,h2,h3 { font-family:'Cairo','Tajawal',sans-serif; }
+
+/* COVER */
+.cover { height: 247mm; background: linear-gradient(160deg,#0E2A22 0%,#1B4D3D 55%,#266554 100%); color:#fff; text-align:center; padding-top:55mm; page-break-after:always; border-radius:0; position:relative; }
+.cover .logo { font-size:62pt; font-weight:800; letter-spacing:-2px; }
+.cover .logo .dot { color:#C9A85F; }
+.cover .tg { font-size:18pt; color:#E8D5A8; margin-top:4mm; font-weight:700; }
+.cover .sb { font-size:12pt; color:#C7E1D8; margin-top:6mm; max-width:130mm; margin-right:auto; margin-left:auto; }
+.cover .rule { width:70mm; height:3px; background:#C9A85F; margin:12mm auto; border-radius:2px; }
+.cover .feat { display:flex; justify-content:center; gap:8mm; margin-top:10mm; font-size:10pt; color:#9CCBBE; }
+.cover .feat b { display:block; font-size:20pt; color:#fff; }
+.cover .ftr { position:absolute; bottom:18mm; right:0; left:0; font-size:9.5pt; color:#9CCBBE; }
+
+/* INTRO / efficiency review */
+h2.section { font-size:17pt; color:#1B4D3D; margin:5mm 0 3mm; padding-bottom:2mm; border-bottom:2px solid #C9A85F; }
+.lead { font-size:11pt; color:#322B23; margin-bottom:4mm; }
+.health { display:flex; gap:4mm; flex-wrap:wrap; margin:4mm 0; }
+.hcard { flex:1; min-width:38mm; background:#F2F8F5; border:1px solid #C7E1D8; border-radius:10px; padding:10px; text-align:center; }
+.hcard .hv { font-size:22pt; font-weight:800; color:#1B4D3D; display:block; }
+.hcard .hl { font-size:9pt; color:#4A4137; }
+table.verify { width:100%; border-collapse:collapse; font-size:9.3pt; margin:3mm 0; }
+table.verify th { background:#1B4D3D; color:#fff; padding:6px 8px; text-align:right; }
+table.verify td { padding:6px 8px; border-bottom:1px solid #E4F0EB; }
+table.verify tr:nth-child(even) td { background:#F2F8F5; }
+.stars { color:#C9A85F; letter-spacing:1px; } .star-e { color:#CFC8BB; letter-spacing:1px; }
+
+/* MODULE SECTION */
+.mod { page-break-inside:avoid; margin-bottom:7mm; border:1px solid #E6DFD1; border-radius:12px; overflow:hidden; }
+.mod-head { display:flex; align-items:center; gap:10px; background:linear-gradient(90deg,#1B4D3D,#266554); color:#fff; padding:8px 14px; }
+.mod-num { font-family:'Cairo'; font-size:13pt; font-weight:800; color:#0E2A22; background:#C9A85F; width:30px; height:30px; line-height:30px; text-align:center; border-radius:8px; }
+.mod-emoji { font-size:18pt; }
+.mod-titles h2 { font-size:14pt; }
+.mod-tag { font-size:9pt; color:#C7E1D8; }
+.mod-grid { display:flex; gap:10px; padding:12px 14px; align-items:stretch; }
+.mod-shot { flex:1.3; }
+.mod-strengths { flex:1; background:#FBF7EC; border-radius:10px; padding:10px 12px; border:1px solid #F1E6C8; }
+.mod-strengths h3 { font-size:11pt; color:#9A7430; margin-bottom:5px; }
+.mod-strengths ul { list-style:none; }
+.mod-strengths li { font-size:9.5pt; color:#322B23; padding-right:16px; position:relative; margin-bottom:5px; }
+.mod-strengths li:before { content:"✓"; color:#1A7A2A; font-weight:800; position:absolute; right:0; }
+
+/* ---- MOCKUP (browser frame) ---- */
+.mock { border:1px solid #CFC8BB; border-radius:8px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,.06); background:#fff; }
+.mock-bar { background:#E6DFD1; padding:5px 8px; display:flex; align-items:center; gap:4px; }
+.dot { width:7px; height:7px; border-radius:50%; display:inline-block; }
+.dot.r{background:#e57373} .dot.y{background:#ffb74d} .dot.g{background:#81c784}
+.mock-url { margin-right:8px; font-size:7.5pt; color:#6B6052; background:#fff; border-radius:4px; padding:1px 8px; }
+.mock-body { padding:9px; }
+.mock-h { font-size:9pt; font-weight:700; color:#1B4D3D; margin:7px 0 5px; }
+
+.kpis { display:flex; gap:5px; }
+.kpi { flex:1; background:#F2F8F5; border-radius:6px; padding:5px 6px; text-align:center; }
+.kl { display:block; font-size:6.8pt; color:#6B6052; }
+.kv { display:block; font-size:12pt; font-weight:800; color:#1B4D3D; font-family:'Cairo'; }
+.kd { font-size:6.8pt; font-weight:700; } .kd.up{color:#1A7A2A} .kd.dn{color:#C0392B}
+
+.bars { display:flex; flex-direction:column; gap:5px; }
+.barrow { display:flex; align-items:center; gap:6px; font-size:8pt; }
+.bl { width:32mm; color:#322B23; }
+.btrack { flex:1; height:9px; background:#E4F0EB; border-radius:9px; overflow:hidden; }
+.bfill { display:block; height:100%; background:linear-gradient(90deg,#3B8772,#1B4D3D); }
+.bv { width:11mm; text-align:left; font-weight:700; color:#1B4D3D; }
+
+.mtbl { width:100%; border-collapse:collapse; font-size:8pt; margin-top:4px; }
+.mtbl th { background:#1B4D3D; color:#fff; padding:4px 6px; text-align:right; font-weight:700; }
+.mtbl td { padding:4px 6px; border-bottom:1px solid #E4F0EB; }
+.mtbl tr:nth-child(even) td { background:#F2F8F5; }
+.bdg { font-size:7pt; padding:1px 7px; border-radius:9px; font-weight:700; white-space:nowrap; }
+.bdg.ok{background:#D7F0DD;color:#1A7A2A} .bdg.warn{background:#FCEFD2;color:#9A7430}
+.bdg.bad{background:#FAD9D5;color:#C0392B} .bdg.muted{background:#E6DFD1;color:#4A4137}
+.bdg.num{background:#C7E1D8;color:#1B4D3D}
+
+.slist { display:flex; flex-direction:column; gap:5px; }
+.srow { display:flex; align-items:center; gap:7px; background:#F2F8F5; border-radius:6px; padding:5px 8px; font-size:8.5pt; }
+.sic { font-size:11pt; } .stx { flex:1; color:#322B23; }
+
+.colchart { display:flex; align-items:flex-end; gap:6px; height:46mm; padding:5px 2px 0; }
+.colwrap { flex:1; text-align:center; display:flex; flex-direction:column; justify-content:flex-end; height:100%; }
+.col { display:block; background:linear-gradient(180deg,#3B8772,#1B4D3D); border-radius:4px 4px 0 0; }
+.col.hl { background:linear-gradient(180deg,#DBC084,#C9A85F); }
+.collbl { font-size:7pt; color:#6B6052; margin-top:3px; }
+
+.cgrid { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:4px; }
+.ccard { background:#F2F8F5; border:1px solid #C7E1D8; border-radius:8px; padding:7px; text-align:center; }
+.cem { font-size:16pt; display:block; }
+.ct { font-size:8.5pt; font-weight:700; color:#1B4D3D; display:block; }
+.cm { font-size:7pt; color:#6B6052; }
+
+.prog { display:flex; flex-direction:column; gap:7px; }
+.phead { display:flex; justify-content:space-between; font-size:8.5pt; color:#322B23; margin-bottom:2px; }
+.ppct { font-weight:800; color:#1B4D3D; }
+.ptrack { height:9px; background:#E4F0EB; border-radius:9px; overflow:hidden; }
+.pfill { display:block; height:100%; background:linear-gradient(90deg,#C9A85F,#1B4D3D); }
+
+.aibox { background:#E4F0EB; border-right:4px solid #1B4D3D; border-radius:6px; padding:8px 10px; font-size:8.8pt; color:#143A2E; margin-bottom:6px; }
+
+/* phone mockup */
+.phone { width:54mm; margin:0 auto; background:#0E2A22; border-radius:18px; padding:6px; box-shadow:0 2px 6px rgba(0,0,0,.15); }
+.pnotch { width:18mm; height:3px; background:#266554; border-radius:3px; margin:2px auto 5px; }
+.pscreen { background:#F2F8F5; border-radius:12px; padding:8px; }
+.ph-top { font-size:9pt; font-weight:800; color:#1B4D3D; text-align:center; margin-bottom:7px; }
+.ph-card { background:#fff; border:1px solid #E4F0EB; border-radius:8px; padding:6px 8px; font-size:8pt; color:#322B23; margin-bottom:5px; }
+.ph-card.ok { background:#D7F0DD; color:#1A7A2A; font-weight:700; }
+.ph-card.warn { background:#FCEFD2; color:#9A7430; font-weight:700; }
+.ph-nav { display:flex; justify-content:space-around; background:#1B4D3D; border-radius:9px; padding:5px; margin-top:7px; font-size:11pt; }
+
+.closing { background:linear-gradient(160deg,#1B4D3D,#0E2A22); color:#fff; border-radius:14px; padding:14mm 10mm; text-align:center; margin-top:6mm; page-break-inside:avoid; }
+.closing h2 { font-size:20pt; color:#fff; border:0; }
+.closing p { color:#C7E1D8; font-size:11pt; margin-top:3mm; }
+.closing .cta { display:inline-block; margin-top:6mm; background:#C9A85F; color:#0E2A22; font-weight:800; padding:8px 26px; border-radius:30px; font-size:12pt; }
+.closing .url { margin-top:5mm; color:#E8D5A8; font-size:11pt; font-weight:700; }
+</style></head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <div class="logo">ضيوف<span class="dot">.</span></div>
+  <div class="tg">منصة إدارة الفنادق الذكية</div>
+  <div class="sb">نظام سعودي متكامل يدير فندقك من الاستقبال حتى الإيرادات — ١٧ برنامجاً في منصة واحدة</div>
+  <div class="rule"></div>
+  <div class="feat">
+    <div><b>١٧</b> برنامجاً متكاملاً</div>
+    <div><b>٢٨</b> جدول بيانات</div>
+    <div><b>١٠٠٪</b> عربي</div>
+  </div>
+  <div class="ftr">www.dheuof.com · العرض الترويجي · يونيو ٢٠٢٥</div>
+</div>
+
+<!-- PLATFORM REVIEW / EFFICIENCY -->
+<h2 class="section">نظرة عامة · كفاءة المنصة</h2>
+<p class="lead">منصة «ضيوف» نظام سحابي متعدد المستأجرين مبني على FastAPI وقاعدة بيانات PostgreSQL، يجمع ١٧ برنامجاً متكاملاً تغطي دورة تشغيل الفندق كاملة. تمت مراجعة كل الوحدات والبيانات والتحقق من ترابطها وجاهزيتها.</p>
+<div class="health">
+  <div class="hcard"><span class="hv">١٧</span><span class="hl">برنامج تشغيلي متكامل</span></div>
+  <div class="hcard"><span class="hv">٢٨</span><span class="hl">جدول في قاعدة البيانات</span></div>
+  <div class="hcard"><span class="hv">٧٨<small>/١٠٠</small></span><span class="hl">درجة الأمان الحالية</span></div>
+  <div class="hcard"><span class="hv">١٠٠٪</span><span class="hl">واجهة عربية RTL</span></div>
+</div>
+
+<h2 class="section">تقييم المحاور بعد التحسينات</h2>
+<table class="verify">
+  <thead><tr><th style="width:38%">المحور</th><th style="width:18%">قبل</th><th style="width:18%">بعد</th><th style="width:26%">الحالة</th></tr></thead>
+  <tbody>
+    <tr><td>اتساع الوحدات الوظيفية</td><td><span class="stars">★★★★</span><span class="star-e">☆</span></td><td><span class="stars">★★★★★</span></td><td>✅ ١٧ برنامجاً</td></tr>
+    <tr><td>إدارة الإيرادات</td><td><span class="stars">★★</span><span class="star-e">☆☆☆</span></td><td><span class="stars">★★★★</span><span class="star-e">☆</span></td><td>✅ وحدة كاملة جديدة</td></tr>
+    <tr><td>بوابات الدفع</td><td><span class="stars">★★</span><span class="star-e">☆☆☆</span></td><td><span class="stars">★★★★</span><span class="star-e">☆</span></td><td>✅ صفحة Payments</td></tr>
+    <tr><td>واجهات API والتكاملات</td><td><span class="stars">★★</span><span class="star-e">☆☆☆</span></td><td><span class="stars">★★★★</span><span class="star-e">☆</span></td><td>✅ توثيق API كامل</td></tr>
+    <tr><td>الأمن والشهادات</td><td><span class="stars">★★</span>½<span class="star-e">☆☆</span></td><td><span class="stars">★★★★</span><span class="star-e">☆</span></td><td>✅ 2FA + صفحة أمان</td></tr>
+    <tr><td>مدير قنوات OTA</td><td><span class="stars">★★</span><span class="star-e">☆☆☆</span></td><td><span class="stars">★★★</span><span class="star-e">☆☆</span></td><td>🟡 قيد التطوير</td></tr>
+    <tr><td>النضج والمراجع</td><td><span class="stars">★★</span><span class="star-e">☆☆☆</span></td><td><span class="stars">★★★</span><span class="star-e">☆☆</span></td><td>🟡 خطة العملاء الأوائل</td></tr>
+  </tbody>
+</table>
+<p class="lead" style="font-size:9.5pt;color:#6B6052;">ملاحظة: المحاور ذات الحالة 🟡 تتطلب ربطاً خارجياً فعلياً (قنوات OTA) أو بناء سجل عملاء، وهي موثّقة في «خارطة الحلول التقنية» المرفقة.</p>
+
+<!-- MODULES -->
+<h2 class="section">البرامج السبعة عشر · شرح مصوّر</h2>
+
+    <section class="mod">
+      <div class="mod-head">
+        <span class="mod-num">01</span>
+        <span class="mod-emoji">🛎️</span>
+        <div class="mod-titles">
+          <h2>الضيوف</h2>
+          <p class="mod-tag">لوحة قيادة الضيوف اللحظية</p>
+        </div>
+      </div>
+      <div class="mod-grid">
+        <div class="mod-shot">
+    <div class="mock">
+      <div class="mock-bar">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="mock-url">ضيوف · لوحة الضيوف</span>
+      </div>
+      <div class="mock-body"><div class="kpis"><div class="kpi"><span class="kl">الإشغال</span><span class="kv">٨٧٪</span><span class="kd up">▲ ٤٪</span></div><div class="kpi"><span class="kl">نُزُل اليوم</span><span class="kv">٤٢</span><span class="kd up">▲ ٦</span></div><div class="kpi"><span class="kl">مغادرة</span><span class="kv">١٨</span><span class="kd dn">▼ ٢</span></div><div class="kpi"><span class="kl">الإيراد</span><span class="kv">٨٤ ألف</span><span class="kd up">▲ ٧٪</span></div></div><div class="mock-h">حركة الضيوف · أبريل</div><div class="colchart"><div class="colwrap"><span class="col " style="height:62%"></span><span class="collbl">سبت</span></div><div class="colwrap"><span class="col " style="height:58%"></span><span class="collbl">أحد</span></div><div class="colwrap"><span class="col " style="height:61%"></span><span class="collbl">إثن</span></div><div class="colwrap"><span class="col " style="height:74%"></span><span class="collbl">ثلا</span></div><div class="colwrap"><span class="col " style="height:80%"></span><span class="collbl">أرب</span></div><div class="colwrap"><span class="col hl" style="height:95%"></span><span class="collbl">خمي</span></div><div class="colwrap"><span class="col hl" style="height:98%"></span><span class="collbl">جمع</span></div></div></div>
+    </div></div>
+        <div class="mod-strengths">
+          <h3>نقاط القوة</h3>
+          <ul><li>نظرة واحدة على الإشغال والوصول والمغادرة لحظياً</li><li>مؤشرات أداء حيّة بألوان الاتجاه</li><li>رسوم حركة الضيوف عبر أيام الأسبوع</li><li>أساس كل الوحدات الأخرى</li></ul>
+        </div>
+      </div>
+    </section>
+    <section class="mod">
+      <div class="mod-head">
+        <span class="mod-num">02</span>
+        <span class="mod-emoji">🇸🇦</span>
+        <div class="mod-titles">
+          <h2>شموس</h2>
+          <p class="mod-tag">تكامل مباشر مع منصة وزارة الداخلية</p>
+        </div>
+      </div>
+      <div class="mod-grid">
+        <div class="mod-shot">
+    <div class="mock">
+      <div class="mock-bar">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="mock-url">ضيوف · شموس</span>
+      </div>
+      <div class="mock-body"><div class="mock-h">تكامل شموس · وزارة الداخلية</div><div class="slist"><div class="srow"><span class="sic">🟢</span><span class="stx">الاتصال بمنصة شموس</span><span class='bdg ok'>متصل</span></div><div class="srow"><span class="sic">📤</span><span class="stx">بلاغات الوصول المرسلة اليوم</span><span class='bdg num'>٣٨</span></div><div class="srow"><span class="sic">📥</span><span class="stx">بلاغات المغادرة</span><span class='bdg num'>١٤</span></div><div class="srow"><span class="sic">⏱</span><span class="stx">آخر مزامنة</span><span class='bdg muted'>قبل ٣ دقائق</span></div><div class="srow"><span class="sic">⚠️</span><span class="stx">بلاغات معلّقة</span><span class='bdg warn'>٢</span></div></div></div>
+    </div></div>
+        <div class="mod-strengths">
+          <h3>نقاط القوة</h3>
+          <ul><li>إرسال بلاغات الوصول والمغادرة آلياً لشموس</li><li>امتثال نظامي كامل دون إدخال يدوي</li><li>مزامنة لحظية وحالة اتصال واضحة</li><li>تنبيه فوري للبلاغات المعلّقة</li></ul>
+        </div>
+      </div>
+    </section>
+    <section class="mod">
+      <div class="mod-head">
+        <span class="mod-num">03</span>
+        <span class="mod-emoji">📑</span>
+        <div class="mod-titles">
+          <h2>المستندات الحكومية</h2>
+          <p class="mod-tag">إدارة التراخيص والشهادات</p>
+        </div>
+      </div>
+      <div class="mod-grid">
+        <div class="mod-shot">
+    <div class="mock">
+      <div class="mock-bar">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="mock-url">ضيوف · المستندات الحكومية</span>
+      </div>
+      <div class="mock-body"><div class="mock-h">المستندات الحكومية</div><table class="mtbl"><thead><tr><th>المستند</th><th>النوع</th><th>الحالة</th></tr></thead><tbody><tr><td>رخصة سياحية</td><td>تشغيل</td><td><span class="bdg ok">سارية</span></td></tr><tr><td>شهادة دفاع مدني</td><td>سلامة</td><td><span class="bdg ok">سارية</span></td></tr><tr><td>رخصة بلدية</td><td>بلدي</td><td><span class="bdg warn">تنتهي قريباً</span></td></tr><tr><td>عقد إيجار</td><td>قانوني</td><td><span class="bdg ok">سارية</span></td></tr><tr><td>تأمين طبي</td><td>موظفين</td><td><span class="bdg bad">منتهية</span></td></tr></tbody></table></div>
+    </div></div>
+        <div class="mod-strengths">
+          <h3>نقاط القوة</h3>
+          <ul><li>تتبّع صلاحية الرخص والشهادات</li><li>تنبيهات قبل انتهاء أي مستند</li><li>حفظ مركزي آمن لكل الوثائق</li><li>تجنّب الغرامات والإيقاف</li></ul>
+        </div>
+      </div>
+    </section>
+    <section class="mod">
+      <div class="mod-head">
+        <span class="mod-num">04</span>
+        <span class="mod-emoji">🧺</span>
+        <div class="mod-titles">
+          <h2>المخزون والضيافة</h2>
+          <p class="mod-tag">تجهيزات الغرف والمستهلكات</p>
+        </div>
+      </div>
+      <div class="mod-grid">
+        <div class="mod-shot">
+    <div class="mock">
+      <div class="mock-bar">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="mock-url">ضيوف · المخزون</span>
+      </div>
+      <div class="mock-body"><div class="mock-h">مخزون الضيافة وتجهيزات الغرف</div><div class="bars"><div class="barrow"><span class="bl">مناشف</span><span class="btrack"><span class="bfill" style="width:78%"></span></span><span class="bv">78٪</span></div><div class="barrow"><span class="bl">شامبو وصابون</span><span class="btrack"><span class="bfill" style="width:45%"></span></span><span class="bv">45٪</span></div><div class="barrow"><span class="bl">مفارش</span><span class="btrack"><span class="bfill" style="width:90%"></span></span><span class="bv">90٪</span></div><div class="barrow"><span class="bl">قهوة وشاي</span><span class="btrack"><span class="bfill" style="width:30%"></span></span><span class="bv">30٪</span></div><div class="barrow"><span class="bl">مياه معدنية</span><span class="btrack"><span class="bfill" style="width:62%"></span></span><span class="bv">62٪</span></div></div></div>
+    </div></div>
+        <div class="mod-strengths">
+          <h3>نقاط القوة</h3>
+          <ul><li>مستويات مخزون مرئية بأشرطة</li><li>تنبيه عند انخفاض أي صنف</li><li>ربط الاستهلاك بعدد الغرف المباعة</li><li>تقليل الهدر وضبط التكاليف</li></ul>
+        </div>
+      </div>
+    </section>
+    <section class="mod">
+      <div class="mod-head">
+        <span class="mod-num">05</span>
+        <span class="mod-emoji">🔧</span>
+        <div class="mod-titles">
+          <h2>مستودع الصيانة</h2>
+          <p class="mod-tag">أوامر العمل والقطع</p>
+        </div>
+      </div>
+      <div class="mod-grid">
+        <div class="mod-shot">
+    <div class="mock">
+      <div class="mock-bar">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="mock-url">ضيوف · مستودع الصيانة</span>
+      </div>
+      <div class="mock-body"><div class="mock-h">مستودع الصيانة · أوامر العمل</div><table class="mtbl"><thead><tr><th>الطلب</th><th>الموقع</th><th>الأولوية</th></tr></thead><tbody><tr><td>تكييف لا يبرد</td><td>غرفة ٣٠٤</td><td><span class="bdg bad">عاجل</span></td></tr><tr><td>تسريب صنبور</td><td>غرفة ١١٢</td><td><span class="bdg warn">متوسط</span></td></tr><tr><td>استبدال مصباح</td><td>الردهة</td><td><span class="bdg ok">عادي</span></td></tr><tr><td>صيانة مصعد</td><td>المبنى أ</td><td><span class="bdg muted">مجدول</span></td></tr></tbody></table></div>
+    </div></div>
+        <div class="mod-strengths">
+          <h3>نقاط القوة</h3>
+          <ul><li>إنشاء وتتبّع أوامر الصيانة</li><li>ترتيب حسب الأولوية والموقع</li><li>جدولة الصيانة الوقائية</li><li>تقليل وقت تعطّل الغرف</li></ul>
+        </div>
+      </div>
+    </section>
+    <section class="mod">
+      <div class="mod-head">
+        <span class="mod-num">06</span>
+        <span class="mod-emoji">📊</span>
+        <div class="mod-titles">
+          <h2>المحاسبة</h2>
+          <p class="mod-tag">الدفتر العام والتقارير المالية</p>
+        </div>
+      </div>
+      <div class="mod-grid">
+        <div class="mod-shot">
+    <div class="mock">
+      <div class="mock-bar">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="mock-url">ضيوف · المحاسبة العامة</span>
+      </div>
+      <div class="mock-body"><div class="kpis"><div class="kpi"><span class="kl">الإيرادات</span><span class="kv">٨٤٠ ألف</span><span class="kd up">▲ ١٢٪</span></div><div class="kpi"><span class="kl">المصروفات</span><span class="kv">٣١٠ ألف</span><span class="kd dn">▼ ٣٪</span></div><div class="kpi"><span class="kl">صافي الربح</span><span class="kv">٥٣٠ ألف</span><span class="kd up">▲ ١٨٪</span></div></div><div class="mock-h">دفتر الأستاذ العام</div><table class="mtbl"><thead><tr><th>الحساب</th><th>مدين</th><th>دائن</th></tr></thead><tbody><tr><td>إيراد الغرف</td><td>—</td><td>٦٢٠٬٠٠٠</td></tr><tr><td>إيراد المطعم</td><td>—</td><td>٢٢٠٬٠٠٠</td></tr><tr><td>رواتب</td><td>١٨٠٬٠٠٠</td><td>—</td></tr><tr><td>مرافق وكهرباء</td><td>٤٢٬٠٠٠</td><td>—</td></tr></tbody></table></div>
+    </div></div>
+        <div class="mod-strengths">
+          <h3>نقاط القوة</h3>
+          <ul><li>دفتر أستاذ كامل بالعربية</li><li>مؤشرات الإيراد والمصروف وصافي الربح</li><li>ربط تلقائي بإيرادات الغرف والمطعم</li><li>تقارير جاهزة للمحاسب القانوني</li></ul>
+        </div>
+      </div>
+    </section>
+    <section class="mod">
+      <div class="mod-head">
+        <span class="mod-num">07</span>
+        <span class="mod-emoji">💳</span>
+        <div class="mod-titles">
+          <h2>نقاط البيع</h2>
+          <p class="mod-tag">ربط المطعم والمقهى وخدمة الغرف</p>
+        </div>
+      </div>
+      <div class="mod-grid">
+        <div class="mod-shot">
+    <div class="mock">
+      <div class="mock-bar">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="mock-url">نقاط الدفع · POS</span>
+      </div>
+      <div class="mock-body"><div class="mock-h">نقاط البيع المتصلة</div><div class="cgrid"><div class="ccard"><span class="cem">🍽️</span><span class="ct">مطعم</span><span class="cm">متصل · ٤ أجهزة</span></div><div class="ccard"><span class="cem">☕</span><span class="ct">مقهى</span><span class="cm">متصل · ٢</span></div><div class="ccard"><span class="cem">🛎️</span><span class="ct">خدمة الغرف</span><span class="cm">متصل</span></div><div class="ccard"><span class="cem">🏊</span><span class="ct">المسبح</span><span class="cm">غير متصل</span></div></div><table class="mtbl"><thead><tr><th>الوقت</th><th>الصنف</th><th>المبلغ</th></tr></thead><tbody><tr><td>١٢:٤٠</td><td>غداء جناح ٢٠١</td><td>٢٤٠ ر.س</td></tr><tr><td>١٣:١٥</td><td>قهوة × ٣</td><td>٤٥ ر.س</td></tr></tbody></table></div>
+    </div></div>
+        <div class="mod-strengths">
+          <h3>نقاط القوة</h3>
+          <ul><li>مزامنة فورية لكل نقاط البيع</li><li>تحميل الفواتير على حساب الغرفة</li><li>متابعة حالة كل جهاز</li><li>تقرير مبيعات موحّد</li></ul>
+        </div>
+      </div>
+    </section>
+    <section class="mod">
+      <div class="mod-head">
+        <span class="mod-num">08</span>
+        <span class="mod-emoji">🔐</span>
+        <div class="mod-titles">
+          <h2>المفتاح الذكي</h2>
+          <p class="mod-tag">حارس البيانات وكشف الاحتيال</p>
+        </div>
+      </div>
+      <div class="mod-grid">
+        <div class="mod-shot">
+    <div class="mock">
+      <div class="mock-bar">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="mock-url">ضيوف · المفتاح الذكي</span>
+      </div>
+      <div class="mock-body"><div class="mock-h">المفتاح الذكي · حارس البيانات</div><div class="kpis"><div class="kpi"><span class="kl">درجة الأمان</span><span class="kv">٧٨/١٠٠</span><span class="kd up">▲ ٦</span></div><div class="kpi"><span class="kl">محاولات مشبوهة</span><span class="kv">٣</span><span class="kd dn">▼ ١</span></div></div><div class="slist"><div class="srow"><span class="sic">🔒</span><span class="stx">تشفير البيانات الحساسة</span><span class='bdg ok'>مفعّل</span></div><div class="srow"><span class="sic">👁️</span><span class="stx">كشف الدخول غير المعتاد</span><span class='bdg ok'>نشط</span></div><div class="srow"><span class="sic">🚫</span><span class="stx">حظر IP مشبوه</span><span class='bdg warn'>٢ محظور</span></div><div class="srow"><span class="sic">📝</span><span class="stx">سجل التدقيق</span><span class='bdg muted'>١٬٢٤٠ حدث</span></div></div></div>
+    </div></div>
+        <div class="mod-strengths">
+          <h3>نقاط القوة</h3>
+          <ul><li>تشفير البيانات الحساسة</li><li>كشف الدخول والسلوك غير المعتاد</li><li>حظر العناوين المشبوهة تلقائياً</li><li>سجل تدقيق شامل لكل حدث</li></ul>
+        </div>
+      </div>
+    </section>
+    <section class="mod">
+      <div class="mod-head">
+        <span class="mod-num">09</span>
+        <span class="mod-emoji">👥</span>
+        <div class="mod-titles">
+          <h2>الموارد البشرية</h2>
+          <p class="mod-tag">الموظفون والحضور والرواتب</p>
+        </div>
+      </div>
+      <div class="mod-grid">
+        <div class="mod-shot">
+    <div class="mock">
+      <div class="mock-bar">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="mock-url">ضيوف · الموارد البشرية</span>
+      </div>
+      <div class="mock-body"><div class="kpis"><div class="kpi"><span class="kl">الموظفون</span><span class="kv">٦٤</span><span class="kd up">▲ ٣</span></div><div class="kpi"><span class="kl">حاضر اليوم</span><span class="kv">٥٨</span><span class="kd up">▲ </span></div><div class="kpi"><span class="kl">إجازات</span><span class="kv">٤</span><span class="kd dn">▼ </span></div></div><div class="mock-h">الموارد البشرية</div><table class="mtbl"><thead><tr><th>الموظف</th><th>القسم</th><th>الحالة</th></tr></thead><tbody><tr><td>أحمد العتيبي</td><td>الاستقبال</td><td><span class="bdg ok">حاضر</span></td></tr><tr><td>سارة القحطاني</td><td>التدبير</td><td><span class="bdg ok">حاضر</span></td></tr><tr><td>خالد الدوسري</td><td>الصيانة</td><td><span class="bdg warn">إجازة</span></td></tr></tbody></table></div>
+    </div></div>
+        <div class="mod-strengths">
+          <h3>نقاط القوة</h3>
+          <ul><li>ملف كامل لكل موظف</li><li>تتبّع الحضور والإجازات</li><li>ربط بالأداء والرواتب</li><li>لوحة حالة الفريق اللحظية</li></ul>
+        </div>
+      </div>
+    </section>
+    <section class="mod">
+      <div class="mod-head">
+        <span class="mod-num">10</span>
+        <span class="mod-emoji">📣</span>
+        <div class="mod-titles">
+          <h2>تسويق القنوات</h2>
+          <p class="mod-tag">أداء قنوات التوزيع</p>
+        </div>
+      </div>
+      <div class="mod-grid">
+        <div class="mod-shot">
+    <div class="mock">
+      <div class="mock-bar">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="mock-url">ضيوف · تسويق القنوات</span>
+      </div>
+      <div class="mock-body"><div class="mock-h">تسويق القنوات · الأداء</div><div class="bars"><div class="barrow"><span class="bl">Booking.com</span><span class="btrack"><span class="bfill" style="width:84%"></span></span><span class="bv">42٪</span></div><div class="barrow"><span class="bl">الموقع المباشر</span><span class="btrack"><span class="bfill" style="width:56%"></span></span><span class="bv">28٪</span></div><div class="barrow"><span class="bl">Agoda</span><span class="btrack"><span class="bfill" style="width:30%"></span></span><span class="bv">15٪</span></div><div class="barrow"><span class="bl">Expedia</span><span class="btrack"><span class="bfill" style="width:18%"></span></span><span class="bv">9٪</span></div><div class="barrow"><span class="bl">أخرى</span><span class="btrack"><span class="bfill" style="width:12%"></span></span><span class="bv">6٪</span></div></div></div>
+    </div></div>
+        <div class="mod-strengths">
+          <h3>نقاط القوة</h3>
+          <ul><li>تحليل مصادر الحجوزات بالنِّسب</li><li>مقارنة أداء OTA بالموقع المباشر</li><li>قياس العائد على كل قناة</li><li>توجيه الميزانية للأعلى ربحاً</li></ul>
+        </div>
+      </div>
+    </section>
+    <section class="mod">
+      <div class="mod-head">
+        <span class="mod-num">11</span>
+        <span class="mod-emoji">📈</span>
+        <div class="mod-titles">
+          <h2>إدارة الإيرادات</h2>
+          <p class="mod-tag">RevPAR · ADR · التسعير الديناميكي</p>
+        </div>
+      </div>
+      <div class="mod-grid">
+        <div class="mod-shot">
+    <div class="mock">
+      <div class="mock-bar">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="mock-url">ضيوف · إدارة الإيرادات</span>
+      </div>
+      <div class="mock-body"><div class="kpis"><div class="kpi"><span class="kl">RevPAR</span><span class="kv">٦٢٦</span><span class="kd up">▲ ٧٪</span></div><div class="kpi"><span class="kl">ADR</span><span class="kv">٧٢٠</span><span class="kd up">▲ ١٢٪</span></div><div class="kpi"><span class="kl">OCC</span><span class="kv">٨٧٪</span><span class="kd up">▲ ٤٪</span></div><div class="kpi"><span class="kl">GOPPAR</span><span class="kv">٤٢٤</span><span class="kd dn">▼ ٢٪</span></div></div><div class="mock-h">إدارة الإيرادات · الإشغال الشهري</div><div class="colchart"><div class="colwrap"><span class="col " style="height:55%"></span><span class="collbl">ينا</span></div><div class="colwrap"><span class="col " style="height:60%"></span><span class="collbl">فبر</span></div><div class="colwrap"><span class="col " style="height:72%"></span><span class="collbl">مار</span></div><div class="colwrap"><span class="col hl" style="height:87%"></span><span class="collbl">أبر</span></div><div class="colwrap"><span class="col " style="height:80%"></span><span class="collbl">ماي</span></div><div class="colwrap"><span class="col " style="height:78%"></span><span class="collbl">يون</span></div></div></div>
+    </div></div>
+        <div class="mod-strengths">
+          <h3>نقاط القوة</h3>
+          <ul><li>مؤشرات RevPAR وADR وOCC وGOPPAR</li><li>قواعد تسعير ديناميكي قابلة للتفعيل</li><li>تقرير Pickup وتوقعات ٣٠/٦٠/٩٠ يوم</li><li>تعظيم الإيراد لكل غرفة متاحة</li></ul>
+        </div>
+      </div>
+    </section>
+    <section class="mod">
+      <div class="mod-head">
+        <span class="mod-num">12</span>
+        <span class="mod-emoji">🤖</span>
+        <div class="mod-titles">
+          <h2>التحليلات الذكية</h2>
+          <p class="mod-tag">رؤى بالذكاء الاصطناعي</p>
+        </div>
+      </div>
+      <div class="mod-grid">
+        <div class="mod-shot">
+    <div class="mock">
+      <div class="mock-bar">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="mock-url">ضيوف · التحليلات الذكية</span>
+      </div>
+      <div class="mock-body"><div class="mock-h">تحليل البيانات بالذكاء الاصطناعي</div><div class="aibox">🤖 توصية: ارفع سعر الجناح الملكي ١٠٪ في عطلة نهاية الأسبوع — الطلب المتوقع +٢٢٪</div><div class="colchart"><div class="colwrap"><span class="col hl" style="height:92%"></span><span class="collbl">توقع</span></div><div class="colwrap"><span class="col " style="height:87%"></span><span class="collbl">فعلي</span></div><div class="colwrap"><span class="col " style="height:74%"></span><span class="collbl">سوق</span></div><div class="colwrap"><span class="col " style="height:95%"></span><span class="collbl">هدف</span></div></div></div>
+    </div></div>
+        <div class="mod-strengths">
+          <h3>نقاط القوة</h3>
+          <ul><li>توصيات تسعير وإشغال آلية</li><li>توقع الطلب قبل حدوثه</li><li>مقارنة الأداء بالسوق والهدف</li><li>قرارات مبنية على البيانات</li></ul>
+        </div>
+      </div>
+    </section>
+    <section class="mod">
+      <div class="mod-head">
+        <span class="mod-num">13</span>
+        <span class="mod-emoji">🏅</span>
+        <div class="mod-titles">
+          <h2>أداء الموظفين</h2>
+          <p class="mod-tag">قياس وتحفيز الفريق</p>
+        </div>
+      </div>
+      <div class="mod-grid">
+        <div class="mod-shot">
+    <div class="mock">
+      <div class="mock-bar">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="mock-url">ضيوف · أداء الموظفين</span>
+      </div>
+      <div class="mock-body"><div class="mock-h">أداء الموظفين · المتصدرون</div><div class="slist"><div class="srow"><span class="sic">🥇</span><span class="stx">أحمد العتيبي — الاستقبال</span><span class='bdg ok'>٩٦ نقطة</span></div><div class="srow"><span class="sic">🥈</span><span class="stx">نورة الشمري — التدبير</span><span class='bdg ok'>٩١</span></div><div class="srow"><span class="sic">🥉</span><span class="stx">فهد المطيري — الخدمة</span><span class='bdg ok'>٨٨</span></div><div class="srow"><span class="sic">📈</span><span class="stx">متوسط الفريق</span><span class='bdg num'>٨٢</span></div></div></div>
+    </div></div>
+        <div class="mod-strengths">
+          <h3>نقاط القوة</h3>
+          <ul><li>لوحة متصدّرين محفِّزة</li><li>نقاط أداء لكل موظف وقسم</li><li>ربط بالمهام المنجزة</li><li>رفع الإنتاجية والرضا الوظيفي</li></ul>
+        </div>
+      </div>
+    </section>
+    <section class="mod">
+      <div class="mod-head">
+        <span class="mod-num">14</span>
+        <span class="mod-emoji">🎯</span>
+        <div class="mod-titles">
+          <h2>أهداف المدير</h2>
+          <p class="mod-tag">متابعة الأهداف الإستراتيجية</p>
+        </div>
+      </div>
+      <div class="mod-grid">
+        <div class="mod-shot">
+    <div class="mock">
+      <div class="mock-bar">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="mock-url">ضيوف · أهداف المدير</span>
+      </div>
+      <div class="mock-body"><div class="mock-h">أهداف المدير · التقدّم</div><div class="prog"><div class="prow"><div class="phead"><span>رفع الإشغال إلى ٩٠٪</span><span class="ppct">87%</span></div><div class="ptrack"><span class="pfill" style="width:87%"></span></div></div><div class="prow"><div class="phead"><span>خفض التكاليف ٥٪</span><span class="ppct">62%</span></div><div class="ptrack"><span class="pfill" style="width:62%"></span></div></div><div class="prow"><div class="phead"><span>رضا الضيوف ٤.٨</span><span class="ppct">94%</span></div><div class="ptrack"><span class="pfill" style="width:94%"></span></div></div><div class="prow"><div class="phead"><span>إيراد المطعم +١٥٪</span><span class="ppct">70%</span></div><div class="ptrack"><span class="pfill" style="width:70%"></span></div></div></div></div>
+    </div></div>
+        <div class="mod-strengths">
+          <h3>نقاط القوة</h3>
+          <ul><li>أهداف واضحة بنِسب تقدّم</li><li>متابعة لحظية للإنجاز</li><li>ربط الأهداف بالمؤشرات الفعلية</li><li>مساءلة وشفافية للإدارة</li></ul>
+        </div>
+      </div>
+    </section>
+    <section class="mod">
+      <div class="mod-head">
+        <span class="mod-num">15</span>
+        <span class="mod-emoji">🗺️</span>
+        <div class="mod-titles">
+          <h2>جولات سياحية</h2>
+          <p class="mod-tag">تجارب سياحية حسب المنطقة</p>
+        </div>
+      </div>
+      <div class="mod-grid">
+        <div class="mod-shot">
+    <div class="mock">
+      <div class="mock-bar">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="mock-url">ضيوف · جولات سياحية</span>
+      </div>
+      <div class="mock-body"><div class="mock-h">جولات سياحية · حسب المنطقة</div><div class="cgrid"><div class="ccard"><span class="cem">🏛</span><span class="ct">الدرعية</span><span class="cm">الرياض · ١٢٠ ر.س</span></div><div class="ccard"><span class="cem">🏜</span><span class="ct">حافة العالم</span><span class="cm">الرياض · ١٨٠</span></div><div class="ccard"><span class="cem">🏛</span><span class="ct">الحِجر</span><span class="cm">العلا · ٢٥٠</span></div><div class="ccard"><span class="cem">🌊</span><span class="ct">غوص البحر الأحمر</span><span class="cm">جدة · ١٥٠</span></div></div></div>
+    </div></div>
+        <div class="mod-strengths">
+          <h3>نقاط القوة</h3>
+          <ul><li>جولات حقيقية مصنّفة حسب مناطق السعودية</li><li>حجز وإدارة الجولات والمرشدين</li><li>مصدر دخل إضافي للضيوف</li><li>تقرير عربي كامل حسب المنطقة</li></ul>
+        </div>
+      </div>
+    </section>
+    <section class="mod">
+      <div class="mod-head">
+        <span class="mod-num">16</span>
+        <span class="mod-emoji">📱</span>
+        <div class="mod-titles">
+          <h2>تطبيق الموظفين</h2>
+          <p class="mod-tag">تطبيق جوال للفريق الميداني</p>
+        </div>
+      </div>
+      <div class="mod-grid">
+        <div class="mod-shot">
+    <div class="phone">
+      <div class="pnotch"></div>
+      <div class="pscreen">
+        <div class="ph-top">تطبيق الموظفين <span>📱</span></div>
+        <div class="ph-card ok">✓ تسجيل الحضور — ٧:٥٨ ص</div>
+        <div class="ph-card">🛎️ ٣ مهام جديدة</div>
+        <div class="ph-card">🧹 تنظيف غرفة ٣٠٤</div>
+        <div class="ph-card">🔧 صيانة تكييف ٢١٢</div>
+        <div class="ph-card warn">⚠️ طلب عاجل · جناح ٤٠١</div>
+        <div class="ph-nav"><span>🏠</span><span>📋</span><span>💬</span><span>👤</span></div>
+      </div>
+    </div></div>
+        <div class="mod-strengths">
+          <h3>نقاط القوة</h3>
+          <ul><li>تسجيل حضور من الجوال</li><li>استلام المهام والإشعارات فوراً</li><li>تواصل مباشر بين الأقسام</li><li>إنجاز ميداني أسرع</li></ul>
+        </div>
+      </div>
+    </section>
+    <section class="mod">
+      <div class="mod-head">
+        <span class="mod-num">17</span>
+        <span class="mod-emoji">🌐</span>
+        <div class="mod-titles">
+          <h2>حجوزات القنوات</h2>
+          <p class="mod-tag">إدارة حجوزات OTA موحّدة</p>
+        </div>
+      </div>
+      <div class="mod-grid">
+        <div class="mod-shot">
+    <div class="mock">
+      <div class="mock-bar">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="mock-url">حجوزات · القنوات</span>
+      </div>
+      <div class="mock-body"><div class="kpis"><div class="kpi"><span class="kl">حجوزات اليوم</span><span class="kv">٣١</span><span class="kd up">▲ ٥</span></div><div class="kpi"><span class="kl">قنوات نشطة</span><span class="kv">٤</span><span class="kd up">▲ </span></div><div class="kpi"><span class="kl">إلغاءات</span><span class="kv">٢</span><span class="kd dn">▼ </span></div></div><div class="mock-h">حجوزات القنوات الإلكترونية</div><table class="mtbl"><thead><tr><th>الضيف</th><th>القناة</th><th>الحالة</th></tr></thead><tbody><tr><td>Smith J.</td><td>Booking.com</td><td><span class="bdg ok">مؤكد</span></td></tr><tr><td>العنزي م.</td><td>الموقع المباشر</td><td><span class="bdg ok">مؤكد</span></td></tr><tr><td>Khan A.</td><td>Agoda</td><td><span class="bdg warn">بانتظار الدفع</span></td></tr><tr><td>Müller K.</td><td>Expedia</td><td><span class="bdg ok">مؤكد</span></td></tr></tbody></table></div>
+    </div></div>
+        <div class="mod-strengths">
+          <h3>نقاط القوة</h3>
+          <ul><li>كل الحجوزات من كل القنوات في شاشة واحدة</li><li>حالة الدفع والتأكيد لكل حجز</li><li>تقليل تضارب الحجوزات</li><li>تجربة استقبال أسرع</li></ul>
+        </div>
+      </div>
+    </section>
+
+<!-- CLOSING -->
+<div class="closing">
+  <h2>ضيوف — فندقك بالكامل في منصة واحدة</h2>
+  <p>ابدأ تجربتك المجانية اليوم — دون بطاقة ائتمان، وبدعم عربي كامل</p>
+  <span class="cta">ابدأ التجربة المجانية</span>
+  <div class="url">www.dheuof.com</div>
+</div>
+
+</body></html>
