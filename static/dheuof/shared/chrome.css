@@ -135,3 +135,172 @@ button { font: inherit; cursor: pointer; }
 .dh-field input::placeholder { color: var(--fg-3); }
 .dh-field input:focus, .dh-field select:focus, .dh-field textarea:focus { border-color: var(--brand-700); box-shadow: 0 0 0 3px rgba(201,168,95,0.25); }
 .dh-field .hint { font-size: 11px; color: var(--fg-3); }
+
+/* ── Trial / Subscription CTA — Sidebar card ────────────────────────────── */
+.dh-trial-cta {
+  margin: 12px 4px 6px;
+  background: linear-gradient(135deg, rgba(201,168,95,0.12), rgba(201,168,95,0.04));
+  border: 1px solid rgba(201,168,95,0.3);
+  border-radius: 10px;
+  padding: 12px 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.dh-trial-badge {
+  display: inline-block;
+  background: var(--gold-500);
+  color: var(--brand-900);
+  font-size: 10px;
+  font-weight: 700;
+  font-family: var(--font-ar);
+  padding: 2px 8px;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
+  align-self: flex-start;
+}
+.dh-trial-desc {
+  font-size: 11px;
+  color: var(--gold-300);
+  font-family: var(--font-ar);
+  line-height: 1.4;
+}
+.dh-trial-btn-reg {
+  display: block;
+  text-align: center;
+  background: var(--gold-500);
+  color: var(--brand-900);
+  font-family: var(--font-ar);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 8px 12px;
+  border-radius: 7px;
+  text-decoration: none;
+  transition: background 140ms;
+  margin-top: 2px;
+}
+.dh-trial-btn-reg:hover { background: var(--gold-400); }
+.dh-trial-pkg-link {
+  display: block;
+  text-align: center;
+  font-size: 11px;
+  color: var(--gold-400);
+  font-family: var(--font-ar);
+  text-decoration: none;
+  opacity: 0.8;
+}
+.dh-trial-pkg-link:hover { opacity: 1; text-decoration: underline; }
+
+/* ── Trial CTA — Topbar button ──────────────────────────────────────────── */
+.dh-trial-topbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, var(--gold-600), var(--gold-700));
+  color: var(--paper);
+  font-family: var(--font-ar);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 999px;
+  text-decoration: none;
+  transition: all 140ms;
+  box-shadow: 0 2px 8px rgba(201,168,95,0.25);
+}
+.dh-trial-topbtn:hover {
+  background: linear-gradient(135deg, var(--gold-500), var(--gold-600));
+  box-shadow: 0 3px 12px rgba(201,168,95,0.35);
+  transform: translateY(-1px);
+}
+
+/* ── Trial CTA — Floating bottom banner ─────────────────────────────────── */
+#dh-float-trial {
+  position: fixed;
+  bottom: -120px;
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 64px);
+  max-width: 820px;
+  z-index: 9990;
+  transition: bottom 400ms cubic-bezier(0.34,1.56,0.64,1);
+  pointer-events: none;
+}
+#dh-float-trial.dh-ftrial-in {
+  bottom: 20px;
+  pointer-events: auto;
+}
+.dh-ftrial-inner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--brand-900);
+  border: 1px solid rgba(201,168,95,0.35);
+  border-radius: 14px;
+  padding: 14px 20px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25), 0 0 0 1px rgba(201,168,95,0.1);
+}
+.dh-ftrial-spark {
+  font-size: 22px;
+  color: var(--gold-400);
+  flex-shrink: 0;
+  line-height: 1;
+}
+.dh-ftrial-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.dh-ftrial-text strong {
+  font-family: var(--font-ar-display);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--paper);
+}
+.dh-ftrial-text span {
+  font-family: var(--font-ar);
+  font-size: 12px;
+  color: var(--gold-300);
+}
+.dh-ftrial-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.dh-ftrial-cta {
+  background: var(--gold-500);
+  color: var(--brand-900);
+  font-family: var(--font-ar);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 9px 20px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background 140ms;
+  white-space: nowrap;
+}
+.dh-ftrial-cta:hover { background: var(--gold-400); }
+.dh-ftrial-pkg {
+  font-family: var(--font-ar);
+  font-size: 12px;
+  color: var(--gold-300);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.dh-ftrial-pkg:hover { color: var(--gold-100); text-decoration: underline; }
+.dh-ftrial-close {
+  background: transparent;
+  border: 1px solid rgba(201,168,95,0.2);
+  color: var(--gold-300);
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  font-size: 11px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: all 140ms;
+}
+.dh-ftrial-close:hover { background: rgba(255,255,255,0.07); color: var(--paper); }
