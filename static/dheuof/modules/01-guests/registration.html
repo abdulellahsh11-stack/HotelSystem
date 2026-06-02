@@ -206,8 +206,11 @@
                 <select><option>جناح ملكي — Royal Suite</option><option>جناح — Suite</option><option>ديلوكس — Deluxe</option><option>ستاندرد</option></select>
               </div>
               <div class="gr-field">
-                <label>رقم الغرفة</label>
-                <select><option>٤٠٢ — جناح ملكي</option><option>٤٠١ — جناح ملكي</option><option>٤٠٣ — جناح ملكي</option></select>
+                <label style="display:flex;align-items:center;justify-content:space-between">
+                  رقم الغرفة
+                  <button type="button" onclick="showRoomMapModal()" style="font-family:var(--font-ar);font-size:10px;padding:2px 8px;border:1px solid var(--brand-300);border-radius:4px;background:var(--brand-50);color:var(--brand-700);cursor:pointer;font-weight:600">🏨 خريطة الغرف</button>
+                </label>
+                <select id="room-number-sel"><option>٤٠٢ — جناح ملكي</option><option>٤٠١ — جناح ملكي</option><option>٤٠٣ — جناح ملكي</option><option>٤١٠ — جناح ملكي</option><option>٣٠٢ — جناح</option><option>٣٠٤ — جناح</option><option>٣٠٨ — جناح</option><option>٢٠٣ — ديلوكس</option><option>٢٠٥ — ديلوكس</option><option>٢٠٦ — ديلوكس</option><option>٢١٠ — ديلوكس</option><option>٢١١ — ديلوكس</option><option>٢١٣ — ديلوكس</option><option>١٠٢ — ستاندرد</option><option>١٠٥ — ستاندرد</option><option>١٠٩ — ستاندرد</option><option>١١١ — ستاندرد</option><option>١١٣ — ستاندرد</option><option>١١٥ — ستاندرد</option></select>
               </div>
               <div class="gr-field">
                 <label>سبب الزيارة</label>
@@ -371,7 +374,10 @@
 
             <!-- Vehicle + driver -->
             <div class="ap-vehicle">
-              <div class="ap-veh-head"><div class="ar">المركبة والسائق</div><div class="en">Vehicle &amp; driver</div></div>
+              <div class="ap-veh-head" style="display:flex;align-items:center;justify-content:space-between">
+                <div><div class="ar">المركبة والسائق</div><div class="en">Vehicle &amp; driver</div></div>
+                <button type="button" id="veh-toggle-btn" onclick="toggleVehicleSection()" style="font-family:var(--font-ar);font-size:11px;padding:4px 12px;border:1px solid var(--ink-100);border-radius:6px;background:var(--paper);color:var(--fg-2);cursor:pointer">إخفاء ▲</button>
+              </div>
               <div class="ap-cars">
                 <label class="ap-car">
                   <input type="radio" name="car"/>
@@ -1398,17 +1404,179 @@ setTimeout(function(){
     });
   }
 
+  /* ─── 3. COMPANIONS ──────────────────────────────────────────── */
+  function initCompanions(){
+    var compList = q('.gr-comp-list');
+    if(!compList) return;
+
+    function updateBadge(){
+      var badge = document.querySelector('.gr-sec h4 .badge');
+      var count = qq('.gr-comp').length;
+      if(badge && badge.textContent.indexOf('مرافق')!==-1)
+        badge.textContent = count + (count===1?' مرافق':' مرافقين');
+    }
+
+    function bindRemove(row){
+      var xBtn = row.querySelector('.x');
+      if(xBtn) xBtn.addEventListener('click', function(){
+        row.remove();
+        renumber(); updateBadge();
+      });
+    }
+
+    function renumber(){
+      var ar=['١','٢','٣','٤','٥','٦','٧','٨','٩','١٠'];
+      qq('.gr-comp').forEach(function(r,i){ var n=r.querySelector('.n'); if(n) n.textContent=ar[i]||String(i+1); });
+    }
+
+    qq('.gr-comp').forEach(bindRemove);
+
+    var addBtn = q('.gr-add-comp');
+    if(addBtn) addBtn.addEventListener('click', function(){
+      var idx = qq('.gr-comp').length + 1;
+      var ar = ['١','٢','٣','٤','٥','٦','٧','٨','٩','١٠'];
+      var row = document.createElement('div');
+      row.className = 'gr-comp';
+      row.innerHTML = '<div class="n">'+(ar[idx-1]||idx)+'</div>'
+        +'<div class="gr-field"><label>الاسم الأول</label><input placeholder="الاسم الأول"/></div>'
+        +'<div class="gr-field"><label>الاسم الأخير</label><input placeholder="الاسم الأخير"/></div>'
+        +'<div class="gr-field"><label>رقم الهوية</label><input class="is-mono" placeholder="اختياري" dir="ltr"/></div>'
+        +'<div class="gr-field"><label>رقم الجوال</label><input class="is-mono" placeholder="+966 5X XXX XXXX" dir="ltr"/></div>'
+        +'<button class="x">✕</button>';
+      compList.appendChild(row);
+      bindRemove(row);
+      updateBadge();
+      toast('تمت إضافة مرافق جديد');
+    });
+  }
+
+  /* ─── 4. VEHICLE SECTION TOGGLE ──────────────────────────────── */
+  function initVehicleToggle(){
+    var hidden = localStorage.getItem('veh-section-hidden') === '1';
+    if(hidden) _applyVehToggle(true);
+  }
+
+  function _applyVehToggle(hide){
+    var vehicle = q('.ap-vehicle');
+    var driver  = q('.ap-driver');
+    var btn     = document.getElementById('veh-toggle-btn');
+    if(vehicle){
+      var kids = Array.prototype.slice.call(vehicle.children).slice(1);
+      kids.forEach(function(el){ el.style.display = hide ? 'none' : ''; });
+    }
+    if(driver) driver.style.display = hide ? 'none' : '';
+    if(btn) btn.textContent = hide ? 'إظهار المركبة والسائق ▼' : 'إخفاء ▲';
+  }
+
+  window.toggleVehicleSection = function(){
+    var vehicle = q('.ap-vehicle');
+    var currently = vehicle && Array.prototype.slice.call(vehicle.children)[1];
+    var nowHidden = currently && currently.style.display === 'none';
+    _applyVehToggle(!nowHidden);
+    localStorage.setItem('veh-section-hidden', nowHidden ? '0' : '1');
+    toast(nowHidden ? 'تم إظهار قسم المركبة والسائق' : 'تم إخفاء قسم المركبة والسائق');
+  };
+
   /* ─── INIT ───────────────────────────────────────────────────── */
   function init(){
     initIdTabs(); initNamePriority(); initDates(); initTimePolicy();
     initVehicles(); initSmsTrip(); initPayment(); initSmsPayLink();
     initContract(); initScanner(); initSubmit();
+    initCompanions(); initVehicleToggle();
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
 })();
 </script>
 
 <script>
+/* ── Room map modal for registration form ── */
+window.showRoomMapModal = function(){
+  var RFLOORS = [
+    {label:'F1 — ستاندرد',rooms:[
+      {num:'١٠١',status:'occupied'},{num:'١٠٢',status:'available'},
+      {num:'١٠٣',status:'hk-needed'},{num:'١٠٤',status:'occupied'},
+      {num:'١٠٥',status:'available'},{num:'١٠٦',status:'reserved'},
+      {num:'١٠٧',status:'hk-needed'},{num:'١٠٨',status:'occupied'},
+      {num:'١٠٩',status:'available'},{num:'١١٠',status:'maintenance'},
+      {num:'١١١',status:'available'},{num:'١١٢',status:'hk-needed'},
+      {num:'١١٣',status:'available'},{num:'١١٤',status:'occupied'},
+      {num:'١١٥',status:'available'}
+    ]},
+    {label:'F2 — ديلوكس',rooms:[
+      {num:'٢٠١',status:'hk-needed'},{num:'٢٠٢',status:'occupied'},
+      {num:'٢٠٣',status:'available'},{num:'٢٠٤',status:'occupied'},
+      {num:'٢٠٥',status:'available'},{num:'٢٠٦',status:'available'},
+      {num:'٢٠٧',status:'hk-needed'},{num:'٢٠٨',status:'occupied'},
+      {num:'٢٠٩',status:'maintenance'},{num:'٢١٠',status:'available'},
+      {num:'٢١١',status:'available'},{num:'٢١٢',status:'occupied'},
+      {num:'٢١٣',status:'available'},{num:'٢١٨',status:'reserved'},
+      {num:'٢٢٥',status:'reserved'}
+    ]},
+    {label:'F3 — أجنحة',rooms:[
+      {num:'٣٠١',status:'hk-needed'},{num:'٣٠٢',status:'available'},
+      {num:'٣٠٣',status:'occupied'},{num:'٣٠٤',status:'available'},
+      {num:'٣٠٥',status:'occupied'},{num:'٣٠٦',status:'hk-needed'},
+      {num:'٣٠٧',status:'reserved'},{num:'٣٠٨',status:'available'},
+      {num:'٣٠٩',status:'reserved'},{num:'٣١٢',status:'reserved'}
+    ]},
+    {label:'F4 — الأجنحة الملكية',rooms:[
+      {num:'٤٠١',status:'reserved'},{num:'٤٠٢',status:'occupied'},
+      {num:'٤٠٣',status:'occupied'},{num:'٤١٠',status:'reserved'}
+    ]}
+  ];
+  var BG   = {occupied:'#DBEAFE','hk-needed':'#FEF3C7',maintenance:'#FEE2E2',reserved:'#FEF9C3',available:'#DCFCE7',cleaning:'#fae8ff','out-of-order':'#f1f5f9'};
+  var LBL  = {occupied:'مشغولة','hk-needed':'تنظيف',maintenance:'صيانة',reserved:'محجوزة',available:'متاحة ✓',cleaning:'تنظيف جارٍ','out-of-order':'خارج الخدمة'};
+  var BC   = {occupied:'#93c5fd','hk-needed':'#fcd34d',maintenance:'#fca5a5',reserved:'#fde047',available:'#86efac',cleaning:'#d8b4fe','out-of-order':'#cbd5e1'};
+
+  var html = '<p style="font-size:12px;color:var(--fg-3);margin:0 0 12px">اضغط على غرفة <strong style="color:var(--success-700)">خضراء ✓</strong> لاختيارها مباشرةً في النموذج.</p>';
+  html += '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;font-size:11px">';
+  [{k:'available',l:'متاحة'},{k:'occupied',l:'مشغولة'},{k:'hk-needed',l:'تنظيف'},{k:'maintenance',l:'صيانة'},{k:'reserved',l:'محجوزة'},{k:'out-of-order',l:'خارج الخدمة'}].forEach(function(s){
+    html+='<span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:3px;background:'+BG[s.k]+';border:1px solid '+BC[s.k]+';display:inline-block"></span>'+s.l+'</span>';
+  });
+  html += '</div>';
+
+  RFLOORS.forEach(function(fl){
+    html += '<div style="margin-bottom:14px"><div style="font-size:11px;font-weight:700;color:var(--brand-800);padding:4px 10px;background:var(--brand-50);border-radius:6px;margin-bottom:8px">'+fl.label+'</div>'
+      +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:5px">';
+    fl.rooms.forEach(function(rm){
+      var avail = rm.status==='available';
+      html += '<div '+(avail?'onclick="window.GR.selectRoom(\''+rm.num+'\')"':'')+' style="background:'+BG[rm.status]+';border:1.5px solid '+BC[rm.status]+';border-radius:8px;padding:8px 4px;text-align:center;cursor:'+(avail?'pointer':'default')+'"'
+        +(avail?' title="اضغط لاختيار هذه الغرفة"':'')+' >'
+        +'<div style="font-family:monospace;font-size:13px;font-weight:700;color:#111;line-height:1">'+rm.num+'</div>'
+        +'<div style="font-size:9px;color:#555;margin-top:3px">'+LBL[rm.status]+'</div>'
+        +'</div>';
+    });
+    html += '</div></div>';
+  });
+
+  window.GR.modal('🏨 خريطة الغرف — اختر غرفة متاحة', html);
+};
+
+window.GR.modal = function(title, html){
+  var bd = document.createElement('div'); bd.className='dh-modal-bd';
+  bd.style.cssText='position:fixed;inset:0;background:rgba(14,42,34,0.65);backdrop-filter:blur(4px);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px';
+  bd.addEventListener('click',function(e){ if(e.target===bd)bd.remove(); });
+  bd.innerHTML='<div dir="rtl" style="background:var(--white);border-radius:16px;width:min(820px,96vw);max-height:88vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 64px -16px rgba(14,42,34,0.45)">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;padding:16px 22px;border-bottom:1px solid var(--hairline);background:var(--paper-tint)">'
+      +'<div style="font-family:var(--font-ar-display);font-weight:700;font-size:16px;color:var(--ink-900)">'+title+'</div>'
+      +'<button onclick="document.querySelector(\'.dh-modal-bd\').remove()" style="background:transparent;border:1px solid var(--ink-100);color:var(--fg-3);border-radius:6px;padding:5px 14px;cursor:pointer;font-family:var(--font-ar);font-size:12px">✕ إغلاق</button>'
+    +'</div>'
+    +'<div style="padding:20px 22px;overflow-y:auto;direction:rtl">'+html+'</div>'
+  +'</div>';
+  document.body.appendChild(bd);
+};
+
+window.GR.selectRoom = function(num){
+  var sel = document.getElementById('room-number-sel');
+  if(sel){
+    Array.prototype.forEach.call(sel.options, function(opt){
+      if(opt.text.indexOf(num) >= 0) sel.value = opt.value;
+    });
+  }
+  var bd = document.querySelector('.dh-modal-bd'); if(bd) bd.remove();
+  window.GR.toast('تم اختيار الغرفة '+num+' ✓');
+};
+
 /* ── URL Params: pre-fill room from checkin.html → rooms view ── */
 (function(){
   var params = new URLSearchParams(window.location.search);
@@ -1442,6 +1610,16 @@ setTimeout(function(){
 </script>
 
 <style>
+/* ── Companions & payment layout fix: prevent overflow ─────── */
+.gr-comp { grid-template-columns: auto minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) 32px !important; }
+.gr-comp .gr-field { min-width: 0; }
+.gr-comp .gr-field input { min-width: 0; width: 100%; box-sizing: border-box; overflow: hidden; text-overflow: ellipsis; }
+
+.pay-row { grid-template-columns: 28px minmax(0,1.4fr) minmax(0,0.9fr) minmax(0,1.1fr) minmax(0,1fr) auto 28px !important; }
+.pay-row .gr-field { min-width: 0; }
+.pay-row .gr-field input, .pay-row .gr-field select { min-width: 0; width: 100%; box-sizing: border-box; }
+.pay-row .amt input { font-size: 12px; }
+
 /* ── Tax toggles ─────────────────────────────────────────────── */
 #vat-on:checked + #vat-track  { background: var(--brand-600) }
 #vat-on:not(:checked) + #vat-track { background: var(--ink-100) }

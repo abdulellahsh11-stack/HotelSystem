@@ -111,6 +111,8 @@
 .room-card.hk-needed{background:var(--warning-50);border-color:var(--warning-300)}.room-card.hk-needed .rnum{color:var(--warning-800)}.room-card.hk-needed .rstatus{color:var(--warning-700)}
 .room-card.maintenance{background:var(--danger-50);border-color:var(--danger-200)}.room-card.maintenance .rnum{color:var(--danger-700)}.room-card.maintenance .rstatus{color:var(--danger-600)}
 .room-card.reserved{background:var(--gold-50);border-color:var(--gold-300)}.room-card.reserved .rnum{color:var(--gold-800)}.room-card.reserved .rstatus{color:var(--gold-700)}
+.room-card.out-of-order{background:#f1f5f9;border-color:#94a3b8}.room-card.out-of-order .rnum{color:#475569}.room-card.out-of-order .rstatus{color:#64748b}
+.room-card.cleaning{background:#fdf4ff;border-color:#d8b4fe}.room-card.cleaning .rnum{color:#7c3aed}.room-card.cleaning .rstatus{color:#8b5cf6}
 .room-card .guest-hint{font-size:9px;color:var(--fg-3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:88px}
 .room-legend{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px}
 .room-legend .item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--fg-2)}
@@ -204,7 +206,7 @@
         <div class="actions">
           <button onclick="exportReservations()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">📊 Excel</button>
           <button onclick="exportPDF()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">🖨 تقرير PDF</button>
-          <a class="gr-btn sec" href="/static/dheuof/modules/01-guests/registration.html">+ تسجيل نزيل جديد</a>
+          <a href="/static/dheuof/modules/01-guests/registration.html" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--brand-700);color:var(--paper);border:none;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px">+ تسجيل نزيل جديد</a>
           <button onclick="openGroupBooking()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--brand-700);color:var(--paper);border:none;cursor:pointer">+ حجز جماعي</button>
         </div>
       </div>
@@ -418,9 +420,11 @@
         <div class="room-legend">
           <div class="item"><div class="dot" style="background:var(--brand-400)"></div> مشغولة</div>
           <div class="item"><div class="dot" style="background:var(--success-400)"></div> متاحة ونظيفة</div>
-          <div class="item"><div class="dot" style="background:var(--warning-400)"></div> تحتاج تنظيف (HK)</div>
+          <div class="item"><div class="dot" style="background:var(--warning-400)"></div> تحتاج تنظيف</div>
+          <div class="item"><div class="dot" style="background:#c084fc"></div> تنظيف جارٍ</div>
           <div class="item"><div class="dot" style="background:var(--danger-400)"></div> صيانة</div>
-          <div class="item"><div class="dot" style="background:var(--gold-400)"></div> محجوزة (لم تصل بعد)</div>
+          <div class="item"><div class="dot" style="background:#94a3b8"></div> خارج الخدمة</div>
+          <div class="item"><div class="dot" style="background:var(--gold-400)"></div> محجوزة</div>
         </div>
         <div id="floors-container"></div>
       </div>
@@ -948,7 +952,7 @@ window.showGuestDetail = function(gid){
 var floorOpen = [true,true,true,true];
 
 function statusLabel(s){
-  return {occupied:'مشغولة',available:'متاحة','hk-needed':'يحتاج تنظيف',maintenance:'صيانة',reserved:'محجوزة'}[s]||s;
+  return {occupied:'مشغولة',available:'متاحة','hk-needed':'يحتاج تنظيف',maintenance:'صيانة',reserved:'محجوزة','out-of-order':'خارج الخدمة',cleaning:'تنظيف جارٍ'}[s]||s;
 }
 
 function renderFloors(){
@@ -1012,11 +1016,20 @@ window.showRoomDetail = function(fi,ri){
   if(rm.checkout) html.push('<div class="detail-row"><span class="lbl">تاريخ المغادرة</span><span class="val" style="font-family:var(--font-mono)">'+rm.checkout+'</span></div>');
   if(rm.checkin)  html.push('<div class="detail-row"><span class="lbl">تاريخ الوصول</span><span class="val" style="font-family:var(--font-mono)">'+rm.checkin+'</span></div>');
 
-  var act = '';
-  if(rm.status==='hk-needed')   act='<button class="btn-primary" onclick="markRoomClean('+fi+','+ri+')">✓ تم التنظيف — تحويل لمتاحة</button>';
-  else if(rm.status==='available') act='<button class="btn-sec" onclick="markRoomMaint('+fi+','+ri+')">🔧 تحويل لصيانة</button>';
-  else if(rm.status==='maintenance') act='<button class="btn-primary" onclick="markRoomClean('+fi+','+ri+')">✓ انتهت الصيانة — تحويل لمتاحة</button>';
-  act += '<button class="close-btn" onclick="document.querySelector(\'.dh-modal-bd\').remove()">إغلاق</button>';
+  var statusOptions = [
+    {val:'available',    label:'✅ متاحة ونظيفة'},
+    {val:'hk-needed',   label:'🧹 تحتاج تنظيف'},
+    {val:'cleaning',    label:'🫧 تنظيف جارٍ'},
+    {val:'maintenance', label:'🔧 صيانة'},
+    {val:'out-of-order',label:'⛔ خارج الخدمة'},
+    {val:'occupied',    label:'🛏 مشغولة'},
+    {val:'reserved',    label:'📅 محجوزة'}
+  ];
+  var act = '<select id="rm-status-sel" style="flex:1;padding:7px 12px;border:1px solid var(--ink-100);border-radius:6px;font-family:var(--font-ar);font-size:13px">'
+    +statusOptions.map(function(s){ return '<option value="'+s.val+'"'+(rm.status===s.val?' selected':'')+'>'+s.label+'</option>'; }).join('')
+    +'</select>'
+    +'<button class="btn-primary" onclick="changeRoomStatus('+fi+','+ri+')">✓ تغيير الحالة</button>'
+    +'<button class="close-btn" onclick="document.querySelector(\'.dh-modal-bd\').remove()">إغلاق</button>';
 
   modal('غرفة '+rm.num+' — '+statusLabel(rm.status), html.join(''), act);
 };
@@ -1036,6 +1049,18 @@ window.markRoomMaint = function(fi,ri){
   var bd = document.querySelector('.dh-modal-bd'); if(bd) bd.remove();
   renderFloors(); updateBadges();
   toast('غرفة '+num+' — تم التحويل إلى صيانة');
+};
+
+window.changeRoomStatus = function(fi,ri){
+  var sel = document.getElementById('rm-status-sel');
+  if(!sel) return;
+  var newStatus = sel.value;
+  var num = FLOORS[fi].rooms[ri].num;
+  FLOORS[fi].rooms[ri].status = newStatus;
+  if(newStatus==='available'||newStatus==='out-of-order') FLOORS[fi].rooms[ri].guest = null;
+  var bd = document.querySelector('.dh-modal-bd'); if(bd) bd.remove();
+  renderFloors(); updateBadges();
+  toast('غرفة '+num+' — '+statusLabel(newStatus)+' ✓');
 };
 
 /* ═══════════════════════════════════════════════
