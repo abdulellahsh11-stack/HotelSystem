@@ -116,6 +116,36 @@
   .ci-thumb { position: absolute; top: 3px; inset-inline-start: 3px; width: 18px; height: 18px; background: #fff; border-radius: 999px; transition: transform 180ms; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
   .ci-switch input:checked + .ci-track { background: var(--brand-600, #2f7d63); }
   .ci-switch input:checked + .ci-track .ci-thumb { transform: translateX(-18px); }
+
+  /* ── Sync animation ── */
+  @keyframes ch-syncing { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .ch-card.is-syncing { animation: ch-syncing .7s infinite; pointer-events: none; }
+  .ch-card.is-syncing .mod-tag { background: var(--brand-100) !important; color: var(--brand-700) !important; }
+
+  /* ── Add channel modal ── */
+  .ch-modal-ov { position:fixed;inset:0;background:rgba(10,10,10,.55);z-index:900;display:flex;align-items:center;justify-content:center; }
+  .ch-modal { background:var(--white);border-radius:16px;width:min(680px,95vw);max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.18); }
+  .ch-modal-hd { padding:20px 24px 14px;border-bottom:1px solid var(--hairline);display:flex;align-items:center;justify-content:space-between;flex-shrink:0; }
+  .ch-modal-hd .ttl { font-family:var(--font-ar-display);font-size:18px;font-weight:700;color:var(--ink-900); }
+  .ch-modal-hd .sub { font-size:12px;color:var(--fg-3);margin-top:2px; }
+  .ch-modal-hd .cls { width:32px;height:32px;border:none;background:var(--paper-tint);border-radius:8px;cursor:pointer;font-size:16px;color:var(--fg-2); }
+  .ch-modal-search { padding:12px 20px;border-bottom:1px solid var(--hairline);flex-shrink:0; }
+  .ch-modal-search input { width:100%;padding:9px 14px;border:1.5px solid var(--hairline);border-radius:8px;font-family:var(--font-ar);font-size:13px;outline:none;box-sizing:border-box; }
+  .ch-modal-search input:focus { border-color:var(--brand-400); }
+  .ch-modal-list { overflow-y:auto;flex:1;padding:12px 16px;display:flex;flex-direction:column;gap:6px; }
+  .ch-av-item { display:flex;align-items:center;gap:14px;padding:12px 14px;border:1px solid var(--hairline);border-radius:10px;transition:background 140ms; }
+  .ch-av-item:hover { background:var(--paper-tint); }
+  .ch-av-item .ch-av-logo { font-family:var(--font-en);font-weight:700;font-size:12px;padding:6px 10px;border-radius:6px;white-space:nowrap;flex-shrink:0; }
+  .ch-av-item .ch-av-body { flex:1;min-width:0; }
+  .ch-av-item .ch-av-name { font-family:var(--font-ar);font-size:13px;font-weight:600;color:var(--ink-900); }
+  .ch-av-item .ch-av-meta { font-size:11px;color:var(--fg-3);margin-top:2px; }
+  .ch-av-item .ch-av-btn { padding:6px 14px;border-radius:6px;font-family:var(--font-ar);font-size:12px;font-weight:600;cursor:pointer;border:none;white-space:nowrap;flex-shrink:0; }
+  .ch-av-item .ch-av-btn.connect { background:var(--brand-700);color:var(--paper); }
+  .ch-av-item .ch-av-btn.done { background:var(--success-100,#dcfce7);color:var(--success-700,#166534);pointer-events:none; }
+  .ch-av-item.is-connected { opacity:.6; }
+  .ch-cats { display:flex;gap:6px;padding:10px 20px 0;flex-shrink:0;flex-wrap:wrap; }
+  .ch-cat-btn { padding:4px 12px;border-radius:999px;border:1px solid var(--hairline);font-family:var(--font-ar);font-size:11px;background:var(--white);cursor:pointer;color:var(--fg-2); }
+  .ch-cat-btn.is-on { background:var(--brand-700);color:var(--paper);border-color:var(--brand-700); }
 </style>
 </head>
 <body>
@@ -140,21 +170,21 @@
         <div class="actions">
           <button onclick="exportCSV()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">📊 Excel</button>
           <button onclick="exportPDF()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">🖨 تقرير PDF</button>
-          <button style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--brand-700);color:var(--paper);border:none;cursor:pointer">+ ربط قناة جديدة</button>
+          <button onclick="openAddChannelModal()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--brand-700);color:var(--paper);border:none;cursor:pointer">+ ربط قناة جديدة</button>
         </div>
       </div>
 
       <div class="ch-banner" data-m-rise>
         <div>
-          <div class="ar">٧ قنوات متصلة · ٤٢ قناة متاحة</div>
+          <div class="ar" id="ch-banner-txt">٧ قنوات متصلة · ٤٢ قناة متاحة</div>
           <div class="en">Channels synced — pushed pricing &amp; availability</div>
-          <div class="meta"><span class="dot"></span>آخر مزامنة قبل ٤٢ ثانية · ١٦٤ غرفة محدّثة</div>
+          <div class="meta"><span class="dot"></span><span id="ch-sync-meta">آخر مزامنة قبل ٤٢ ثانية · ١٦٤ غرفة محدّثة</span></div>
         </div>
         <div style="text-align: center">
-          <div class="v">٢٢٤</div>
+          <div class="v" id="ch-bookings-v">٢٢٤</div>
           <div class="v-lbl">حجوزات هذا الشهر</div>
         </div>
-        <button>مزامنة فورية</button>
+        <button id="ch-sync-btn" onclick="syncAllChannels()">مزامنة فورية</button>
       </div>
 
       <!-- ═══ Optional Integrations Panel ═══ -->
@@ -183,8 +213,8 @@
         </div>
       </div>
 
-      <div class="ch-grid" data-m-rise-stagger>
-        <div class="ch-card">
+      <div class="ch-grid" id="ch-cards-grid" data-m-rise-stagger>
+        <div class="ch-card" data-ch="booking">
           <div class="top">
             <div class="logo booking">Booking</div>
             <span class="mod-tag ok"><span class="d"></span>متصل</span>
@@ -195,11 +225,11 @@
           </div>
           <div class="foot-row">
             <span class="commission">عمولة: ١٥٪</span>
-            <span class="sync">آخر مزامنة: 14:32</span>
+            <span class="sync" data-sync>آخر مزامنة: 14:32</span>
           </div>
         </div>
 
-        <div class="ch-card">
+        <div class="ch-card" data-ch="agoda">
           <div class="top">
             <div class="logo agoda">agoda</div>
             <span class="mod-tag ok"><span class="d"></span>متصل</span>
@@ -210,11 +240,11 @@
           </div>
           <div class="foot-row">
             <span class="commission">عمولة: ١٧٪</span>
-            <span class="sync">آخر مزامنة: 14:30</span>
+            <span class="sync" data-sync>آخر مزامنة: 14:30</span>
           </div>
         </div>
 
-        <div class="ch-card">
+        <div class="ch-card" data-ch="expedia">
           <div class="top">
             <div class="logo expedia">Expedia</div>
             <span class="mod-tag ok"><span class="d"></span>متصل</span>
@@ -225,11 +255,11 @@
           </div>
           <div class="foot-row">
             <span class="commission">عمولة: ١٨٪</span>
-            <span class="sync">آخر مزامنة: 14:32</span>
+            <span class="sync" data-sync>آخر مزامنة: 14:32</span>
           </div>
         </div>
 
-        <div class="ch-card">
+        <div class="ch-card" data-ch="almosafer">
           <div class="top">
             <div class="logo almosafer">Almosafer</div>
             <span class="mod-tag ok"><span class="d"></span>متصل</span>
@@ -240,14 +270,14 @@
           </div>
           <div class="foot-row">
             <span class="commission">عمولة: ١٢٪</span>
-            <span class="sync">آخر مزامنة: 14:31</span>
+            <span class="sync" data-sync>آخر مزامنة: 14:31</span>
           </div>
         </div>
 
-        <div class="ch-card">
+        <div class="ch-card" data-ch="tripcom">
           <div class="top">
             <div class="logo tripcom">Trip.com</div>
-            <span class="mod-tag warn"><span class="d"></span>مزامنة بطيئة</span>
+            <span class="mod-tag warn" data-status-tag><span class="d"></span>مزامنة بطيئة</span>
           </div>
           <div class="figures">
             <div class="fig"><span class="l">Bookings</span><span class="v">١٤</span></div>
@@ -255,14 +285,14 @@
           </div>
           <div class="foot-row">
             <span class="commission">عمولة: ١٦٪</span>
-            <span class="sync">آخر مزامنة: قبل ١٢ د</span>
+            <span class="sync" data-sync>آخر مزامنة: قبل ١٢ د</span>
           </div>
         </div>
 
-        <div class="ch-card is-off">
+        <div class="ch-card is-off" data-ch="airbnb" onclick="openAddChannelModal('airbnb')" style="cursor:pointer" title="انقر للتفعيل">
           <div class="top">
             <div class="logo airbnb">airbnb</div>
-            <span class="mod-tag neu"><span class="d"></span>غير مفعّل</span>
+            <span class="mod-tag neu"><span class="d"></span>غير مفعّل — انقر للربط</span>
           </div>
           <div class="figures">
             <div class="fig"><span class="l">Bookings</span><span class="v">—</span></div>
@@ -777,6 +807,225 @@ window.connectGDS = function(btn, name){
       btn.outerHTML='<span style="background:#DCFCE7;color:#166534;font-size:11px;padding:3px 10px;border-radius:6px;font-weight:600">● متصل</span><div style="margin-top:10px;font-size:11px;color:var(--brand-700)">جديد — لا حجوزات بعد</div>';
     }
   }, 2000);
+};
+</script>
+<!-- ═══ Add Channel Modal ═══ -->
+<div id="ch-add-modal" class="ch-modal-ov" style="display:none" onclick="if(event.target===this)closeAddChannelModal()">
+  <div class="ch-modal">
+    <div class="ch-modal-hd">
+      <div>
+        <div class="ttl">ربط قناة جديدة</div>
+        <div class="sub" id="ch-modal-sub">٤٢ قناة متاحة · اختر وابدأ الربط</div>
+      </div>
+      <button class="cls" onclick="closeAddChannelModal()">✕</button>
+    </div>
+    <div class="ch-modal-search">
+      <input id="ch-search" placeholder="ابحث عن قناة..." oninput="filterChannelList(this.value)" dir="auto"/>
+    </div>
+    <div class="ch-cats" id="ch-cats">
+      <button class="ch-cat-btn is-on" onclick="setCat('all',this)">الكل</button>
+      <button class="ch-cat-btn" onclick="setCat('ota',this)">OTA</button>
+      <button class="ch-cat-btn" onclick="setCat('meta',this)">Meta-search</button>
+      <button class="ch-cat-btn" onclick="setCat('local',this)">عربي / محلي</button>
+      <button class="ch-cat-btn" onclick="setCat('gds',this)">GDS</button>
+    </div>
+    <div class="ch-modal-list" id="ch-modal-list"></div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════════
+// SYNC ALL CHANNELS
+// ════════════════════════════════════════════════════════════════
+window.syncAllChannels = function(){
+  var btn = document.getElementById('ch-sync-btn');
+  var meta = document.getElementById('ch-sync-meta');
+  var cards = Array.prototype.slice.call(document.querySelectorAll('#ch-cards-grid .ch-card:not(.is-off)'));
+  if(!cards.length) return;
+
+  btn.textContent = '⟳ جارٍ...';
+  btn.disabled = true;
+  meta.textContent = 'جارٍ المزامنة...';
+
+  var delay = 0;
+  cards.forEach(function(card, i){
+    setTimeout(function(){
+      card.classList.add('is-syncing');
+      var tag = card.querySelector('.mod-tag');
+      if(tag){ tag.innerHTML = '<span class="d"></span>جارٍ المزامنة...'; tag.className = 'mod-tag warn'; }
+    }, delay);
+    delay += 320;
+
+    setTimeout(function(){
+      card.classList.remove('is-syncing');
+      var tag = card.querySelector('.mod-tag');
+      if(tag){ tag.innerHTML = '<span class="d"></span>متصل'; tag.className = 'mod-tag ok'; }
+      var syncEl = card.querySelector('[data-sync]');
+      var now = new Date();
+      var hh = now.getHours().toString().padStart(2,'0');
+      var mm = now.getMinutes().toString().padStart(2,'0');
+      if(syncEl) syncEl.textContent = 'آخر مزامنة: ' + hh + ':' + mm;
+
+      // last card → finalize
+      if(i === cards.length - 1){
+        btn.textContent = 'مزامنة فورية';
+        btn.disabled = false;
+        meta.textContent = 'آخر مزامنة: الآن · ' + (cards.length * 22) + ' غرفة محدّثة';
+        toast('✓ تمت مزامنة ' + cards.length + ' قنوات بنجاح');
+      }
+    }, delay + 280);
+
+    delay += 100;
+  });
+};
+
+// ════════════════════════════════════════════════════════════════
+// ADD CHANNEL MODAL
+// ════════════════════════════════════════════════════════════════
+var AVAILABLE_CHANNELS = [
+  // OTA
+  {key:'hotels',    name:'Hotels.com',    cat:'ota',   logo:{bg:'#C0392B',fg:'#fff'},  commission:16, desc:'شبكة فنادق عالمية'},
+  {key:'airbnb',    name:'Airbnb',        cat:'ota',   logo:{bg:'#FF5A5F',fg:'#fff'},  commission:14, desc:'منازل وشقق فندقية', existing:true},
+  {key:'hrs',       name:'HRS',           cat:'ota',   logo:{bg:'#003366',fg:'#fff'},  commission:13, desc:'حجوزات الأعمال'},
+  {key:'hotelbeds', name:'Hotelbeds',     cat:'ota',   logo:{bg:'#E67E22',fg:'#fff'},  commission:15, desc:'موزّع فنادق B2B'},
+  {key:'wego',      name:'Wego',          cat:'ota',   logo:{bg:'#00A86B',fg:'#fff'},  commission:12, desc:'محرك سفر شرق أوسطي'},
+  {key:'musafir',   name:'Musafir',       cat:'ota',   logo:{bg:'#8E44AD',fg:'#fff'},  commission:14, desc:'منصة سفر إماراتية'},
+  {key:'cleartrip', name:'Cleartrip',     cat:'ota',   logo:{bg:'#2ECC71',fg:'#fff'},  commission:13, desc:'منصة سفر هندية'},
+  {key:'makemytrip',name:'MakeMyTrip',    cat:'ota',   logo:{bg:'#E74C3C',fg:'#fff'},  commission:15, desc:'أكبر OTA في آسيا'},
+  {key:'hostelworld',name:'Hostelworld',  cat:'ota',   logo:{bg:'#F39C12',fg:'#fff'},  commission:12, desc:'حجوزات الأسعار الاقتصادية'},
+  {key:'goldenkey', name:'Golden Key',    cat:'ota',   logo:{bg:'#B8860B',fg:'#fff'},  commission:10, desc:'سياحة فاخرة'},
+  // Meta-search
+  {key:'trivago',   name:'Trivago',       cat:'meta',  logo:{bg:'#3498DB',fg:'#fff'},  commission:0,  desc:'مقارنة الأسعار — عمولة CPC'},
+  {key:'google',    name:'Google Hotels', cat:'meta',  logo:{bg:'#4285F4',fg:'#fff'},  commission:0,  desc:'ظهور مجاني في نتائج Google'},
+  {key:'tripadvisor',name:'TripAdvisor',  cat:'meta',  logo:{bg:'#00AF87',fg:'#fff'},  commission:0,  desc:'تقييمات وحجوزات'},
+  {key:'kayak',     name:'Kayak',         cat:'meta',  logo:{bg:'#FF690F',fg:'#fff'},  commission:0,  desc:'محرك بحث سفر'},
+  {key:'skyscanner',name:'Skyscanner',    cat:'meta',  logo:{bg:'#0770E3',fg:'#fff'},  commission:0,  desc:'مقارنة أسعار الفنادق'},
+  // Local / Arab
+  {key:'jahez',     name:'Jahez Stays',   cat:'local', logo:{bg:'#1ABC9C',fg:'#fff'},  commission:10, desc:'منصة سعودية محلية'},
+  {key:'tajawal',   name:'Tajawal',       cat:'local', logo:{bg:'#16213E',fg:'#C9A85F'},commission:13, desc:'منصة سفر إماراتية — Tajawal'},
+  {key:'rehlat',    name:'Rehlat',        cat:'local', logo:{bg:'#27AE60',fg:'#fff'},  commission:11, desc:'حجوزات خليجية'},
+  {key:'arzak',     name:'Arzak',         cat:'local', logo:{bg:'#2C3E50',fg:'#C9A85F'},commission:9,  desc:'منصة سعودية ناشئة'},
+  {key:'seera',     name:'Seera',         cat:'local', logo:{bg:'#0D3349',fg:'#C9A85F'},commission:12, desc:'مجموعة السفر السعودية'},
+  // GDS
+  {key:'sabre',     name:'Sabre GDS',     cat:'gds',   logo:{bg:'#003580',fg:'#fff'},  commission:8,  desc:'٤٠٠+ شركة طيران عالمية'},
+  {key:'galileo',   name:'Galileo',       cat:'gds',   logo:{bg:'#1B2A4A',fg:'#fff'},  commission:8,  desc:'Travelport — ٢٠٠+ دولة'},
+  {key:'worldspan', name:'Worldspan',     cat:'gds',   logo:{bg:'#2C3E50',fg:'#fff'},  commission:8,  desc:'وكالات السفر الأمريكية'},
+];
+
+// Keys already connected (static + any added this session)
+var CONNECTED_KEYS = {booking:true, agoda:true, expedia:true, almosafer:true, tripcom:true, amadeus:true};
+var activeCat = 'all';
+var searchQ   = '';
+
+window.openAddChannelModal = function(prefilter){
+  document.getElementById('ch-add-modal').style.display = 'flex';
+  document.getElementById('ch-search').value = '';
+  searchQ = prefilter || '';
+  if(prefilter) document.getElementById('ch-search').value = prefilter;
+  renderChannelList();
+};
+
+window.closeAddChannelModal = function(){
+  document.getElementById('ch-add-modal').style.display = 'none';
+};
+
+window.setCat = function(cat, btn){
+  activeCat = cat;
+  document.querySelectorAll('.ch-cat-btn').forEach(function(b){ b.classList.remove('is-on'); });
+  btn.classList.add('is-on');
+  renderChannelList();
+};
+
+window.filterChannelList = function(q){
+  searchQ = q;
+  renderChannelList();
+};
+
+function renderChannelList(){
+  var list = document.getElementById('ch-modal-list');
+  var sub  = document.getElementById('ch-modal-sub');
+  var filtered = AVAILABLE_CHANNELS.filter(function(ch){
+    var matchCat  = activeCat === 'all' || ch.cat === activeCat;
+    var matchQ    = !searchQ || ch.name.toLowerCase().indexOf(searchQ.toLowerCase()) !== -1 || ch.desc.indexOf(searchQ) !== -1;
+    return matchCat && matchQ;
+  });
+  sub.textContent = filtered.length + ' قناة' + (searchQ || activeCat!=='all' ? ' — نتائج البحث' : ' متاحة · اختر وابدأ الربط');
+  if(!filtered.length){
+    list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--fg-3);font-size:13px">لا توجد نتائج</div>';
+    return;
+  }
+  list.innerHTML = filtered.map(function(ch){
+    var isConn = !!CONNECTED_KEYS[ch.key];
+    var catLabel = {ota:'OTA',meta:'Meta',local:'محلي',gds:'GDS'}[ch.cat]||ch.cat;
+    return '<div class="ch-av-item'+(isConn?' is-connected':'')+'" data-key="'+ch.key+'">'
+      +'<span class="ch-av-logo" style="background:'+ch.logo.bg+';color:'+ch.logo.fg+'">'+ch.name.split(' ')[0]+'</span>'
+      +'<span class="ch-av-body">'
+        +'<span class="ch-av-name">'+ch.name+'</span>'
+        +'<span class="ch-av-meta">'+ch.desc+' · عمولة: '+(ch.commission>0?ch.commission+'%':'CPC فقط')+' · <span style="background:var(--brand-50);color:var(--brand-700);padding:1px 5px;border-radius:3px;font-size:10px">'+catLabel+'</span></span>'
+      +'</span>'
+      +(isConn
+        ? '<button class="ch-av-btn done">✓ متصل</button>'
+        : '<button class="ch-av-btn connect" onclick="connectNewChannel(\''+ch.key+'\',this)">ربط</button>')
+      +'</div>';
+  }).join('');
+}
+
+window.connectNewChannel = function(key, btn){
+  btn.textContent = '⟳ جارٍ...';
+  btn.disabled = true;
+  var ch = AVAILABLE_CHANNELS.filter(function(c){ return c.key===key; })[0];
+  if(!ch) return;
+
+  setTimeout(function(){
+    btn.textContent = '⟳ التحقق...';
+  }, 800);
+
+  setTimeout(function(){
+    // Mark connected
+    CONNECTED_KEYS[key] = true;
+    btn.textContent = '✓ تم الربط';
+    btn.className = 'ch-av-btn done';
+    var item = btn.closest('.ch-av-item');
+    if(item) item.classList.add('is-connected');
+
+    // Add new card to the grid (replace existing is-off card if same key, else append)
+    var existingCard = document.querySelector('#ch-cards-grid .ch-card[data-ch="'+key+'"]');
+    if(existingCard){
+      existingCard.classList.remove('is-off');
+      var tag = existingCard.querySelector('.mod-tag');
+      if(tag){ tag.className='mod-tag ok'; tag.innerHTML='<span class="d"></span>متصل'; }
+      var syncEl = existingCard.querySelector('[data-sync]');
+      if(syncEl) syncEl.textContent = 'ربط جديد · الآن';
+      var clickAttr = existingCard.getAttribute('onclick');
+      if(clickAttr) existingCard.removeAttribute('onclick');
+      existingCard.style.cursor = '';
+    } else {
+      var grid = document.getElementById('ch-cards-grid');
+      var card = document.createElement('div');
+      card.className = 'ch-card';
+      card.dataset.ch = key;
+      card.innerHTML = '<div class="top">'
+        +'<div class="logo" style="background:'+ch.logo.bg+';color:'+ch.logo.fg+'">'+ch.name.split(' ')[0]+'</div>'
+        +'<span class="mod-tag ok"><span class="d"></span>متصل</span>'
+        +'</div>'
+        +'<div class="figures">'
+          +'<div class="fig"><span class="l">Bookings</span><span class="v">٠</span></div>'
+          +'<div class="fig"><span class="l">Revenue</span><span class="v">٠<span class="cur">ر.س</span></span></div>'
+        +'</div>'
+        +'<div class="foot-row">'
+          +'<span class="commission">عمولة: '+ch.commission+'%</span>'
+          +'<span class="sync" data-sync>ربط جديد · الآن</span>'
+        +'</div>';
+      grid.appendChild(card);
+    }
+
+    // Update banner count
+    var connCount = Object.keys(CONNECTED_KEYS).length;
+    var bannerTxt = document.getElementById('ch-banner-txt');
+    if(bannerTxt) bannerTxt.textContent = connCount + ' قنوات متصلة · ٤٢ قناة متاحة';
+
+    toast('✓ تم ربط «' + ch.name + '» بنجاح');
+  }, 1800);
 };
 </script>
 </body>
