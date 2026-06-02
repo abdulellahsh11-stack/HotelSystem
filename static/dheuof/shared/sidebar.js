@@ -18,7 +18,7 @@
     { id: "12-analytics",         ar: "تحليل البيانات",    num: "12" },
     { id: "13-staff-tracker",     ar: "أداء الموظفين",    num: "13" },
     { id: "14-manager-goals",     ar: "أهداف المدير",     num: "14" },
-    { id: "15-tourism-trips",     ar: "رسلات سياحية",     num: "15" },
+    { id: "15-tourism-trips",     ar: "جولات سياحية",     num: "15" },
     { id: "16-staff-app",         ar: "تطبيق الموظفين",   num: "16" },
     { id: "17-bookings",          ar: "حجوزات القنوات",   num: "17" },
   ];
