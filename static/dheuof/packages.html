@@ -106,7 +106,7 @@
 
 <div class="grid" data-m-rise-stagger>
 
-  <div class="pkg">
+  <div class="pkg" data-pkg-id="essentials">
     <div class="nm">باقة الإدارة الأساسية</div>
     <div class="en">Essentials</div>
     <p class="desc">للمنشآت الصغيرة. كل ما تحتاجه لإدارة الضيوف والمستندات.</p>
@@ -123,7 +123,7 @@
     <button>ابدأ التجربة</button>
   </div>
 
-  <div class="pkg featured">
+  <div class="pkg featured" data-pkg-id="full">
     <div class="nm">باقة الضيافة الكاملة</div>
     <div class="en">Full Hospitality</div>
     <p class="desc">للفنادق والمنتجعات. كل البرامج الرئيسية معاً بسعر مخفّض.</p>
@@ -141,7 +141,7 @@
     <button>ابدأ التجربة المجانية</button>
   </div>
 
-  <div class="pkg">
+  <div class="pkg" data-pkg-id="enterprise">
     <div class="nm">باقة المؤسسات</div>
     <div class="en">Enterprise</div>
     <p class="desc">للسلاسل الفندقية والمشاريع الكبيرة. تخصيص كامل.</p>
@@ -173,6 +173,38 @@ setTimeout(function(){
     el.classList.add('is-in');
   });
 }, 80);
+</script>
+<script>
+// أسعار الباقات الحيّة — يحرّرها المالك من لوحة /admin (يبقى المعروض كما هو عند فشل الشبكة)
+(function(){
+  fetch('/api/packages')
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(d){
+      if(!d || !d.success || !Array.isArray(d.packages)) return;
+      d.packages.forEach(function(p){
+        var card = document.querySelector('.pkg[data-pkg-id="'+p.id+'"]');
+        if(!card) return;
+        var nm = card.querySelector('.nm');
+        if(nm && p.name_ar) nm.textContent = p.name_ar;
+        var price = card.querySelector('.price');
+        if(price){
+          var html = '<span class="v"></span>';
+          price.innerHTML = html;
+          price.querySelector('.v').textContent = p.price || '';
+          if(p.currency){ var c=document.createElement('span'); c.className='cur'; c.textContent=p.currency; price.appendChild(c); }
+          if(p.period){ var pr=document.createElement('span'); pr.className='per'; pr.textContent=p.period; price.appendChild(pr); }
+        }
+        var save = card.querySelector('.save');
+        if(p.save_note){
+          if(!save){ save=document.createElement('div'); save.className='save'; if(price) price.insertAdjacentElement('afterend', save); }
+          save.textContent = p.save_note; save.style.display='';
+        } else if(save){ save.style.display='none'; }
+        var btn = card.querySelector('button');
+        if(btn && p.cta) btn.textContent = p.cta;
+      });
+    })
+    .catch(function(){ /* فشل الشبكة → أبقِ الأسعار الثابتة */ });
+})();
 </script>
 </body>
 </html>

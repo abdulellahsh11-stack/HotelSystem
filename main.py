@@ -586,6 +586,7 @@ tr:hover td{background:#fafbfc}
   <a href="#" onclick="nav('clients',this)"><span class="icon">&#127970;</span> المنشآت</a>
   <a href="#" onclick="nav('sessions',this)"><span class="icon">&#128101;</span> الجلسات النشطة</a>
   <a href="#" onclick="nav('subs',this)"><span class="icon">&#128203;</span> الاشتراكات</a>
+  <a href="#" onclick="nav('packages',this)"><span class="icon">&#128176;</span> أسعار الباقات</a>
   <a href="#" onclick="nav('employees',this)"><span class="icon">&#128188;</span> الموظفون</a>
   <a href="#" onclick="nav('modules',this)"><span class="icon">&#9881;</span> التحكم بالوحدات</a>
   <a href="#" onclick="nav('marketers',this)"><span class="icon">&#128279;</span> المسوقون</a>
@@ -668,6 +669,25 @@ tr:hover td{background:#fafbfc}
         <th>المنشأة</th><th>الخطة</th><th>الحالة</th><th>بداية</th><th>نهاية</th><th>المتبقي</th><th>السعر</th><th>تعديل</th>
       </tr></thead>
       <tbody id="subs-body"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ PACKAGES (public pricing) ═══════════ -->
+  <div id="pane-packages" class="pane">
+    <div class="card">
+      <div class="card-hdr">
+        <h3>&#128176; أسعار الباقات المعروضة للزوار</h3>
+        <div style="display:flex;gap:8px;align-items:center">
+          <a href="/static/dheuof/packages.html" target="_blank" class="btn btn-s">&#128065; معاينة الصفحة</a>
+          <button class="btn btn-s" onclick="loadPackages()">&#8635; تحديث</button>
+        </div>
+      </div>
+      <p style="font-size:.8rem;color:#64748b;margin-bottom:16px">عدّل الأسعار والنصوص هنا — تظهر فوراً في صفحة الباقات العامة <code>/packages.html</code> بدون لمس الكود.</p>
+      <div id="pkg-edit-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px"></div>
+      <div style="margin-top:18px;padding-top:14px;border-top:1px solid #f1f5f9">
+        <button class="btn btn-p" onclick="savePackages()">&#10003; حفظ الأسعار</button>
+        <span id="pkg-saved" style="display:none;color:#16a34a;font-size:.8rem;margin-right:10px">&#10003; تم الحفظ — ظهرت في الصفحة العامة</span>
       </div>
     </div>
   </div>
@@ -912,11 +932,12 @@ function nav(id,el){
   document.querySelectorAll('.sidebar a').forEach(a=>a.classList.remove('active'));
   document.getElementById('pane-'+id).classList.add('active');
   if(el){el.classList.add('active');}
-  const titles={overview:'الرئيسية',clients:'المنشآت',sessions:'الجلسات النشطة',subs:'الاشتراكات',employees:'الموظفون',modules:'التحكم بالوحدات',tickets:'تذاكر الدعم',marketers:'المسوقون'};
+  const titles={overview:'الرئيسية',clients:'المنشآت',sessions:'الجلسات النشطة',subs:'الاشتراكات',packages:'أسعار الباقات',employees:'الموظفون',modules:'التحكم بالوحدات',tickets:'تذاكر الدعم',marketers:'المسوقون'};
   document.getElementById('page-title').textContent=titles[id]||id;
   if(id==='clients')loadClients();
   else if(id==='sessions')loadSessions();
   else if(id==='subs')loadSubs();
+  else if(id==='packages')loadPackages();
   else if(id==='employees')loadEmployees();
   else if(id==='modules')initModulesPane();
   else if(id==='tickets')loadTickets();
@@ -1129,6 +1150,38 @@ async function saveSub(){
   const d=await r.json();
   if(d.success){closeModal('modal-sub');loadClients();loadSubs();loadOverview();}
   else{const e=document.getElementById('sub-err');e.textContent=d.error||'خطأ';e.style.display='block';}
+}
+
+// ─── Public Packages (pricing) ──────────────────────────────
+let _packages=[];
+async function loadPackages(){
+  const r=await fetch('/api/packages').then(r=>r.json()).catch(()=>({}));
+  _packages=r.packages||[];
+  const esc=s=>String(s==null?'':s).replace(/"/g,'&quot;');
+  document.getElementById('pkg-edit-grid').innerHTML=_packages.map((p,i)=>`
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px">
+      <div style="font-size:.7rem;color:#94a3b8;font-family:monospace;margin-bottom:8px">${esc(p.id)}</div>
+      <div class="fg"><label>اسم الباقة</label><input data-pk="${i}" data-pf="name_ar" value="${esc(p.name_ar)}"></div>
+      <div class="fg-row">
+        <div class="fg"><label>السعر</label><input data-pk="${i}" data-pf="price" value="${esc(p.price)}" placeholder="٢٬٤٠٠ أو حسب الطلب"></div>
+        <div class="fg"><label>العملة</label><input data-pk="${i}" data-pf="currency" value="${esc(p.currency)}" placeholder="ر.س"></div>
+      </div>
+      <div class="fg"><label>المدة</label><input data-pk="${i}" data-pf="period" value="${esc(p.period)}" placeholder="/شهر"></div>
+      <div class="fg"><label>ملاحظة التوفير (اختياري)</label><input data-pk="${i}" data-pf="save_note" value="${esc(p.save_note)}" placeholder="توفير ١٬٢٠٠ ر.س شهرياً"></div>
+      <div class="fg"><label>نص الزر</label><input data-pk="${i}" data-pf="cta" value="${esc(p.cta)}" placeholder="ابدأ التجربة"></div>
+    </div>`).join('');
+  document.getElementById('pkg-saved').style.display='none';
+}
+
+async function savePackages(){
+  document.querySelectorAll('#pkg-edit-grid input[data-pk]').forEach(inp=>{
+    const i=+inp.getAttribute('data-pk');const f=inp.getAttribute('data-pf');
+    if(_packages[i])_packages[i][f]=inp.value;
+  });
+  const r=await fetch('/api/admin/packages',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({packages:_packages})});
+  const d=await r.json();
+  if(d.success){_packages=d.packages||_packages;const s=document.getElementById('pkg-saved');s.style.display='inline';setTimeout(()=>s.style.display='none',4000);}
+  else alert(d.error||'خطأ في الحفظ');
 }
 
 // ─── Employees ──────────────────────────────────────────────
@@ -2962,6 +3015,92 @@ async def admin_save_settings(request: Request, _=Depends(require_admin)):
     data.setdefault("settings", {}).update(body)
     store.save_admin_data(data)
     return {"success": True}
+
+
+# ──────────────────────────────────────────────────────────────
+#  Public Packages — أسعار الباقات المعروضة للزوار (يحرّرها المالك)
+# ──────────────────────────────────────────────────────────────
+_DEFAULT_PACKAGES = [
+    {
+        "id": "essentials",
+        "name_ar": "باقة الإدارة الأساسية",
+        "name_en": "Essentials",
+        "price": "٢٬٤٠٠",
+        "currency": "ر.س",
+        "period": "/شهر",
+        "save_note": "",
+        "cta": "ابدأ التجربة",
+    },
+    {
+        "id": "full",
+        "name_ar": "باقة الضيافة الكاملة",
+        "name_en": "Full Hospitality",
+        "price": "٥٬٤٠٠",
+        "currency": "ر.س",
+        "period": "/شهر",
+        "save_note": "توفير ١٬٢٠٠ ر.س شهرياً (١٨٪)",
+        "cta": "ابدأ التجربة المجانية",
+    },
+    {
+        "id": "enterprise",
+        "name_ar": "باقة المؤسسات",
+        "name_en": "Enterprise",
+        "price": "حسب الطلب",
+        "currency": "",
+        "period": "",
+        "save_note": "",
+        "cta": "تواصل مع المبيعات",
+    },
+]
+
+_PKG_EDITABLE = ("name_ar", "name_en", "price", "currency", "period", "save_note", "cta")
+
+
+def _merge_packages(stored: list) -> list:
+    """يدمج القيم المحفوظة فوق الافتراضية حسب id — يضمن وجود الباقات الثلاث دائماً."""
+    by_id = {p.get("id"): dict(p) for p in (stored or []) if isinstance(p, dict)}
+    result = []
+    for default in _DEFAULT_PACKAGES:
+        merged = dict(default)
+        saved = by_id.get(default["id"])
+        if isinstance(saved, dict):
+            for k in _PKG_EDITABLE:
+                if k in saved and saved[k] is not None:
+                    merged[k] = saved[k]
+        result.append(merged)
+    return result
+
+
+@app.get("/api/packages")
+async def public_packages(request: Request):
+    """عام — يقرأه صفحة الباقات لعرض الأسعار الحيّة (لا يتطلب تسجيل دخول)."""
+    store: "DataStore" = request.app.state.store
+    data = store.get_admin_data()
+    return {"success": True, "packages": _merge_packages(data.get("public_packages", []))}
+
+
+@app.put("/api/admin/packages")
+async def admin_update_packages(request: Request, _=Depends(require_admin)):
+    """يحفظ أسعار الباقات العامة التي يحرّرها المالك من اللوحة."""
+    body = await request.json()
+    incoming = body.get("packages", [])
+    if not isinstance(incoming, list):
+        return JSONResponse({"success": False, "error": "صيغة غير صحيحة"}, status_code=400)
+    # نظّف الحقول المسموح بتحريرها فقط
+    cleaned = []
+    for p in incoming:
+        if not isinstance(p, dict) or not p.get("id"):
+            continue
+        item = {"id": str(p["id"])}
+        for k in _PKG_EDITABLE:
+            if k in p:
+                item[k] = str(p[k])
+        cleaned.append(item)
+    store: "DataStore" = request.app.state.store
+    data = store.get_admin_data()
+    data["public_packages"] = cleaned
+    store.save_admin_data(data)
+    return {"success": True, "packages": _merge_packages(cleaned)}
 
 
 @app.get("/api/admin/stats")
