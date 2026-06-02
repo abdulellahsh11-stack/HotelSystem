@@ -1,156 +1,1366 @@
 <!doctype html>
-<html lang="ar" dir="rtl" data-screen-label="Reports">
+<html lang="ar" dir="rtl" data-screen-label="11 KPIs">
 <head>
 <meta charset="utf-8"/>
-<title>ضيوف · التقارير والتحليلات</title>
+<title>ضيوف · إدارة الإيرادات والمؤشرات</title>
 <meta name="viewport" content="width=1440, initial-scale=1"/>
 <link rel="stylesheet" href="/static/dheuof/colors_and_type.css"/>
+<link rel="stylesheet" href="/static/dheuof/assets/animations.css"/>
 <link rel="stylesheet" href="/static/dheuof/shared/chrome.css"/>
-<link rel="stylesheet" href="/static/dheuof/modules/11-kpis/reports.css"/>
-</head>
-<body>
-<div id="root"></div>
+<link rel="stylesheet" href="/static/dheuof/shared/module.css"/>
+<style>
+body { background: var(--paper-tint); }
 
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+/* ── Tab bar ─────────────────────────────────────────────────────────────── */
+.tab-bar {
+  display: flex; gap: 4px;
+  background: var(--white);
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  padding: 4px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+}
+.tab-btn {
+  flex: 1; min-width: 120px;
+  padding: 9px 14px;
+  border: none;
+  border-radius: 7px;
+  font-family: var(--font-ar);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fg-2);
+  background: transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 160ms, color 160ms;
+}
+.tab-btn:hover { background: var(--paper-tint); color: var(--ink-900); }
+.tab-btn.is-active {
+  background: var(--brand-700);
+  color: var(--paper);
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(27,77,61,0.22);
+}
+.tab-pane { display: none; }
+.tab-pane.is-active { display: block; }
 
-<script type="text/babel" src="/static/dheuof/shared/chrome.jsx"></script>
-<script type="text/babel" src="/static/dheuof/modules/11-kpis/Charts.jsx"></script>
-<script type="text/babel" src="/static/dheuof/modules/11-kpis/Insights.jsx"></script>
+/* ── KPI strip ───────────────────────────────────────────────────────────── */
+.kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-bottom: 22px;
+}
+.kpi-card {
+  background: var(--white);
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  padding: 18px 20px;
+  display: flex; flex-direction: column; gap: 4px;
+  position: relative; overflow: hidden;
+  transition: box-shadow 160ms, transform 160ms;
+}
+.kpi-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(20,17,14,0.06); }
+.kpi-card::after {
+  content: "";
+  position: absolute; bottom: -18px; inset-inline-end: -18px;
+  width: 70px; height: 70px; border-radius: 999px;
+  background: rgba(27,77,61,0.04);
+}
+.kpi-card .kc-en {
+  font-family: var(--font-mono);
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--gold-700); font-weight: 600;
+}
+.kpi-card .kc-ar { font-size: 11px; color: var(--fg-3); margin-top: 1px; }
+.kpi-card .kc-val {
+  font-family: var(--font-en);
+  font-variant-numeric: tabular-nums;
+  font-size: 30px; font-weight: 700;
+  color: var(--ink-900); line-height: 1.05;
+  margin-top: 4px;
+}
+.kpi-card .kc-val .cur { font-size: 13px; color: var(--fg-3); font-family: var(--font-ar); font-weight: 400; margin-inline-start: 3px; }
+.kpi-card .kc-change {
+  font-family: var(--font-en); font-size: 12px; font-weight: 600;
+  display: inline-flex; align-items: center; gap: 4px;
+  margin-top: 2px;
+}
+.kpi-card .kc-change.up { color: var(--success-700); }
+.kpi-card .kc-change.dn { color: var(--danger-700); }
+.kpi-card .kc-period { font-size: 10px; color: var(--fg-3); font-family: var(--font-ar); font-weight: 400; }
 
-<script type="text/babel">
-const { useState } = React;
-function App() {
-  const [active, setActive] = useState("reports");
-  return (
-    <div className="dh-app">
-      <NzSidebar active={active} onChange={setActive}/>
-      <div>
-        <NzTopBar placeholder="بحث في التقارير والمؤشرات..."/>
-        <main className="dh-main">
-          <NzPageHead
-            eyebrow="١ — ٣٠ أبريل ٢٠٢٥"
-            title="التقارير والتحليلات"
-            sub="رؤى الأداء · مؤشرات الإيرادات · تحليل نقاط القوة والضعف"
-            actions={<>
-              <button className="dh-btn is-secondary"><NzIcon.cal/>الشهر الحالي ▾</button>
-              <button className="dh-btn is-primary"><NzIcon.download/>تصدير PDF</button>
-            </>}
-          />
+/* ── Occupancy bar chart ─────────────────────────────────────────────────── */
+.occ-chart-wrap {
+  background: var(--white);
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  padding: 18px 20px 14px;
+  margin-bottom: 16px;
+}
+.occ-chart-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 18px; }
+.occ-chart-head .ttl { font-family: var(--font-ar-display); font-size: 15px; font-weight: 600; color: var(--ink-900); }
+.occ-chart-head .sub { font-family: var(--font-en); font-size: 11px; color: var(--fg-3); margin-top: 2px; }
+.occ-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 140px;
+}
+.occ-bar-col { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; }
+.occ-bar-track {
+  flex: 1; width: 100%;
+  background: var(--paper-tint);
+  border-radius: 6px 6px 0 0;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  overflow: hidden;
+  min-height: 100px;
+}
+.occ-bar-fill {
+  width: 100%;
+  border-radius: 5px 5px 0 0;
+  background: linear-gradient(to top, var(--brand-700), var(--brand-500));
+  transition: height 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.occ-bar-fill.is-current {
+  background: linear-gradient(to top, var(--gold-700), var(--gold-500));
+}
+.occ-bar-lbl { font-family: var(--font-ar); font-size: 10px; color: var(--fg-3); text-align: center; }
+.occ-bar-pct { font-family: var(--font-en); font-size: 10px; font-weight: 600; color: var(--fg-2); }
 
-          <div className="rp-kpi">
-            <div className="card">
-              <span className="lbl" dangerouslySetInnerHTML={{__html: '<abbr class="dh-abbr" data-ar="الإيراد لكل غرفة متاحة" data-en="Revenue Per Available Room" data-meaning="إجمالي إيراد الإقامة ÷ عدد الغرف المتاحة — يقيس الأداء العام للفندق">REVPAR</abbr>'}}></span>
-              <span className="lbl-ar">الإيراد لكل غرفة متاحة</span>
-              <span className="v">٦٢٦</span>
-              <span className="change up">+٧٪ <span className="lab">شهر/شهر</span></span>
-            </div>
-            <div className="card">
-              <span className="lbl" dangerouslySetInnerHTML={{__html: '<abbr class="dh-abbr" data-ar="متوسط سعر الغرفة" data-en="Average Daily Rate" data-meaning="إفرادي إيراد الغرف ÷ عدد الغرف المبيعة — متوسط السعر المحصل للغرفة في الليلة">ADR</abbr>'}}></span>
-              <span className="lbl-ar">متوسط سعر الغرفة</span>
-              <span className="v">٧٢٠</span>
-              <span className="change up">+١٢٪ <span className="lab">عن العام</span></span>
-            </div>
-            <div className="card">
-              <span className="lbl" dangerouslySetInnerHTML={{__html: '<abbr class="dh-abbr" data-ar="نسبة الإشغال" data-en="Occupancy Rate" data-meaning="الغرف المبيعة ÷ إجمالي الغرف المتاحة × ١٠٠ — أهم مؤشر على صحّة الحجوزات">OCC</abbr>'}}></span>
-              <span className="lbl-ar">نسبة الإشغال</span>
-              <span className="v">٨٧٪</span>
-              <span className="change up">+٤٪ <span className="lab">عن الموسم</span></span>
-            </div>
-            <div className="card">
-              <span className="lbl" dangerouslySetInnerHTML={{__html: '<abbr class="dh-abbr" data-ar="الربح التشغيلي لكل غرفة متاحة" data-en="Gross Operating Profit Per Available Room" data-meaning="صافي الربح التشغيلي ÷ عدد الغرف المتاحة — يقيس الربحية الحقيقية بعد المصروفات">GOPPAR</abbr>'}}></span>
-              <span className="lbl-ar">الربح التشغيلي</span>
-              <span className="v">٤٢٤</span>
-              <span className="change dn">−٢٪ <span className="lab">شهر/شهر</span></span>
-            </div>
-            <div className="card">
-              <span className="lbl" dangerouslySetInnerHTML={{__html: '<abbr class="dh-abbr" data-ar="متوسط ليالي الإقامة" data-en="Average Length of Stay" data-meaning="مجموع ليالي الإقامة ÷ عدد الحجوزات — كلّما ارتفع قلت تكلفة تبديل الغرف">ALOS</abbr>'}}></span>
-              <span className="lbl-ar">متوسط ليالي الإقامة</span>
-              <span className="v">٢٫٤</span>
-              <span className="change up">+٠٫٣ <span className="lab">عن أبريل ٢٤</span></span>
-            </div>
-          </div>
-
-          <LineChart/>
-
-          <div className="rp-2col">
-            <div>
-              <ChannelBars/>
-            </div>
-            <div className="dh-card" style={{height: "100%"}}>
-              <div className="dh-card-head">
-                <div>
-                  <div className="ttl">أهم المصادر الجغرافية</div>
-                  <div className="sub">Top guest origins</div>
-                </div>
-              </div>
-              <div style={{padding: "0 20px 16px", display: "flex", flexDirection: "column", gap: 10}}>
-                {[
-                  { flag: "🇸🇦", n: "السعودية", pct: 42, count: 521 },
-                  { flag: "🇦🇪", n: "الإمارات", pct: 18, count: 224 },
-                  { flag: "🇰🇼", n: "الكويت",   pct: 12, count: 149 },
-                  { flag: "🇪🇬", n: "مصر",     pct:  9, count: 112 },
-                  { flag: "🇬🇧", n: "بريطانيا", pct:  7, count:  87 },
-                  { flag: "🇫🇷", n: "فرنسا",    pct:  5, count:  62 },
-                ].map(c => (
-                  <div key={c.n} style={{display: "grid", gridTemplateColumns: "24px 1fr 50px 50px", gap: 10, alignItems: "center", fontSize: 13}}>
-                    <span style={{fontSize: 18, lineHeight: 1}}>{c.flag}</span>
-                    <span>{c.n}</span>
-                    <div style={{height: 6, background: "var(--sand)", borderRadius: 999, overflow: "hidden"}}>
-                      <div style={{height: "100%", width: c.pct*2.4 + "%", background: "linear-gradient(to left, var(--brand-500), var(--brand-700))"}}></div>
-                    </div>
-                    <span style={{fontFamily: "var(--font-en)", fontVariantNumeric: "tabular-nums", fontWeight: 600, textAlign: "end"}}>{c.pct}٪</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="rp-ins-grid">
-            <InsightCard
-              kind="strength"
-              title="جناح ٤٠٢ — الأعلى أداءً"
-              en="Royal Suite 402 outperforms by 38%"
-              value="٢٬٤٠٠ ر.س"
-              change="+٣٨٪"
-              recommendation="رفع سعر الجناح ٤٠٢ بنسبة ١٠٪ في عطلات نهاية الأسبوع، وتسويقه كحزمة شهر العسل."
-            />
-            <InsightCard
-              kind="strength"
-              title="ضيوف Booking.com — نمو متسارع"
-              en="Booking.com inbound up 26%"
-              value="٢٢٤ ضيف"
-              change="+٢٦٪"
-              recommendation="زيادة الميزانية الإعلانية على Booking.com بنسبة ١٥٪، وإطلاق عروض الإقامة الطويلة."
-            />
-            <InsightCard
-              kind="weakness"
-              title="ليالي الإقامة الفردية"
-              en="Single-night stays dominate"
-              value="٤٢٪"
-              change="−"
-              recommendation="حزمة 'ليلتان بسعر ١٫٧×' للضيوف القادمين عبر القنوات المباشرة، تخفض هذه النسبة إلى ٣٠٪ المستهدفة."
-            />
-            <InsightCard
-              kind="weakness"
-              title="فجوة إشغال الأحد والإثنين"
-              en="Sun/Mon occupancy drops to 61%"
-              value="٦١٪"
-              change="−٢٦٪"
-              recommendation="إطلاق تعرفة 'منتصف الأسبوع للأعمال' بخصم ١٥٪ على شركات الرياض، وعرض 'يوم مكتب' مع وجبة غداء داخل الجناح."
-            />
-          </div>
-
-          <ReportsList/>
-        </main>
-      </div>
-    </div>
-  );
+/* ── Two-column layout ───────────────────────────────────────────────────── */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 0;
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
-</script>
+/* ── Channel revenue bars ────────────────────────────────────────────────── */
+.ch-rev-wrap {
+  background: var(--white);
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  padding: 18px 20px;
+}
+.ch-rev-head { margin-bottom: 14px; }
+.ch-rev-head .ttl { font-family: var(--font-ar-display); font-size: 15px; font-weight: 600; color: var(--ink-900); }
+.ch-rev-head .sub { font-family: var(--font-en); font-size: 11px; color: var(--fg-3); margin-top: 2px; }
+.ch-bar-row {
+  display: grid;
+  grid-template-columns: 110px 1fr 56px;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.ch-bar-nm { font-size: 13px; color: var(--ink-900); font-weight: 500; }
+.ch-bar-bg { height: 10px; background: var(--paper-tint); border-radius: 999px; overflow: hidden; }
+.ch-bar-fill { height: 100%; border-radius: 999px; }
+.ch-bar-pct { font-family: var(--font-en); font-size: 12px; font-weight: 600; color: var(--fg-2); text-align: end; font-variant-numeric: tabular-nums; }
 
+/* ── Guest origins ───────────────────────────────────────────────────────── */
+.origins-wrap {
+  background: var(--white);
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  padding: 18px 20px;
+}
+.origins-head { margin-bottom: 14px; }
+.origins-head .ttl { font-family: var(--font-ar-display); font-size: 15px; font-weight: 600; color: var(--ink-900); }
+.origins-head .sub { font-family: var(--font-en); font-size: 11px; color: var(--fg-3); margin-top: 2px; }
+.origin-row {
+  display: grid;
+  grid-template-columns: 28px 1fr 60px 52px;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+.origin-flag { font-size: 18px; line-height: 1; }
+.origin-name { color: var(--ink-900); }
+.origin-bar-bg { height: 6px; background: var(--paper-tint); border-radius: 999px; overflow: hidden; }
+.origin-bar-fill { height: 100%; border-radius: 999px; background: linear-gradient(to left, var(--brand-500), var(--brand-700)); }
+.origin-pct { font-family: var(--font-en); font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 600; text-align: end; color: var(--fg-2); }
+
+/* ── Revenue tab ─────────────────────────────────────────────────────────── */
+.rev-table-wrap {
+  background: var(--white);
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.rev-tr {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1.4fr;
+  gap: 14px;
+  align-items: center;
+  padding: 13px 20px;
+  border-top: 1px solid var(--hairline);
+  font-size: 13px;
+}
+.rev-tr.is-head {
+  background: var(--surface-2);
+  font-size: 11px;
+  color: var(--fg-3);
+  font-weight: 500;
+  border-top: none;
+}
+.rev-tr .v-num { font-family: var(--font-en); font-variant-numeric: tabular-nums; font-weight: 600; color: var(--ink-900); }
+.rev-tr .v-num .cur { font-size: 10px; color: var(--fg-3); font-family: var(--font-ar); font-weight: 400; margin-inline-start: 2px; }
+.rev-tr .room-name { font-weight: 500; color: var(--ink-900); }
+.rev-tr .room-sub { font-size: 11px; color: var(--fg-3); margin-top: 1px; }
+
+/* ── Forecast card ───────────────────────────────────────────────────────── */
+.forecast-card {
+  background: var(--white);
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  padding: 18px 20px;
+}
+.forecast-card .fc-head { margin-bottom: 14px; }
+.forecast-card .fc-head .ttl { font-family: var(--font-ar-display); font-size: 15px; font-weight: 600; color: var(--ink-900); }
+.forecast-card .fc-head .sub { font-family: var(--font-en); font-size: 11px; color: var(--fg-3); margin-top: 2px; }
+.fc-month-bar {
+  margin-bottom: 10px;
+}
+.fc-month-label {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 5px; font-size: 12px;
+}
+.fc-month-label .name { color: var(--ink-900); font-weight: 500; }
+.fc-month-label .vals { font-family: var(--font-en); font-size: 11px; color: var(--fg-3); font-variant-numeric: tabular-nums; }
+.fc-bar-track { height: 8px; background: var(--paper-tint); border-radius: 999px; overflow: hidden; position: relative; }
+.fc-bar-target { height: 100%; border-radius: 999px; background: var(--ink-100); position: absolute; top: 0; inset-inline-start: 0; }
+.fc-bar-actual { height: 100%; border-radius: 999px; background: linear-gradient(to left, var(--brand-500), var(--brand-700)); position: absolute; top: 0; inset-inline-start: 0; }
+
+/* ── Day of week chart ───────────────────────────────────────────────────── */
+.dow-chart {
+  background: var(--white);
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  padding: 18px 20px;
+}
+.dow-chart .dc-head { margin-bottom: 16px; }
+.dow-chart .dc-head .ttl { font-family: var(--font-ar-display); font-size: 15px; font-weight: 600; color: var(--ink-900); }
+.dow-chart .dc-head .sub { font-family: var(--font-en); font-size: 11px; color: var(--fg-3); margin-top: 2px; }
+.dow-bars { display: flex; gap: 10px; align-items: flex-end; height: 100px; }
+.dow-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.dow-bar-track { flex: 1; width: 100%; background: var(--paper-tint); border-radius: 5px 5px 0 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; }
+.dow-bar-fill { width: 100%; border-radius: 4px 4px 0 0; background: linear-gradient(to top, var(--brand-700), var(--brand-500)); }
+.dow-bar-fill.is-top { background: linear-gradient(to top, var(--gold-700), var(--gold-400)); }
+.dow-lbl { font-size: 11px; color: var(--fg-3); }
+.dow-val { font-family: var(--font-en); font-size: 10px; font-weight: 600; color: var(--fg-2); }
+
+/* ── Pricing rules ───────────────────────────────────────────────────────── */
+.pricing-rules {
+  background: var(--white);
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.pr-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 16px 20px;
+  border-top: 1px solid var(--hairline);
+}
+.pr-row:first-child { border-top: none; }
+.pr-body .pr-name { font-size: 14px; font-weight: 600; color: var(--ink-900); }
+.pr-body .pr-desc { font-size: 12px; color: var(--fg-2); margin-top: 2px; }
+.pr-body .pr-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--brand-50); color: var(--brand-700);
+  font-size: 10px; padding: 2px 8px; border-radius: 4px;
+  font-weight: 600; margin-top: 4px;
+}
+.pr-body .pr-tag.is-discount { background: var(--gold-100); color: var(--gold-800); }
+
+/* toggle switch */
+.tog-switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; cursor: pointer; }
+.tog-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+.tog-track { position: absolute; inset: 0; background: var(--ink-200); border-radius: 999px; transition: background 180ms; }
+.tog-thumb { position: absolute; top: 3px; inset-inline-start: 3px; width: 18px; height: 18px; background: #fff; border-radius: 999px; transition: transform 180ms; box-shadow: 0 1px 3px rgba(0,0,0,0.22); }
+.tog-switch input:checked + .tog-track { background: var(--brand-600, #2f7d63); }
+.tog-switch input:checked + .tog-track .tog-thumb { transform: translateX(-20px); }
+
+/* Rate guards */
+.rate-guards {
+  background: var(--white);
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin-bottom: 16px;
+  display: flex; gap: 20px; align-items: center; flex-wrap: wrap;
+}
+.rg-field { display: flex; flex-direction: column; gap: 4px; }
+.rg-label { font-size: 11px; color: var(--fg-3); font-weight: 500; }
+.rg-input {
+  padding: 9px 12px;
+  border: 1.5px solid var(--hairline);
+  border-radius: 8px;
+  font-family: var(--font-en);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink-900);
+  width: 130px;
+  transition: border-color 160ms;
+}
+.rg-input:focus { outline: none; border-color: var(--brand-400); box-shadow: 0 0 0 3px rgba(27,77,61,0.1); }
+
+/* Apply button */
+.apply-btn {
+  margin-inline-start: auto;
+  padding: 11px 22px;
+  background: var(--brand-700);
+  color: var(--paper);
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-ar);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 160ms, transform 160ms;
+}
+.apply-btn:hover { background: var(--brand-800); transform: translateY(-1px); }
+.apply-btn:active { transform: translateY(0); }
+
+/* ── Pickup tab ──────────────────────────────────────────────────────────── */
+.pickup-controls {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 14px;
+}
+.pickup-controls .pc-label { font-size: 13px; color: var(--fg-2); font-weight: 500; }
+.pickup-window-btn {
+  padding: 6px 14px;
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+  font-family: var(--font-ar);
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--white);
+  color: var(--fg-2);
+  cursor: pointer;
+  transition: all 140ms;
+}
+.pickup-window-btn.is-active {
+  background: var(--brand-700);
+  color: var(--paper);
+  border-color: var(--brand-700);
+}
+.pickup-table-wrap {
+  background: var(--white);
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.pu-tr {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr 1fr 1fr;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 20px;
+  border-top: 1px solid var(--hairline);
+  font-size: 13px;
+}
+.pu-tr.is-head {
+  background: var(--surface-2);
+  font-size: 11px;
+  color: var(--fg-3);
+  font-weight: 500;
+  border-top: none;
+}
+.pu-tr .pu-date { font-weight: 500; color: var(--ink-900); }
+.pu-tr .pu-num { font-family: var(--font-en); font-variant-numeric: tabular-nums; font-weight: 600; color: var(--ink-900); }
+.pu-delta { display: inline-flex; align-items: center; gap: 3px; font-family: var(--font-en); font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
+.pu-delta.is-up   { background: #DCEEE6; color: var(--success-700); }
+.pu-delta.is-same { background: #F6E7C2; color: var(--warning-700); }
+.pu-delta.is-dn   { background: #F1D8CF; color: var(--danger-700); }
+
+/* ── Forecast tab ────────────────────────────────────────────────────────── */
+.forecast-cards-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.fc-big-card {
+  background: var(--white);
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  padding: 20px 22px;
+  display: flex; flex-direction: column; gap: 8px;
+  position: relative; overflow: hidden;
+}
+.fc-big-card::before {
+  content: "";
+  position: absolute; bottom: -24px; inset-inline-end: -24px;
+  width: 90px; height: 90px; border-radius: 999px;
+  background: rgba(27,77,61,0.04);
+}
+.fc-big-card > * { position: relative; }
+.fc-big-card .fbc-label { font-size: 12px; color: var(--fg-3); font-weight: 500; }
+.fc-big-card .fbc-pct {
+  font-family: var(--font-en); font-size: 38px; font-weight: 700;
+  color: var(--brand-700); line-height: 1;
+}
+.fc-big-card .fbc-desc { font-size: 12px; color: var(--fg-2); }
+.fc-big-card .fbc-trend { font-family: var(--font-en); font-size: 12px; font-weight: 600; color: var(--success-700); }
+
+.weekly-forecast {
+  background: var(--white);
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin-bottom: 16px;
+}
+.wf-head { margin-bottom: 14px; }
+.wf-head .ttl { font-family: var(--font-ar-display); font-size: 15px; font-weight: 600; color: var(--ink-900); }
+.wf-head .sub { font-family: var(--font-en); font-size: 11px; color: var(--fg-3); margin-top: 2px; }
+.wf-row {
+  display: grid;
+  grid-template-columns: 100px 1fr 60px;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.wf-week { font-size: 12px; color: var(--fg-2); font-weight: 500; }
+.wf-bar-bg { height: 14px; background: var(--paper-tint); border-radius: 999px; overflow: hidden; position: relative; }
+.wf-bar-fill {
+  height: 100%; border-radius: 999px;
+  background: linear-gradient(to left, var(--brand-500), var(--brand-700));
+  transition: width 0.7s cubic-bezier(0.22,1,0.36,1);
+}
+.wf-pct { font-family: var(--font-en); font-size: 12px; font-weight: 600; color: var(--ink-900); text-align: end; font-variant-numeric: tabular-nums; }
+
+.rec-box {
+  background: linear-gradient(135deg, var(--brand-50), var(--white));
+  border: 1.5px solid var(--brand-200);
+  border-radius: 12px;
+  padding: 18px 22px;
+  display: flex; gap: 16px; align-items: flex-start;
+}
+.rec-box .rec-ic {
+  font-size: 24px; flex-shrink: 0; line-height: 1; margin-top: 2px;
+}
+.rec-box .rec-body {}
+.rec-box .rec-title {
+  font-family: var(--font-ar-display);
+  font-size: 15px; font-weight: 600; color: var(--brand-800);
+  margin-bottom: 6px;
+}
+.rec-box .rec-text { font-size: 13px; color: var(--fg-1); line-height: 1.6; }
+.rec-box .rec-en { font-family: var(--font-en); font-style: italic; font-size: 11px; color: var(--fg-3); margin-top: 4px; }
+
+/* ── Toast ───────────────────────────────────────────────────────────────── */
+.dh-kpi-toast {
+  position: fixed;
+  bottom: 24px; inset-inline-end: 24px;
+  background: var(--brand-800);
+  color: var(--paper);
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-family: var(--font-ar);
+  font-size: 13px;
+  font-weight: 500;
+  z-index: 9999;
+  display: flex; align-items: center; gap: 10px;
+  box-shadow: 0 8px 24px rgba(14,42,34,0.32);
+  transition: opacity 0.4s, transform 0.4s;
+}
+.dh-kpi-toast .t-ic { color: var(--gold-400); font-size: 16px; }
+
+/* ── Section separator ───────────────────────────────────────────────────── */
+.sec-head {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.sec-head .ttl { font-family: var(--font-ar-display); font-size: 16px; font-weight: 600; color: var(--ink-900); }
+.sec-head .sub { font-family: var(--font-en); font-size: 11px; color: var(--fg-3); margin-top: 3px; }
+
+/* ── Export buttons ──────────────────────────────────────────────────────── */
+.exp-btn {
+  font-family: var(--font-ar);
+  font-weight: 500; font-size: 13px;
+  padding: 9px 16px; border-radius: 6px;
+  background: var(--white); color: var(--ink-900);
+  border: 1px solid var(--ink-100);
+  cursor: pointer;
+  transition: background 140ms, border-color 140ms;
+}
+.exp-btn:hover { background: var(--paper-tint); border-color: var(--ink-200); }
+.exp-btn.is-primary {
+  background: var(--brand-700); color: var(--paper);
+  border-color: var(--brand-700);
+}
+.exp-btn.is-primary:hover { background: var(--brand-800); }
+</style>
+</head>
+<body>
+<div class="dh-app">
+  <div id="sidebar-slot"></div>
+  <div>
+    <div id="topbar-slot"></div>
+    <main class="dh-main">
+
+      <!-- Page head -->
+      <div class="mod-head" data-m-rise>
+        <div class="left">
+          <div class="num-row">
+            <span class="num">11 · REVENUE MGMT</span>
+            <span class="en-tag">KPIs · Dynamic Pricing · Pickup · Forecast</span>
+          </div>
+          <h1>إدارة الإيرادات والمؤشرات</h1>
+          <p class="sub">لوحة إدارة الإيرادات الكاملة — مؤشرات الأداء الرئيسية، التسعير الديناميكي، تقرير الـ Pickup، والتوقعات المستقبلية.</p>
+        </div>
+        <div class="actions">
+          <button class="exp-btn" onclick="kpiExportExcel()">📊 Excel</button>
+          <button class="exp-btn is-primary" onclick="kpiExportPDF()">🖨 تقرير PDF</button>
+        </div>
+      </div>
+
+      <!-- Tab bar -->
+      <div class="tab-bar" data-m-rise>
+        <button class="tab-btn is-active" data-tab="kpis">مؤشرات الأداء</button>
+        <button class="tab-btn" data-tab="revenue">إدارة الإيرادات</button>
+        <button class="tab-btn" data-tab="pricing">التسعير الديناميكي</button>
+        <button class="tab-btn" data-tab="pickup">تقرير الـ Pickup</button>
+        <button class="tab-btn" data-tab="forecast">التوقعات</button>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════
+           TAB 1: مؤشرات الأداء
+      ═══════════════════════════════════════════════ -->
+      <div class="tab-pane is-active" id="tab-kpis">
+
+        <!-- KPI strip -->
+        <div class="kpi-strip" data-m-rise-stagger>
+          <div class="kpi-card">
+            <div class="kc-en">RevPAR</div>
+            <div class="kc-ar">الإيراد لكل غرفة متاحة</div>
+            <div class="kc-val">٦٢٦<span class="cur">ر.س</span></div>
+            <div class="kc-change up">▲ +٧٪ <span class="kc-period">شهر/شهر</span></div>
+          </div>
+          <div class="kpi-card">
+            <div class="kc-en">ADR</div>
+            <div class="kc-ar">متوسط سعر الغرفة</div>
+            <div class="kc-val">٧٢٠<span class="cur">ر.س</span></div>
+            <div class="kc-change up">▲ +١٢٪ <span class="kc-period">عن العام</span></div>
+          </div>
+          <div class="kpi-card">
+            <div class="kc-en">OCC</div>
+            <div class="kc-ar">نسبة الإشغال</div>
+            <div class="kc-val">٨٧<span class="cur">٪</span></div>
+            <div class="kc-change up">▲ +٤٪ <span class="kc-period">عن الموسم</span></div>
+          </div>
+          <div class="kpi-card">
+            <div class="kc-en">GOPPAR</div>
+            <div class="kc-ar">الربح التشغيلي</div>
+            <div class="kc-val">٤٢٤<span class="cur">ر.س</span></div>
+            <div class="kc-change dn">▼ −٢٪ <span class="kc-period">شهر/شهر</span></div>
+          </div>
+          <div class="kpi-card">
+            <div class="kc-en">ALOS</div>
+            <div class="kc-ar">متوسط ليالي الإقامة</div>
+            <div class="kc-val">٢<span class="cur">.</span>٤<span class="cur">ليلة</span></div>
+            <div class="kc-change up">▲ +٠.٣ <span class="kc-period">عن أبريل ٢٤</span></div>
+          </div>
+        </div>
+
+        <!-- Occupancy bar chart — last 12 months -->
+        <div class="occ-chart-wrap" data-m-rise>
+          <div class="occ-chart-head">
+            <div>
+              <div class="ttl">نسبة الإشغال — آخر ١٢ شهراً</div>
+              <div class="sub">Monthly occupancy rate · last 12 months</div>
+            </div>
+            <span class="mod-tag brand">٨٧٪ المتوسط</span>
+          </div>
+          <div class="occ-bars" id="occ-bars-container">
+            <!-- injected by JS -->
+          </div>
+        </div>
+
+        <!-- Channel + origins -->
+        <div class="two-col" data-m-rise>
+          <div class="ch-rev-wrap">
+            <div class="ch-rev-head">
+              <div class="ttl">توزيع الإيراد على القنوات</div>
+              <div class="sub">Channel revenue breakdown · this month</div>
+            </div>
+            <div class="ch-bar-row">
+              <div class="ch-bar-nm">Booking.com</div>
+              <div class="ch-bar-bg"><div class="ch-bar-fill" style="width:42%;background:linear-gradient(to left,#1B4D3D,#266554)"></div></div>
+              <div class="ch-bar-pct">٤٢٪</div>
+            </div>
+            <div class="ch-bar-row">
+              <div class="ch-bar-nm">حجز مباشر</div>
+              <div class="ch-bar-bg"><div class="ch-bar-fill" style="width:28%;background:linear-gradient(to left,#C9A85F,#DBC084)"></div></div>
+              <div class="ch-bar-pct">٢٨٪</div>
+            </div>
+            <div class="ch-bar-row">
+              <div class="ch-bar-nm">Agoda</div>
+              <div class="ch-bar-bg"><div class="ch-bar-fill" style="width:15%;background:linear-gradient(to left,#266554,#3B8772)"></div></div>
+              <div class="ch-bar-pct">١٥٪</div>
+            </div>
+            <div class="ch-bar-row">
+              <div class="ch-bar-nm">Expedia</div>
+              <div class="ch-bar-bg"><div class="ch-bar-fill" style="width:9%;background:linear-gradient(to left,#6BAB9A,#9CCBBE)"></div></div>
+              <div class="ch-bar-pct">٩٪</div>
+            </div>
+            <div class="ch-bar-row">
+              <div class="ch-bar-nm">أخرى</div>
+              <div class="ch-bar-bg"><div class="ch-bar-fill" style="width:6%;background:linear-gradient(to left,#9A7430,#B68F40)"></div></div>
+              <div class="ch-bar-pct">٦٪</div>
+            </div>
+          </div>
+
+          <div class="origins-wrap">
+            <div class="origins-head">
+              <div class="ttl">أهم المصادر الجغرافية</div>
+              <div class="sub">Top guest origins · this month</div>
+            </div>
+            <div class="origin-row">
+              <div class="origin-flag">🇸🇦</div>
+              <div class="origin-name">السعودية</div>
+              <div class="origin-bar-bg"><div class="origin-bar-fill" style="width:100%"></div></div>
+              <div class="origin-pct">٤٢٪</div>
+            </div>
+            <div class="origin-row">
+              <div class="origin-flag">🇦🇪</div>
+              <div class="origin-name">الإمارات</div>
+              <div class="origin-bar-bg"><div class="origin-bar-fill" style="width:43%"></div></div>
+              <div class="origin-pct">١٨٪</div>
+            </div>
+            <div class="origin-row">
+              <div class="origin-flag">🇰🇼</div>
+              <div class="origin-name">الكويت</div>
+              <div class="origin-bar-bg"><div class="origin-bar-fill" style="width:29%"></div></div>
+              <div class="origin-pct">١٢٪</div>
+            </div>
+            <div class="origin-row">
+              <div class="origin-flag">🇪🇬</div>
+              <div class="origin-name">مصر</div>
+              <div class="origin-bar-bg"><div class="origin-bar-fill" style="width:21%"></div></div>
+              <div class="origin-pct">٩٪</div>
+            </div>
+            <div class="origin-row">
+              <div class="origin-flag">🇬🇧</div>
+              <div class="origin-name">بريطانيا</div>
+              <div class="origin-bar-bg"><div class="origin-bar-fill" style="width:17%"></div></div>
+              <div class="origin-pct">٧٪</div>
+            </div>
+            <div class="origin-row">
+              <div class="origin-flag">🇫🇷</div>
+              <div class="origin-name">فرنسا</div>
+              <div class="origin-bar-bg"><div class="origin-bar-fill" style="width:12%"></div></div>
+              <div class="origin-pct">٥٪</div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /tab-kpis -->
+
+      <!-- ═══════════════════════════════════════════════
+           TAB 2: إدارة الإيرادات
+      ═══════════════════════════════════════════════ -->
+      <div class="tab-pane" id="tab-revenue">
+
+        <!-- Revenue by room type table -->
+        <div class="sec-head" style="margin-bottom:10px">
+          <div>
+            <div class="ttl">الإيراد حسب نوع الغرفة</div>
+            <div class="sub">Revenue by room type · current month</div>
+          </div>
+        </div>
+        <div class="rev-table-wrap" data-m-rise>
+          <div class="rev-tr is-head">
+            <span>نوع الغرفة</span>
+            <span>RevPAR</span>
+            <span>ADR</span>
+            <span>OCC</span>
+            <span>ليالي مبيعة</span>
+            <span>إيراد إجمالي</span>
+          </div>
+          <div class="rev-tr">
+            <div><div class="room-name">غرفة مفردة</div><div class="room-sub">٢٤ غرفة</div></div>
+            <span class="v-num">٣٤٠<span class="cur">ر.س</span></span>
+            <span class="v-num">٣٩٠<span class="cur">ر.س</span></span>
+            <span class="v-num">٨٧<span class="cur">٪</span></span>
+            <span class="v-num">٦٢٤</span>
+            <span class="v-num">٢٤٣٬٣٦٠<span class="cur">ر.س</span></span>
+          </div>
+          <div class="rev-tr">
+            <div><div class="room-name">غرفة مزدوجة</div><div class="room-sub">١٨ غرفة</div></div>
+            <span class="v-num">٥٤٠<span class="cur">ر.س</span></span>
+            <span class="v-num">٦١٠<span class="cur">ر.س</span></span>
+            <span class="v-num">٨٩<span class="cur">٪</span></span>
+            <span class="v-num">٤٨١</span>
+            <span class="v-num">٢٩٣٤١٠<span class="cur">ر.س</span></span>
+          </div>
+          <div class="rev-tr">
+            <div><div class="room-name">جناح</div><div class="room-sub">٨ أجنحة</div></div>
+            <span class="v-num">٩٨٠<span class="cur">ر.س</span></span>
+            <span class="v-num">١١٢٠<span class="cur">ر.س</span></span>
+            <span class="v-num">٨٨<span class="cur">٪</span></span>
+            <span class="v-num">٢١١</span>
+            <span class="v-num">٢٣٦٣٢٠<span class="cur">ر.س</span></span>
+          </div>
+          <div class="rev-tr">
+            <div><div class="room-name">غرفة عائلية</div><div class="room-sub">١٢ غرفة</div></div>
+            <span class="v-num">٧٢٠<span class="cur">ر.س</span></span>
+            <span class="v-num">٨٤٠<span class="cur">ر.س</span></span>
+            <span class="v-num">٨٦<span class="cur">٪</span></span>
+            <span class="v-num">٣٠٩</span>
+            <span class="v-num">٢٥٩٥٦٠<span class="cur">ر.س</span></span>
+          </div>
+          <div class="rev-tr">
+            <div><div class="room-name">جناح رئاسي</div><div class="room-sub">٢ جناح</div></div>
+            <span class="v-num">١٩٤٠<span class="cur">ر.س</span></span>
+            <span class="v-num">٢٤٠٠<span class="cur">ر.س</span></span>
+            <span class="v-num">٨١<span class="cur">٪</span></span>
+            <span class="v-num">٤٩</span>
+            <span class="v-num">١١٧٦٠٠<span class="cur">ر.س</span></span>
+          </div>
+        </div>
+
+        <!-- Forecast + Day of week -->
+        <div class="two-col" data-m-rise style="margin-top:16px">
+          <!-- Monthly target vs actual -->
+          <div class="forecast-card">
+            <div class="fc-head">
+              <div class="ttl">الهدف مقابل الفعلي — شهري</div>
+              <div class="sub">Monthly target vs. actual revenue</div>
+            </div>
+            <div class="fc-month-bar">
+              <div class="fc-month-label"><span class="name">يناير</span><span class="vals">٨٤٠٬٠٠٠ / ٩٠٠٬٠٠٠ ر.س</span></div>
+              <div class="fc-bar-track" style="height:10px">
+                <div class="fc-bar-target" style="width:100%"></div>
+                <div class="fc-bar-actual" style="width:93%"></div>
+              </div>
+            </div>
+            <div class="fc-month-bar">
+              <div class="fc-month-label"><span class="name">فبراير</span><span class="vals">٩٢٠٬٠٠٠ / ٨٨٠٬٠٠٠ ر.س</span></div>
+              <div class="fc-bar-track" style="height:10px">
+                <div class="fc-bar-target" style="width:100%"></div>
+                <div class="fc-bar-actual" style="width:104%"></div>
+              </div>
+            </div>
+            <div class="fc-month-bar">
+              <div class="fc-month-label"><span class="name">مارس</span><span class="vals">٩٦٠٬٠٠٠ / ٩٤٠٬٠٠٠ ر.س</span></div>
+              <div class="fc-bar-track" style="height:10px">
+                <div class="fc-bar-target" style="width:100%"></div>
+                <div class="fc-bar-actual" style="width:98%"></div>
+              </div>
+            </div>
+            <div class="fc-month-bar">
+              <div class="fc-month-label"><span class="name">أبريل</span><span class="vals">١٬١٥٠٬٢٥٠ / ١٬٠٢٠٬٠٠٠ ر.س</span></div>
+              <div class="fc-bar-track" style="height:10px">
+                <div class="fc-bar-target" style="width:100%"></div>
+                <div class="fc-bar-actual" style="width:112%; background:linear-gradient(to left,var(--gold-700),var(--gold-500))"></div>
+              </div>
+            </div>
+            <div class="fc-month-bar">
+              <div class="fc-month-label"><span class="name">مايو (جارٍ)</span><span class="vals">٨٦٠٬٠٠٠ / ١٬٠٥٠٬٠٠٠ ر.س</span></div>
+              <div class="fc-bar-track" style="height:10px">
+                <div class="fc-bar-target" style="width:100%"></div>
+                <div class="fc-bar-actual" style="width:82%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Day of week revenue -->
+          <div class="dow-chart">
+            <div class="dc-head">
+              <div class="ttl">الإيراد حسب يوم الأسبوع</div>
+              <div class="sub">Revenue by day of week · current month</div>
+            </div>
+            <div class="dow-bars">
+              <div class="dow-col">
+                <div class="dow-bar-track"><div class="dow-bar-fill" style="height:55%"></div></div>
+                <div class="dow-lbl">أحد</div>
+                <div class="dow-val">٦١٪</div>
+              </div>
+              <div class="dow-col">
+                <div class="dow-bar-track"><div class="dow-bar-fill" style="height:52%"></div></div>
+                <div class="dow-lbl">إثنين</div>
+                <div class="dow-val">٥٨٪</div>
+              </div>
+              <div class="dow-col">
+                <div class="dow-bar-track"><div class="dow-bar-fill" style="height:64%"></div></div>
+                <div class="dow-lbl">ثلاثاء</div>
+                <div class="dow-val">٧١٪</div>
+              </div>
+              <div class="dow-col">
+                <div class="dow-bar-track"><div class="dow-bar-fill" style="height:70%"></div></div>
+                <div class="dow-lbl">أربعاء</div>
+                <div class="dow-val">٧٨٪</div>
+              </div>
+              <div class="dow-col">
+                <div class="dow-bar-track"><div class="dow-bar-fill is-top" style="height:96%"></div></div>
+                <div class="dow-lbl">خميس</div>
+                <div class="dow-val">٩٦٪</div>
+              </div>
+              <div class="dow-col">
+                <div class="dow-bar-track"><div class="dow-bar-fill is-top" style="height:100%"></div></div>
+                <div class="dow-lbl">جمعة</div>
+                <div class="dow-val">١٠٠٪</div>
+              </div>
+              <div class="dow-col">
+                <div class="dow-bar-track"><div class="dow-bar-fill" style="height:82%"></div></div>
+                <div class="dow-lbl">سبت</div>
+                <div class="dow-val">٩١٪</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /tab-revenue -->
+
+      <!-- ═══════════════════════════════════════════════
+           TAB 3: التسعير الديناميكي
+      ═══════════════════════════════════════════════ -->
+      <div class="tab-pane" id="tab-pricing">
+
+        <div class="sec-head">
+          <div>
+            <div class="ttl">قواعد التسعير الديناميكي</div>
+            <div class="sub">Dynamic pricing rules — toggle to enable / disable each rule</div>
+          </div>
+          <span class="mod-tag ok"><span class="d"></span>٥ قواعد نشطة</span>
+        </div>
+
+        <div class="pricing-rules" data-m-rise>
+          <!-- Rule 1 -->
+          <div class="pr-row">
+            <div class="pr-body">
+              <div class="pr-name">الموسم المرتفع</div>
+              <div class="pr-desc">رفع الأسعار في أبريل – يونيو وسبتمبر – نوفمبر</div>
+              <span class="pr-tag">↑ +٢٥٪</span>
+            </div>
+            <label class="tog-switch">
+              <input type="checkbox" checked onchange="updateActiveRules(this)"/>
+              <div class="tog-track"><div class="tog-thumb"></div></div>
+            </label>
+          </div>
+          <!-- Rule 2 -->
+          <div class="pr-row">
+            <div class="pr-body">
+              <div class="pr-name">نهاية الأسبوع</div>
+              <div class="pr-desc">رفع الأسعار أيام الخميس والجمعة</div>
+              <span class="pr-tag">↑ +١٥٪</span>
+            </div>
+            <label class="tog-switch">
+              <input type="checkbox" checked onchange="updateActiveRules(this)"/>
+              <div class="tog-track"><div class="tog-thumb"></div></div>
+            </label>
+          </div>
+          <!-- Rule 3 -->
+          <div class="pr-row">
+            <div class="pr-body">
+              <div class="pr-name">الإشغال العالي</div>
+              <div class="pr-desc">رفع الأسعار عند تجاوز الإشغال نسبة ٨٥٪</div>
+              <span class="pr-tag">↑ +٢٠٪</span>
+            </div>
+            <label class="tog-switch">
+              <input type="checkbox" checked onchange="updateActiveRules(this)"/>
+              <div class="tog-track"><div class="tog-thumb"></div></div>
+            </label>
+          </div>
+          <!-- Rule 4 -->
+          <div class="pr-row">
+            <div class="pr-body">
+              <div class="pr-name">الحجز المبكر</div>
+              <div class="pr-desc">خصم عند الحجز قبل ٣٠ يوماً من تاريخ الوصول</div>
+              <span class="pr-tag is-discount">↓ −١٠٪</span>
+            </div>
+            <label class="tog-switch">
+              <input type="checkbox" checked onchange="updateActiveRules(this)"/>
+              <div class="tog-track"><div class="tog-thumb"></div></div>
+            </label>
+          </div>
+          <!-- Rule 5 -->
+          <div class="pr-row">
+            <div class="pr-body">
+              <div class="pr-name">الإقامة الطويلة</div>
+              <div class="pr-desc">خصم للإقامات التي تبلغ ٧ ليالٍ أو أكثر</div>
+              <span class="pr-tag is-discount">↓ −٧٪</span>
+            </div>
+            <label class="tog-switch">
+              <input type="checkbox" checked onchange="updateActiveRules(this)"/>
+              <div class="tog-track"><div class="tog-thumb"></div></div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Rate guards -->
+        <div class="sec-head" style="margin-top:4px">
+          <div>
+            <div class="ttl">حراسة الأسعار</div>
+            <div class="sub">Min/Max rate guards — prevent prices from exceeding bounds</div>
+          </div>
+        </div>
+        <div class="rate-guards" data-m-rise>
+          <div class="rg-field">
+            <label class="rg-label">أدنى سعر للغرفة (ر.س / ليلة)</label>
+            <input class="rg-input" type="number" id="rate-min" value="300" min="0"/>
+          </div>
+          <div class="rg-field">
+            <label class="rg-label">أقصى سعر للغرفة (ر.س / ليلة)</label>
+            <input class="rg-input" type="number" id="rate-max" value="2500" min="0"/>
+          </div>
+          <button class="apply-btn" onclick="applyChannels()">تطبيق على القنوات</button>
+        </div>
+
+        <!-- Info notice -->
+        <div style="background:var(--brand-50);border:1px solid var(--brand-200);border-radius:10px;padding:14px 18px;font-size:12px;color:var(--brand-700);line-height:1.6" data-m-rise>
+          <strong>ملاحظة:</strong> تُطبَّق قواعد التسعير الديناميكي بالتسلسل من الأعلى إلى الأسفل. إذا تعارضت قاعدتان تُطبَّق قاعدة الموسم أولاً ثم نسبة الإشغال. حدود الأسعار (Min/Max) تُطبَّق دائماً بغض النظر عن القواعد.
+        </div>
+
+      </div><!-- /tab-pricing -->
+
+      <!-- ═══════════════════════════════════════════════
+           TAB 4: تقرير الـ Pickup
+      ═══════════════════════════════════════════════ -->
+      <div class="tab-pane" id="tab-pickup">
+
+        <div class="pickup-controls" data-m-rise>
+          <span class="pc-label">نافذة المقارنة:</span>
+          <button class="pickup-window-btn is-active" data-win="7">٧ أيام</button>
+          <button class="pickup-window-btn" data-win="14">١٤ يوماً</button>
+          <button class="pickup-window-btn" data-win="30">٣٠ يوماً</button>
+          <button class="pickup-window-btn" data-win="60">٦٠ يوماً</button>
+        </div>
+
+        <div class="pickup-table-wrap" data-m-rise>
+          <div class="pu-tr is-head">
+            <span>التاريخ</span>
+            <span>حجوزات أمس</span>
+            <span>حجوزات الأسبوع</span>
+            <span>حجوزات الشهر</span>
+            <span>فرق عن العام الماضي</span>
+          </div>
+          <div class="pu-tr">
+            <div class="pu-date">١ يونيو ٢٠٢٦</div>
+            <span class="pu-num">٣</span>
+            <span class="pu-num">١٨</span>
+            <span class="pu-num">٦٤</span>
+            <span><span class="pu-delta is-up">▲ +٢٢٪</span></span>
+          </div>
+          <div class="pu-tr">
+            <div class="pu-date">٢ يونيو ٢٠٢٦</div>
+            <span class="pu-num">٥</span>
+            <span class="pu-num">٢٢</span>
+            <span class="pu-num">٧١</span>
+            <span><span class="pu-delta is-up">▲ +١٨٪</span></span>
+          </div>
+          <div class="pu-tr">
+            <div class="pu-date">٣ يونيو ٢٠٢٦</div>
+            <span class="pu-num">٢</span>
+            <span class="pu-num">١٦</span>
+            <span class="pu-num">٥٩</span>
+            <span><span class="pu-delta is-same">≈ +٢٪</span></span>
+          </div>
+          <div class="pu-tr">
+            <div class="pu-date">٤ يونيو ٢٠٢٦</div>
+            <span class="pu-num">٧</span>
+            <span class="pu-num">٢٨</span>
+            <span class="pu-num">٨٢</span>
+            <span><span class="pu-delta is-up">▲ +٣١٪</span></span>
+          </div>
+          <div class="pu-tr">
+            <div class="pu-date">٥ يونيو ٢٠٢٦ (خميس)</div>
+            <span class="pu-num">١١</span>
+            <span class="pu-num">٤٢</span>
+            <span class="pu-num">٩٤</span>
+            <span><span class="pu-delta is-up">▲ +٤٥٪</span></span>
+          </div>
+          <div class="pu-tr">
+            <div class="pu-date">٦ يونيو ٢٠٢٦ (جمعة)</div>
+            <span class="pu-num">١٤</span>
+            <span class="pu-num">٤٨</span>
+            <span class="pu-num">٩٨</span>
+            <span><span class="pu-delta is-up">▲ +٥٢٪</span></span>
+          </div>
+          <div class="pu-tr">
+            <div class="pu-date">٧ يونيو ٢٠٢٦ (سبت)</div>
+            <span class="pu-num">٨</span>
+            <span class="pu-num">٣٤</span>
+            <span class="pu-num">٨٨</span>
+            <span><span class="pu-delta is-up">▲ +٢٨٪</span></span>
+          </div>
+          <div class="pu-tr">
+            <div class="pu-date">٨ يونيو ٢٠٢٦</div>
+            <span class="pu-num">٤</span>
+            <span class="pu-num">١٩</span>
+            <span class="pu-num">٦٧</span>
+            <span><span class="pu-delta is-same">≈ +٥٪</span></span>
+          </div>
+          <div class="pu-tr">
+            <div class="pu-date">٩ يونيو ٢٠٢٦</div>
+            <span class="pu-num">٢</span>
+            <span class="pu-num">١٢</span>
+            <span class="pu-num">٤٨</span>
+            <span><span class="pu-delta is-dn">▼ −٨٪</span></span>
+          </div>
+          <div class="pu-tr">
+            <div class="pu-date">١٠ يونيو ٢٠٢٦</div>
+            <span class="pu-num">١</span>
+            <span class="pu-num">٩</span>
+            <span class="pu-num">٤١</span>
+            <span><span class="pu-delta is-dn">▼ −١٢٪</span></span>
+          </div>
+        </div>
+
+        <!-- Legend -->
+        <div style="display:flex;gap:16px;margin-top:12px;font-size:12px;align-items:center">
+          <span style="color:var(--fg-3)">مفتاح الألوان:</span>
+          <span><span class="pu-delta is-up" style="display:inline-flex">أخضر</span> أعلى من العام الماضي</span>
+          <span><span class="pu-delta is-same" style="display:inline-flex">أصفر</span> مقارب للعام الماضي</span>
+          <span><span class="pu-delta is-dn" style="display:inline-flex">أحمر</span> أقل من العام الماضي</span>
+        </div>
+
+      </div><!-- /tab-pickup -->
+
+      <!-- ═══════════════════════════════════════════════
+           TAB 5: التوقعات
+      ═══════════════════════════════════════════════ -->
+      <div class="tab-pane" id="tab-forecast">
+
+        <!-- 3 forecast cards -->
+        <div class="forecast-cards-row" data-m-rise-stagger>
+          <div class="fc-big-card">
+            <div class="fbc-label">توقع ٣٠ يوماً</div>
+            <div class="fbc-pct">٨٢٪</div>
+            <div class="fbc-desc">إشغال متوقع — يونيو ٢٠٢٦</div>
+            <div class="fbc-trend">▲ +٢ ن.م عن الشهر الماضي</div>
+          </div>
+          <div class="fc-big-card">
+            <div class="fbc-label">توقع ٦٠ يوماً</div>
+            <div class="fbc-pct">٧٦٪</div>
+            <div class="fbc-desc">إشغال متوقع — يوليو ٢٠٢٦</div>
+            <div class="fbc-trend" style="color:var(--warning-700)">▼ −٦ ن.م موسم هادئ</div>
+          </div>
+          <div class="fc-big-card">
+            <div class="fbc-label">توقع ٩٠ يوماً</div>
+            <div class="fbc-pct">٧١٪</div>
+            <div class="fbc-desc">إشغال متوقع — أغسطس ٢٠٢٦</div>
+            <div class="fbc-trend" style="color:var(--warning-700)">▼ −١١ ن.م صيف</div>
+          </div>
+        </div>
+
+        <!-- Weekly forecast bars -->
+        <div class="weekly-forecast" data-m-rise>
+          <div class="wf-head">
+            <div class="ttl">توقع الإشغال الأسبوعي — ١٢ أسبوعاً قادمة</div>
+            <div class="sub">Weekly occupancy forecast · next 12 weeks</div>
+          </div>
+          <div class="wf-row">
+            <div class="wf-week">أسبوع ١ (٢–٦ يون)</div>
+            <div class="wf-bar-bg"><div class="wf-bar-fill" style="width:90%"></div></div>
+            <div class="wf-pct">٩٠٪</div>
+          </div>
+          <div class="wf-row">
+            <div class="wf-week">أسبوع ٢ (٩–١٣ يون)</div>
+            <div class="wf-bar-bg"><div class="wf-bar-fill" style="width:85%"></div></div>
+            <div class="wf-pct">٨٥٪</div>
+          </div>
+          <div class="wf-row">
+            <div class="wf-week">أسبوع ٣ (١٦–٢٠ يون)</div>
+            <div class="wf-bar-bg"><div class="wf-bar-fill" style="width:88%"></div></div>
+            <div class="wf-pct">٨٨٪</div>
+          </div>
+          <div class="wf-row">
+            <div class="wf-week">أسبوع ٤ (٢٣–٢٧ يون)</div>
+            <div class="wf-bar-bg"><div class="wf-bar-fill" style="width:92%;background:linear-gradient(to left,var(--gold-700),var(--gold-400))"></div></div>
+            <div class="wf-pct" style="color:var(--gold-700)">٩٢٪</div>
+          </div>
+          <div class="wf-row">
+            <div class="wf-week">أسبوع ٥ (٣٠ يون–٤ يول)</div>
+            <div class="wf-bar-bg"><div class="wf-bar-fill" style="width:78%"></div></div>
+            <div class="wf-pct">٧٨٪</div>
+          </div>
+          <div class="wf-row">
+            <div class="wf-week">أسبوع ٦ (٧–١١ يول)</div>
+            <div class="wf-bar-bg"><div class="wf-bar-fill" style="width:74%"></div></div>
+            <div class="wf-pct">٧٤٪</div>
+          </div>
+          <div class="wf-row">
+            <div class="wf-week">أسبوع ٧ (١٤–١٨ يول)</div>
+            <div class="wf-bar-bg"><div class="wf-bar-fill" style="width:76%"></div></div>
+            <div class="wf-pct">٧٦٪</div>
+          </div>
+          <div class="wf-row">
+            <div class="wf-week">أسبوع ٨ (٢١–٢٥ يول)</div>
+            <div class="wf-bar-bg"><div class="wf-bar-fill" style="width:71%"></div></div>
+            <div class="wf-pct">٧١٪</div>
+          </div>
+          <div class="wf-row">
+            <div class="wf-week">أسبوع ٩ (٢٨ يول–١ أغ)</div>
+            <div class="wf-bar-bg"><div class="wf-bar-fill" style="width:68%"></div></div>
+            <div class="wf-pct">٦٨٪</div>
+          </div>
+          <div class="wf-row">
+            <div class="wf-week">أسبوع ١٠ (٤–٨ أغ)</div>
+            <div class="wf-bar-bg"><div class="wf-bar-fill" style="width:70%"></div></div>
+            <div class="wf-pct">٧٠٪</div>
+          </div>
+          <div class="wf-row">
+            <div class="wf-week">أسبوع ١١ (١١–١٥ أغ)</div>
+            <div class="wf-bar-bg"><div class="wf-bar-fill" style="width:73%"></div></div>
+            <div class="wf-pct">٧٣٪</div>
+          </div>
+          <div class="wf-row">
+            <div class="wf-week">أسبوع ١٢ (١٨–٢٢ أغ)</div>
+            <div class="wf-bar-bg"><div class="wf-bar-fill" style="width:75%"></div></div>
+            <div class="wf-pct">٧٥٪</div>
+          </div>
+        </div>
+
+        <!-- Recommendation box -->
+        <div class="rec-box" data-m-rise>
+          <div class="rec-ic">💡</div>
+          <div class="rec-body">
+            <div class="rec-title">توصية نظام الإيرادات</div>
+            <div class="rec-text">
+              يُنصح برفع الأسعار <strong>١٠٪</strong> في الأسبوع ٢–٤ استعداداً لارتفاع الطلب في موسم الصيف المبكر ورمضان. الإشغال المتوقع في أسبوع ٤ يصل إلى <strong>٩٢٪</strong> مما يتيح رفع ADR بشكل مربح دون التأثير على معدل الإشغال.
+              <br/>كذلك يُنصح بإطلاق عروض "الإقامة الطويلة" للأسبوع ٦–١٠ لدعم الإشغال في الموسم الهادئ.
+            </div>
+            <div class="rec-en">AI-powered revenue recommendation · confidence 88% · source: booking patterns + seasonality model</div>
+          </div>
+        </div>
+
+      </div><!-- /tab-forecast -->
+
+    </main>
+  </div>
+</div>
+
+<script src="/static/dheuof/shared/sidebar.js"></script>
+<script>StaticSidebar.mount({ activeId: "11-kpis", placeholder: "بحث في الإيرادات..." });</script>
+<script src="/static/dheuof/assets/animations.js"></script>
+<script>
+// ── Ensure animations fire ────────────────────────────────────────────────
+setTimeout(function(){
+  document.querySelectorAll('[data-m-rise],[data-m-rise-stagger]').forEach(function(el){
+    el.classList.add('is-in');
+  });
+}, 80);
+
+// ── Build occupancy bar chart ─────────────────────────────────────────────
+(function buildOccBars(){
+  var months = ['يون','يول','أغ','سبت','أكت','نوف','ديس','يناير','فبراير','مارس','أبريل','مايو'];
+  var values = [72, 68, 65, 81, 84, 88, 79, 83, 86, 82, 90, 87];
+  var container = document.getElementById('occ-bars-container');
+  if (!container) return;
+  var maxV = Math.max.apply(null, values);
+  months.forEach(function(m, i){
+    var pct = Math.round(values[i] / maxV * 100);
+    var isCurrent = i === months.length - 1;
+    var col = document.createElement('div');
+    col.className = 'occ-bar-col';
+    col.innerHTML =
+      '<div class="occ-bar-pct">' + values[i] + '٪</div>' +
+      '<div class="occ-bar-track" style="min-height:100px">' +
+        '<div class="occ-bar-fill' + (isCurrent ? ' is-current' : '') + '" style="height:' + pct + '%"></div>' +
+      '</div>' +
+      '<div class="occ-bar-lbl">' + m + '</div>';
+    container.appendChild(col);
+  });
+})();
+
+// ── Tab switching ─────────────────────────────────────────────────────────
+(function initTabs(){
+  var btns  = document.querySelectorAll('.tab-btn');
+  var panes = document.querySelectorAll('.tab-pane');
+  btns.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var target = btn.dataset.tab;
+      btns.forEach(function(b){ b.classList.remove('is-active'); });
+      panes.forEach(function(p){ p.classList.remove('is-active'); });
+      btn.classList.add('is-active');
+      var pane = document.getElementById('tab-' + target);
+      if (pane) pane.classList.add('is-active');
+      // re-trigger rise animations in the new pane
+      setTimeout(function(){
+        document.querySelectorAll('[data-m-rise],[data-m-rise-stagger]').forEach(function(el){
+          el.classList.add('is-in');
+        });
+      }, 60);
+    });
+  });
+})();
+
+// ── Pickup window selector ────────────────────────────────────────────────
+(function initPickupWindows(){
+  var winBtns = document.querySelectorAll('.pickup-window-btn');
+  winBtns.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      winBtns.forEach(function(b){ b.classList.remove('is-active'); });
+      btn.classList.add('is-active');
+    });
+  });
+})();
+
+// ── Pricing rules active count ────────────────────────────────────────────
+function updateActiveRules(){
+  var checks = document.querySelectorAll('.pricing-rules input[type="checkbox"]');
+  var count = 0;
+  checks.forEach(function(c){ if(c.checked) count++; });
+  var tag = document.querySelector('#tab-pricing .mod-tag.ok');
+  if (tag) tag.textContent = count + ' قواعد نشطة';
+}
+
+// ── Apply channels button → toast ─────────────────────────────────────────
+function applyChannels(){
+  var minV = document.getElementById('rate-min') ? document.getElementById('rate-min').value : 300;
+  var maxV = document.getElementById('rate-max') ? document.getElementById('rate-max').value : 2500;
+  showToast('تم تحديث الأسعار على ٧ قنوات ✓ (أدنى: ' + minV + ' ر.س، أقصى: ' + maxV + ' ر.س)');
+}
+
+function showToast(msg){
+  var old = document.querySelector('.dh-kpi-toast');
+  if (old) old.remove();
+  var t = document.createElement('div');
+  t.className = 'dh-kpi-toast';
+  t.innerHTML = '<span class="t-ic">✓</span>' + msg;
+  document.body.appendChild(t);
+  setTimeout(function(){
+    t.style.opacity = '0';
+    t.style.transform = 'translateY(8px)';
+    setTimeout(function(){ if(t.parentNode) t.remove(); }, 400);
+  }, 3200);
+}
+
+// ── Export helpers ────────────────────────────────────────────────────────
+function todayStr(){
+  var d = new Date();
+  return d.getFullYear()
+    + (d.getMonth()+1 < 10 ? '0' : '') + (d.getMonth()+1)
+    + (d.getDate() < 10 ? '0' : '') + d.getDate();
+}
+
+function dlXLS(content, filename){
+  var b = new Blob([content], {type: 'application/vnd.ms-excel;charset=utf-8'});
+  var u = URL.createObjectURL(b);
+  var a = document.createElement('a');
+  a.href = u; a.download = filename; a.click();
+  setTimeout(function(){ URL.revokeObjectURL(u); }, 1000);
+}
+
+function toXLS(headers, rows, sheetName){
+  var s = '<Styles>'
+    + '<Style ss:ID="H"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1B4D3D" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center"/></Style>'
+    + '<Style ss:ID="OK"><Interior ss:Color="#DCEEE6" ss:Pattern="Solid"/><Font ss:Color="#1B5E40" ss:Bold="1"/></Style>'
+    + '<Style ss:ID="WARN"><Interior ss:Color="#F6E7C2" ss:Pattern="Solid"/><Font ss:Color="#7A5C00" ss:Bold="1"/></Style>'
+    + '<Style ss:ID="BAD"><Interior ss:Color="#F1D8CF" ss:Pattern="Solid"/><Font ss:Color="#7A1A00" ss:Bold="1"/></Style>'
+    + '</Styles>';
+  function esc(v){ return String(v == null ? '' : v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function cell(v){
+    if (v && typeof v === 'object' && 's' in v)
+      return '<Cell ss:StyleID="' + v.s + '"><Data ss:Type="String">' + esc(v.v) + '</Data></Cell>';
+    return '<Cell><Data ss:Type="' + (typeof v === 'number' ? 'Number' : 'String') + '">' + esc(v) + '</Data></Cell>';
+  }
+  var hRow = '<Row>' + headers.map(function(h){ return '<Cell ss:StyleID="H"><Data ss:Type="String">' + esc(h) + '</Data></Cell>'; }).join('') + '</Row>';
+  var dRows = rows.map(function(r){ return '<Row>' + r.map(cell).join('') + '</Row>'; }).join('');
+  return '<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?>'
+    + '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'
+    + s
+    + '<Worksheet ss:Name="' + esc(sheetName) + '"><Table>' + hRow + dRows + '</Table></Worksheet>'
+    + '</Workbook>';
+}
+
+var KPI_DATA = [
+  {en:'RevPAR', ar:'الإيراد لكل غرفة متاحة', val:'٦٢٦', unit:'ر.س', change:'+٧٪', period:'شهر/شهر'},
+  {en:'ADR',    ar:'متوسط سعر الغرفة',        val:'٧٢٠', unit:'ر.س', change:'+١٢٪', period:'عن العام'},
+  {en:'OCC',    ar:'نسبة الإشغال',             val:'٨٧',  unit:'٪',   change:'+٤٪',  period:'عن الموسم'},
+  {en:'GOPPAR', ar:'الربح التشغيلي',           val:'٤٢٤', unit:'ر.س', change:'−٢٪',  period:'شهر/شهر'},
+  {en:'ALOS',   ar:'متوسط ليالي الإقامة',      val:'٢.٤', unit:'ليلة',change:'+٠.٣', period:'عن أبريل ٢٤'},
+];
+
+var ROOM_DATA = [
+  {type:'غرفة مفردة',  revpar:'٣٤٠', adr:'٣٩٠', occ:'٨٧٪', nights:'٦٢٤',    revenue:'٢٤٣٬٣٦٠'},
+  {type:'غرفة مزدوجة', revpar:'٥٤٠', adr:'٦١٠', occ:'٨٩٪', nights:'٤٨١',    revenue:'٢٩٣٬٤١٠'},
+  {type:'جناح',         revpar:'٩٨٠', adr:'١١٢٠',occ:'٨٨٪', nights:'٢١١',    revenue:'٢٣٦٬٣٢٠'},
+  {type:'غرفة عائلية', revpar:'٧٢٠', adr:'٨٤٠', occ:'٨٦٪', nights:'٣٠٩',    revenue:'٢٥٩٬٥٦٠'},
+  {type:'جناح رئاسي',  revpar:'١٩٤٠',adr:'٢٤٠٠',occ:'٨١٪', nights:'٤٩',     revenue:'١١٧٬٦٠٠'},
+];
+
+window.kpiExportExcel = function(){
+  var kpiHeaders = ['المؤشر','الوصف','القيمة','الوحدة','التغيير','الفترة'];
+  var kpiRows = KPI_DATA.map(function(k){ return [k.en, k.ar, k.val, k.unit, k.change, k.period]; });
+  var roomHeaders = ['نوع الغرفة','RevPAR (ر.س)','ADR (ر.س)','الإشغال','ليالي مبيعة','الإيراد الإجمالي (ر.س)'];
+  var roomRows = ROOM_DATA.map(function(r){ return [r.type, r.revpar, r.adr, r.occ, r.nights, r.revenue]; });
+
+  var xml = '<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?>'
+    + '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'
+    + '<Styles><Style ss:ID="H"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1B4D3D" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center"/></Style></Styles>';
+
+  function esc(v){ return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function cell(v){ return '<Cell><Data ss:Type="String">' + esc(v) + '</Data></Cell>'; }
+  function hcell(v){ return '<Cell ss:StyleID="H"><Data ss:Type="String">' + esc(v) + '</Data></Cell>'; }
+  function sheet(name, hdrs, rows){
+    return '<Worksheet ss:Name="' + esc(name) + '"><Table>'
+      + '<Row>' + hdrs.map(hcell).join('') + '</Row>'
+      + rows.map(function(r){ return '<Row>' + r.map(cell).join('') + '</Row>'; }).join('')
+      + '</Table></Worksheet>';
+  }
+  xml += sheet('المؤشرات الرئيسية', kpiHeaders, kpiRows);
+  xml += sheet('الإيراد حسب الغرفة', roomHeaders, roomRows);
+  xml += '</Workbook>';
+
+  dlXLS(xml, 'الإيرادات_' + todayStr() + '.xls');
+  showToast('تم تصدير ملف Excel بنجاح ✓');
+};
+
+window.kpiExportPDF = function(){
+  var kpiRows = KPI_DATA.map(function(k){
+    var isUp = k.change.indexOf('+') !== -1;
+    var color = isUp ? '#1B7A56' : '#C0392B';
+    return '<tr><td><strong>' + k.en + '</strong></td><td>' + k.ar + '</td>'
+      + '<td style="font-weight:700;font-size:18px">' + k.val + ' <span style="font-size:12px;font-weight:400;color:#666">' + k.unit + '</span></td>'
+      + '<td style="color:' + color + ';font-weight:700">' + k.change + ' <small style="font-weight:400;color:#888">' + k.period + '</small></td></tr>';
+  }).join('');
+
+  var roomRows = ROOM_DATA.map(function(r){
+    return '<tr><td><strong>' + r.type + '</strong></td>'
+      + '<td>' + r.revpar + ' ر.س</td>'
+      + '<td>' + r.adr + ' ر.س</td>'
+      + '<td>' + r.occ + '</td>'
+      + '<td>' + r.nights + '</td>'
+      + '<td style="font-weight:700">' + r.revenue + ' ر.س</td></tr>';
+  }).join('');
+
+  var win = window.open('', '_blank', 'width=1020,height=780');
+  win.document.write('<!doctype html><html lang="ar" dir="rtl"><head>'
+    + '<meta charset="utf-8"/><title>تقرير الإيرادات والمؤشرات</title>'
+    + '<style>'
+    + 'body{font-family:"Tajawal","Segoe UI",sans-serif;margin:32px;color:#1a1a1a;direction:rtl}'
+    + 'h1{font-size:22px;margin:0 0 4px;color:#1B4D3D}h2{font-size:16px;margin:22px 0 10px;color:#1B4D3D}'
+    + '.sub{font-size:12px;color:#666;margin:0 0 18px}'
+    + 'table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:24px}'
+    + 'th{background:#1B4D3D;color:#fff;padding:9px 12px;text-align:right}'
+    + 'td{padding:8px 12px;border-bottom:1px solid #eee;vertical-align:middle}'
+    + 'tr:nth-child(even){background:#fafafa}'
+    + '.footer{margin-top:18px;font-size:11px;color:#999}'
+    + '</style></head><body>'
+    + '<h1>تقرير الإيرادات والمؤشرات</h1>'
+    + '<p class="sub">' + new Date().toLocaleDateString('ar-SA') + ' · ضيوف — نظام إدارة الفنادق</p>'
+    + '<h2>المؤشرات الرئيسية (KPIs)</h2>'
+    + '<table><thead><tr><th>المؤشر</th><th>الوصف</th><th>القيمة</th><th>التغيير</th></tr></thead>'
+    + '<tbody>' + kpiRows + '</tbody></table>'
+    + '<h2>الإيراد حسب نوع الغرفة</h2>'
+    + '<table><thead><tr><th>نوع الغرفة</th><th>RevPAR</th><th>ADR</th><th>الإشغال</th><th>ليالي مبيعة</th><th>الإيراد الإجمالي</th></tr></thead>'
+    + '<tbody>' + roomRows + '</tbody></table>'
+    + '<div class="footer">نظام ضيوف · إدارة الإيرادات · ' + new Date().toLocaleString('ar-SA') + '</div>'
+    + '</body></html>');
+  win.document.close();
+  setTimeout(function(){ win.print(); }, 700);
+};
+</script>
 </body>
 </html>

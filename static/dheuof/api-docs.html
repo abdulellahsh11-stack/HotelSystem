@@ -1,0 +1,998 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-screen-label="API Documentation">
+<head>
+<meta charset="utf-8"/>
+<title>ضيوف · توثيق الـ API</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="stylesheet" href="/static/dheuof/colors_and_type.css"/>
+<link rel="stylesheet" href="/static/dheuof/assets/animations.css"/>
+<style>
+  html, body { margin: 0; padding: 0; }
+  body { background: var(--paper); color: var(--ink-900); font-family: var(--font-ar); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+  * { box-sizing: border-box; }
+  a { text-decoration: none; color: inherit; }
+  button { font: inherit; cursor: pointer; }
+
+  /* ── Top bar ─────────────────────────────────────────────────────────── */
+  .top {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 32px; border-bottom: 1px solid var(--hairline);
+    background: var(--white); position: sticky; top: 0; z-index: var(--z-sticky);
+  }
+  .top .brand { display: inline-flex; align-items: center; gap: 12px; }
+  .top .brand img { width: 36px; height: 36px; }
+  .top .brand .ar { font-family: var(--font-ar-display); font-weight: 600; font-size: 20px; }
+  .top .brand .en { font-family: var(--font-en-display); font-style: italic; font-size: 13px; color: var(--gold-700); margin-inline-start: 4px; }
+  .top .back { font-size: 13px; color: var(--fg-2); transition: color 140ms; }
+  .top .back:hover { color: var(--ink-900); }
+  .top-end { display: flex; align-items: center; gap: 16px; }
+  .version-pill {
+    font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+    background: var(--brand-100); color: var(--brand-700);
+    padding: 4px 10px; border-radius: 999px; letter-spacing: 0.06em;
+  }
+
+  /* ── Layout ──────────────────────────────────────────────────────────── */
+  .layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    max-width: 1200px; margin: 0 auto; gap: 0;
+    min-height: calc(100vh - 73px);
+  }
+
+  /* ── Sidebar nav ─────────────────────────────────────────────────────── */
+  .api-nav {
+    border-inline-end: 1px solid var(--hairline);
+    padding: 28px 20px 40px;
+    position: sticky; top: 73px; height: calc(100vh - 73px);
+    overflow-y: auto;
+  }
+  .api-nav .nav-section { margin-bottom: 24px; }
+  .api-nav .nav-section-title {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--fg-3); margin-bottom: 8px; padding: 0 6px;
+    font-family: var(--font-en);
+  }
+  .api-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 10px; border-radius: 7px; font-size: 13px;
+    color: var(--ink-700); transition: background 140ms, color 140ms;
+    margin-bottom: 2px;
+  }
+  .api-nav a:hover { background: var(--sand); color: var(--ink-900); }
+  .api-nav a.active { background: var(--brand-100); color: var(--brand-700); font-weight: 500; }
+  .api-nav .m-badge {
+    font-family: var(--font-mono); font-size: 9px; font-weight: 700;
+    padding: 2px 6px; border-radius: 3px; flex-shrink: 0;
+  }
+  .m-get    { background: #dcfce7; color: #166534; }
+  .m-post   { background: #dbeafe; color: #1e40af; }
+  .m-put    { background: #fef9c3; color: #854d0e; }
+  .m-delete { background: #fee2e2; color: #991b1b; }
+
+  /* ── Main content ────────────────────────────────────────────────────── */
+  .api-main { padding: 36px 40px 80px; }
+
+  /* ── Hero ────────────────────────────────────────────────────────────── */
+  .hero { margin-bottom: 40px; }
+  .hero .eyebrow {
+    font-family: var(--font-en); font-size: 11px; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--gold-700); font-weight: 600; margin-bottom: 10px;
+  }
+  .hero h1 {
+    font-family: var(--font-ar-display); font-weight: 600; font-size: 38px;
+    color: var(--ink-900); margin: 0 0 6px; line-height: 1.15;
+  }
+  .hero h1 .en-part { font-family: var(--font-en); font-style: italic; color: var(--gold-700); }
+  .hero .lead { font-size: 15px; color: var(--fg-2); margin: 0 0 20px; line-height: 1.6; }
+  .hero-meta { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .meta-chip {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: var(--white); border: 1px solid var(--hairline);
+    border-radius: 8px; padding: 8px 14px; font-size: 13px; color: var(--ink-700);
+  }
+  .meta-chip .lbl { font-size: 11px; color: var(--fg-3); font-weight: 500; }
+  .meta-chip .val { font-family: var(--font-mono); font-size: 12px; color: var(--ink-900); font-weight: 600; }
+  .meta-chip code {
+    font-family: var(--font-mono); font-size: 12px; color: var(--brand-700);
+    background: var(--brand-50); padding: 2px 6px; border-radius: 4px;
+  }
+
+  /* ── Auth box ────────────────────────────────────────────────────────── */
+  .auth-box {
+    background: linear-gradient(135deg, var(--brand-50), var(--paper-tint));
+    border: 1px solid var(--brand-200); border-radius: 12px;
+    padding: 20px 24px; margin-bottom: 36px;
+  }
+  .auth-box h3 { font-size: 15px; font-weight: 600; color: var(--ink-900); margin: 0 0 12px; }
+  .auth-rows { display: flex; flex-direction: column; gap: 10px; }
+  .auth-row {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    font-size: 13px;
+  }
+  .auth-row .auth-lbl { color: var(--fg-2); min-width: 100px; }
+  .auth-row code {
+    font-family: var(--font-mono); font-size: 12px; background: var(--white);
+    border: 1px solid var(--hairline); padding: 4px 10px; border-radius: 6px;
+    color: var(--ink-900); direction: ltr; text-align: left;
+  }
+  .auth-note { font-size: 12px; color: var(--fg-3); margin-top: 10px; }
+
+  /* ── Rate limit banner ───────────────────────────────────────────────── */
+  .rate-banner {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--warning-100); border: 1px solid var(--warning-500);
+    border-radius: 10px; padding: 12px 18px; margin-bottom: 36px; font-size: 13px;
+  }
+  .rate-banner .icon { font-size: 18px; flex-shrink: 0; }
+  .rate-banner strong { color: var(--warning-700); }
+
+  /* ── Section heading ─────────────────────────────────────────────────── */
+  .api-section { margin-bottom: 40px; scroll-margin-top: 90px; }
+  .api-section-title {
+    display: flex; align-items: center; gap: 10px;
+    font-family: var(--font-ar-display); font-size: 20px; font-weight: 600;
+    color: var(--ink-900); margin: 0 0 16px;
+    padding-bottom: 12px; border-bottom: 2px solid var(--hairline);
+  }
+  .api-section-title .section-icon {
+    width: 32px; height: 32px; background: var(--brand-700); color: var(--paper);
+    border-radius: 8px; display: grid; place-items: center; font-size: 14px; flex-shrink: 0;
+  }
+
+  /* ── Endpoint cards ──────────────────────────────────────────────────── */
+  .endpoint-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .endpoint-card {
+    background: var(--white); border: 1px solid var(--hairline);
+    border-radius: 10px; overflow: hidden;
+    transition: border-color 160ms, box-shadow 160ms;
+  }
+  .endpoint-card:hover { border-color: var(--gold-300); }
+  .endpoint-card.open { border-color: var(--brand-300); box-shadow: var(--shadow-2); }
+
+  .endpoint-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 18px; cursor: pointer; user-select: none;
+    transition: background 140ms;
+  }
+  .endpoint-header:hover { background: var(--paper); }
+
+  .method-badge {
+    font-family: var(--font-mono); font-size: 11px; font-weight: 700;
+    padding: 4px 10px; border-radius: 5px; flex-shrink: 0; min-width: 52px;
+    text-align: center; letter-spacing: 0.04em;
+  }
+  .method-badge.GET    { background: #dcfce7; color: #166534; }
+  .method-badge.POST   { background: #dbeafe; color: #1e40af; }
+  .method-badge.PUT    { background: #fef9c3; color: #854d0e; }
+  .method-badge.DELETE { background: #fee2e2; color: #991b1b; }
+
+  .endpoint-path {
+    font-family: var(--font-mono); font-size: 13px; color: var(--ink-900); font-weight: 500;
+    direction: ltr; flex: 1;
+  }
+  .endpoint-desc { font-size: 13px; color: var(--fg-2); flex: 2; }
+  .endpoint-chevron {
+    font-size: 11px; color: var(--fg-3); transition: transform 200ms;
+    margin-inline-start: auto; flex-shrink: 0;
+  }
+  .endpoint-card.open .endpoint-chevron { transform: rotate(180deg); }
+
+  /* Code example panel */
+  .endpoint-body {
+    display: none; border-top: 1px solid var(--hairline);
+  }
+  .endpoint-card.open .endpoint-body { display: block; }
+
+  .code-tabs {
+    display: flex; gap: 0; border-bottom: 1px solid var(--hairline);
+    background: var(--paper); padding: 0 18px;
+  }
+  .code-tab {
+    font-size: 12px; font-weight: 500; padding: 10px 14px; cursor: pointer;
+    color: var(--fg-3); border-bottom: 2px solid transparent;
+    transition: color 140ms, border-color 140ms;
+    font-family: var(--font-en);
+  }
+  .code-tab.active { color: var(--brand-700); border-bottom-color: var(--brand-700); }
+
+  .code-block {
+    background: #1e293b; color: #e2e8f0;
+    font-family: var(--font-mono); font-size: 12.5px; line-height: 1.7;
+    padding: 20px 24px; overflow-x: auto; direction: ltr; text-align: left;
+    margin: 0;
+  }
+  .code-block .ck { color: #7dd3fc; }   /* key */
+  .code-block .cv { color: #86efac; }   /* string value */
+  .code-block .cn { color: #fda4af; }   /* number */
+  .code-block .cc { color: #94a3b8; }   /* comment */
+  .code-block .cm { color: #c4b5fd; }   /* method/keyword */
+  .code-block .curl-url { color: #fde68a; }
+
+  .params-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .params-table th {
+    text-align: right; padding: 10px 18px;
+    background: var(--paper); color: var(--fg-3); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.06em; border-bottom: 1px solid var(--hairline);
+  }
+  .params-table td { padding: 10px 18px; border-bottom: 1px solid var(--hairline); color: var(--ink-700); }
+  .params-table tr:last-child td { border-bottom: none; }
+  .param-name { font-family: var(--font-mono); color: var(--brand-700); font-size: 12px; }
+  .param-type { font-family: var(--font-mono); color: var(--fg-3); font-size: 11px; }
+  .param-req  { color: var(--danger-700); font-size: 11px; font-weight: 600; }
+  .param-opt  { color: var(--fg-3); font-size: 11px; }
+
+  /* ── Webhook events ───────────────────────────────────────────────────── */
+  .webhook-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+  .webhook-event {
+    background: var(--white); border: 1px solid var(--hairline);
+    border-radius: 8px; padding: 12px 16px;
+    font-family: var(--font-mono); font-size: 12px; color: var(--ink-900);
+    direction: ltr; text-align: left;
+    transition: border-color 140ms, box-shadow 140ms;
+  }
+  .webhook-event:hover { border-color: var(--brand-300); box-shadow: var(--shadow-1); }
+  .webhook-event .we-name { color: var(--brand-700); font-weight: 600; }
+  .webhook-event .we-desc { font-family: var(--font-ar); font-size: 11px; color: var(--fg-3); margin-top: 4px; direction: rtl; text-align: right; }
+
+  /* ── Responsive ──────────────────────────────────────────────────────── */
+  @media (max-width: 860px) {
+    .layout { grid-template-columns: 1fr; }
+    .api-nav { display: none; }
+    .api-main { padding: 24px 20px 60px; }
+    .hero h1 { font-size: 28px; }
+    .endpoint-header { flex-wrap: wrap; }
+    .endpoint-desc { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Top bar ─────────────────────────────────────────────────────────── -->
+<header class="top">
+  <a class="brand" href="/static/dheuof/index.html">
+    <img src="/static/dheuof/assets/logo-mark.svg" alt="ضيوف"/>
+    <div><span class="ar">ضيوف</span><span class="en">Dheuof</span></div>
+  </a>
+  <div class="top-end">
+    <span class="version-pill">v1.0</span>
+    <a class="back" href="/static/dheuof/index.html">← العودة</a>
+  </div>
+</header>
+
+<!-- ── Two-column layout ───────────────────────────────────────────────── -->
+<div class="layout">
+
+  <!-- ── Sidebar ────────────────────────────────────────────────────────── -->
+  <nav class="api-nav">
+    <div class="nav-section">
+      <div class="nav-section-title">Overview</div>
+      <a href="#auth" onclick="navClick(this)">المصادقة</a>
+      <a href="#rate-limits" onclick="navClick(this)">حدود الطلبات</a>
+      <a href="#webhooks" onclick="navClick(this)">Webhooks</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">Authentication</div>
+      <a href="#ep-login" onclick="navClick(this)"><span class="m-badge m-post">POST</span> /api/login</a>
+      <a href="#ep-logout" onclick="navClick(this)"><span class="m-badge m-post">POST</span> /api/logout</a>
+      <a href="#ep-status" onclick="navClick(this)"><span class="m-badge m-get">GET</span> /api/status</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">Guests & Bookings</div>
+      <a href="#ep-guests-list" onclick="navClick(this)"><span class="m-badge m-get">GET</span> /api/guests</a>
+      <a href="#ep-guests-create" onclick="navClick(this)"><span class="m-badge m-post">POST</span> /api/guests</a>
+      <a href="#ep-bookings-list" onclick="navClick(this)"><span class="m-badge m-get">GET</span> /api/bookings</a>
+      <a href="#ep-bookings-create" onclick="navClick(this)"><span class="m-badge m-post">POST</span> /api/bookings</a>
+      <a href="#ep-bookings-update" onclick="navClick(this)"><span class="m-badge m-put">PUT</span> /api/bookings/{id}</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">Rooms & Rates</div>
+      <a href="#ep-rooms" onclick="navClick(this)"><span class="m-badge m-get">GET</span> /api/rooms</a>
+      <a href="#ep-availability" onclick="navClick(this)"><span class="m-badge m-get">GET</span> /api/rooms/availability</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">Channels</div>
+      <a href="#ep-bcom-webhook" onclick="navClick(this)"><span class="m-badge m-post">POST</span> /channels/booking-com/webhook</a>
+      <a href="#ep-channels-status" onclick="navClick(this)"><span class="m-badge m-get">GET</span> /channels/status/{id}</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">Invoices</div>
+      <a href="#ep-invoices-list" onclick="navClick(this)"><span class="m-badge m-get">GET</span> /api/invoices</a>
+      <a href="#ep-invoices-create" onclick="navClick(this)"><span class="m-badge m-post">POST</span> /api/invoices</a>
+    </div>
+  </nav>
+
+  <!-- ── Main content ───────────────────────────────────────────────────── -->
+  <main class="api-main">
+
+    <!-- Hero -->
+    <div class="hero" data-m-rise>
+      <div class="eyebrow">REST API · DEVELOPER DOCUMENTATION</div>
+      <h1>توثيق الـ <span class="en-part">API</span></h1>
+      <p class="lead">واجهات برمجية RESTful لتكاملات الطرف الثالث · تعتمد JSON وتستخدم JWT للمصادقة</p>
+      <div class="hero-meta">
+        <div class="meta-chip">
+          <div class="lbl">Base URL</div>
+          <code>https://api.dheuof.com/v1</code>
+        </div>
+        <div class="meta-chip">
+          <div class="lbl">نسخة</div>
+          <div class="val">v1.0</div>
+        </div>
+        <div class="meta-chip">
+          <div class="lbl">Format</div>
+          <div class="val">JSON · REST</div>
+        </div>
+        <div class="meta-chip">
+          <div class="lbl">Auth</div>
+          <div class="val">Bearer JWT</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Auth section -->
+    <div id="auth" class="auth-box" data-m-rise>
+      <h3>المصادقة · Authentication</h3>
+      <div class="auth-rows">
+        <div class="auth-row">
+          <span class="auth-lbl">نوع المصادقة:</span>
+          <code>Bearer Token (JWT)</code>
+        </div>
+        <div class="auth-row">
+          <span class="auth-lbl">الـ Header:</span>
+          <code>Authorization: Bearer &lt;token&gt;</code>
+        </div>
+        <div class="auth-row">
+          <span class="auth-lbl">Content-Type:</span>
+          <code>application/json</code>
+        </div>
+      </div>
+      <div class="auth-note">الرمز (token) يُستلم عند تسجيل الدخول عبر <code style="font-family:var(--font-mono);font-size:11px;background:var(--white);padding:2px 6px;border-radius:4px;border:1px solid var(--hairline)">POST /api/login</code> · صالح لمدة 24 ساعة.</div>
+    </div>
+
+    <!-- Rate limits -->
+    <div id="rate-limits" class="rate-banner" data-m-rise>
+      <span class="icon">⚡</span>
+      <div>
+        <strong>حدود الطلبات (Rate Limits):</strong>
+        <span style="color:var(--ink-700)"> 1000 طلب / ساعة لكل مفتاح API. عند تجاوز الحد ترجع الاستجابة <code style="font-family:var(--font-mono);font-size:11px;background:rgba(0,0,0,0.06);padding:2px 5px;border-radius:3px">429 Too Many Requests</code></span>
+      </div>
+    </div>
+
+    <!-- ── Section: المصادقة ─────────────────────────────────────────────── -->
+    <div class="api-section" data-m-rise>
+      <div class="api-section-title">
+        <div class="section-icon">🔑</div>
+        المصادقة
+      </div>
+      <div class="endpoint-list">
+
+        <!-- POST /api/login -->
+        <div class="endpoint-card" id="ep-login">
+          <div class="endpoint-header" onclick="toggleEndpoint(this)">
+            <span class="method-badge POST">POST</span>
+            <span class="endpoint-path">/api/login</span>
+            <span class="endpoint-desc">تسجيل دخول المشترك والحصول على JWT</span>
+            <span class="endpoint-chevron">▼</span>
+          </div>
+          <div class="endpoint-body">
+            <div class="code-tabs">
+              <div class="code-tab active" onclick="switchTab(this, 'req')">Request</div>
+              <div class="code-tab" onclick="switchTab(this, 'res')">Response</div>
+            </div>
+            <pre class="code-block" data-tab="req">{
+  <span class="ck">"username"</span>: <span class="cv">"manager@hotel.sa"</span>,
+  <span class="ck">"password"</span>: <span class="cv">"••••••••"</span>,
+  <span class="ck">"client_id"</span>: <span class="cv">"00001"</span>  <span class="cc">// رقم المنشأة</span>
+}</pre>
+            <pre class="code-block" data-tab="res" style="display:none">{
+  <span class="ck">"status"</span>: <span class="cv">"ok"</span>,
+  <span class="ck">"token"</span>: <span class="cv">"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."</span>,
+  <span class="ck">"expires_at"</span>: <span class="cv">"2026-06-03T12:00:00Z"</span>,
+  <span class="ck">"user"</span>: {
+    <span class="ck">"id"</span>: <span class="cn">42</span>,
+    <span class="ck">"name"</span>: <span class="cv">"سارة أحمد"</span>,
+    <span class="ck">"role"</span>: <span class="cv">"manager"</span>,
+    <span class="ck">"client_id"</span>: <span class="cv">"00001"</span>
+  }
+}</pre>
+          </div>
+        </div>
+
+        <!-- POST /api/logout -->
+        <div class="endpoint-card" id="ep-logout">
+          <div class="endpoint-header" onclick="toggleEndpoint(this)">
+            <span class="method-badge POST">POST</span>
+            <span class="endpoint-path">/api/logout</span>
+            <span class="endpoint-desc">إنهاء الجلسة وإبطال الرمز</span>
+            <span class="endpoint-chevron">▼</span>
+          </div>
+          <div class="endpoint-body">
+            <div class="code-tabs">
+              <div class="code-tab active" onclick="switchTab(this, 'req')">Request</div>
+              <div class="code-tab" onclick="switchTab(this, 'res')">Response</div>
+            </div>
+            <pre class="code-block" data-tab="req"><span class="cc">// لا يحتاج body — يستخدم Bearer token في الـ header</span>
+<span class="cm">Authorization</span>: Bearer &lt;token&gt;</pre>
+            <pre class="code-block" data-tab="res" style="display:none">{
+  <span class="ck">"status"</span>: <span class="cv">"ok"</span>,
+  <span class="ck">"message"</span>: <span class="cv">"Logged out successfully"</span>
+}</pre>
+          </div>
+        </div>
+
+        <!-- GET /api/status -->
+        <div class="endpoint-card" id="ep-status">
+          <div class="endpoint-header" onclick="toggleEndpoint(this)">
+            <span class="method-badge GET">GET</span>
+            <span class="endpoint-path">/api/status</span>
+            <span class="endpoint-desc">حالة الجلسة الحالية والمستخدم</span>
+            <span class="endpoint-chevron">▼</span>
+          </div>
+          <div class="endpoint-body">
+            <div class="code-tabs">
+              <div class="code-tab active" onclick="switchTab(this, 'req')">Request</div>
+              <div class="code-tab" onclick="switchTab(this, 'res')">Response</div>
+            </div>
+            <pre class="code-block" data-tab="req"><span class="cm">GET</span> <span class="curl-url">https://api.dheuof.com/v1/api/status</span>
+<span class="cm">Authorization</span>: Bearer &lt;token&gt;</pre>
+            <pre class="code-block" data-tab="res" style="display:none">{
+  <span class="ck">"authenticated"</span>: <span class="cn">true</span>,
+  <span class="ck">"user_id"</span>: <span class="cn">42</span>,
+  <span class="ck">"client_id"</span>: <span class="cv">"00001"</span>,
+  <span class="ck">"expires_at"</span>: <span class="cv">"2026-06-03T12:00:00Z"</span>
+}</pre>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /section auth -->
+
+    <!-- ── Section: الضيوف والحجوزات ─────────────────────────────────────── -->
+    <div class="api-section" data-m-rise>
+      <div class="api-section-title">
+        <div class="section-icon">🛎</div>
+        الضيوف والحجوزات
+      </div>
+      <div class="endpoint-list">
+
+        <!-- GET /api/guests -->
+        <div class="endpoint-card" id="ep-guests-list">
+          <div class="endpoint-header" onclick="toggleEndpoint(this)">
+            <span class="method-badge GET">GET</span>
+            <span class="endpoint-path">/api/guests</span>
+            <span class="endpoint-desc">قائمة الضيوف مع بحث وتصفية</span>
+            <span class="endpoint-chevron">▼</span>
+          </div>
+          <div class="endpoint-body">
+            <table class="params-table">
+              <thead><tr><th>Parameter</th><th>النوع</th><th>إلزامي</th><th>الوصف</th></tr></thead>
+              <tbody>
+                <tr><td class="param-name">limit</td><td class="param-type">integer</td><td class="param-opt">اختياري</td><td>عدد النتائج (افتراضي: 20، حد أقصى: 100)</td></tr>
+                <tr><td class="param-name">offset</td><td class="param-type">integer</td><td class="param-opt">اختياري</td><td>نقطة البداية للصفحة (default: 0)</td></tr>
+                <tr><td class="param-name">search</td><td class="param-type">string</td><td class="param-opt">اختياري</td><td>بحث بالاسم أو البريد أو رقم الجواز</td></tr>
+              </tbody>
+            </table>
+            <div class="code-tabs">
+              <div class="code-tab active" onclick="switchTab(this, 'req')">Request</div>
+              <div class="code-tab" onclick="switchTab(this, 'res')">Response</div>
+            </div>
+            <pre class="code-block" data-tab="req"><span class="cm">GET</span> <span class="curl-url">https://api.dheuof.com/v1/api/guests?limit=20&offset=0&search=أحمد</span></pre>
+            <pre class="code-block" data-tab="res" style="display:none">{
+  <span class="ck">"total"</span>: <span class="cn">142</span>,
+  <span class="ck">"limit"</span>: <span class="cn">20</span>,
+  <span class="ck">"offset"</span>: <span class="cn">0</span>,
+  <span class="ck">"data"</span>: [
+    {
+      <span class="ck">"id"</span>: <span class="cn">1</span>,
+      <span class="ck">"name"</span>: <span class="cv">"أحمد محمد الغامدي"</span>,
+      <span class="ck">"email"</span>: <span class="cv">"ahmed@example.com"</span>,
+      <span class="ck">"phone"</span>: <span class="cv">"+966501234567"</span>,
+      <span class="ck">"nationality"</span>: <span class="cv">"SA"</span>,
+      <span class="ck">"id_number"</span>: <span class="cv">"1xxxxxxxxx"</span>,
+      <span class="ck">"created_at"</span>: <span class="cv">"2026-01-15T08:00:00Z"</span>
+    }
+  ]
+}</pre>
+          </div>
+        </div>
+
+        <!-- POST /api/guests -->
+        <div class="endpoint-card" id="ep-guests-create">
+          <div class="endpoint-header" onclick="toggleEndpoint(this)">
+            <span class="method-badge POST">POST</span>
+            <span class="endpoint-path">/api/guests</span>
+            <span class="endpoint-desc">إضافة ضيف جديد إلى قاعدة البيانات</span>
+            <span class="endpoint-chevron">▼</span>
+          </div>
+          <div class="endpoint-body">
+            <div class="code-tabs">
+              <div class="code-tab active" onclick="switchTab(this, 'req')">Request Body</div>
+              <div class="code-tab" onclick="switchTab(this, 'res')">Response</div>
+            </div>
+            <pre class="code-block" data-tab="req">{
+  <span class="ck">"name"</span>: <span class="cv">"فاطمة العتيبي"</span>,              <span class="cc">// مطلوب</span>
+  <span class="ck">"email"</span>: <span class="cv">"fatima@example.com"</span>,
+  <span class="ck">"phone"</span>: <span class="cv">"+966509876543"</span>,             <span class="cc">// مطلوب</span>
+  <span class="ck">"nationality"</span>: <span class="cv">"SA"</span>,
+  <span class="ck">"id_number"</span>: <span class="cv">"1xxxxxxxxx"</span>,
+  <span class="ck">"id_type"</span>: <span class="cv">"national_id"</span>,             <span class="cc">// national_id | passport | iqama</span>
+  <span class="ck">"notes"</span>: <span class="cv">"ضيف VIP"</span>
+}</pre>
+            <pre class="code-block" data-tab="res" style="display:none">{
+  <span class="ck">"id"</span>: <span class="cn">201</span>,
+  <span class="ck">"name"</span>: <span class="cv">"فاطمة العتيبي"</span>,
+  <span class="ck">"created_at"</span>: <span class="cv">"2026-06-02T10:00:00Z"</span>
+}</pre>
+          </div>
+        </div>
+
+        <!-- GET /api/bookings -->
+        <div class="endpoint-card" id="ep-bookings-list">
+          <div class="endpoint-header" onclick="toggleEndpoint(this)">
+            <span class="method-badge GET">GET</span>
+            <span class="endpoint-path">/api/bookings</span>
+            <span class="endpoint-desc">قائمة الحجوزات مع فلاتر الحالة والتاريخ والقناة</span>
+            <span class="endpoint-chevron">▼</span>
+          </div>
+          <div class="endpoint-body">
+            <table class="params-table">
+              <thead><tr><th>Parameter</th><th>النوع</th><th>إلزامي</th><th>الوصف</th></tr></thead>
+              <tbody>
+                <tr><td class="param-name">status</td><td class="param-type">string</td><td class="param-opt">اختياري</td><td>confirmed | pending | cancelled | checked_in | checked_out</td></tr>
+                <tr><td class="param-name">from</td><td class="param-type">date</td><td class="param-opt">اختياري</td><td>تاريخ البداية (YYYY-MM-DD)</td></tr>
+                <tr><td class="param-name">to</td><td class="param-type">date</td><td class="param-opt">اختياري</td><td>تاريخ النهاية (YYYY-MM-DD)</td></tr>
+                <tr><td class="param-name">channel</td><td class="param-type">string</td><td class="param-opt">اختياري</td><td>direct | booking_com | airbnb | expedia</td></tr>
+                <tr><td class="param-name">limit</td><td class="param-type">integer</td><td class="param-opt">اختياري</td><td>عدد النتائج (default: 20)</td></tr>
+              </tbody>
+            </table>
+            <div class="code-tabs">
+              <div class="code-tab active" onclick="switchTab(this, 'req')">Request</div>
+              <div class="code-tab" onclick="switchTab(this, 'res')">Response</div>
+            </div>
+            <pre class="code-block" data-tab="req"><span class="cm">GET</span> <span class="curl-url">https://api.dheuof.com/v1/api/bookings?status=confirmed&from=2026-06-01&to=2026-06-30</span></pre>
+            <pre class="code-block" data-tab="res" style="display:none">{
+  <span class="ck">"total"</span>: <span class="cn">38</span>,
+  <span class="ck">"data"</span>: [
+    {
+      <span class="ck">"id"</span>: <span class="cv">"BK-20260601-001"</span>,
+      <span class="ck">"guest_id"</span>: <span class="cn">1</span>,
+      <span class="ck">"room_id"</span>: <span class="cn">105</span>,
+      <span class="ck">"check_in"</span>: <span class="cv">"2026-06-10"</span>,
+      <span class="ck">"check_out"</span>: <span class="cv">"2026-06-14"</span>,
+      <span class="ck">"status"</span>: <span class="cv">"confirmed"</span>,
+      <span class="ck">"channel"</span>: <span class="cv">"direct"</span>,
+      <span class="ck">"total_amount"</span>: <span class="cn">1400.00</span>,
+      <span class="ck">"currency"</span>: <span class="cv">"SAR"</span>
+    }
+  ]
+}</pre>
+          </div>
+        </div>
+
+        <!-- POST /api/bookings -->
+        <div class="endpoint-card" id="ep-bookings-create">
+          <div class="endpoint-header" onclick="toggleEndpoint(this)">
+            <span class="method-badge POST">POST</span>
+            <span class="endpoint-path">/api/bookings</span>
+            <span class="endpoint-desc">إنشاء حجز جديد</span>
+            <span class="endpoint-chevron">▼</span>
+          </div>
+          <div class="endpoint-body">
+            <div class="code-tabs">
+              <div class="code-tab active" onclick="switchTab(this, 'req')">Request Body</div>
+              <div class="code-tab" onclick="switchTab(this, 'res')">Response</div>
+            </div>
+            <pre class="code-block" data-tab="req">{
+  <span class="ck">"guest_id"</span>: <span class="cn">1</span>,
+  <span class="ck">"room_id"</span>: <span class="cn">105</span>,
+  <span class="ck">"check_in"</span>: <span class="cv">"2026-06-10"</span>,
+  <span class="ck">"check_out"</span>: <span class="cv">"2026-06-14"</span>,
+  <span class="ck">"adults"</span>: <span class="cn">2</span>,
+  <span class="ck">"children"</span>: <span class="cn">0</span>,
+  <span class="ck">"channel"</span>: <span class="cv">"direct"</span>,
+  <span class="ck">"notes"</span>: <span class="cv">"طلب غرفة هادئة"</span>
+}</pre>
+            <pre class="code-block" data-tab="res" style="display:none">{
+  <span class="ck">"id"</span>: <span class="cv">"BK-20260602-002"</span>,
+  <span class="ck">"status"</span>: <span class="cv">"confirmed"</span>,
+  <span class="ck">"total_amount"</span>: <span class="cn">1400.00</span>,
+  <span class="ck">"created_at"</span>: <span class="cv">"2026-06-02T11:30:00Z"</span>
+}</pre>
+          </div>
+        </div>
+
+        <!-- PUT /api/bookings/{id} -->
+        <div class="endpoint-card" id="ep-bookings-update">
+          <div class="endpoint-header" onclick="toggleEndpoint(this)">
+            <span class="method-badge PUT">PUT</span>
+            <span class="endpoint-path">/api/bookings/{id}</span>
+            <span class="endpoint-desc">تعديل حجز قائم (التواريخ، الغرفة، الحالة)</span>
+            <span class="endpoint-chevron">▼</span>
+          </div>
+          <div class="endpoint-body">
+            <div class="code-tabs">
+              <div class="code-tab active" onclick="switchTab(this, 'req')">Request Body</div>
+              <div class="code-tab" onclick="switchTab(this, 'res')">Response</div>
+            </div>
+            <pre class="code-block" data-tab="req"><span class="cc">// PUT /api/bookings/BK-20260601-001</span>
+{
+  <span class="ck">"check_out"</span>: <span class="cv">"2026-06-16"</span>,      <span class="cc">// تمديد الإقامة</span>
+  <span class="ck">"status"</span>: <span class="cv">"confirmed"</span>,
+  <span class="ck">"notes"</span>: <span class="cv">"تم التمديد بطلب الضيف"</span>
+}</pre>
+            <pre class="code-block" data-tab="res" style="display:none">{
+  <span class="ck">"id"</span>: <span class="cv">"BK-20260601-001"</span>,
+  <span class="ck">"status"</span>: <span class="cv">"confirmed"</span>,
+  <span class="ck">"check_out"</span>: <span class="cv">"2026-06-16"</span>,
+  <span class="ck">"updated_at"</span>: <span class="cv">"2026-06-02T12:00:00Z"</span>
+}</pre>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /section guests & bookings -->
+
+    <!-- ── Section: الغرف والأسعار ──────────────────────────────────────── -->
+    <div class="api-section" data-m-rise>
+      <div class="api-section-title">
+        <div class="section-icon">🏨</div>
+        الغرف والأسعار
+      </div>
+      <div class="endpoint-list">
+
+        <!-- GET /api/rooms -->
+        <div class="endpoint-card" id="ep-rooms">
+          <div class="endpoint-header" onclick="toggleEndpoint(this)">
+            <span class="method-badge GET">GET</span>
+            <span class="endpoint-path">/api/rooms</span>
+            <span class="endpoint-desc">قائمة الغرف وأنواعها والأسعار الأساسية</span>
+            <span class="endpoint-chevron">▼</span>
+          </div>
+          <div class="endpoint-body">
+            <div class="code-tabs">
+              <div class="code-tab active" onclick="switchTab(this, 'req')">Request</div>
+              <div class="code-tab" onclick="switchTab(this, 'res')">Response</div>
+            </div>
+            <pre class="code-block" data-tab="req"><span class="cm">GET</span> <span class="curl-url">https://api.dheuof.com/v1/api/rooms</span></pre>
+            <pre class="code-block" data-tab="res" style="display:none">{
+  <span class="ck">"total"</span>: <span class="cn">24</span>,
+  <span class="ck">"data"</span>: [
+    {
+      <span class="ck">"id"</span>: <span class="cn">101</span>,
+      <span class="ck">"number"</span>: <span class="cv">"101"</span>,
+      <span class="ck">"type"</span>: <span class="cv">"standard"</span>,
+      <span class="ck">"floor"</span>: <span class="cn">1</span>,
+      <span class="ck">"max_occupancy"</span>: <span class="cn">2</span>,
+      <span class="ck">"base_price"</span>: <span class="cn">350.00</span>,
+      <span class="ck">"currency"</span>: <span class="cv">"SAR"</span>,
+      <span class="ck">"status"</span>: <span class="cv">"available"</span>
+    }
+  ]
+}</pre>
+          </div>
+        </div>
+
+        <!-- GET /api/rooms/availability -->
+        <div class="endpoint-card" id="ep-availability">
+          <div class="endpoint-header" onclick="toggleEndpoint(this)">
+            <span class="method-badge GET">GET</span>
+            <span class="endpoint-path">/api/rooms/availability</span>
+            <span class="endpoint-desc">إتاحة الغرف لفترة زمنية محددة</span>
+            <span class="endpoint-chevron">▼</span>
+          </div>
+          <div class="endpoint-body">
+            <table class="params-table">
+              <thead><tr><th>Parameter</th><th>النوع</th><th>إلزامي</th><th>الوصف</th></tr></thead>
+              <tbody>
+                <tr><td class="param-name">check_in</td><td class="param-type">date</td><td class="param-req">مطلوب</td><td>تاريخ الوصول (YYYY-MM-DD)</td></tr>
+                <tr><td class="param-name">check_out</td><td class="param-type">date</td><td class="param-req">مطلوب</td><td>تاريخ المغادرة (YYYY-MM-DD)</td></tr>
+                <tr><td class="param-name">type</td><td class="param-type">string</td><td class="param-opt">اختياري</td><td>standard | deluxe | suite | family</td></tr>
+              </tbody>
+            </table>
+            <div class="code-tabs">
+              <div class="code-tab active" onclick="switchTab(this, 'req')">Request</div>
+              <div class="code-tab" onclick="switchTab(this, 'res')">Response</div>
+            </div>
+            <pre class="code-block" data-tab="req"><span class="cm">GET</span> <span class="curl-url">https://api.dheuof.com/v1/api/rooms/availability?check_in=2026-06-10&check_out=2026-06-14</span></pre>
+            <pre class="code-block" data-tab="res" style="display:none">{
+  <span class="ck">"check_in"</span>: <span class="cv">"2026-06-10"</span>,
+  <span class="ck">"check_out"</span>: <span class="cv">"2026-06-14"</span>,
+  <span class="ck">"available"</span>: [
+    {
+      <span class="ck">"room_id"</span>: <span class="cn">103</span>,
+      <span class="ck">"type"</span>: <span class="cv">"deluxe"</span>,
+      <span class="ck">"price_per_night"</span>: <span class="cn">480.00</span>,
+      <span class="ck">"total"</span>: <span class="cn">1920.00</span>
+    }
+  ]
+}</pre>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /section rooms -->
+
+    <!-- ── Section: القنوات ──────────────────────────────────────────────── -->
+    <div class="api-section" data-m-rise>
+      <div class="api-section-title">
+        <div class="section-icon">📡</div>
+        القنوات
+      </div>
+      <div class="endpoint-list">
+
+        <!-- POST /api/channels/booking-com/webhook -->
+        <div class="endpoint-card" id="ep-bcom-webhook">
+          <div class="endpoint-header" onclick="toggleEndpoint(this)">
+            <span class="method-badge POST">POST</span>
+            <span class="endpoint-path">/api/channels/booking-com/webhook</span>
+            <span class="endpoint-desc">استقبال حجوزات Booking.com عبر Webhook</span>
+            <span class="endpoint-chevron">▼</span>
+          </div>
+          <div class="endpoint-body">
+            <div class="code-tabs">
+              <div class="code-tab active" onclick="switchTab(this, 'req')">Payload (من Booking.com)</div>
+              <div class="code-tab" onclick="switchTab(this, 'res')">Response</div>
+            </div>
+            <pre class="code-block" data-tab="req">{
+  <span class="ck">"event"</span>: <span class="cv">"booking.new"</span>,
+  <span class="ck">"booking_id"</span>: <span class="cv">"BCOM-9876543"</span>,
+  <span class="ck">"property_id"</span>: <span class="cv">"00001"</span>,
+  <span class="ck">"check_in"</span>: <span class="cv">"2026-06-15"</span>,
+  <span class="ck">"check_out"</span>: <span class="cv">"2026-06-18"</span>,
+  <span class="ck">"guest_name"</span>: <span class="cv">"John Smith"</span>,
+  <span class="ck">"room_type"</span>: <span class="cv">"standard"</span>,
+  <span class="ck">"total_amount"</span>: <span class="cn">1050.00</span>,
+  <span class="ck">"currency"</span>: <span class="cv">"SAR"</span>
+}</pre>
+            <pre class="code-block" data-tab="res" style="display:none">{
+  <span class="ck">"received"</span>: <span class="cn">true</span>,
+  <span class="ck">"booking_ref"</span>: <span class="cv">"BK-20260602-003"</span>,
+  <span class="ck">"synced"</span>: <span class="cn">true</span>
+}</pre>
+          </div>
+        </div>
+
+        <!-- GET /api/channels/status/{client_id} -->
+        <div class="endpoint-card" id="ep-channels-status">
+          <div class="endpoint-header" onclick="toggleEndpoint(this)">
+            <span class="method-badge GET">GET</span>
+            <span class="endpoint-path">/api/channels/status/{client_id}</span>
+            <span class="endpoint-desc">حالة اتصال قنوات التوزيع للمنشأة</span>
+            <span class="endpoint-chevron">▼</span>
+          </div>
+          <div class="endpoint-body">
+            <div class="code-tabs">
+              <div class="code-tab active" onclick="switchTab(this, 'req')">Request</div>
+              <div class="code-tab" onclick="switchTab(this, 'res')">Response</div>
+            </div>
+            <pre class="code-block" data-tab="req"><span class="cm">GET</span> <span class="curl-url">https://api.dheuof.com/v1/api/channels/status/00001</span></pre>
+            <pre class="code-block" data-tab="res" style="display:none">{
+  <span class="ck">"client_id"</span>: <span class="cv">"00001"</span>,
+  <span class="ck">"channels"</span>: [
+    { <span class="ck">"name"</span>: <span class="cv">"booking_com"</span>,  <span class="ck">"status"</span>: <span class="cv">"connected"</span>, <span class="ck">"last_sync"</span>: <span class="cv">"2026-06-02T08:00:00Z"</span> },
+    { <span class="ck">"name"</span>: <span class="cv">"airbnb"</span>,       <span class="ck">"status"</span>: <span class="cv">"connected"</span>, <span class="ck">"last_sync"</span>: <span class="cv">"2026-06-02T07:45:00Z"</span> },
+    { <span class="ck">"name"</span>: <span class="cv">"expedia"</span>,      <span class="ck">"status"</span>: <span class="cv">"disconnected"</span>, <span class="ck">"last_sync"</span>: <span class="cn">null</span> }
+  ]
+}</pre>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /section channels -->
+
+    <!-- ── Section: الفواتير ─────────────────────────────────────────────── -->
+    <div class="api-section" data-m-rise>
+      <div class="api-section-title">
+        <div class="section-icon">🧾</div>
+        الفواتير
+      </div>
+      <div class="endpoint-list">
+
+        <!-- GET /api/invoices -->
+        <div class="endpoint-card" id="ep-invoices-list">
+          <div class="endpoint-header" onclick="toggleEndpoint(this)">
+            <span class="method-badge GET">GET</span>
+            <span class="endpoint-path">/api/invoices</span>
+            <span class="endpoint-desc">قائمة الفواتير الإلكترونية</span>
+            <span class="endpoint-chevron">▼</span>
+          </div>
+          <div class="endpoint-body">
+            <div class="code-tabs">
+              <div class="code-tab active" onclick="switchTab(this, 'req')">Request</div>
+              <div class="code-tab" onclick="switchTab(this, 'res')">Response</div>
+            </div>
+            <pre class="code-block" data-tab="req"><span class="cm">GET</span> <span class="curl-url">https://api.dheuof.com/v1/api/invoices?limit=10&status=paid</span></pre>
+            <pre class="code-block" data-tab="res" style="display:none">{
+  <span class="ck">"total"</span>: <span class="cn">87</span>,
+  <span class="ck">"data"</span>: [
+    {
+      <span class="ck">"id"</span>: <span class="cv">"INV-2026060001"</span>,
+      <span class="ck">"booking_id"</span>: <span class="cv">"BK-20260601-001"</span>,
+      <span class="ck">"amount"</span>: <span class="cn">1400.00</span>,
+      <span class="ck">"vat"</span>: <span class="cn">210.00</span>,
+      <span class="ck">"total"</span>: <span class="cn">1610.00</span>,
+      <span class="ck">"status"</span>: <span class="cv">"paid"</span>,
+      <span class="ck">"zatca_uuid"</span>: <span class="cv">"xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"</span>,
+      <span class="ck">"pdf_url"</span>: <span class="cv">"https://api.dheuof.com/v1/invoices/INV-2026060001.pdf"</span>
+    }
+  ]
+}</pre>
+          </div>
+        </div>
+
+        <!-- POST /api/invoices -->
+        <div class="endpoint-card" id="ep-invoices-create">
+          <div class="endpoint-header" onclick="toggleEndpoint(this)">
+            <span class="method-badge POST">POST</span>
+            <span class="endpoint-path">/api/invoices</span>
+            <span class="endpoint-desc">إنشاء فاتورة إلكترونية جديدة</span>
+            <span class="endpoint-chevron">▼</span>
+          </div>
+          <div class="endpoint-body">
+            <div class="code-tabs">
+              <div class="code-tab active" onclick="switchTab(this, 'req')">Request Body</div>
+              <div class="code-tab" onclick="switchTab(this, 'res')">Response</div>
+            </div>
+            <pre class="code-block" data-tab="req">{
+  <span class="ck">"booking_id"</span>: <span class="cv">"BK-20260601-001"</span>,
+  <span class="ck">"amount"</span>: <span class="cn">1400.00</span>,
+  <span class="ck">"currency"</span>: <span class="cv">"SAR"</span>,
+  <span class="ck">"include_vat"</span>: <span class="cn">true</span>,
+  <span class="ck">"send_email"</span>: <span class="cn">true</span>,
+  <span class="ck">"send_whatsapp"</span>: <span class="cn">false</span>
+}</pre>
+            <pre class="code-block" data-tab="res" style="display:none">{
+  <span class="ck">"id"</span>: <span class="cv">"INV-2026060002"</span>,
+  <span class="ck">"status"</span>: <span class="cv">"issued"</span>,
+  <span class="ck">"zatca_status"</span>: <span class="cv">"submitted"</span>,
+  <span class="ck">"pdf_url"</span>: <span class="cv">"https://api.dheuof.com/v1/invoices/INV-2026060002.pdf"</span>,
+  <span class="ck">"created_at"</span>: <span class="cv">"2026-06-02T12:00:00Z"</span>
+}</pre>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /section invoices -->
+
+    <!-- ── Section: Webhooks ─────────────────────────────────────────────── -->
+    <div id="webhooks" class="api-section" data-m-rise>
+      <div class="api-section-title">
+        <div class="section-icon">🔔</div>
+        Webhook Events
+      </div>
+      <p style="font-size:14px;color:var(--fg-2);margin:0 0 20px;line-height:1.6;">
+        أضف عنوان URL لاستقبال الأحداث تلقائياً. يتم إرسال طلب <code style="font-family:var(--font-mono);font-size:12px;background:var(--sand);padding:2px 6px;border-radius:4px">POST</code> بمحتوى JSON لكل حدث.
+      </p>
+      <div class="webhook-grid">
+        <div class="webhook-event">
+          <div class="we-name">booking.created</div>
+          <div class="we-desc">حجز جديد تم إنشاؤه</div>
+        </div>
+        <div class="webhook-event">
+          <div class="we-name">booking.cancelled</div>
+          <div class="we-desc">تم إلغاء حجز</div>
+        </div>
+        <div class="webhook-event">
+          <div class="we-name">booking.modified</div>
+          <div class="we-desc">تعديل على حجز قائم</div>
+        </div>
+        <div class="webhook-event">
+          <div class="we-name">checkin.completed</div>
+          <div class="we-desc">تمّ تسجيل وصول الضيف</div>
+        </div>
+        <div class="webhook-event">
+          <div class="we-name">checkout.completed</div>
+          <div class="we-desc">تمّ تسجيل مغادرة الضيف</div>
+        </div>
+        <div class="webhook-event">
+          <div class="we-name">payment.succeeded</div>
+          <div class="we-desc">دفعة ناجحة</div>
+        </div>
+        <div class="webhook-event">
+          <div class="we-name">payment.failed</div>
+          <div class="we-desc">فشلت عملية الدفع</div>
+        </div>
+      </div>
+
+      <!-- Webhook payload example -->
+      <div style="margin-top:20px;">
+        <div style="font-size:13px;font-weight:600;color:var(--ink-700);margin-bottom:8px;">مثال على حمولة Webhook:</div>
+        <pre class="code-block" style="border-radius:10px;">{
+  <span class="ck">"event"</span>: <span class="cv">"booking.created"</span>,
+  <span class="ck">"timestamp"</span>: <span class="cv">"2026-06-02T12:00:00Z"</span>,
+  <span class="ck">"client_id"</span>: <span class="cv">"00001"</span>,
+  <span class="ck">"data"</span>: {
+    <span class="ck">"booking_id"</span>: <span class="cv">"BK-20260602-004"</span>,
+    <span class="ck">"guest_name"</span>: <span class="cv">"أحمد الغامدي"</span>,
+    <span class="ck">"check_in"</span>: <span class="cv">"2026-06-15"</span>,
+    <span class="ck">"check_out"</span>: <span class="cv">"2026-06-18"</span>,
+    <span class="ck">"room_id"</span>: <span class="cn">202</span>,
+    <span class="ck">"total_amount"</span>: <span class="cn">1050.00</span>
+  },
+  <span class="ck">"signature"</span>: <span class="cv">"sha256=abc123..."</span>  <span class="cc">// للتحقق من صحة المصدر</span>
+}</pre>
+      </div>
+    </div><!-- /section webhooks -->
+
+    <!-- Errors reference -->
+    <div class="api-section" data-m-rise>
+      <div class="api-section-title">
+        <div class="section-icon">⚠</div>
+        رموز الأخطاء
+      </div>
+      <div style="background:var(--white);border:1px solid var(--hairline);border-radius:10px;overflow:hidden;">
+        <table class="params-table" style="margin:0;">
+          <thead><tr><th>HTTP Code</th><th>الرمز</th><th>الوصف</th></tr></thead>
+          <tbody>
+            <tr><td class="param-name">200</td><td><code style="font-family:var(--font-mono);font-size:11px;background:var(--success-100);color:var(--success-700);padding:2px 6px;border-radius:3px">ok</code></td><td>تمّت العملية بنجاح</td></tr>
+            <tr><td class="param-name">400</td><td><code style="font-family:var(--font-mono);font-size:11px;background:var(--warning-100);color:var(--warning-700);padding:2px 6px;border-radius:3px">bad_request</code></td><td>بيانات الطلب غير صحيحة أو ناقصة</td></tr>
+            <tr><td class="param-name">401</td><td><code style="font-family:var(--font-mono);font-size:11px;background:var(--danger-100);color:var(--danger-700);padding:2px 6px;border-radius:3px">unauthorized</code></td><td>رمز المصادقة غير صالح أو منتهي</td></tr>
+            <tr><td class="param-name">403</td><td><code style="font-family:var(--font-mono);font-size:11px;background:var(--danger-100);color:var(--danger-700);padding:2px 6px;border-radius:3px">forbidden</code></td><td>لا تملك صلاحية هذه العملية</td></tr>
+            <tr><td class="param-name">404</td><td><code style="font-family:var(--font-mono);font-size:11px;background:var(--ink-50);color:var(--ink-500);padding:2px 6px;border-radius:3px">not_found</code></td><td>العنصر المطلوب غير موجود</td></tr>
+            <tr><td class="param-name">422</td><td><code style="font-family:var(--font-mono);font-size:11px;background:var(--warning-100);color:var(--warning-700);padding:2px 6px;border-radius:3px">validation_error</code></td><td>خطأ في التحقق من صحة البيانات</td></tr>
+            <tr><td class="param-name">429</td><td><code style="font-family:var(--font-mono);font-size:11px;background:var(--warning-100);color:var(--warning-700);padding:2px 6px;border-radius:3px">rate_limited</code></td><td>تجاوزت حد الطلبات (1000/ساعة)</td></tr>
+            <tr><td class="param-name">500</td><td><code style="font-family:var(--font-mono);font-size:11px;background:var(--danger-100);color:var(--danger-700);padding:2px 6px;border-radius:3px">server_error</code></td><td>خطأ داخلي في الخادم</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div><!-- /layout -->
+
+<script src="/static/dheuof/assets/animations.js"></script>
+<script>
+// ── Fallback visibility ────────────────────────────────────────────────
+setTimeout(function(){
+  document.querySelectorAll('[data-m-rise],[data-m-rise-stagger]').forEach(function(el){
+    el.classList.add('is-in');
+  });
+}, 80);
+
+// ── Toggle endpoint accordion ──────────────────────────────────────────
+function toggleEndpoint(header) {
+  var card = header.closest('.endpoint-card');
+  card.classList.toggle('open');
+}
+
+// ── Switch request/response tabs ───────────────────────────────────────
+function switchTab(tab, which) {
+  var body = tab.closest('.endpoint-body');
+  body.querySelectorAll('.code-tab').forEach(function(t){ t.classList.remove('active'); });
+  tab.classList.add('active');
+  body.querySelectorAll('pre[data-tab]').forEach(function(pre){
+    pre.style.display = pre.dataset.tab === which ? 'block' : 'none';
+  });
+}
+
+// ── Sidebar nav active highlight ───────────────────────────────────────
+function navClick(link) {
+  document.querySelectorAll('.api-nav a').forEach(function(a){ a.classList.remove('active'); });
+  link.classList.add('active');
+}
+
+// ── Scroll spy ────────────────────────────────────────────────────────
+(function() {
+  var sections = document.querySelectorAll('.api-section, .auth-box, .rate-banner');
+  var navLinks = document.querySelectorAll('.api-nav a');
+
+  function onScroll() {
+    var scrollY = window.scrollY + 120;
+    sections.forEach(function(sec) {
+      if (!sec.id) return;
+      var top = sec.offsetTop;
+      var bot = top + sec.offsetHeight;
+      if (scrollY >= top && scrollY < bot) {
+        navLinks.forEach(function(a){ a.classList.remove('active'); });
+        var active = document.querySelector('.api-nav a[href="#' + sec.id + '"]');
+        if (active) active.classList.add('active');
+      }
+    });
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+})();
+</script>
+</body>
+</html>
