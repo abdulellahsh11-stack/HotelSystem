@@ -115,6 +115,76 @@
     .bk-banner .meta { display:none; }
     .bk-banner { grid-template-columns:auto 1fr; }
   }
+
+  /* ═══════════ Direct Booking Engine + Establishment platform ═══════════ */
+  .de-ov { display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:500; align-items:center; justify-content:center; padding:20px; }
+  .de-modal { background:var(--white); border-radius:18px; width:720px; max-width:100%; max-height:92vh; overflow-y:auto; box-shadow:0 24px 64px rgba(0,0,0,.28); }
+  .de-head { padding:22px 26px; background:linear-gradient(135deg,#1B4D3D,#2d6a52); color:#fff; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:3; }
+  .de-head .t { font-family:var(--font-ar-display); font-size:19px; font-weight:700; display:flex; align-items:center; gap:8px; }
+  .de-head .s { font-size:11px; color:rgba(255,255,255,.72); margin-top:4px; }
+  .de-head .z { display:inline-block; background:#FFD600; color:#0d3d2e; font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px; }
+  .de-x { background:rgba(255,255,255,.15); border:none; color:#fff; border-radius:8px; padding:8px 12px; cursor:pointer; font-size:14px; }
+  .de-body { padding:22px 26px; display:flex; flex-direction:column; gap:20px; }
+  .de-sec-t { font-size:12px; font-weight:700; color:var(--ink-800); margin-bottom:10px; display:flex; align-items:center; gap:6px; }
+  .de-types { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  .de-type { border:1.5px solid var(--hairline); border-radius:12px; padding:14px; text-align:center; cursor:pointer; transition:all 140ms; background:var(--white); }
+  .de-type:hover { border-color:var(--brand-400); }
+  .de-type.on { border-color:var(--brand-700); background:var(--brand-50); box-shadow:0 0 0 3px rgba(27,77,61,.08); }
+  .de-type .e { font-size:26px; }
+  .de-type .n { font-size:13px; font-weight:600; color:var(--ink-900); margin-top:6px; }
+  .de-type .c { font-size:10px; color:var(--fg-3); margin-top:2px; }
+  /* Unit cards with photo */
+  .de-units { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .de-unit { border:1.5px solid var(--hairline); border-radius:12px; overflow:hidden; cursor:pointer; transition:all 140ms; background:var(--white); }
+  .de-unit:hover { border-color:var(--brand-400); box-shadow:0 4px 14px rgba(0,0,0,.07); }
+  .de-unit.on { border-color:var(--brand-700); box-shadow:0 0 0 3px rgba(27,77,61,.12); }
+  .de-unit .ph { height:96px; background-size:cover; background-position:center; display:grid; place-items:center; font-size:34px; position:relative; }
+  .de-unit .ph .check { position:absolute; top:8px; inset-inline-end:8px; width:24px; height:24px; border-radius:999px; background:var(--brand-700); color:#fff; display:none; place-items:center; font-size:13px; }
+  .de-unit.on .ph .check { display:grid; }
+  .de-unit .body { padding:10px 12px; }
+  .de-unit .nm { font-size:13px; font-weight:600; color:var(--ink-900); }
+  .de-unit .meta { font-size:10px; color:var(--fg-3); margin-top:2px; }
+  .de-unit .pr { font-family:var(--font-en); font-weight:700; color:var(--brand-700); font-size:15px; margin-top:6px; }
+  .de-unit .pr small { font-size:9px; color:var(--fg-3); font-weight:400; }
+  /* Services add-ons */
+  .de-svcs { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .de-svc { border:1.5px solid var(--hairline); border-radius:10px; padding:10px 12px; cursor:pointer; display:flex; align-items:center; gap:9px; transition:all 140ms; }
+  .de-svc:hover { border-color:var(--brand-400); background:var(--surface-2); }
+  .de-svc.on { border-color:var(--brand-700); background:var(--brand-50); }
+  .de-svc .e { font-size:19px; }
+  .de-svc .info { flex:1; }
+  .de-svc .nm { font-size:12px; font-weight:600; color:var(--ink-900); }
+  .de-svc .un { font-size:9px; color:var(--fg-3); margin-top:1px; }
+  .de-svc .pr { font-family:var(--font-en); font-size:12px; font-weight:700; color:var(--brand-700); }
+  .de-svc .tick { width:20px; height:20px; border-radius:6px; border:1.5px solid var(--hairline); display:grid; place-items:center; font-size:12px; color:transparent; flex-shrink:0; }
+  .de-svc.on .tick { background:var(--brand-700); border-color:var(--brand-700); color:#fff; }
+  /* Form */
+  .de-grid2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .de-field label { font-size:11px; font-weight:600; color:var(--ink-700); display:block; margin-bottom:5px; }
+  .de-field input, .de-field select { width:100%; padding:10px 12px; border:1px solid var(--hairline); border-radius:8px; font-family:var(--font-ar); font-size:13px; box-sizing:border-box; color:var(--ink-900); }
+  /* Summary */
+  .de-summary { background:linear-gradient(135deg,#f0f7f4,#fff); border:1px solid #c6ddd7; border-radius:12px; padding:16px; }
+  .de-sum-row { display:flex; justify-content:space-between; align-items:center; padding:6px 0; font-size:13px; }
+  .de-sum-row .l { color:var(--fg-2); display:flex; align-items:center; gap:6px; }
+  .de-sum-row .v { font-family:var(--font-en); font-weight:600; color:var(--ink-900); }
+  .de-sum-row.zero .v { color:var(--brand-700); }
+  .de-sum-row.total { border-top:2px solid #c6ddd7; margin-top:6px; padding-top:12px; }
+  .de-sum-row.total .l { font-weight:700; color:#1B4D3D; font-size:14px; }
+  .de-sum-row.total .v { font-weight:800; color:#1B7A56; font-size:20px; }
+  .de-zero-badge { display:inline-flex; align-items:center; gap:4px; background:#D1FAE5; color:#065F46; font-size:10px; font-weight:700; padding:2px 8px; border-radius:999px; }
+  .de-foot { padding:18px 26px; border-top:1px solid var(--hairline); display:flex; gap:10px; position:sticky; bottom:0; background:var(--white); }
+  .de-confirm { flex:1; padding:14px; background:var(--brand-700); color:#fff; border:none; border-radius:10px; font-family:var(--font-ar); font-size:15px; font-weight:700; cursor:pointer; }
+  .de-confirm:hover { background:var(--brand-800); }
+  .de-cancel { padding:14px 20px; background:var(--surface-2); color:var(--ink-700); border:1px solid var(--hairline); border-radius:10px; font-family:var(--font-ar); font-size:13px; cursor:pointer; }
+  /* Establishment management rows */
+  .es-unit { display:flex; align-items:center; gap:14px; padding:12px; border:1px solid var(--hairline); border-radius:12px; margin-bottom:10px; }
+  .es-unit .ph { width:84px; height:64px; border-radius:8px; background-size:cover; background-position:center; display:grid; place-items:center; font-size:26px; flex-shrink:0; }
+  .es-unit .info { flex:1; }
+  .es-unit .nm { font-size:13px; font-weight:600; color:var(--ink-900); }
+  .es-unit .meta { font-size:10px; color:var(--fg-3); margin-top:2px; }
+  .es-unit .up { padding:8px 12px; background:var(--brand-50); color:var(--brand-700); border:1px solid var(--brand-200); border-radius:8px; font-family:var(--font-ar); font-size:11px; font-weight:600; cursor:pointer; white-space:nowrap; }
+  .es-unit .up.has { background:#D1FAE5; color:#065F46; border-color:#A7F3D0; }
+  @media (max-width:560px){ .de-types{grid-template-columns:1fr} .de-units{grid-template-columns:1fr} .de-svcs{grid-template-columns:1fr} .de-grid2{grid-template-columns:1fr} }
 </style>
 </head>
 <body>
@@ -137,7 +207,9 @@
           <button onclick="openCommSettings()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">⚙ العمولة: <span id="hdr-comm-pct">٥٪</span></button>
           <button onclick="exportCSV()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">📊 Excel</button>
           <button onclick="exportPDF()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">🖨 تقرير PDF</button>
-          <button onclick="openAddBooking()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--brand-700);color:var(--paper);border:none;cursor:pointer">+ حجز جديد</button>
+          <button onclick="openEstablishment()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">🏢 لوحة المنشأة</button>
+          <button onclick="openDirectBooking()" style="font-family:var(--font-ar);font-weight:700;font-size:13px;padding:9px 16px;border-radius:6px;background:#FFD600;color:#0d3d2e;border:none;cursor:pointer;box-shadow:0 2px 8px rgba(255,214,0,.4)">🏨 حجز مباشر ٠٪</button>
+          <button onclick="openAddBooking()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--brand-700);color:var(--paper);border:none;cursor:pointer">+ حجز سريع</button>
         </div>
       </div>
 
@@ -186,87 +258,7 @@
               <span>الصافي</span>
               <span>الحالة</span>
             </div>
-            <div id="bookings-list">
-              <!-- Agoda bookings -->
-              <div class="bk-row" data-ch="agoda" onclick="showDetail('B001')">
-                <div class="bk-ch-logo agoda">A</div>
-                <div><div class="bk-guest-name">Rajesh Kumar</div><div class="bk-guest-sub">غرفة مزدوجة · ٣ ليالٍ · ٢ يونيو - ٥ يونيو</div></div>
-                <div class="bk-amount">٩٠٠ ر.س</div>
-                <div class="bk-comm">−٤٥ ر.س</div>
-                <div class="bk-net">٨٥٥ ر.س</div>
-                <span class="bk-status conf">✓ مؤكد</span>
-              </div>
-              <div class="bk-row" data-ch="agoda" onclick="showDetail('B002')">
-                <div class="bk-ch-logo agoda">A</div>
-                <div><div class="bk-guest-name">Wei Zhang</div><div class="bk-guest-sub">جناح عائلي · ٥ ليالٍ · ٣ يونيو</div></div>
-                <div class="bk-amount">٢٥٠٠ ر.س</div>
-                <div class="bk-comm">−١٢٥ ر.س</div>
-                <div class="bk-net">٢٣٧٥ ر.س</div>
-                <span class="bk-status pend">⏳ قيد التأكيد</span>
-              </div>
-              <!-- Booking.com -->
-              <div class="bk-row" data-ch="booking" onclick="showDetail('B003')">
-                <div class="bk-ch-logo booking">B.</div>
-                <div><div class="bk-guest-name">Maria Santos</div><div class="bk-guest-sub">غرفة مفردة · ٢ ليلتان · ٤ يونيو</div></div>
-                <div class="bk-amount">٤٨٠ ر.س</div>
-                <div class="bk-comm">−٢٤ ر.س</div>
-                <div class="bk-net">٤٥٦ ر.س</div>
-                <span class="bk-status chk">⬆ تسجيل دخول</span>
-              </div>
-              <div class="bk-row" data-ch="booking" onclick="showDetail('B004')">
-                <div class="bk-ch-logo booking">B.</div>
-                <div><div class="bk-guest-name">Thomas Müller</div><div class="bk-guest-sub">غرفة مزدوجة Deluxe · ٧ ليالٍ · ٥ يونيو</div></div>
-                <div class="bk-amount">٤٢٠٠ ر.س</div>
-                <div class="bk-comm">−٢١٠ ر.س</div>
-                <div class="bk-net">٣٩٩٠ ر.س</div>
-                <span class="bk-status conf">✓ مؤكد</span>
-              </div>
-              <!-- Expedia -->
-              <div class="bk-row" data-ch="expedia" onclick="showDetail('B005')">
-                <div class="bk-ch-logo expedia">E</div>
-                <div><div class="bk-guest-name">Emily Johnson</div><div class="bk-guest-sub">غرفة مزدوجة · ٤ ليالٍ · ٦ يونيو</div></div>
-                <div class="bk-amount">١٢٠٠ ر.س</div>
-                <div class="bk-comm">−٦٠ ر.س</div>
-                <div class="bk-net">١١٤٠ ر.س</div>
-                <span class="bk-status conf">✓ مؤكد</span>
-              </div>
-              <!-- Almosafer -->
-              <div class="bk-row" data-ch="almosafer" onclick="showDetail('B006')">
-                <div class="bk-ch-logo almosafer">م</div>
-                <div><div class="bk-guest-name">سعود الموسى</div><div class="bk-guest-sub">جناح · ٢ ليلتان · ٦ يونيو</div></div>
-                <div class="bk-amount">١٦٠٠ ر.س</div>
-                <div class="bk-comm">−٨٠ ر.س</div>
-                <div class="bk-net">١٥٢٠ ر.س</div>
-                <span class="bk-status conf">✓ مؤكد</span>
-              </div>
-              <!-- Airbnb -->
-              <div class="bk-row" data-ch="airbnb" onclick="showDetail('B007')">
-                <div class="bk-ch-logo airbnb">⌂</div>
-                <div><div class="bk-guest-name">Layla Al-Ahmad</div><div class="bk-guest-sub">غرفة Deluxe · ١ ليلة · ٧ يونيو</div></div>
-                <div class="bk-amount">٣٦٠ ر.س</div>
-                <div class="bk-comm">−١٨ ر.س</div>
-                <div class="bk-net">٣٤٢ ر.س</div>
-                <span class="bk-status pend">⏳ قيد التأكيد</span>
-              </div>
-              <!-- Direct -->
-              <div class="bk-row" data-ch="direct" onclick="showDetail('B008')">
-                <div class="bk-ch-logo direct">✓</div>
-                <div><div class="bk-guest-name">محمد الغامدي</div><div class="bk-guest-sub">غرفة مزدوجة · ٣ ليالٍ · ٧ يونيو</div></div>
-                <div class="bk-amount">٩٠٠ ر.س</div>
-                <div class="bk-comm">−٠ ر.س</div>
-                <div class="bk-net">٩٠٠ ر.س</div>
-                <span class="bk-status conf">✓ مباشر</span>
-              </div>
-              <!-- Cancellation -->
-              <div class="bk-row" data-ch="agoda" onclick="showDetail('B009')">
-                <div class="bk-ch-logo agoda">A</div>
-                <div><div class="bk-guest-name">Yuki Tanaka</div><div class="bk-guest-sub">غرفة مفردة · ٢ ليلتان · ١ يونيو</div></div>
-                <div class="bk-amount">٤٨٠ ر.س</div>
-                <div class="bk-comm">−٢٤ ر.س</div>
-                <div class="bk-net">٤٥٦ ر.س</div>
-                <span class="bk-status canc">✕ ملغي</span>
-              </div>
-            </div>
+            <div id="bookings-list"><!-- rendered by renderBookingList() --></div>
           </div>
         </div>
 
@@ -405,6 +397,99 @@
   </div>
 </div>
 
+<!-- ═══════════ Direct Booking Engine ═══════════ -->
+<div id="direct-modal" class="de-ov">
+  <div class="de-modal">
+    <div class="de-head">
+      <div>
+        <div class="t">🏨 محرّك الحجز المباشر <span class="z">عمولة ٠٪</span></div>
+        <div class="s">Direct Booking Engine · فنادق · شقق مفروشة · فلل · بدون أي وسيط</div>
+      </div>
+      <button class="de-x" onclick="closeDirectBooking()">✕</button>
+    </div>
+    <div class="de-body">
+      <div>
+        <div class="de-sec-t">① نوع العقار</div>
+        <div class="de-types" id="de-types"></div>
+      </div>
+      <div>
+        <div class="de-sec-t">② اختر الوحدة <span style="font-weight:400;color:var(--fg-3)">— الصور تُدار من لوحة المنشأة</span></div>
+        <div class="de-units" id="de-units"></div>
+      </div>
+      <div>
+        <div class="de-sec-t">③ تواريخ الإقامة</div>
+        <div class="de-grid2">
+          <div class="de-field"><label>تاريخ الوصول</label><input type="date" id="de-in" onchange="deRecalc()"/></div>
+          <div class="de-field"><label>تاريخ المغادرة</label><input type="date" id="de-out" onchange="deRecalc()"/></div>
+        </div>
+        <div id="de-nights-note" style="font-size:11px;color:var(--fg-3);margin-top:6px"></div>
+      </div>
+      <div>
+        <div class="de-sec-t">④ الخدمات الإضافية <span style="font-weight:400;color:var(--fg-3)">— اختياري</span></div>
+        <div class="de-svcs" id="de-svcs"></div>
+      </div>
+      <div>
+        <div class="de-sec-t">⑤ بيانات الضيف</div>
+        <div class="de-grid2">
+          <div class="de-field"><label>اسم الضيف</label><input type="text" id="de-name" placeholder="الاسم الكامل"/></div>
+          <div class="de-field"><label>رقم الجوال</label><input type="tel" id="de-phone" placeholder="05xxxxxxxx"/></div>
+          <div class="de-field"><label>الجنسية</label><input type="text" id="de-nat" placeholder="سعودي"/></div>
+          <div class="de-field"><label>عدد النزلاء</label><input type="number" id="de-guests" min="1" value="1" onchange="deRecalc()"/></div>
+        </div>
+      </div>
+      <div>
+        <div class="de-sec-t">⑥ طريقة الدفع</div>
+        <div class="de-field">
+          <select id="de-pay">
+            <option value="cash">💵 نقداً</option>
+            <option value="card">💳 بطاقة (مدى / فيزا)</option>
+            <option value="transfer">🏦 تحويل بنكي</option>
+            <option value="hotel">🏨 الدفع عند الوصول</option>
+          </select>
+        </div>
+      </div>
+      <div class="de-summary" id="de-summary">
+        <div class="de-sum-row"><span class="l">الوحدة المختارة</span><span class="v" id="de-s-unit" style="font-family:var(--font-ar)">—</span></div>
+        <div class="de-sum-row"><span class="l">سعر الليلة × الليالي</span><span class="v" id="de-s-rate">—</span></div>
+        <div class="de-sum-row" id="de-s-svc-row" style="display:none"><span class="l">الخدمات الإضافية</span><span class="v" id="de-s-svc">٠ ر.س</span></div>
+        <div class="de-sum-row zero"><span class="l">عمولة القناة <span class="de-zero-badge">٠٪ حجز مباشر</span></span><span class="v" id="de-s-comm">٠ ر.س</span></div>
+        <div class="de-sum-row total"><span class="l">الإجمالي المحصّل بالكامل</span><span class="v" id="de-s-total">٠ ر.س</span></div>
+      </div>
+    </div>
+    <div class="de-foot">
+      <button class="de-confirm" onclick="deConfirm()">✓ تأكيد الحجز المباشر</button>
+      <button class="de-cancel" onclick="closeDirectBooking()">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ Establishment Platform Panel ═══════════ -->
+<div id="establishment-modal" class="de-ov">
+  <div class="de-modal" style="width:640px">
+    <div class="de-head">
+      <div>
+        <div class="t">🏢 لوحة المنشأة</div>
+        <div class="s">إدارة الوحدات · رفع الصور · الخدمات المتكاملة</div>
+      </div>
+      <button class="de-x" onclick="closeEstablishment()">✕</button>
+    </div>
+    <div class="de-body">
+      <div>
+        <div class="de-sec-t">📸 صور الوحدات <span style="font-weight:400;color:var(--fg-3)">— ارفع صورة لكل وحدة لتظهر للضيوف عند الحجز</span></div>
+        <div id="es-units"></div>
+      </div>
+      <div>
+        <div class="de-sec-t">🧩 الخدمات المتكاملة المتاحة</div>
+        <div class="de-svcs" id="es-svcs"></div>
+      </div>
+      <input type="file" id="es-file" accept="image/*" style="display:none" onchange="esHandlePhoto(event)"/>
+    </div>
+    <div class="de-foot">
+      <button class="de-confirm" onclick="closeEstablishment()">✓ تم</button>
+    </div>
+  </div>
+</div>
+
 <script src="/static/dheuof/shared/sidebar.js"></script>
 <script>StaticSidebar.mount({ activeId: "17-bookings", placeholder: "بحث في الحجوزات..." });</script>
 <script src="/static/dheuof/assets/animations.js"></script>
@@ -413,8 +498,8 @@ setTimeout(function(){
   document.querySelectorAll('[data-m-rise],[data-m-rise-stagger]').forEach(function(el){ el.classList.add('is-in'); });
 }, 80);
 
-// ── Booking data ──────────────────────────────────────────────
-var BOOKINGS = [
+// ── Booking data (seed) ───────────────────────────────────────
+var SEED_BOOKINGS = [
   {id:'B001', guest:'Rajesh Kumar',   ch:'agoda',     room:'غرفة مزدوجة',      nights:3, amount:900,  checkIn:'2026-06-02', status:'conf', phone:'+91 987 654 3210', email:'rajesh@example.com'},
   {id:'B002', guest:'Wei Zhang',      ch:'agoda',     room:'جناح عائلي',        nights:5, amount:2500, checkIn:'2026-06-03', status:'pend', phone:'+86 138 0013 8000', email:'wei@example.com'},
   {id:'B003', guest:'Maria Santos',   ch:'booking',   room:'غرفة مفردة',        nights:2, amount:480,  checkIn:'2026-06-04', status:'chk',  phone:'+63 912 345 6789', email:'maria@example.com'},
@@ -425,6 +510,21 @@ var BOOKINGS = [
   {id:'B008', guest:'محمد الغامدي',  ch:'direct',    room:'غرفة مزدوجة',      nights:3, amount:900,  checkIn:'2026-06-07', status:'conf', phone:'0561234567', email:''},
   {id:'B009', guest:'Yuki Tanaka',    ch:'agoda',     room:'غرفة مفردة',        nights:2, amount:480,  checkIn:'2026-06-01', status:'canc', phone:'+81 90 1234 5678', email:'yuki@example.com'},
 ];
+// ── Bookings store: saved direct bookings + seed ─────────────
+function loadBookings(){
+  var saved = [];
+  try { saved = JSON.parse(localStorage.getItem('dheuof_direct_bookings') || '[]'); } catch(e){}
+  return saved.concat(SEED_BOOKINGS);
+}
+var BOOKINGS = loadBookings();
+function saveDirectBooking(bk){
+  var saved = [];
+  try { saved = JSON.parse(localStorage.getItem('dheuof_direct_bookings') || '[]'); } catch(e){}
+  saved.unshift(bk);
+  localStorage.setItem('dheuof_direct_bookings', JSON.stringify(saved));
+  BOOKINGS = loadBookings();
+  renderBookingList();
+}
 // ── Commission rate: load from localStorage (default 5%) ─────
 var COMM_RATE = (function(){
   var s = localStorage.getItem('dheuof_comm_rate');
@@ -432,8 +532,39 @@ var COMM_RATE = (function(){
 })();
 var CH_NAMES = {agoda:'Agoda', booking:'Booking.com', expedia:'Expedia', almosafer:'الموسافر', airbnb:'Airbnb', direct:'مباشر'};
 
+// ── Render booking list from BOOKINGS array ───────────────────
+var CURRENT_CH = 'all';
+function toAr(n){ return String(n).replace(/[0-9]/g, function(d){ return '٠١٢٣٤٥٦٧٨٩'[+d]; }); }
+var BK_MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+function fmtDate(s){ if(!s) return ''; var d=new Date(s); if(isNaN(d.getTime())) return s; return toAr(d.getDate())+' '+BK_MONTHS[d.getMonth()]; }
+var CH_LOGO = {agoda:{c:'agoda',t:'A'}, booking:{c:'booking',t:'B.'}, expedia:{c:'expedia',t:'E'}, almosafer:{c:'almosafer',t:'م'}, airbnb:{c:'airbnb',t:'⌂'}, direct:{c:'direct',t:'✓'}};
+var BK_ST = {conf:{c:'conf',t:'✓ مؤكد'}, pend:{c:'pend',t:'⏳ قيد التأكيد'}, canc:{c:'canc',t:'✕ ملغي'}, chk:{c:'chk',t:'⬆ تسجيل دخول'}};
+function bookingRowHtml(bk){
+  var comm = bk.ch==='direct' ? 0 : Math.round(bk.amount*COMM_RATE);
+  var net  = bk.amount - comm;
+  var lg = CH_LOGO[bk.ch] || CH_LOGO.direct;
+  var st = BK_ST[bk.status] || BK_ST.conf;
+  var stLabel = (bk.ch==='direct' && bk.status==='conf') ? '✓ مباشر' : st.t;
+  return '<div class="bk-row" data-ch="'+bk.ch+'" onclick="showDetail(\''+bk.id+'\')">'
+    + '<div class="bk-ch-logo '+lg.c+'">'+lg.t+'</div>'
+    + '<div><div class="bk-guest-name">'+bk.guest+'</div><div class="bk-guest-sub">'+bk.room+' · '+toAr(bk.nights)+' ليالٍ · '+fmtDate(bk.checkIn)+'</div></div>'
+    + '<div class="bk-amount">'+toAr(bk.amount)+' ر.س</div>'
+    + '<div class="bk-comm">−'+toAr(comm)+' ر.س</div>'
+    + '<div class="bk-net">'+toAr(net)+' ر.س</div>'
+    + '<span class="bk-status '+st.c+'">'+stLabel+'</span></div>';
+}
+window.renderBookingList = function(){
+  var el = document.getElementById('bookings-list');
+  if (!el) return;
+  el.innerHTML = BOOKINGS.map(bookingRowHtml).join('');
+  if (CURRENT_CH !== 'all') {
+    el.querySelectorAll('.bk-row').forEach(function(r){ r.style.display = r.dataset.ch===CURRENT_CH ? '' : 'none'; });
+  }
+};
+
 // ── Filter ────────────────────────────────────────────────────
 window.filterChannel = function(ch, btn) {
+  CURRENT_CH = ch;
   document.querySelectorAll('.bk-tab').forEach(function(b){ b.classList.remove('on'); });
   btn.classList.add('on');
   document.querySelectorAll('#bookings-list .bk-row').forEach(function(row){
@@ -465,9 +596,10 @@ window.showDetail = function(id) {
     +'<div style="background:var(--surface-2);border-radius:8px;padding:12px"><div style="font-size:10px;color:var(--fg-3)">تاريخ الوصول</div><div style="font-weight:600;margin-top:4px">'+bk.checkIn+'</div></div>'
     +'<div style="background:var(--surface-2);border-radius:8px;padding:12px"><div style="font-size:10px;color:var(--fg-3)">الحالة</div><div style="font-weight:600;margin-top:4px">'+statusMap[bk.status]+'</div></div>'
     +'</div>'
+    +(bk.services&&bk.services.length?'<div style="background:var(--surface-2);border-radius:8px;padding:12px"><div style="font-size:10px;color:var(--fg-3);margin-bottom:6px">🧩 الخدمات الإضافية</div><div style="display:flex;flex-wrap:wrap;gap:6px">'+bk.services.map(function(s){return '<span style="background:var(--brand-50);color:var(--brand-700);border:1px solid var(--brand-200);border-radius:999px;padding:3px 10px;font-size:11px">'+s+'</span>';}).join('')+'</div></div>':'')
     +'<div style="background:linear-gradient(135deg,#f0f7f4,#fff);border:1px solid #c6ddd7;border-radius:10px;padding:14px">'
     +'<div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="color:var(--fg-2)">المبلغ الإجمالي</span><span style="font-family:var(--font-en);font-weight:600">'+bk.amount+' ر.س</span></div>'
-    +'<div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="color:var(--fg-2)">عمولة القناة (٥٪)</span><span style="font-family:var(--font-en);font-weight:600;color:#C0392B">−'+comm+' ر.س</span></div>'
+    +'<div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="color:var(--fg-2)">'+(bk.ch==='direct'?'عمولة (حجز مباشر)':'عمولة القناة')+'</span><span style="font-family:var(--font-en);font-weight:600;color:'+(comm===0?'var(--brand-700)':'#C0392B')+'">'+(comm===0?'٠ ر.س ✓':'−'+comm+' ر.س')+'</span></div>'
     +'<div style="height:1px;background:#c6ddd7;margin:8px 0"></div>'
     +'<div style="display:flex;justify-content:space-between"><span style="font-weight:700;color:var(--brand-700)">الصافي المحصّل</span><span style="font-family:var(--font-en);font-weight:700;color:var(--brand-700);font-size:16px">'+net+' ر.س</span></div>'
     +'</div>'
@@ -570,6 +702,7 @@ window.resetCommRate = function() {
 
 // Apply display on load
 refreshCommDisplay();
+renderBookingList();
 
 // ── Export helpers ──────────────────────────────────
 function todayStr(){var d=new Date();return d.getFullYear()+(d.getMonth()+1<10?'0':'')+(d.getMonth()+1)+(d.getDate()<10?'0':'')+d.getDate();}
@@ -662,6 +795,240 @@ window.exportPDF = function(){
   win.document.close();
   setTimeout(function(){win.print();},700);
 };
+
+// ═══════════════════════════════════════════════════════════════
+//   DIRECT BOOKING ENGINE + ESTABLISHMENT PLATFORM
+// ═══════════════════════════════════════════════════════════════
+
+// ── Property units catalogue (hotel / apartment / villa) ──────
+var UNITS = [
+  // فندق
+  {id:'H101', type:'hotel',     name:'غرفة مفردة',          prop:'فندق ضيوف الرئيسي', cap:1,  price:280,  icon:'🛏', grad:'linear-gradient(135deg,#1B4D3D,#2d6a52)'},
+  {id:'H102', type:'hotel',     name:'غرفة مزدوجة',         prop:'فندق ضيوف الرئيسي', cap:2,  price:360,  icon:'🛏', grad:'linear-gradient(135deg,#0d47a1,#1976d2)'},
+  {id:'H201', type:'hotel',     name:'جناح جونيور',         prop:'فندق ضيوف الرئيسي', cap:2,  price:520,  icon:'🛎', grad:'linear-gradient(135deg,#6a1b9a,#9c27b0)'},
+  {id:'H202', type:'hotel',     name:'جناح عائلي',          prop:'فندق ضيوف الرئيسي', cap:4,  price:680,  icon:'🛎', grad:'linear-gradient(135deg,#00695c,#00897b)'},
+  {id:'H301', type:'hotel',     name:'الجناح الملكي',       prop:'فندق ضيوف الرئيسي', cap:2,  price:980,  icon:'👑', grad:'linear-gradient(135deg,#c9a85f,#e0c074)'},
+  // شقق مفروشة
+  {id:'A1',   type:'apartment', name:'شقة غرفة وصالة',      prop:'شقق ضيوف المفروشة', cap:2,  price:320,  icon:'🏢', grad:'linear-gradient(135deg,#0277bd,#039be5)'},
+  {id:'A2',   type:'apartment', name:'شقة غرفتين وصالة',    prop:'شقق ضيوف المفروشة', cap:4,  price:480,  icon:'🏢', grad:'linear-gradient(135deg,#00838f,#00acc1)'},
+  {id:'A3',   type:'apartment', name:'شقة ثلاث غرف',        prop:'شقق ضيوف المفروشة', cap:6,  price:720,  icon:'🏢', grad:'linear-gradient(135deg,#455a64,#607d8b)'},
+  {id:'A4',   type:'apartment', name:'بنتهاوس فاخر',        prop:'شقق ضيوف المفروشة', cap:5,  price:950,  icon:'🌆', grad:'linear-gradient(135deg,#5d4037,#795548)'},
+  // فلل وشاليهات
+  {id:'V1',   type:'villa',     name:'فيلا غرفتين',         prop:'فلل ضيوف',          cap:6,  price:1200, icon:'🏡', grad:'linear-gradient(135deg,#2e7d32,#43a047)'},
+  {id:'V2',   type:'villa',     name:'فيلا ٤ غرف بمسبح',    prop:'فلل ضيوف',          cap:10, price:2200, icon:'🏊', grad:'linear-gradient(135deg,#1565c0,#1e88e5)'},
+  {id:'V3',   type:'villa',     name:'شاليه بمسبح خاص',     prop:'فلل ضيوف',          cap:8,  price:1800, icon:'🏖', grad:'linear-gradient(135deg,#e65100,#fb8c00)'},
+];
+
+// ── Integrated services / add-ons ─────────────────────────────
+//   per: once | night | guestnight
+var SERVICES = [
+  {id:'breakfast',    name:'إفطار يومي',        icon:'🍳', price:45,  per:'guestnight', un:'لكل شخص / ليلة'},
+  {id:'transfer',     name:'نقل من المطار',     icon:'🚐', price:120, per:'once',       un:'مرة واحدة'},
+  {id:'cleaning',     name:'تنظيف يومي',        icon:'🧹', price:60,  per:'night',      un:'لكل ليلة'},
+  {id:'latecheckout', name:'مغادرة متأخرة',     icon:'🕐', price:80,  per:'once',       un:'مرة واحدة'},
+  {id:'parking',      name:'موقف خاص',          icon:'🅿️', price:30,  per:'night',      un:'لكل ليلة'},
+  {id:'extrabed',     name:'سرير إضافي',        icon:'🛏', price:90,  per:'night',      un:'لكل ليلة'},
+];
+
+// ── Unit photos persisted by establishment (base64 in localStorage) ──
+function loadUnitPhotos(){
+  try { return JSON.parse(localStorage.getItem('dheuof_unit_photos') || '{}'); } catch(e){ return {}; }
+}
+var UNIT_PHOTOS = loadUnitPhotos();
+function unitBg(u){ return UNIT_PHOTOS[u.id] ? ('url('+UNIT_PHOTOS[u.id]+')') : u.grad; }
+
+var TYPE_META = {
+  hotel:     {e:'🏨', n:'فندق',          c:'غرف وأجنحة'},
+  apartment: {e:'🏢', n:'شقق مفروشة',     c:'وحدات سكنية'},
+  villa:     {e:'🏡', n:'فلل وشاليهات',   c:'بمسابح خاصة'},
+};
+
+var DE = { type:'hotel', unitId:null, svcs:{} };
+
+// ── Render property types ─────────────────────────────────────
+function deRenderTypes(){
+  document.getElementById('de-types').innerHTML = Object.keys(TYPE_META).map(function(t){
+    var m = TYPE_META[t]; var on = DE.type===t ? ' on' : '';
+    return '<div class="de-type'+on+'" onclick="deSetType(\''+t+'\')"><div class="e">'+m.e+'</div><div class="n">'+m.n+'</div><div class="c">'+m.c+'</div></div>';
+  }).join('');
+}
+window.deSetType = function(t){ DE.type=t; DE.unitId=null; deRenderTypes(); deRenderUnits(); deRecalc(); };
+
+// ── Render units (with photo) ─────────────────────────────────
+function deRenderUnits(){
+  var list = UNITS.filter(function(u){ return u.type===DE.type; });
+  document.getElementById('de-units').innerHTML = list.map(function(u){
+    var on = DE.unitId===u.id ? ' on' : '';
+    var bg = unitBg(u);
+    var emoji = UNIT_PHOTOS[u.id] ? '' : u.icon;
+    return '<div class="de-unit'+on+'" onclick="deSelectUnit(\''+u.id+'\')">'
+      + '<div class="ph" style="background-image:'+bg+'">'+emoji+'<span class="check">✓</span></div>'
+      + '<div class="body"><div class="nm">'+u.name+'</div><div class="meta">'+u.prop+' · حتى '+toAr(u.cap)+' أشخاص</div>'
+      + '<div class="pr">'+toAr(u.price)+' <small>ر.س / ليلة</small></div></div></div>';
+  }).join('');
+}
+window.deSelectUnit = function(id){ DE.unitId=id; deRenderUnits(); deRecalc(); };
+
+// ── Render services ───────────────────────────────────────────
+function deRenderServices(){
+  document.getElementById('de-svcs').innerHTML = SERVICES.map(function(s){
+    var on = DE.svcs[s.id] ? ' on' : '';
+    return '<div class="de-svc'+on+'" onclick="deToggleSvc(\''+s.id+'\')">'
+      + '<div class="e">'+s.icon+'</div>'
+      + '<div class="info"><div class="nm">'+s.name+'</div><div class="un">'+s.un+'</div></div>'
+      + '<div class="pr">'+toAr(s.price)+'</div>'
+      + '<div class="tick">✓</div></div>';
+  }).join('');
+}
+window.deToggleSvc = function(id){ DE.svcs[id] = !DE.svcs[id]; deRenderServices(); deRecalc(); };
+
+// ── Calculations ──────────────────────────────────────────────
+function deNights(){
+  var i = document.getElementById('de-in').value, o = document.getElementById('de-out').value;
+  if (!i || !o) return 0;
+  var n = Math.round((new Date(o) - new Date(i)) / 86400000);
+  return n > 0 ? n : 0;
+}
+function deServicesTotal(nights, guests){
+  var sum = 0;
+  SERVICES.forEach(function(s){
+    if (!DE.svcs[s.id]) return;
+    if (s.per==='once') sum += s.price;
+    else if (s.per==='night') sum += s.price * nights;
+    else if (s.per==='guestnight') sum += s.price * nights * guests;
+  });
+  return sum;
+}
+window.deRecalc = function(){
+  var unit = UNITS.find(function(u){ return u.id===DE.unitId; });
+  var nights = deNights();
+  var guests = parseInt(document.getElementById('de-guests').value) || 1;
+  var note = document.getElementById('de-nights-note');
+  note.textContent = nights>0 ? ('✓ مدة الإقامة: '+toAr(nights)+' ليالٍ') : 'اختر تاريخي الوصول والمغادرة لحساب المدة';
+  var roomTotal = (unit && nights>0) ? unit.price*nights : 0;
+  var svcTotal  = (nights>0) ? deServicesTotal(nights, guests) : 0;
+  var total = roomTotal + svcTotal;
+  document.getElementById('de-s-unit').textContent  = unit ? unit.name : '—';
+  document.getElementById('de-s-rate').textContent  = (unit && nights>0) ? (toAr(unit.price)+' × '+toAr(nights)+' = '+toAr(roomTotal)+' ر.س') : '—';
+  var svcRow = document.getElementById('de-s-svc-row');
+  if (svcTotal>0){ svcRow.style.display='flex'; document.getElementById('de-s-svc').textContent = '+'+toAr(svcTotal)+' ر.س'; }
+  else svcRow.style.display='none';
+  document.getElementById('de-s-comm').textContent  = '٠ ر.س';
+  document.getElementById('de-s-total').textContent = toAr(total)+' ر.س';
+};
+
+// ── Open / close direct booking ───────────────────────────────
+window.openDirectBooking = function(){
+  DE = { type:'hotel', unitId:null, svcs:{} };
+  deRenderTypes(); deRenderUnits(); deRenderServices();
+  ['de-in','de-out','de-name','de-phone','de-nat'].forEach(function(id){ document.getElementById(id).value=''; });
+  document.getElementById('de-guests').value = '1';
+  document.getElementById('de-pay').value = 'cash';
+  deRecalc();
+  document.getElementById('direct-modal').style.display = 'flex';
+};
+window.closeDirectBooking = function(){ document.getElementById('direct-modal').style.display = 'none'; };
+
+// ── Confirm booking → save (0% commission) ────────────────────
+window.deConfirm = function(){
+  var unit = UNITS.find(function(u){ return u.id===DE.unitId; });
+  var nights = deNights();
+  var name = document.getElementById('de-name').value.trim();
+  if (!unit)        { alert('اختر الوحدة أولاً'); return; }
+  if (nights<=0)    { alert('اختر تاريخي الوصول والمغادرة'); return; }
+  if (!name)        { alert('أدخل اسم الضيف'); return; }
+  var guests = parseInt(document.getElementById('de-guests').value) || 1;
+  var roomTotal = unit.price*nights;
+  var svcTotal  = deServicesTotal(nights, guests);
+  var total = roomTotal + svcTotal;
+  var chosenSvcs = SERVICES.filter(function(s){ return DE.svcs[s.id]; }).map(function(s){ return s.name; });
+  var bk = {
+    id: 'D'+Date.now().toString().slice(-6),
+    guest: name, ch:'direct', room: unit.name, nights: nights,
+    amount: total, checkIn: document.getElementById('de-in').value, status:'conf',
+    phone: document.getElementById('de-phone').value.trim(), email:'',
+    nat: document.getElementById('de-nat').value.trim(), guests: guests,
+    pay: document.getElementById('de-pay').value, propType: DE.type,
+    services: chosenSvcs
+  };
+  saveDirectBooking(bk);
+  closeDirectBooking();
+  CURRENT_CH = 'all';
+  document.querySelectorAll('.bk-tab').forEach(function(b,i){ b.classList.toggle('on', i===0); });
+  toast('✓ حجز مباشر مؤكد: '+name+' · '+unit.name+' · '+toAr(total)+' ر.س · عمولة ٠٪');
+};
+
+// ═══════════ Establishment platform panel ═══════════
+var ES_PENDING_UNIT = null;
+window.openEstablishment = function(){
+  esRenderUnits(); esRenderServices();
+  document.getElementById('establishment-modal').style.display = 'flex';
+};
+window.closeEstablishment = function(){ document.getElementById('establishment-modal').style.display = 'none'; };
+
+function esRenderUnits(){
+  document.getElementById('es-units').innerHTML = UNITS.map(function(u){
+    var has = !!UNIT_PHOTOS[u.id];
+    var bg = unitBg(u);
+    var emoji = has ? '' : u.icon;
+    return '<div class="es-unit">'
+      + '<div class="ph" style="background-image:'+bg+'">'+emoji+'</div>'
+      + '<div class="info"><div class="nm">'+u.name+'</div><div class="meta">'+TYPE_META[u.type].n+' · '+u.prop+' · '+toAr(u.price)+' ر.س/ليلة</div></div>'
+      + '<button class="up'+(has?' has':'')+'" onclick="esPickPhoto(\''+u.id+'\')">'+(has?'✓ تغيير الصورة':'📷 رفع صورة')+'</button>'
+      + (has ? '<button class="up" style="background:#FEE2E2;color:#C0392B;border-color:#FECACA" onclick="esRemovePhoto(\''+u.id+'\')">حذف</button>' : '')
+      + '</div>';
+  }).join('');
+}
+function esRenderServices(){
+  document.getElementById('es-svcs').innerHTML = SERVICES.map(function(s){
+    return '<div class="de-svc on" style="cursor:default">'
+      + '<div class="e">'+s.icon+'</div>'
+      + '<div class="info"><div class="nm">'+s.name+'</div><div class="un">'+s.un+'</div></div>'
+      + '<div class="pr">'+toAr(s.price)+'</div></div>';
+  }).join('');
+}
+window.esPickPhoto = function(unitId){
+  ES_PENDING_UNIT = unitId;
+  document.getElementById('es-file').value = '';
+  document.getElementById('es-file').click();
+};
+window.esHandlePhoto = function(ev){
+  var file = ev.target.files && ev.target.files[0];
+  if (!file || !ES_PENDING_UNIT) return;
+  var reader = new FileReader();
+  reader.onload = function(e){
+    // downscale to keep localStorage small
+    var img = new Image();
+    img.onload = function(){
+      var canvas = document.createElement('canvas');
+      var maxW = 480, scale = Math.min(1, maxW/img.width);
+      canvas.width = img.width*scale; canvas.height = img.height*scale;
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      var data = canvas.toDataURL('image/jpeg', 0.8);
+      try {
+        UNIT_PHOTOS[ES_PENDING_UNIT] = data;
+        localStorage.setItem('dheuof_unit_photos', JSON.stringify(UNIT_PHOTOS));
+        esRenderUnits();
+        toast('✓ تم رفع صورة الوحدة');
+      } catch(err){ alert('تعذّر حفظ الصورة (المساحة ممتلئة). جرّب صورة أصغر.'); }
+      ES_PENDING_UNIT = null;
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+};
+window.esRemovePhoto = function(unitId){
+  delete UNIT_PHOTOS[unitId];
+  localStorage.setItem('dheuof_unit_photos', JSON.stringify(UNIT_PHOTOS));
+  esRenderUnits();
+  toast('تم حذف صورة الوحدة');
+};
+
+// Close modals on overlay click
+['direct-modal','establishment-modal'].forEach(function(id){
+  var ov = document.getElementById(id);
+  if (ov) ov.addEventListener('click', function(e){ if (e.target===ov) ov.style.display='none'; });
+});
 </script>
 </body>
 </html>
