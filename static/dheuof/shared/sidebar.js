@@ -133,9 +133,12 @@
           '<div class="aw-field"><label>البريد الإلكتروني</label>',
             '<input id="aw-reg-email" type="email" placeholder="your@email.com" dir="ltr"/>',
           '</div>',
+          '<div class="aw-field"><label>رقم الجوال</label>',
+            '<input id="aw-reg-phone" type="tel" placeholder="05XXXXXXXX" dir="ltr" inputmode="numeric" autocomplete="tel"/>',
+          '</div>',
           '<div class="aw-field"><label>كلمة المرور</label>',
             '<input id="aw-reg-pass" type="password" placeholder="••••••••" dir="ltr"/>',
-            '<div class="aw-err" id="aw-reg-err">يرجى تعبئة جميع الحقول (كلمة مرور ٦ أحرف على الأقل)</div>',
+            '<div class="aw-err" id="aw-reg-err">يرجى تعبئة جميع الحقول (رقم جوال صحيح ٠٥ + كلمة مرور ٦ أحرف)</div>',
           '</div>',
           '<button class="aw-btn-trial" onclick="dhAuthRegister()">ابدأ التجربة المجانية</button>',
         '</div>',
@@ -175,12 +178,16 @@
       var prop  = (document.getElementById('aw-reg-prop').value  || '').trim();
       var type  = document.getElementById('aw-reg-type').value;
       var email = (document.getElementById('aw-reg-email').value || '').trim();
+      var phone = (document.getElementById('aw-reg-phone').value || '').trim();
       var pass  = document.getElementById('aw-reg-pass').value || '';
       var err   = document.getElementById('aw-reg-err');
       err.style.display = 'none';
-      if (!fname || !email || pass.length < 6) { err.style.display = 'block'; return; }
+      // رقم جوال سعودي: يبدأ بـ 05 ويتكوّن من 10 أرقام (أو +9665 / 9665)
+      var phoneDigits = phone.replace(/[\s\-+]/g, '');
+      var phoneOk = /^05\d{8}$/.test(phoneDigits) || /^9665\d{8}$/.test(phoneDigits);
+      if (!fname || !email || !phoneOk || pass.length < 6) { err.style.display = 'block'; return; }
       var propName = prop || (fname + ' ' + lname);
-      var session = { email: email, name: fname + (lname ? ' ' + lname : ''), plan: 'trial', property: propName, propType: type, ts: Date.now(), trialStart: Date.now() };
+      var session = { email: email, phone: phoneDigits, name: fname + (lname ? ' ' + lname : ''), plan: 'trial', property: propName, propType: type, ts: Date.now(), trialStart: Date.now() };
       saveSession(session);
       removeWall();
       if (onSuccess) onSuccess(session);
