@@ -2,8 +2,18 @@
 <html lang="ar" dir="rtl" data-screen-label="17 Bookings">
 <head>
 <meta charset="utf-8"/>
-<title>ضيوف · حجوزات القنوات</title>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>حجوزات · Reservation</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<!-- ── PWA: تطبيق الحجوزات (iOS / Android / Browser) ── -->
+<link rel="manifest" href="/static/dheuof/modules/17-bookings/manifest.json"/>
+<meta name="theme-color" content="#1B4D3D"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="حجوزات"/>
+<meta name="application-name" content="حجوزات"/>
+<link rel="apple-touch-icon" href="/static/dheuof/assets/icons/reservation-apple-touch.png"/>
+<link rel="icon" type="image/png" sizes="192x192" href="/static/dheuof/assets/icons/reservation-192.png"/>
 <link rel="stylesheet" href="/static/dheuof/colors_and_type.css"/>
 <link rel="stylesheet" href="/static/dheuof/assets/animations.css"/>
 <link rel="stylesheet" href="/static/dheuof/shared/chrome.css"/>
@@ -1262,6 +1272,19 @@ window.esRemovePhoto = function(kind,id){
 
 // Show saved establishment profile ribbon on load
 applyEstablishmentProfile();
+
+// ── PWA: register service worker + deep-link shortcuts ──
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('/sw.js').catch(function(e){ console.warn('SW registration failed', e); });
+  });
+}
+// App shortcuts (#direct / #facility) open the matching modal directly
+(function(){
+  var h = (location.hash || '').replace('#','');
+  if (h === 'direct')   setTimeout(function(){ if(window.openDirectBooking) openDirectBooking(); }, 300);
+  if (h === 'facility') setTimeout(function(){ if(window.openFacilityBooking) openFacilityBooking(); }, 300);
+})();
 </script>
 </body>
 </html>

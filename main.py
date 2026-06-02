@@ -19,7 +19,7 @@ from typing import Optional
 import uvicorn
 from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 logging.basicConfig(
@@ -1920,6 +1920,32 @@ async def dheuof_app(request: Request):
         with open(launcher, encoding="utf-8") as f:
             return HTMLResponse(f.read())
     return HTMLResponse(_login_page())
+
+
+# ──────────────────────────────────────────────────────────────
+#  PWA — installable on iOS / Android / Browser (root scope)
+# ──────────────────────────────────────────────────────────────
+@app.get("/manifest.json")
+async def pwa_manifest():
+    path = os.path.join("static", "dheuof", "manifest.json")
+    if os.path.exists(path):
+        with open(path, encoding="utf-8") as f:
+            return Response(content=f.read(), media_type="application/manifest+json")
+    return Response(status_code=404)
+
+
+@app.get("/sw.js")
+async def pwa_service_worker():
+    path = os.path.join("static", "dheuof", "sw.js")
+    if os.path.exists(path):
+        with open(path, encoding="utf-8") as f:
+            # Service-Worker-Allowed lets the worker control the whole site (root scope)
+            return Response(
+                content=f.read(),
+                media_type="application/javascript",
+                headers={"Service-Worker-Allowed": "/", "Cache-Control": "no-cache"},
+            )
+    return Response(status_code=404)
 
 
 @app.get("/marketing", response_class=HTMLResponse)

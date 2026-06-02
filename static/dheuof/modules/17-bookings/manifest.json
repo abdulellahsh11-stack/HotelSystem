@@ -1,0 +1,48 @@
+{
+  "name": "حجوزات · Reservation",
+  "short_name": "حجوزات",
+  "description": "حجوزات القنوات والحجز المباشر وخدمات المنشأة — نظام ضيوف.",
+  "start_url": "/static/dheuof/modules/17-bookings/index.html",
+  "scope": "/static/dheuof/modules/17-bookings/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F5F0E6",
+  "theme_color": "#1B4D3D",
+  "lang": "ar",
+  "dir": "rtl",
+  "categories": ["business", "travel", "productivity"],
+  "icons": [
+    {
+      "src": "/static/dheuof/assets/icons/reservation-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/dheuof/assets/icons/reservation-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/dheuof/assets/icons/reservation-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "حجز مباشر",
+      "short_name": "حجز مباشر",
+      "url": "/static/dheuof/modules/17-bookings/index.html#direct",
+      "description": "حجز مباشر بعمولة ٠٪"
+    },
+    {
+      "name": "حجز خدمة",
+      "short_name": "خدمة",
+      "url": "/static/dheuof/modules/17-bookings/index.html#facility",
+      "description": "حجز خدمات ومرافق المنشأة"
+    }
+  ]
+}

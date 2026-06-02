@@ -1,0 +1,60 @@
+{
+  "name": "ضيوف · نظام إدارة الضيافة",
+  "short_name": "ضيوف",
+  "description": "نظام ضيوف لإدارة الفنادق والشقق المفروشة والاستراحات والشاليهات — حجوزات، نزلاء، محاسبة، تقارير.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#FAF7F2",
+  "theme_color": "#1B4D3D",
+  "lang": "ar",
+  "dir": "rtl",
+  "categories": ["business", "productivity", "finance"],
+  "icons": [
+    {
+      "src": "/static/dheuof/assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/dheuof/assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/dheuof/assets/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "النزلاء",
+      "short_name": "النزلاء",
+      "url": "/static/dheuof/modules/01-guests/index.html",
+      "description": "إدارة النزلاء وتسجيل الوصول"
+    },
+    {
+      "name": "حجوزات القنوات",
+      "short_name": "الحجوزات",
+      "url": "/static/dheuof/modules/17-bookings/index.html",
+      "description": "حجوزات القنوات والحجز المباشر والخدمات"
+    },
+    {
+      "name": "المحاسبة",
+      "short_name": "المحاسبة",
+      "url": "/static/dheuof/modules/06-accounting/index.html",
+      "description": "الفواتير والمعاملات المالية"
+    },
+    {
+      "name": "التقارير",
+      "short_name": "التقارير",
+      "url": "/static/dheuof/reports.html",
+      "description": "التقارير ولوحات الأداء"
+    }
+  ]
+}
