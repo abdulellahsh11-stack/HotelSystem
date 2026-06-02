@@ -14,19 +14,42 @@ from db.connection import DatabasePool, get_db
 
 log = logging.getLogger("dheuof.db.store")
 
+# ── حقول الحساب التي لا تملك أعمدةً في جدول clients ──────────────────
+# تُحفَظ داخل settings JSONB تحت المفتاح "_account" وتُرفَع للأعلى عند القراءة.
+# يصلح الخلل C1: ضياع pass_hash/plan/status/sub_end في وضع PostgreSQL.
+_ACCOUNT_FIELDS = (
+    "pass_hash", "pass_salt", "plan", "status",
+    "sub_start", "sub_end", "sub_price", "trial_end",
+    "subscription_expires", "enabled_modules", "is_owner_account",
+    "facility_type", "hotel_name",
+)
+
+
+def _lift_account(row: dict) -> dict:
+    """يرفع حقول الحساب المخزّنة في settings._account إلى أعلى السجل."""
+    if not row:
+        return row
+    settings = row.get("settings")
+    if isinstance(settings, dict):
+        acct = settings.get("_account")
+        if isinstance(acct, dict):
+            for k, v in acct.items():
+                row[k] = v
+    return row
+
 
 def _to_dict(row) -> dict:
     """تحويل RealDictRow إلى dict عادي"""
     if row is None:
         return {}
-    return dict(row)
+    return _lift_account(dict(row))
 
 
 def _rows_to_list(rows) -> list:
     """تحويل قائمة RealDictRow إلى list من dicts"""
     if not rows:
         return []
-    return [dict(r) for r in rows]
+    return [_lift_account(dict(r)) for r in rows]
 
 
 class DataStore:
@@ -76,7 +99,17 @@ class DataStore:
 
         if self._use_pg:
             existing = self.get_client(client_id)
-            settings_json = json.dumps(client.get("settings", {}), ensure_ascii=False)
+            # C1 fix: خزّن حقول الحساب (كلمة المرور/الخطة/الاشتراك/الوحدات) داخل
+            # settings._account لأن جدول clients لا يملك أعمدةً لها.
+            settings = dict(client.get("settings") or {})
+            settings.pop("_account", None)
+            acct = dict((existing or {}).get("settings", {}).get("_account", {})) if isinstance((existing or {}).get("settings"), dict) else {}
+            for k in _ACCOUNT_FIELDS:
+                if k in client and client[k] is not None:
+                    acct[k] = client[k]
+            if acct:
+                settings["_account"] = acct
+            settings_json = json.dumps(settings, ensure_ascii=False)
             wa_json = json.dumps(client.get("whatsapp_config", {}), ensure_ascii=False)
             cb_json = json.dumps(client.get("chatbot_config", {}), ensure_ascii=False)
             inv_json = json.dumps(client.get("invoice_settings", {}), ensure_ascii=False)

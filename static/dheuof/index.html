@@ -734,5 +734,39 @@ setTimeout(function(){
   applyVisibility(getVisible());
 })();
 </script>
+
+<!-- البند 2: بوّابة الاشتراك لكل مشترك — تُظهر فقط البرامج المشترَك بها + العدّاد -->
+<script>
+(function(){
+  // ربط بطاقة الواجهة بكود الوحدة في الكتالوج
+  var TILE_TO_CODE = {
+    "01-guests":"m01","02-shumus":"m01","17-bookings":"m02","10-channel-marketing":"m03",
+    "06-accounting":"m04","07-pos":"m04","04-inventory":"m05","09-hr":"m06",
+    "13-staff-tracker":"m07","08-smart-key":"m09","11-kpis":"m11","14-manager-goals":"m11",
+    "12-analytics":"m12","05-warehouse":"m13","03-tourism":"m14","15-tourism-trips":"m14b",
+    "16-staff-app":"m15"
+  };
+  fetch('/api/modules/client', {credentials:'include'})
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(d){
+      if(!d || !d.success || !Array.isArray(d.active_modules)) return; // زائر/خطأ → أظهر الكل
+      var active = d.active_modules;
+      var shown = 0;
+      document.querySelectorAll('.tile[data-module-id]').forEach(function(t){
+        var code = TILE_TO_CODE[t.getAttribute('data-module-id')];
+        if(code && active.indexOf(code) === -1){
+          t.style.display = 'none';
+        } else { shown++; }
+      });
+      // حدّث عدّاد البرامج في الهيرو
+      var pill = document.querySelector('.hero .pill');
+      if(pill){
+        var name = d.plan_name ? (' · باقة '+d.plan_name) : '';
+        pill.innerHTML = '<span class="d"></span>اشتراكك: '+ shown +' برنامج'+ name;
+      }
+    })
+    .catch(function(){ /* فشل الشبكة → أبقِ كل البرامج ظاهرة */ });
+})();
+</script>
 </body>
 </html>

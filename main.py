@@ -36,6 +36,23 @@ _admin_sessions: dict = {}   # token → {"created_at": ...}
 _client_sessions: dict = {}  # token → {"client_id": ..., "created_at": ...}
 _lock = threading.Lock()
 
+# M3 mitigation: حدّ بسيط لمعدّل التسجيل لكل IP (ضد إنشاء حسابات بالجملة)
+_reg_attempts: dict = {}     # ip → [timestamps]
+_REG_MAX_PER_HOUR = int(os.environ.get("REG_MAX_PER_HOUR", "5"))
+
+
+def _reg_rate_ok(ip: str) -> bool:
+    """يسمح بحد أقصى REG_MAX_PER_HOUR تسجيلات لكل IP في الساعة."""
+    now = datetime.now().timestamp()
+    with _lock:
+        hits = [t for t in _reg_attempts.get(ip, []) if now - t < 3600]
+        if len(hits) >= _REG_MAX_PER_HOUR:
+            _reg_attempts[ip] = hits
+            return False
+        hits.append(now)
+        _reg_attempts[ip] = hits
+        return True
+
 
 def _new_token() -> str:
     return secrets.token_urlsafe(32)
@@ -45,6 +62,21 @@ def _hash_password(password: str, salt: str) -> str:
     return hashlib.pbkdf2_hmac(
         "sha256", password.encode(), salt.encode(), 100_000
     ).hex()
+
+
+def _make_password(password: str) -> tuple[str, str]:
+    """C2 fix: يُنشئ ملحاً عشوائياً فريداً لكل حساب ويعيد (hash, salt)."""
+    salt = secrets.token_hex(16)
+    return _hash_password(password, salt), salt
+
+
+def _verify_password(password: str, client: dict, cfg) -> bool:
+    """يتحقق من كلمة المرور بملح الحساب، مع توافق خلفي مع الملح العام القديم."""
+    stored = client.get("pass_hash", "") or ""
+    if not stored:
+        return False
+    salt = client.get("pass_salt") or cfg.pass_salt   # legacy fallback
+    return secrets.compare_digest(_hash_password(password, salt), stored)
 
 
 # ──────────────────────────────────────────────────────────────
@@ -115,9 +147,14 @@ async def lifespan(app_: FastAPI):
 # ──────────────────────────────────────────────────────────────
 app = FastAPI(title="ضيوف — Dheuof Hotel SaaS", version="3.0.0", lifespan=lifespan, docs_url=None, redoc_url=None)
 
+# M4 fix: قصر CORS على نطاقات ضيوف المعروفة بدل "*" مع بقاء credentials
+_ALLOWED_ORIGINS = [o.strip() for o in os.environ.get(
+    "CORS_ORIGINS",
+    "https://www.dheuof.com,https://dheuof.com,http://localhost:5050,http://127.0.0.1:5050",
+).split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -205,9 +242,21 @@ def _get_client_token(request: Request) -> Optional[str]:
 def require_admin(request: Request):
     token = _get_admin_token(request)
     with _lock:
-        if not token or token not in _admin_sessions:
-            raise HTTPException(status_code=401, detail="غير مصرح")
-    return _admin_sessions[token]
+        session = _admin_sessions.get(token) if token else None
+    if not session:
+        raise HTTPException(status_code=401, detail="غير مصرح")
+    # H3 fix: فرض انتهاء صلاحية جلسة المدير على الخادم (8 ساعات)
+    try:
+        from db.security import session_is_expired
+        if session_is_expired(session):
+            with _lock:
+                _admin_sessions.pop(token, None)
+            raise HTTPException(status_code=401, detail="انتهت صلاحية الجلسة")
+    except HTTPException:
+        raise
+    except Exception:
+        pass
+    return session
 
 
 def get_client_session(request: Request) -> Optional[dict]:
@@ -221,18 +270,22 @@ def get_client_session(request: Request) -> Optional[dict]:
     # Finding #8: enforce server-side session TTL (8 hours)
     try:
         from db.security import session_is_expired, is_token_revoked
+    except Exception:
+        return session  # security module unavailable — keep prior behavior
+    # M5 fix: فشل-مغلق — أي خطأ في فحص الصلاحية/الإبطال يُبطل الجلسة بدل قبولها
+    try:
         if session_is_expired(session):
             with _lock:
                 _client_sessions.pop(token, None)
             return None
-        # Finding #8: check revocation table
         db = getattr(request.app.state, "db", None)
         if db and is_token_revoked(db, token):
             with _lock:
                 _client_sessions.pop(token, None)
             return None
     except Exception:
-        pass
+        log.warning("session check failed — rejecting session (fail-closed)")
+        return None
     return session
 
 
@@ -1975,14 +2028,21 @@ async def admin_login(request: Request):
 
 
 @app.get("/api/admin/logout")
-async def admin_logout():
+async def admin_logout(request: Request):
+    # H3 fix: أبطل الرمز فعلياً على الخادم لا الكوكي فقط
+    token = _get_admin_token(request)
+    with _lock:
+        _admin_sessions.pop(token, None)
     response = RedirectResponse("/admin", status_code=303)
     response.delete_cookie("admin_token")
     return response
 
 
 @app.post("/api/admin/logout")
-async def admin_logout_post():
+async def admin_logout_post(request: Request):
+    token = _get_admin_token(request)
+    with _lock:
+        _admin_sessions.pop(token, None)
     response = JSONResponse({"success": True})
     response.delete_cookie("admin_token")
     return response
@@ -2024,8 +2084,7 @@ async def admin_create_client(request: Request, _=Depends(require_admin)):
     if existing:
         return JSONResponse({"success": False, "error": "المعرف مستخدم بالفعل"}, status_code=400)
 
-    pass_hash = _hash_password(password, cfg.pass_salt)
-    from datetime import timedelta
+    pass_hash, pass_salt = _make_password(password)
     sub_end = (datetime.now() + timedelta(days=30)).strftime("%Y-%m-%d")
     client = {
         "id": client_id,
@@ -2035,6 +2094,7 @@ async def admin_create_client(request: Request, _=Depends(require_admin)):
         "plan": plan,
         "status": "trial",
         "pass_hash": pass_hash,
+        "pass_salt": pass_salt,
         "sub_end": sub_end,
         "sub_start": datetime.now().strftime("%Y-%m-%d"),
         "sub_price": 0,
@@ -2060,8 +2120,7 @@ async def admin_owner_setup(request: Request, _=Depends(require_admin)):
     cfg = request.app.state.cfg
     store: "DataStore" = request.app.state.store
 
-    pass_hash = _hash_password(password, cfg.pass_salt)
-    from datetime import timedelta
+    pass_hash, pass_salt = _make_password(password)
     sub_end = (datetime.now() + timedelta(days=36500)).strftime("%Y-%m-%d")  # 100 years
     client = store.get_client(client_id) or {}
     client.update({
@@ -2072,6 +2131,7 @@ async def admin_owner_setup(request: Request, _=Depends(require_admin)):
         "plan": "enterprise",
         "status": "active",
         "pass_hash": pass_hash,
+        "pass_salt": pass_salt,
         "sub_end": sub_end,
         "sub_start": datetime.now().strftime("%Y-%m-%d"),
         "sub_price": 0,
@@ -2139,8 +2199,7 @@ async def client_login(request: Request):
     if not client:
         return HTMLResponse(_login_page("المنشأة غير موجودة"), status_code=401)
 
-    pass_hash = _hash_password(password, cfg.pass_salt)
-    if pass_hash != client.get("pass_hash", ""):
+    if not _verify_password(password, client, cfg):
         return HTMLResponse(_login_page("كلمة المرور خاطئة"), status_code=401)
 
     token = _new_token()
@@ -2529,8 +2588,10 @@ async def apply_pricing_now(client_id: str, request: Request, session=Depends(re
     pricing = request.app.state.pricing
     if not pricing:
         return JSONResponse({"success": False, "error": "خدمة التسعير غير متاحة"}, status_code=503)
+    # H1 fix (BOLA): تجاهل معرّف المسار واستخدم معرّف الجلسة الموثَّق فقط
+    cid = session["client_id"]
     try:
-        result = pricing.apply_pricing_for_client(client_id)
+        result = pricing.apply_pricing_for_client(cid)
         return {"success": True, "data": result}
     except Exception as e:
         return JSONResponse({"success": False, "error": str(e)}, status_code=500)
@@ -2821,8 +2882,7 @@ async def admin_reset_client_password(client_id: str, request: Request, _=Depend
     password = str(body.get("password", "")).strip()
     if len(password) < 4:
         return JSONResponse({"success": False, "error": "كلمة المرور قصيرة جداً"}, status_code=400)
-    cfg = request.app.state.cfg
-    client["pass_hash"] = _hash_password(password, cfg.pass_salt)
+    client["pass_hash"], client["pass_salt"] = _make_password(password)
     store.save_client(client)
     return {"success": True}
 
@@ -2930,6 +2990,13 @@ async def client_register(request: Request):
     if not hotel_name or not client_id or not password:
         return JSONResponse({"success": False, "error": "جميع الحقول مطلوبة"}, status_code=400)
 
+    # M3 mitigation: حدّ معدّل التسجيل لكل IP
+    client_ip = (request.client.host if request.client else "?")
+    if not _reg_rate_ok(client_ip):
+        return JSONResponse(
+            {"success": False, "error": "محاولات تسجيل كثيرة — حاول لاحقاً"},
+            status_code=429)
+
     cfg = request.app.state.cfg
     store: "DataStore" = request.app.state.store
 
@@ -2950,7 +3017,7 @@ async def client_register(request: Request):
     if existing:
         return JSONResponse({"success": False, "error": "معرّف المنشأة مستخدم بالفعل"}, status_code=400)
 
-    pass_hash = _hash_password(password, cfg.pass_salt)
+    pass_hash, pass_salt = _make_password(password)
     client = {
         "id": client_id,
         "name": hotel_name,
@@ -2958,6 +3025,7 @@ async def client_register(request: Request):
         "plan": plan,
         "status": "trial",
         "pass_hash": pass_hash,
+        "pass_salt": pass_salt,
         "trial_end": (datetime.now() + timedelta(days=days)).isoformat(),
         "created_at": datetime.now().isoformat(),
         "settings": {},
@@ -3196,11 +3264,21 @@ async def client_modules(request: Request, session=Depends(require_client)):
     client = store.get_client(session["client_id"]) or {}
     plan = client.get("plan", "trial")
     plan_data = next((p for p in PLANS_CATALOG if p["code"] == plan), PLANS_CATALOG[0])
-    active_modules = plan_data["modules"]
+    # البند 2: لكل مشترك وحداته — أولوية للتفعيل اليدوي ثم وحدات الخطة
+    enabled = client.get("enabled_modules")
+    if isinstance(enabled, list) and enabled:
+        active_modules = [m for m in enabled if any(c["code"] == m for c in MODULE_CATALOG)]
+    else:
+        active_modules = list(plan_data["modules"])
     return {
         "success": True,
         "plan": plan,
+        "plan_name": plan_data.get("name_ar", plan),
+        "status": client.get("status", "trial"),
+        "sub_end": client.get("sub_end", client.get("trial_end", "")),
         "active_modules": active_modules,
+        "module_count": len(active_modules),
+        "total_modules": len(MODULE_CATALOG),
         "all_modules": MODULE_CATALOG,
     }
 

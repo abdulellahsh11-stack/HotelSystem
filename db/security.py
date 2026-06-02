@@ -221,7 +221,8 @@ def set_event_context(db, tenant_id: str) -> None:
         raise ValueError("tenant_id مطلوب لضبط سياق الحدث")
     if db and db.use_postgres:
         try:
-            db.execute(f"SET LOCAL app.tenant_id = '{tenant_id}'")
+            # H4 fix: استخدم set_config المُمعلَّم بدل إقحام النص (يمنع حقن SQL)
+            db.execute("SELECT set_config('app.tenant_id', %s, true)", (str(tenant_id),))
         except Exception as e:
             log.warning(f"set_event_context failed: {e}")
 
@@ -251,8 +252,9 @@ def create_secure_link(
                 """INSERT INTO secure_file_links
                        (client_id, branch_id, guest_id, file_path,
                         link_token, expires_at, created_by)
-                   VALUES (%s, %s, %s, %s, %s, NOW() + INTERVAL '%s minutes', %s)""",
-                (client_id, branch_id, guest_id, file_path, link_token, ttl_minutes, created_by)
+                   VALUES (%s, %s, %s, %s, %s,
+                           NOW() + (%s || ' minutes')::interval, %s)""",
+                (client_id, branch_id, guest_id, file_path, link_token, int(ttl_minutes), created_by)
             )
         except Exception as e:
             log.warning(f"create_secure_link failed: {e}")
