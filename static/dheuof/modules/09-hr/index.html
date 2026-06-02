@@ -6,249 +6,348 @@
 <meta name="viewport" content="width=1440, initial-scale=1"/>
 <link rel="stylesheet" href="/static/dheuof/colors_and_type.css"/>
 <link rel="stylesheet" href="/static/dheuof/shared/chrome.css"/>
+<link rel="stylesheet" href="/static/dheuof/shared/module.css"/>
 <link rel="stylesheet" href="/static/dheuof/modules/09-hr/hr.css"/>
+<style>
+/* tab panes */
+.tab-pane { display: none; }
+.tab-pane.is-on { display: block; }
+/* placeholder panes */
+.pane-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 24px; gap: 14px; background: var(--white); border: 1px solid var(--hairline); border-radius: 12px; }
+.pane-placeholder .ico { font-size: 44px; opacity: .45; }
+.pane-placeholder .ttl { font-family: var(--font-ar-display); font-size: 18px; color: var(--ink-700); font-weight: 600; }
+.pane-placeholder .sub { font-size: 13px; color: var(--fg-2); }
+/* filter chips row */
+.chip-row { display: flex; gap: 6px; align-items: center; }
+.dh-chip { padding: 5px 14px; border-radius: 999px; border: 1px solid var(--hairline); font-family: var(--font-ar); font-size: 12px; color: var(--fg-2); background: var(--white); cursor: pointer; transition: all 140ms; }
+.dh-chip.is-on { background: var(--brand-700); color: var(--paper); border-color: var(--brand-700); }
+.dh-icon-btn { width: 32px; height: 32px; display: grid; place-items: center; border: 1px solid var(--hairline); border-radius: 8px; background: var(--white); cursor: pointer; color: var(--fg-2); }
+</style>
 </head>
 <body>
-<div id="root"></div>
+<div id="sidebar-mount"></div>
+<div class="dh-content">
+  <div id="topbar-mount"></div>
+  <main class="dh-main">
 
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
-
-<script type="text/babel" src="/static/dheuof/shared/chrome.jsx"></script>
-<script type="text/babel" src="/static/dheuof/modules/09-hr/Staff.jsx"></script>
-
-<script type="text/babel">
-const { useState } = React;
-
-const STAFF = [
-  { id: 1, initials: "س‬أ", name: "سارة أحمد المالكي",     role: "مدير المنشأة",      dept: "إدارة",        flag: "🇸🇦", nat: "السعودية", nationality: "SA", iqama: "1098273461", iqamaSub: "هوية وطنية", expires: "2027-04-12", daysLeft: 730, salary: 18500, qiwa: true  },
-  { id: 2, initials: "ر‬ك", name: "Rajesh Kumar",          role: "رئيس الاستقبال",     dept: "الاستقبال",    flag: "🇮🇳", nat: "الهند",    nationality: "IN", iqama: "2354281903", iqamaSub: "إقامة",       expires: "2025-06-14", daysLeft: 63,  salary: 6800,  qiwa: true  },
-  { id: 3, initials: "م‬ع", name: "محمد العتيبي",          role: "رئيس الأمن",         dept: "الأمن",         flag: "🇸🇦", nat: "السعودية", nationality: "SA", iqama: "1067392841", iqamaSub: "هوية وطنية", expires: "2028-01-22", daysLeft: 1018, salary: 9200,  qiwa: true  },
-  { id: 4, initials: "Ng", name: "Maria Santos",          role: "مشرفة الإسكان",      dept: "التدبير",       flag: "🇵🇭", nat: "الفلبين", nationality: "PH", iqama: "2841029384", iqamaSub: "إقامة",       expires: "2025-04-28", daysLeft: 16,  salary: 4200,  qiwa: false },
-  { id: 5, initials: "أ‬ح", name: "أحمد حسن إبراهيم",      role: "شيف تنفيذي",         dept: "المطبخ",        flag: "🇪🇬", nat: "مصر",      nationality: "EG", iqama: "2738492810", iqamaSub: "إقامة",       expires: "2026-09-08", daysLeft: 514, salary: 11800, qiwa: true  },
-  { id: 6, initials: "B‬T", name: "Boris Petrov",          role: "مدير المطعم",        dept: "الأغذية",       flag: "🇷🇺", nat: "روسيا",   nationality: "RU", iqama: "2920381746", iqamaSub: "إقامة",       expires: "2025-07-30", daysLeft: 109, salary: 9600,  qiwa: true  },
-  { id: 7, initials: "K‬n", name: "Kanya Sripa",           role: "معالجة سبا",         dept: "السبا",         flag: "🇹🇭", nat: "تايلاند",  nationality: "TH", iqama: "2918374650", iqamaSub: "إقامة",       expires: "2025-12-04", daysLeft: 236, salary: 5400,  qiwa: true  },
-  { id: 8, initials: "ف‬س", name: "فاطمة السعيدي",         role: "محاسبة",             dept: "المالية",       flag: "🇸🇦", nat: "السعودية", nationality: "SA", iqama: "1089467238", iqamaSub: "هوية وطنية", expires: "2029-03-15", daysLeft: 1437, salary: 14000, qiwa: true  },
-];
-
-function App() {
-  const [active, setActive] = useState("hr");
-  const [tab, setTab] = useState("staff");
-
-  return (
-    <div className="dh-app">
-      <NzSidebar active={active} onChange={setActive}/>
+    <!-- Page head -->
+    <div class="dh-page-head">
       <div>
-        <NzTopBar placeholder="بحث عن موظف، رقم إقامة، قسم..."/>
-        <main className="dh-main">
-          <NzPageHead
-            eyebrow="الموارد البشرية · ٨٤ موظف نشط"
-            title="الموظفون والإقامات"
-            sub="مزامنة قوى آخر مرة قبل ٧ دقائق · GOSI متصل"
-            actions={<>
-              <button className="dh-btn is-secondary"><NzIcon.download/>كشف رواتب</button>
-              <button className="dh-btn is-secondary"><NzIcon.globe/>مزامنة قوى</button>
-              <button className="dh-btn is-primary"><NzIcon.plus/>توظيف جديد</button>
-            </>}
-          />
-
-          <div className="hr-kpi">
-            <div className="card"><div className="lbl">إجمالي الموظفين</div><div className="v">٨٤</div><div className="sub">٤٢ سعودي · ٥٠٪ توطين</div></div>
-            <div className="card"><div className="lbl">رواتب أبريل</div><div className="v">٤٨٦٬٢٠٠ <span style={{fontSize:13,color:"var(--fg-3)"}}>ر.س</span></div><div className="sub">سُلِّمت ٢٥ أبريل</div></div>
-            <div className="card"><div className="lbl">إقامات تنتهي ≤ ٣٠ يوم</div><div className="v" style={{color: "var(--danger-700)"}}>٣</div><div className="sub">تتطلب تجديد</div></div>
-            <div className="card"><div className="lbl">إقامات تنتهي ≤ ٩٠ يوم</div><div className="v" style={{color: "var(--warning-700)"}}>٧</div><div className="sub">تنبيه مبكر</div></div>
-            <div className="card"><div className="lbl">سُلَف نشطة</div><div className="v">٥</div><div className="sub">١٢٬٤٠٠ ر.س قائمة</div></div>
-          </div>
-
-          <div className="hr-tabs">
-            <button className={"hr-tab " + (tab === "staff" ? "is-on" : "")}    onClick={() => setTab("staff")}>الموظفون<span className="ct">٨٤</span></button>
-            <button className={"hr-tab " + (tab === "payroll" ? "is-on" : "")}  onClick={() => setTab("payroll")}>الرواتب</button>
-            <button className={"hr-tab " + (tab === "iqama" ? "is-on" : "")}    onClick={() => setTab("iqama")}>الإقامات ورخص العمل<span className="ct">١٠</span></button>
-            <button className={"hr-tab " + (tab === "housing" ? "is-on" : "")}  onClick={() => setTab("housing")}>السكن والمعيشة</button>
-            <button className={"hr-tab " + (tab === "tickets" ? "is-on" : "")}  onClick={() => setTab("tickets")}>تذاكر السفر</button>
-            <button className={"hr-tab " + (tab === "insurance" ? "is-on" : "")}onClick={() => setTab("insurance")}>التأمين الطبي</button>
-            <button className={"hr-tab " + (tab === "gosi" ? "is-on" : "")}     onClick={() => setTab("gosi")}>التأمينات (GOSI)</button>
-            <button className={"hr-tab " + (tab === "contracts" ? "is-on" : "")}onClick={() => setTab("contracts")}>العقود</button>
-          </div>
-
-          <div className="hr-card">
-            <div className="dh-card-head">
-              <div>
-                <div className="ttl">قائمة الموظفين</div>
-                <div className="sub">Active staff · sorted by Iqama expiry</div>
-              </div>
-              <div className="dh-card-actions">
-                <button className="dh-chip is-on">الكل</button>
-                <button className="dh-chip">قريب الانتهاء</button>
-                <button className="dh-chip">سعوديون</button>
-                <button className="dh-icon-btn"><NzIcon.filter/></button>
-              </div>
-            </div>
-            <StaffTable staff={STAFF}/>
-          </div>
-        </main>
+        <div class="dh-page-eyebrow">الموارد البشرية · ٨٤ موظف نشط</div>
+        <h1 class="dh-page-title">الموظفون والإقامات</h1>
+        <div class="dh-page-sub">مزامنة قوى آخر مرة قبل ٧ دقائق · GOSI متصل</div>
+      </div>
+      <div class="dh-page-actions">
+        <button class="dh-btn is-secondary" onclick="hrExportCSV()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          كشف رواتب
+        </button>
+        <button class="dh-btn is-secondary" onclick="hrExportCSV()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          مزامنة قوى
+        </button>
+        <button class="dh-btn is-secondary" onclick="hrExportCSV()">📊 Excel</button>
+        <button class="dh-btn is-secondary" onclick="hrExportPDF()">🖨 تقرير PDF</button>
+        <button class="dh-btn is-primary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          توظيف جديد
+        </button>
       </div>
     </div>
-  );
+
+    <!-- KPI strip -->
+    <div class="hr-kpi">
+      <div class="card"><div class="lbl">إجمالي الموظفين</div><div class="v">٨٤</div><div class="sub">٤٢ سعودي · ٥٠٪ توطين</div></div>
+      <div class="card"><div class="lbl">رواتب أبريل</div><div class="v">٤٨٦٬٢٠٠ <span style="font-size:13px;color:var(--fg-3)">ر.س</span></div><div class="sub">سُلِّمت ٢٥ أبريل</div></div>
+      <div class="card"><div class="lbl">إقامات تنتهي ≤ ٣٠ يوم</div><div class="v" style="color:var(--danger-700)">٣</div><div class="sub">تتطلب تجديد</div></div>
+      <div class="card"><div class="lbl">إقامات تنتهي ≤ ٩٠ يوم</div><div class="v" style="color:var(--warning-700)">٧</div><div class="sub">تنبيه مبكر</div></div>
+      <div class="card"><div class="lbl">سُلَف نشطة</div><div class="v">٥</div><div class="sub">١٢٬٤٠٠ ر.س قائمة</div></div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="hr-tabs" id="hr-tabs">
+      <button class="hr-tab is-on" data-tab="staff">الموظفون<span class="ct">٨٤</span></button>
+      <button class="hr-tab" data-tab="payroll">الرواتب</button>
+      <button class="hr-tab" data-tab="iqama">الإقامات ورخص العمل<span class="ct">١٠</span></button>
+      <button class="hr-tab" data-tab="housing">السكن والمعيشة</button>
+      <button class="hr-tab" data-tab="tickets">تذاكر السفر</button>
+      <button class="hr-tab" data-tab="insurance">التأمين الطبي</button>
+      <button class="hr-tab" data-tab="gosi">التأمينات (GOSI)</button>
+      <button class="hr-tab" data-tab="contracts">العقود</button>
+    </div>
+
+    <!-- ── TAB: الموظفون ── -->
+    <div class="tab-pane is-on" id="tab-staff">
+      <div class="hr-card">
+        <div class="dh-card-head">
+          <div>
+            <div class="ttl">قائمة الموظفين</div>
+            <div class="sub">Active staff · sorted by Iqama expiry</div>
+          </div>
+          <div class="dh-card-actions chip-row">
+            <button class="dh-chip is-on" onclick="filterStaff('all',this)">الكل</button>
+            <button class="dh-chip" onclick="filterStaff('expiring',this)">قريب الانتهاء</button>
+            <button class="dh-chip" onclick="filterStaff('sa',this)">سعوديون</button>
+            <button class="dh-icon-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="hr-tbl">
+          <div class="hr-tr hr-th">
+            <span>الموظف</span>
+            <span>الجنسية</span>
+            <span>رقم الإقامة</span>
+            <span>صلاحية الإقامة</span>
+            <span>الراتب</span>
+            <span>قوى</span>
+            <span></span>
+          </div>
+          <div id="staff-rows"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAB: الرواتب ── -->
+    <div class="tab-pane" id="tab-payroll">
+      <div class="pane-placeholder">
+        <div class="ico">💰</div>
+        <div class="ttl">كشف الرواتب</div>
+        <div class="sub">إدارة رواتب الموظفين، المكافآت، والخصومات</div>
+      </div>
+    </div>
+
+    <!-- ── TAB: الإقامات ── -->
+    <div class="tab-pane" id="tab-iqama">
+      <div class="hr-card">
+        <div class="dh-card-head">
+          <div>
+            <div class="ttl">الإقامات ورخص العمل</div>
+            <div class="sub">مرتّبة حسب الأقرب انتهاءً</div>
+          </div>
+        </div>
+        <div class="hr-tbl">
+          <div class="hr-tr hr-th">
+            <span>الموظف</span>
+            <span>الجنسية</span>
+            <span>رقم الإقامة</span>
+            <span>صلاحية الإقامة</span>
+            <span>الراتب</span>
+            <span>قوى</span>
+            <span></span>
+          </div>
+          <div id="iqama-rows"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAB: السكن ── -->
+    <div class="tab-pane" id="tab-housing">
+      <div class="pane-placeholder">
+        <div class="ico">🏠</div>
+        <div class="ttl">السكن والمعيشة</div>
+        <div class="sub">إدارة سكن الموظفين وبدلات المعيشة</div>
+      </div>
+    </div>
+
+    <!-- ── TAB: تذاكر السفر ── -->
+    <div class="tab-pane" id="tab-tickets">
+      <div class="pane-placeholder">
+        <div class="ico">✈️</div>
+        <div class="ttl">تذاكر السفر</div>
+        <div class="sub">إدارة تذاكر الإجازة والعودة للموظفين</div>
+      </div>
+    </div>
+
+    <!-- ── TAB: التأمين الطبي ── -->
+    <div class="tab-pane" id="tab-insurance">
+      <div class="pane-placeholder">
+        <div class="ico">🏥</div>
+        <div class="ttl">التأمين الطبي</div>
+        <div class="sub">وثائق التأمين الطبي وبيانات التغطية</div>
+      </div>
+    </div>
+
+    <!-- ── TAB: GOSI ── -->
+    <div class="tab-pane" id="tab-gosi">
+      <div class="pane-placeholder">
+        <div class="ico">🛡</div>
+        <div class="ttl">التأمينات الاجتماعية (GOSI)</div>
+        <div class="sub">اشتراكات GOSI ومزامنة البيانات</div>
+      </div>
+    </div>
+
+    <!-- ── TAB: العقود ── -->
+    <div class="tab-pane" id="tab-contracts">
+      <div class="pane-placeholder">
+        <div class="ico">📄</div>
+        <div class="ttl">العقود</div>
+        <div class="sub">عقود الموظفين والمستندات القانونية</div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="/static/dheuof/shared/sidebar.js"></script>
+<script>
+// ── Mount chrome ────────────────────────────────────────────────
+(function(){
+  var sb = document.getElementById('sidebar-mount');
+  if(sb && window.StaticSidebar) sb.outerHTML = StaticSidebar.render('09-hr');
+  var tb = document.getElementById('topbar-mount');
+  if(tb && window.StaticSidebar) tb.outerHTML = StaticSidebar.topBar({placeholder:'بحث عن موظف، رقم إقامة، قسم...'});
+})();
+
+// ── Staff data ──────────────────────────────────────────────────
+var STAFF = [
+  {id:1, initials:'س‬أ', name:'سارة أحمد المالكي',   role:'مدير المنشأة',     dept:'إدارة',       flag:'🇸🇦', nat:'السعودية', nationality:'SA', iqama:'1098273461', iqamaSub:'هوية وطنية', expires:'2027-04-12', daysLeft:730,  salary:18500, qiwa:true},
+  {id:2, initials:'ر‬ك', name:'Rajesh Kumar',         role:'رئيس الاستقبال',   dept:'الاستقبال',   flag:'🇮🇳', nat:'الهند',    nationality:'IN', iqama:'2354281903', iqamaSub:'إقامة',       expires:'2025-06-14', daysLeft:63,   salary:6800,  qiwa:true},
+  {id:3, initials:'م‬ع', name:'محمد العتيبي',         role:'رئيس الأمن',       dept:'الأمن',       flag:'🇸🇦', nat:'السعودية', nationality:'SA', iqama:'1067392841', iqamaSub:'هوية وطنية', expires:'2028-01-22', daysLeft:1018, salary:9200,  qiwa:true},
+  {id:4, initials:'Ng',  name:'Maria Santos',         role:'مشرفة الإسكان',    dept:'التدبير',     flag:'🇵🇭', nat:'الفلبين',  nationality:'PH', iqama:'2841029384', iqamaSub:'إقامة',       expires:'2025-04-28', daysLeft:16,   salary:4200,  qiwa:false},
+  {id:5, initials:'أ‬ح', name:'أحمد حسن إبراهيم',     role:'شيف تنفيذي',       dept:'المطبخ',      flag:'🇪🇬', nat:'مصر',      nationality:'EG', iqama:'2738492810', iqamaSub:'إقامة',       expires:'2026-09-08', daysLeft:514,  salary:11800, qiwa:true},
+  {id:6, initials:'B‬T',  name:'Boris Petrov',         role:'مدير المطعم',      dept:'الأغذية',     flag:'🇷🇺', nat:'روسيا',    nationality:'RU', iqama:'2920381746', iqamaSub:'إقامة',       expires:'2025-07-30', daysLeft:109,  salary:9600,  qiwa:true},
+  {id:7, initials:'K‬n',  name:'Kanya Sripa',          role:'معالجة سبا',       dept:'السبا',       flag:'🇹🇭', nat:'تايلاند',  nationality:'TH', iqama:'2918374650', iqamaSub:'إقامة',       expires:'2025-12-04', daysLeft:236,  salary:5400,  qiwa:true},
+  {id:8, initials:'ف‬س', name:'فاطمة السعيدي',        role:'محاسبة',           dept:'المالية',     flag:'🇸🇦', nat:'السعودية', nationality:'SA', iqama:'1089467238', iqamaSub:'هوية وطنية', expires:'2029-03-15', daysLeft:1437, salary:14000, qiwa:true},
+];
+
+// ── Render helpers ───────────────────────────────────────────────
+function iqamaTimeline(s) {
+  var status = s.daysLeft <= 30 ? 'err' : s.daysLeft <= 90 ? 'warn' : 'ok';
+  var pct = Math.min(100, Math.max(0, ((365 - s.daysLeft) / 365) * 100));
+  var dlText = s.daysLeft <= 0 ? 'منتهية' : s.daysLeft + ' يوم';
+  return '<div class="hr-iq '+status+'">'
+    +'<div class="bar"><div class="fill" style="width:'+pct+'%"></div></div>'
+    +'<div class="lbl"><span class="dt">'+s.expires+'</span><span class="sep">·</span><span class="dl">'+dlText+'</span></div>'
+    +'</div>';
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
-</script>
+function staffRowHtml(s) {
+  var isSA = s.nationality === 'SA';
+  return '<div class="hr-tr" data-nat="'+s.nationality+'" data-days="'+s.daysLeft+'">'
+    +'<div class="hr-emp">'
+      +'<div class="av'+(isSA?' is-sa':'')+'">'+s.initials+'</div>'
+      +'<div><div class="nm">'+s.name+'</div><div class="sub">'+s.role+' · '+s.dept+'</div></div>'
+    +'</div>'
+    +'<div class="nat"><div class="flag">'+s.flag+'</div><div class="sub">'+s.nat+'</div></div>'
+    +'<div class="iqd"><div>'+s.iqama+'</div><div class="sub">'+s.iqamaSub+'</div></div>'
+    +iqamaTimeline(s)
+    +'<div class="sal"><div class="v">'+s.salary.toLocaleString('ar-EG')+'</div><div class="cur">ر.س / شهر</div></div>'
+    +'<div class="qiwa">'+(s.qiwa
+      ? '<span class="dh-pill ok"><span class="d"></span>متصل قوى</span>'
+      : '<span class="dh-pill warn"><span class="d"></span>بانتظار</span>')+'</div>'
+    +'<button class="dh-icon-btn" style="background:transparent;border:none;color:var(--fg-3)">'
+      +'<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>'
+    +'</button>'
+    +'</div>';
+}
 
-<script>
-// ── HR Export (Excel + PDF) ─────────────────────────────
-(function(){
-  var HR_STAFF = [
-    {name:'سارة أحمد المالكي',  role:'مدير المنشأة',    dept:'إدارة',     nat:'السعودية', iqama:'1098273461', expires:'2027-04-12', daysLeft:730,  salary:18500, qiwa:true},
-    {name:'Rajesh Kumar',       role:'رئيس الاستقبال',  dept:'الاستقبال', nat:'الهند',    iqama:'2354281903', expires:'2025-06-14', daysLeft:63,   salary:6800,  qiwa:true},
-    {name:'محمد العتيبي',       role:'رئيس الأمن',      dept:'الأمن',     nat:'السعودية', iqama:'1067392841', expires:'2028-01-22', daysLeft:1018, salary:9200,  qiwa:true},
-    {name:'Maria Santos',       role:'مشرفة الإسكان',   dept:'التدبير',   nat:'الفلبين',  iqama:'2841029384', expires:'2025-04-28', daysLeft:16,   salary:4200,  qiwa:false},
-    {name:'أحمد حسن إبراهيم',   role:'شيف تنفيذي',      dept:'المطبخ',    nat:'مصر',      iqama:'2738492810', expires:'2026-09-08', daysLeft:514,  salary:11800, qiwa:true},
-    {name:'Boris Petrov',       role:'مدير المطعم',      dept:'الأغذية',  nat:'روسيا',    iqama:'2920381746', expires:'2025-07-30', daysLeft:109,  salary:9600,  qiwa:true},
-    {name:'Kanya Sripa',        role:'معالجة سبا',       dept:'السبا',     nat:'تايلاند',  iqama:'2918374650', expires:'2025-12-04', daysLeft:236,  salary:5400,  qiwa:true},
-    {name:'فاطمة السعيدي',      role:'محاسبة',           dept:'المالية',  nat:'السعودية', iqama:'1089467238', expires:'2029-03-15', daysLeft:1437, salary:14000, qiwa:true},
-  ];
+function renderRows(containerId, list) {
+  var el = document.getElementById(containerId);
+  if(el) el.innerHTML = list.map(staffRowHtml).join('');
+}
 
-  function todayStr(){var d=new Date();return d.getFullYear()+(d.getMonth()+1<10?'0':'')+(d.getMonth()+1)+(d.getDate()<10?'0':'')+d.getDate();}
-  function toXLS(headers,rows,name){var s='<Styles><Style ss:ID="H"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1B4D3D" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center"/></Style><Style ss:ID="BAD"><Interior ss:Color="#C0392B" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style><Style ss:ID="WARN"><Interior ss:Color="#D97706" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style><Style ss:ID="OK"><Interior ss:Color="#BBF7D0" ss:Pattern="Solid"/><Font ss:Color="#1B7A56" ss:Bold="1"/></Style><Style ss:ID="EXC"><Interior ss:Color="#1B7A56" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style></Styles>';function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}function cell(v){if(v&&typeof v==='object'&&'s' in v)return '<Cell ss:StyleID="'+v.s+'"><Data ss:Type="String">'+esc(v.v)+'</Data></Cell>';return '<Cell><Data ss:Type="'+(typeof v==='number'?'Number':'String')+'">'+esc(v)+'</Data></Cell>';}var hRow='<Row>'+headers.map(function(h){return '<Cell ss:StyleID="H"><Data ss:Type="String">'+esc(h)+'</Data></Cell>';}).join('')+'</Row>';var dRows=rows.map(function(r){return '<Row>'+r.map(cell).join('')+'</Row>';}).join('');return '<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'+s+'<Worksheet ss:Name="'+esc(name)+'"><Table>'+hRow+dRows+'</Table></Worksheet></Workbook>';}
-  function dlXLS(c,fn){var b=new Blob([c],{type:'application/vnd.ms-excel;charset=utf-8'});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download=fn;a.click();setTimeout(function(){URL.revokeObjectURL(u);},1000);}
-  function toast(msg){var old=document.querySelector('.dh-hr-toast');if(old)old.remove();var t=document.createElement('div');t.className='dh-hr-toast';t.style.cssText='position:fixed;bottom:24px;inset-inline-end:24px;background:#1B4D3D;color:#fff;padding:12px 18px;border-radius:8px;font-family:"Tajawal",sans-serif;font-size:13px;z-index:9999;display:flex;gap:8px';t.innerHTML='<span style="color:#C9A85F">✓</span>'+msg;document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .4s';setTimeout(function(){if(t.parentNode)t.remove();},400);},3000);}
+// Render on load
+renderRows('staff-rows', STAFF);
+// Iqama tab: sort by daysLeft ascending
+var sortedByIqama = STAFF.slice().sort(function(a,b){ return a.daysLeft - b.daysLeft; });
+renderRows('iqama-rows', sortedByIqama);
 
-  window.hrExportCSV = function(){
-    var headers = ['الاسم','المنصب','القسم','الجنسية','رقم الإقامة','تاريخ الانتهاء','الأيام المتبقية','الراتب (ر.س)','قوى','حالة الإقامة'];
-    var rows = HR_STAFF.map(function(s){
-      var iqamaCell = s.daysLeft<=30?{v:s.expires+' ('+s.daysLeft+' يوم)',s:'BAD'}
-                    :s.daysLeft<=90?{v:s.expires+' ('+s.daysLeft+' يوم)',s:'WARN'}
-                    :s.daysLeft<=365?{v:s.expires+' ('+s.daysLeft+' يوم)',s:'OK'}
-                    :{v:s.expires+' ('+s.daysLeft+' يوم)',s:'EXC'};
-      var qiwaCell = s.qiwa?{v:'متوافق',s:'EXC'}:{v:'غير متوافق',s:'BAD'};
-      return [s.name,s.role,s.dept,s.nat,s.iqama,s.expires,s.daysLeft,s.salary,qiwaCell,iqamaCell];
-    });
-    var exc=HR_STAFF.filter(function(s){return s.daysLeft>365;}).length;
-    var ok_=HR_STAFF.filter(function(s){return s.daysLeft>90&&s.daysLeft<=365;}).length;
-    var warn=HR_STAFF.filter(function(s){return s.daysLeft>30&&s.daysLeft<=90;}).length;
-    var bad=HR_STAFF.filter(function(s){return s.daysLeft<=30;}).length;
-    var qiwaOk=HR_STAFF.filter(function(s){return s.qiwa;}).length;
-    var qiwaNo=HR_STAFF.filter(function(s){return !s.qiwa;}).length;
-    var t=HR_STAFF.length; function _p(n){return t>0?Math.round(n/t*100):0;}
-    rows.push([]);
-    rows.push([{v:'📊 ملخص الموارد البشرية',s:'EXC'},{v:'العدد',s:'EXC'},{v:'النسبة %',s:'EXC'},'','','','','','','']);
-    rows.push([{v:'⭐ إقامة ممتازة (>١ سنة)',s:'EXC'},{v:exc,s:'EXC'},{v:_p(exc)+'%',s:'EXC'}]);
-    rows.push([{v:'🟢 إقامة جيدة (٣-١٢ شهر)',s:'OK'},{v:ok_,s:'OK'},{v:_p(ok_)+'%',s:'OK'}]);
-    rows.push([{v:'🟠 إقامة قريبة (١-٣ أشهر)',s:'WARN'},{v:warn,s:'WARN'},{v:_p(warn)+'%',s:'WARN'}]);
-    rows.push([{v:'🔴 إقامة عاجلة (≤٣٠ يوم)',s:'BAD'},{v:bad,s:'BAD'},{v:_p(bad)+'%',s:'BAD'}]);
-    rows.push([]);
-    rows.push([{v:'متوافق مع قوى',s:'EXC'},{v:qiwaOk,s:'EXC'},{v:_p(qiwaOk)+'%',s:'EXC'}]);
-    rows.push([{v:'غير متوافق مع قوى',s:'BAD'},{v:qiwaNo,s:'BAD'},{v:_p(qiwaNo)+'%',s:'BAD'}]);
-    dlXLS(toXLS(headers,rows,'الموارد البشرية'),'HR_الموظفون_'+todayStr()+'.xls');
-    toast('تم تصدير '+HR_STAFF.length+' موظف ✓');
-  };
+// ── Tab switching ────────────────────────────────────────────────
+document.getElementById('hr-tabs').addEventListener('click', function(e) {
+  var btn = e.target.closest('.hr-tab');
+  if(!btn) return;
+  var tabId = btn.dataset.tab;
+  // toggle buttons
+  document.querySelectorAll('.hr-tab').forEach(function(b){ b.classList.remove('is-on'); });
+  btn.classList.add('is-on');
+  // toggle panes
+  document.querySelectorAll('.tab-pane').forEach(function(p){ p.classList.remove('is-on'); });
+  var pane = document.getElementById('tab-'+tabId);
+  if(pane) pane.classList.add('is-on');
+});
 
-  window.hrExportPDF = function(){
-    var urgent  = HR_STAFF.filter(function(s){return s.daysLeft<=30;}).length;
-    var warnIq  = HR_STAFF.filter(function(s){return s.daysLeft>30&&s.daysLeft<=90;}).length;
-    var totSal  = HR_STAFF.reduce(function(a,s){return a+s.salary;},0);
-    var excIq  = HR_STAFF.filter(function(s){return s.daysLeft>365;}).length;
-    var okIq   = HR_STAFF.filter(function(s){return s.daysLeft>90&&s.daysLeft<=365;}).length;
-    var qiwaOk = HR_STAFF.filter(function(s){return s.qiwa;}).length;
-    var t=HR_STAFF.length; function _p(n){return t>0?Math.round(n/t*100):0;}
-    var statsHtml = '<div style="background:linear-gradient(135deg,#f0f7f4,#f8faf9);border:1px solid #c6ddd7;border-radius:12px;padding:18px 20px;margin-bottom:20px">'
-      +'<div style="font-size:14px;font-weight:700;color:#1B4D3D;margin-bottom:14px">📊 ملخص الموارد البشرية · الإجمالي: '+t+' موظف</div>'
-      +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">'
-      +'<div style="flex:1;min-width:80px;text-align:center;background:#f0f0f0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#333">'+t+'</div><div style="font-size:10px;color:#666;margin-top:4px">إجمالي الموظفين</div></div>'
-      +'<div style="flex:1;min-width:80px;text-align:center;background:#D1FAE5;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#1B7A56">'+excIq+'</div><div style="font-size:13px;font-weight:700;color:#1B7A56">'+_p(excIq)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">ممتاز >١ سنة</div></div>'
-      +'<div style="flex:1;min-width:80px;text-align:center;background:#BBF7D0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#059669">'+okIq+'</div><div style="font-size:13px;font-weight:700;color:#059669">'+_p(okIq)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">جيد ٣-١٢ شهر</div></div>'
-      +'<div style="flex:1;min-width:80px;text-align:center;background:#FEF3C7;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#D97706">'+warnIq+'</div><div style="font-size:13px;font-weight:700;color:#D97706">'+_p(warnIq)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">قريب ≤٩٠ يوم</div></div>'
-      +'<div style="flex:1;min-width:80px;text-align:center;background:#FEE2E2;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#C0392B">'+urgent+'</div><div style="font-size:13px;font-weight:700;color:#C0392B">'+_p(urgent)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">عاجل ≤٣٠ يوم</div></div>'
-      +'<div style="flex:1;min-width:80px;text-align:center;background:'+(qiwaOk===t?'#D1FAE5':'#FEF3C7')+';border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:'+(qiwaOk===t?'#1B7A56':'#D97706')+'">'+qiwaOk+'/'+t+'</div><div style="font-size:10px;color:rgba(0,0,0,0.5);margin-top:4px">قوى متوافق</div></div>'
-      +'</div>'
-      +'<div style="background:#e8eceb;border-radius:6px;height:12px;overflow:hidden;display:flex">'
-      +(excIq>0?'<div style="width:'+_p(excIq)+'%;background:#1B7A56;height:100%"></div>':'')
-      +(okIq>0?'<div style="width:'+_p(okIq)+'%;background:#22C55E;height:100%"></div>':'')
-      +(warnIq>0?'<div style="width:'+_p(warnIq)+'%;background:#D97706;height:100%"></div>':'')
-      +(urgent>0?'<div style="width:'+_p(urgent)+'%;background:#C0392B;height:100%"></div>':'')
-      +'</div>'
-      +'<div style="margin-top:8px;font-size:10px;color:#666;display:flex;gap:14px;flex-wrap:wrap">'
-      +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#1B7A56;margin-left:3px"></span>ممتاز '+_p(excIq)+'%</span>'
-      +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#22C55E;margin-left:3px"></span>جيد '+_p(okIq)+'%</span>'
-      +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#D97706;margin-left:3px"></span>قريب '+_p(warnIq)+'%</span>'
-      +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#C0392B;margin-left:3px"></span>عاجل '+_p(urgent)+'%</span>'
-      +'<span>إجمالي الرواتب: '+totSal.toLocaleString('ar-EG')+' ر.س</span>'
-      +'</div>'
-      +'</div>';
-    var rows = HR_STAFF.map(function(s){
-      var iqTag  = s.daysLeft<=30 ? '<span class="tag-bad">✕ عاجل ('+s.daysLeft+' يوم)</span>'
-                 : s.daysLeft<=90  ? '<span class="tag-warn">⚠ '+s.daysLeft+' يوم</span>'
-                 : s.daysLeft<=365 ? '<span class="tag-ok">✓ '+s.daysLeft+' يوم</span>'
-                 : '<span class="tag-ok cr">✓ '+s.daysLeft+' يوم</span>';
-      var qiwaTag= s.qiwa ? '<span class="tag-ok">✓ متوافق</span>' : '<span class="tag-bad">✕ غير متوافق</span>';
-      return '<tr>'
-        +'<td style="font-weight:500">'+s.name+'</td>'
-        +'<td>'+s.role+'</td>'
-        +'<td>'+s.dept+'</td>'
-        +'<td>'+s.nat+'</td>'
-        +'<td style="font-family:monospace;font-size:10.5px;letter-spacing:.04em">'+s.iqama+'</td>'
-        +'<td>'+iqTag+'<div style="font-size:9.5px;color:#888;margin-top:2px">'+s.expires+'</div></td>'
-        +'<td style="font-weight:600;color:#1B4D3D">'+s.salary.toLocaleString('ar-EG')+' <span style="font-size:10px;font-weight:400;color:#888">ر.س</span></td>'
-        +'<td>'+qiwaTag+'</td>'
-        +'</tr>';
-    }).join('');
-    var win=window.open('','_blank','width=1100,height=820');
-    var printCss='*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}'
-      +'@page{size:A4 landscape;margin:12mm 10mm}'
-      +'body{margin:0;padding:20px 24px;font-family:"Segoe UI","Tajawal",Arial,sans-serif;color:#111;direction:rtl;font-size:12px;line-height:1.45}'
-      +'h1{font-size:20px;color:#1B4D3D;margin:0 0 3px;font-weight:700}'
-      +'.meta{font-size:11px;color:#666;margin:0 0 16px}'
-      +'table{width:100%;border-collapse:collapse;margin-top:16px;font-size:11.5px}'
-      +'th{background:#1B4D3D;color:#fff;padding:8px 11px;text-align:right;font-weight:600;font-size:11px}'
-      +'td{padding:7px 11px;border-bottom:1px solid #e8e8e8;vertical-align:middle}'
-      +'tr:nth-child(even) td{background:#f7faf8}'
-      +'tr{break-inside:avoid;page-break-inside:avoid}'
-      +'.cr{color:#1B7A56;font-weight:600}.dr{color:#C0392B;font-weight:600}'
-      +'.tag-ok{background:#D1FAE5;color:#065F46;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600}'
-      +'.tag-warn{background:#FEF3C7;color:#92400E;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600}'
-      +'.tag-bad{background:#FEE2E2;color:#991B1B;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600}'
-      +'.footer{font-size:10px;color:#aaa;margin-top:20px;border-top:1px solid #eee;padding-top:10px;text-align:center}'
-      +'@media print{.no-print{display:none}}';
-    win.document.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"/>'
-      +'<title>تقرير الموارد البشرية</title>'
-      +'<style>'+printCss+'</style></head><body>'
-      +'<h1>👥 تقرير الموارد البشرية — الموظفون والإقامات</h1>'
-      +'<p class="meta">تاريخ الإصدار: '+new Date().toLocaleDateString('ar-SA',{year:'numeric',month:'long',day:'numeric'})+' &nbsp;·&nbsp; نظام ضيوف — Dheuof Hotel &nbsp;·&nbsp; إجمالي الموظفين: '+t+' موظف</p>'
-      +statsHtml
-      +'<table><thead><tr>'
-      +'<th>الاسم</th><th>المنصب</th><th>القسم</th><th>الجنسية</th>'
-      +'<th>رقم الإقامة</th><th>حالة الإقامة</th><th>الراتب (ر.س)</th><th>قوى</th>'
-      +'</tr></thead><tbody>'+rows+'</tbody></table>'
-      +'<div class="footer">نظام ضيوف · الموارد البشرية · '+new Date().toLocaleString('ar-SA')+'</div>'
-      +'</body></html>');
-    win.document.close();
-    setTimeout(function(){win.print();},700);
-  };
+// ── Staff filter chips ───────────────────────────────────────────
+window.filterStaff = function(mode, chipEl) {
+  document.querySelectorAll('.chip-row .dh-chip').forEach(function(c){ c.classList.remove('is-on'); });
+  chipEl.classList.add('is-on');
+  var filtered;
+  if(mode === 'sa')       filtered = STAFF.filter(function(s){ return s.nationality === 'SA'; });
+  else if(mode==='expiring') filtered = STAFF.filter(function(s){ return s.daysLeft <= 90; });
+  else                    filtered = STAFF;
+  renderRows('staff-rows', filtered);
+};
 
-  // Inject export buttons into the rendered page header after React mounts
-  setTimeout(function(){
-    var actionsEl = document.querySelector('.dh-page-actions');
-    if(actionsEl && !actionsEl.querySelector('.hr-export-btn')){
-      var csvBtn = document.createElement('button');
-      csvBtn.className = 'dh-btn is-secondary hr-export-btn';
-      csvBtn.innerHTML = '📊 Excel';
-      csvBtn.onclick = window.hrExportCSV;
-      var pdfBtn = document.createElement('button');
-      pdfBtn.className = 'dh-btn is-secondary hr-export-btn';
-      pdfBtn.innerHTML = '🖨 تقرير PDF';
-      pdfBtn.onclick = window.hrExportPDF;
-      var printBtn = document.createElement('button');
-      printBtn.className = 'dh-btn is-secondary hr-export-btn';
-      printBtn.innerHTML = '🖨 طباعة مباشرة';
-      printBtn.onclick = function(){ window.print(); };
-      actionsEl.insertBefore(pdfBtn,   actionsEl.firstChild);
-      actionsEl.insertBefore(csvBtn,   actionsEl.firstChild);
-      actionsEl.insertBefore(printBtn, actionsEl.firstChild);
-    }
-  }, 600);
-})();
+// ── Toast helper ─────────────────────────────────────────────────
+function toast(msg){
+  var old=document.querySelector('.dh-hr-toast'); if(old) old.remove();
+  var t=document.createElement('div'); t.className='dh-hr-toast';
+  t.style.cssText='position:fixed;bottom:24px;inset-inline-end:24px;background:#1B4D3D;color:#fff;padding:12px 18px;border-radius:8px;font-family:"Tajawal",sans-serif;font-size:13px;z-index:9999;display:flex;gap:8px';
+  t.innerHTML='<span style="color:#C9A85F">✓</span>'+msg;
+  document.body.appendChild(t);
+  setTimeout(function(){ t.style.opacity='0'; t.style.transition='opacity .4s'; setTimeout(function(){ if(t.parentNode) t.remove(); },400); },3000);
+}
+
+// ── Export ────────────────────────────────────────────────────────
+function todayStr(){var d=new Date();return d.getFullYear()+(d.getMonth()+1<10?'0':'')+(d.getMonth()+1)+(d.getDate()<10?'0':'')+d.getDate();}
+function toXLS(headers,rows,name){var s='<Styles><Style ss:ID="H"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1B4D3D" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center"/></Style><Style ss:ID="BAD"><Interior ss:Color="#C0392B" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style><Style ss:ID="WARN"><Interior ss:Color="#D97706" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style><Style ss:ID="OK"><Interior ss:Color="#BBF7D0" ss:Pattern="Solid"/><Font ss:Color="#1B7A56" ss:Bold="1"/></Style><Style ss:ID="EXC"><Interior ss:Color="#1B7A56" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style></Styles>';function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}function cell(v){if(v&&typeof v==='object'&&'s' in v)return '<Cell ss:StyleID="'+v.s+'"><Data ss:Type="String">'+esc(v.v)+'</Data></Cell>';return '<Cell><Data ss:Type="'+(typeof v==='number'?'Number':'String')+'">'+esc(v)+'</Data></Cell>';}var hRow='<Row>'+headers.map(function(h){return '<Cell ss:StyleID="H"><Data ss:Type="String">'+esc(h)+'</Data></Cell>';}).join('')+'</Row>';var dRows=rows.map(function(r){return '<Row>'+r.map(cell).join('')+'</Row>';}).join('');return '<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'+s+'<Worksheet ss:Name="'+esc(name)+'"><Table>'+hRow+dRows+'</Table></Worksheet></Workbook>';}
+function dlXLS(c,fn){var b=new Blob([c],{type:'application/vnd.ms-excel;charset=utf-8'});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download=fn;a.click();setTimeout(function(){URL.revokeObjectURL(u);},1000);}
+
+window.hrExportCSV = function(){
+  var headers=['الاسم','المنصب','القسم','الجنسية','رقم الإقامة','تاريخ الانتهاء','الأيام المتبقية','الراتب (ر.س)','قوى','حالة الإقامة'];
+  var rows=STAFF.map(function(s){
+    var iqamaCell=s.daysLeft<=30?{v:s.expires+' ('+s.daysLeft+' يوم)',s:'BAD'}:s.daysLeft<=90?{v:s.expires+' ('+s.daysLeft+' يوم)',s:'WARN'}:s.daysLeft<=365?{v:s.expires+' ('+s.daysLeft+' يوم)',s:'OK'}:{v:s.expires+' ('+s.daysLeft+' يوم)',s:'EXC'};
+    var qiwaCell=s.qiwa?{v:'متوافق',s:'EXC'}:{v:'غير متوافق',s:'BAD'};
+    return [s.name,s.role,s.dept,s.nat,s.iqama,s.expires,s.daysLeft,s.salary,qiwaCell,iqamaCell];
+  });
+  var exc=STAFF.filter(function(s){return s.daysLeft>365;}).length;
+  var ok_=STAFF.filter(function(s){return s.daysLeft>90&&s.daysLeft<=365;}).length;
+  var warn=STAFF.filter(function(s){return s.daysLeft>30&&s.daysLeft<=90;}).length;
+  var bad=STAFF.filter(function(s){return s.daysLeft<=30;}).length;
+  var qiwaOk=STAFF.filter(function(s){return s.qiwa;}).length;
+  var qiwaNo=STAFF.filter(function(s){return !s.qiwa;}).length;
+  var t=STAFF.length; function _p(n){return t>0?Math.round(n/t*100):0;}
+  rows.push([]);
+  rows.push([{v:'📊 ملخص الموارد البشرية',s:'EXC'},{v:'العدد',s:'EXC'},{v:'النسبة %',s:'EXC'},'','','','','','','']);
+  rows.push([{v:'⭐ إقامة ممتازة (>١ سنة)',s:'EXC'},{v:exc,s:'EXC'},{v:_p(exc)+'%',s:'EXC'}]);
+  rows.push([{v:'🟢 إقامة جيدة (٣-١٢ شهر)',s:'OK'},{v:ok_,s:'OK'},{v:_p(ok_)+'%',s:'OK'}]);
+  rows.push([{v:'🟠 إقامة قريبة (١-٣ أشهر)',s:'WARN'},{v:warn,s:'WARN'},{v:_p(warn)+'%',s:'WARN'}]);
+  rows.push([{v:'🔴 إقامة عاجلة (≤٣٠ يوم)',s:'BAD'},{v:bad,s:'BAD'},{v:_p(bad)+'%',s:'BAD'}]);
+  rows.push([]);
+  rows.push([{v:'متوافق مع قوى',s:'EXC'},{v:qiwaOk,s:'EXC'},{v:_p(qiwaOk)+'%',s:'EXC'}]);
+  rows.push([{v:'غير متوافق مع قوى',s:'BAD'},{v:qiwaNo,s:'BAD'},{v:_p(qiwaNo)+'%',s:'BAD'}]);
+  dlXLS(toXLS(headers,rows,'الموارد البشرية'),'HR_الموظفون_'+todayStr()+'.xls');
+  toast('تم تصدير '+STAFF.length+' موظف ✓');
+};
+
+window.hrExportPDF = function(){
+  var urgent=STAFF.filter(function(s){return s.daysLeft<=30;}).length;
+  var warnIq=STAFF.filter(function(s){return s.daysLeft>30&&s.daysLeft<=90;}).length;
+  var totSal=STAFF.reduce(function(a,s){return a+s.salary;},0);
+  var excIq=STAFF.filter(function(s){return s.daysLeft>365;}).length;
+  var okIq=STAFF.filter(function(s){return s.daysLeft>90&&s.daysLeft<=365;}).length;
+  var qiwaOk=STAFF.filter(function(s){return s.qiwa;}).length;
+  var t=STAFF.length; function _p(n){return t>0?Math.round(n/t*100):0;}
+  var statsHtml='<div style="background:linear-gradient(135deg,#f0f7f4,#f8faf9);border:1px solid #c6ddd7;border-radius:12px;padding:18px 20px;margin-bottom:20px">'
+    +'<div style="font-size:14px;font-weight:700;color:#1B4D3D;margin-bottom:14px">📊 ملخص الموارد البشرية · الإجمالي: '+t+' موظف</div>'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#f0f0f0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#333">'+t+'</div><div style="font-size:10px;color:#666;margin-top:4px">إجمالي الموظفين</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#D1FAE5;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#1B7A56">'+excIq+'</div><div style="font-size:13px;font-weight:700;color:#1B7A56">'+_p(excIq)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">ممتاز >١ سنة</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#BBF7D0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#059669">'+okIq+'</div><div style="font-size:13px;font-weight:700;color:#059669">'+_p(okIq)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">جيد ٣-١٢ شهر</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEF3C7;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#D97706">'+warnIq+'</div><div style="font-size:13px;font-weight:700;color:#D97706">'+_p(warnIq)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">قريب ≤٩٠ يوم</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEE2E2;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#C0392B">'+urgent+'</div><div style="font-size:13px;font-weight:700;color:#C0392B">'+_p(urgent)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">عاجل ≤٣٠ يوم</div></div>'
+    +'</div></div>';
+  var rows=STAFF.map(function(s){
+    var iqTag=s.daysLeft<=30?'<span class="tag-bad">✕ عاجل ('+s.daysLeft+' يوم)</span>':s.daysLeft<=90?'<span class="tag-warn">⚠ '+s.daysLeft+' يوم</span>':s.daysLeft<=365?'<span class="tag-ok">✓ '+s.daysLeft+' يوم</span>':'<span class="tag-ok cr">✓ '+s.daysLeft+' يوم</span>';
+    var qiwaTag=s.qiwa?'<span class="tag-ok">✓ متوافق</span>':'<span class="tag-bad">✕ غير متوافق</span>';
+    return '<tr><td style="font-weight:500">'+s.name+'</td><td>'+s.role+'</td><td>'+s.dept+'</td><td>'+s.nat+'</td><td style="font-family:monospace;font-size:10.5px;letter-spacing:.04em">'+s.iqama+'</td><td>'+iqTag+'<div style="font-size:9.5px;color:#888;margin-top:2px">'+s.expires+'</div></td><td style="font-weight:600;color:#1B4D3D">'+s.salary.toLocaleString('ar-EG')+' <span style="font-size:10px;font-weight:400;color:#888">ر.س</span></td><td>'+qiwaTag+'</td></tr>';
+  }).join('');
+  var win=window.open('','_blank','width=1100,height=820');
+  var printCss='*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}@page{size:A4 landscape;margin:12mm 10mm}body{margin:0;padding:20px 24px;font-family:"Segoe UI","Tajawal",Arial,sans-serif;color:#111;direction:rtl;font-size:12px;line-height:1.45}h1{font-size:20px;color:#1B4D3D;margin:0 0 3px;font-weight:700}.meta{font-size:11px;color:#666;margin:0 0 16px}table{width:100%;border-collapse:collapse;margin-top:16px;font-size:11.5px}th{background:#1B4D3D;color:#fff;padding:8px 11px;text-align:right;font-weight:600;font-size:11px}td{padding:7px 11px;border-bottom:1px solid #e8e8e8;vertical-align:middle}tr:nth-child(even) td{background:#f7faf8}tr{break-inside:avoid;page-break-inside:avoid}.cr{color:#1B7A56;font-weight:600}.dr{color:#C0392B;font-weight:600}.tag-ok{background:#D1FAE5;color:#065F46;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600}.tag-warn{background:#FEF3C7;color:#92400E;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600}.tag-bad{background:#FEE2E2;color:#991B1B;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600}.footer{font-size:10px;color:#aaa;margin-top:20px;border-top:1px solid #eee;padding-top:10px;text-align:center}';
+  win.document.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"/><title>تقرير الموارد البشرية</title><style>'+printCss+'</style></head><body><h1>👥 تقرير الموارد البشرية — الموظفون والإقامات</h1><p class="meta">تاريخ الإصدار: '+new Date().toLocaleDateString('ar-SA',{year:'numeric',month:'long',day:'numeric'})+' · نظام ضيوف — Dheuof Hotel · إجمالي الموظفين: '+t+' موظف</p>'+statsHtml+'<table><thead><tr><th>الاسم</th><th>المنصب</th><th>القسم</th><th>الجنسية</th><th>رقم الإقامة</th><th>حالة الإقامة</th><th>الراتب (ر.س)</th><th>قوى</th></tr></thead><tbody>'+rows+'</tbody></table><div class="footer">نظام ضيوف · الموارد البشرية · '+new Date().toLocaleString('ar-SA')+'</div></body></html>');
+  win.document.close();
+  setTimeout(function(){ win.print(); },700);
+};
 </script>
 </body>
 </html>
