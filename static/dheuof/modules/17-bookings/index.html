@@ -184,7 +184,35 @@
   .es-unit .meta { font-size:10px; color:var(--fg-3); margin-top:2px; }
   .es-unit .up { padding:8px 12px; background:var(--brand-50); color:var(--brand-700); border:1px solid var(--brand-200); border-radius:8px; font-family:var(--font-ar); font-size:11px; font-weight:600; cursor:pointer; white-space:nowrap; }
   .es-unit .up.has { background:#D1FAE5; color:#065F46; border-color:#A7F3D0; }
-  @media (max-width:560px){ .de-types{grid-template-columns:1fr} .de-units{grid-template-columns:1fr} .de-svcs{grid-template-columns:1fr} .de-grid2{grid-template-columns:1fr} }
+  /* Facility booking cards (with photo) */
+  .fac-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .fac { border:1.5px solid var(--hairline); border-radius:12px; overflow:hidden; transition:all 140ms; background:var(--white); }
+  .fac.on { border-color:var(--brand-700); box-shadow:0 0 0 3px rgba(27,77,61,.12); }
+  .fac .ph { height:84px; background-size:cover; background-position:center; display:grid; place-items:center; font-size:30px; position:relative; }
+  .fac .ph .tag { position:absolute; bottom:6px; inset-inline-start:6px; background:rgba(0,0,0,.55); color:#fff; font-family:var(--font-en); font-size:11px; font-weight:700; padding:2px 8px; border-radius:6px; }
+  .fac .ph .ck { position:absolute; top:6px; inset-inline-end:6px; width:22px; height:22px; border-radius:999px; background:var(--brand-700); color:#fff; display:none; place-items:center; font-size:12px; }
+  .fac.on .ph .ck { display:grid; }
+  .fac .body { padding:10px 12px; cursor:pointer; }
+  .fac .nm { font-size:13px; font-weight:600; color:var(--ink-900); }
+  .fac .un { font-size:10px; color:var(--fg-3); margin-top:1px; }
+  .fac .desc { font-size:10.5px; color:var(--fg-2); margin-top:4px; line-height:1.5; }
+  .fac-qty { display:none; align-items:center; gap:8px; padding:10px 12px; border-top:1px dashed var(--hairline); }
+  .fac.on .fac-qty { display:flex; }
+  .fac-qty label { font-size:11px; color:var(--fg-2); flex:1; }
+  .fac-qty button { width:28px; height:28px; border:1px solid var(--hairline); background:var(--white); border-radius:7px; font-size:16px; cursor:pointer; color:var(--brand-700); font-weight:700; }
+  .fac-qty .q { width:40px; text-align:center; font-family:var(--font-en); font-weight:700; font-size:14px; }
+  /* Establishment facility customisation cards */
+  .fp-tabs { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
+  .fp-tab { padding:6px 12px; border:1px solid var(--hairline); border-radius:8px; font-size:11px; font-family:var(--font-ar); cursor:pointer; background:var(--white); }
+  .fp-tab.on { background:var(--brand-700); color:#fff; border-color:var(--brand-700); }
+  .fp-card { display:grid; grid-template-columns:74px 1fr 92px; gap:10px; align-items:center; padding:10px; border:1px solid var(--hairline); border-radius:10px; margin-bottom:8px; }
+  .fp-card .ph { width:74px; height:58px; border-radius:8px; background-size:cover; background-position:center; display:grid; place-items:center; font-size:22px; cursor:pointer; position:relative; }
+  .fp-card .ph .cam { position:absolute; bottom:2px; inset-inline-end:2px; background:rgba(0,0,0,.6); color:#fff; border-radius:5px; font-size:9px; padding:1px 5px; }
+  .fp-card .mid .nm-in { width:100%; border:none; background:transparent; font-size:13px; font-weight:600; color:var(--ink-900); font-family:var(--font-ar); padding:2px 0; }
+  .fp-card .mid .desc-in { width:100%; border:1px solid var(--hairline); border-radius:6px; font-size:11px; color:var(--fg-2); font-family:var(--font-ar); padding:6px 8px; margin-top:4px; box-sizing:border-box; }
+  .fp-card .price-col input { width:100%; padding:8px; border:1px solid var(--hairline); border-radius:7px; text-align:center; font-family:var(--font-en); font-weight:700; box-sizing:border-box; }
+  .fp-card .price-col .lbl { font-size:9px; color:var(--fg-3); text-align:center; margin-top:3px; }
+  @media (max-width:560px){ .de-types{grid-template-columns:1fr} .de-units{grid-template-columns:1fr} .de-svcs{grid-template-columns:1fr} .de-grid2{grid-template-columns:1fr} .fac-grid{grid-template-columns:1fr} .fp-card{grid-template-columns:60px 1fr 80px} }
 </style>
 </head>
 <body>
@@ -208,6 +236,7 @@
           <button onclick="exportCSV()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">📊 Excel</button>
           <button onclick="exportPDF()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">🖨 تقرير PDF</button>
           <button onclick="openEstablishment()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">🏢 لوحة المنشأة</button>
+          <button onclick="openFacilityBooking()" style="font-family:var(--font-ar);font-weight:700;font-size:13px;padding:9px 16px;border-radius:6px;background:#0d3d2e;color:#FFD600;border:none;cursor:pointer">🎟 حجز خدمة</button>
           <button onclick="openDirectBooking()" style="font-family:var(--font-ar);font-weight:700;font-size:13px;padding:9px 16px;border-radius:6px;background:#FFD600;color:#0d3d2e;border:none;cursor:pointer;box-shadow:0 2px 8px rgba(255,214,0,.4)">🏨 حجز مباشر ٠٪</button>
           <button onclick="openAddBooking()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--brand-700);color:var(--paper);border:none;cursor:pointer">+ حجز سريع</button>
         </div>
@@ -475,17 +504,60 @@
     </div>
     <div class="de-body">
       <div>
+        <div class="de-sec-t">🏷 ملف المنشأة <span style="font-weight:400;color:var(--fg-3)">— يظهر للعملاء وفي التقارير</span></div>
+        <div class="de-grid2">
+          <div class="de-field"><label>اسم المنشأة</label><input type="text" id="ep-name" placeholder="مثال: منتجع ضيوف" onchange="epSet('name',this.value)"/></div>
+          <div class="de-field"><label>رقم المسؤول</label><input type="tel" id="ep-phone" placeholder="05xxxxxxxx" onchange="epSet('phone',this.value)"/></div>
+        </div>
+        <div class="de-field" style="margin-top:12px"><label>الموقع / العنوان</label><input type="text" id="ep-loc" placeholder="المدينة، الحي، أو رابط خرائط Google" onchange="epSet('loc',this.value)"/></div>
+      </div>
+      <div>
         <div class="de-sec-t">📸 صور الوحدات <span style="font-weight:400;color:var(--fg-3)">— ارفع صورة لكل وحدة لتظهر للضيوف عند الحجز</span></div>
         <div id="es-units"></div>
       </div>
       <div>
-        <div class="de-sec-t">🧩 الخدمات المتكاملة المتاحة</div>
-        <div class="de-svcs" id="es-svcs"></div>
+        <div class="de-sec-t">🧩 تخصيص الخدمات والمرافق <span style="font-weight:400;color:var(--fg-3)">— صورة + وصف + سعر لكل نوع منشأة</span></div>
+        <div class="fp-tabs" id="esf-tabs"></div>
+        <div id="esf-cards"></div>
+        <div style="font-size:10px;color:var(--fg-3);margin-top:8px;background:var(--surface-2);border-radius:8px;padding:8px 10px">💡 السعر ٠ = الخدمة غير متاحة لهذا النوع. الصورة والوصف يظهران للعملاء عند حجز الخدمات الخارجية. كل ذلك يُحفظ تلقائياً.</div>
       </div>
       <input type="file" id="es-file" accept="image/*" style="display:none" onchange="esHandlePhoto(event)"/>
     </div>
     <div class="de-foot">
       <button class="de-confirm" onclick="closeEstablishment()">✓ تم</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ Facility / External Services Booking ═══════════ -->
+<div id="facility-modal" class="de-ov">
+  <div class="de-modal">
+    <div class="de-head">
+      <div>
+        <div class="t">🎟 حجز الخدمات والمرافق <span class="z">عمولة ٠٪</span></div>
+        <div class="s">للعملاء من الخارج (بدون إقامة) · إفطار · قاعات · سبا · مسبح · صالة رياضية · كافيه · مناسبات · زفاف</div>
+      </div>
+      <button class="de-x" onclick="closeFacilityBooking()">✕</button>
+    </div>
+    <div class="de-body">
+      <div><div class="de-sec-t">① نوع المنشأة</div><div class="de-types" id="fb-types"></div></div>
+      <div><div class="de-sec-t">② اختر الخدمات <span id="fb-count" style="font-weight:400;color:var(--fg-3)"></span></div><div class="fac-grid" id="fb-facs"></div></div>
+      <div><div class="de-sec-t">③ تاريخ الخدمة</div><div class="de-field"><input type="date" id="fb-date"/></div></div>
+      <div>
+        <div class="de-sec-t">④ بيانات العميل</div>
+        <div class="de-grid2">
+          <div class="de-field"><label>اسم العميل</label><input type="text" id="fb-name" placeholder="الاسم"/></div>
+          <div class="de-field"><label>رقم الجوال</label><input type="tel" id="fb-phone" placeholder="05xxxxxxxx"/></div>
+        </div>
+      </div>
+      <div class="de-summary">
+        <div class="de-sum-row zero"><span class="l">عمولة <span class="de-zero-badge">٠٪ مباشر</span></span><span class="v">٠ ر.س</span></div>
+        <div class="de-sum-row total"><span class="l">إجمالي الخدمات</span><span class="v" id="fb-total">٠ ر.س</span></div>
+      </div>
+    </div>
+    <div class="de-foot">
+      <button class="de-confirm" onclick="fbConfirm()">✓ تأكيد حجز الخدمة</button>
+      <button class="de-cancel" onclick="closeFacilityBooking()">إلغاء</button>
     </div>
   </div>
 </div>
@@ -544,10 +616,12 @@ function bookingRowHtml(bk){
   var net  = bk.amount - comm;
   var lg = CH_LOGO[bk.ch] || CH_LOGO.direct;
   var st = BK_ST[bk.status] || BK_ST.conf;
-  var stLabel = (bk.ch==='direct' && bk.status==='conf') ? '✓ مباشر' : st.t;
+  var isFac = bk.kind==='facility';
+  var stLabel = isFac ? '🎟 خدمة' : ((bk.ch==='direct' && bk.status==='conf') ? '✓ مباشر' : st.t);
+  var sub = isFac ? (bk.room + ' · ' + fmtDate(bk.checkIn)) : (bk.room + ' · ' + toAr(bk.nights) + ' ليالٍ · ' + fmtDate(bk.checkIn));
   return '<div class="bk-row" data-ch="'+bk.ch+'" onclick="showDetail(\''+bk.id+'\')">'
-    + '<div class="bk-ch-logo '+lg.c+'">'+lg.t+'</div>'
-    + '<div><div class="bk-guest-name">'+bk.guest+'</div><div class="bk-guest-sub">'+bk.room+' · '+toAr(bk.nights)+' ليالٍ · '+fmtDate(bk.checkIn)+'</div></div>'
+    + '<div class="bk-ch-logo '+lg.c+'">'+(isFac?'🎟':lg.t)+'</div>'
+    + '<div><div class="bk-guest-name">'+bk.guest+'</div><div class="bk-guest-sub">'+sub+'</div></div>'
     + '<div class="bk-amount">'+toAr(bk.amount)+' ر.س</div>'
     + '<div class="bk-comm">−'+toAr(comm)+' ر.س</div>'
     + '<div class="bk-net">'+toAr(net)+' ر.س</div>'
@@ -813,10 +887,15 @@ var UNITS = [
   {id:'A2',   type:'apartment', name:'شقة غرفتين وصالة',    prop:'شقق ضيوف المفروشة', cap:4,  price:480,  icon:'🏢', grad:'linear-gradient(135deg,#00838f,#00acc1)'},
   {id:'A3',   type:'apartment', name:'شقة ثلاث غرف',        prop:'شقق ضيوف المفروشة', cap:6,  price:720,  icon:'🏢', grad:'linear-gradient(135deg,#455a64,#607d8b)'},
   {id:'A4',   type:'apartment', name:'بنتهاوس فاخر',        prop:'شقق ضيوف المفروشة', cap:5,  price:950,  icon:'🌆', grad:'linear-gradient(135deg,#5d4037,#795548)'},
-  // فلل وشاليهات
+  // فلل
   {id:'V1',   type:'villa',     name:'فيلا غرفتين',         prop:'فلل ضيوف',          cap:6,  price:1200, icon:'🏡', grad:'linear-gradient(135deg,#2e7d32,#43a047)'},
   {id:'V2',   type:'villa',     name:'فيلا ٤ غرف بمسبح',    prop:'فلل ضيوف',          cap:10, price:2200, icon:'🏊', grad:'linear-gradient(135deg,#1565c0,#1e88e5)'},
-  {id:'V3',   type:'villa',     name:'شاليه بمسبح خاص',     prop:'فلل ضيوف',          cap:8,  price:1800, icon:'🏖', grad:'linear-gradient(135deg,#e65100,#fb8c00)'},
+  // استراحات
+  {id:'R1',   type:'resthouse', name:'استراحة عائلية',      prop:'استراحات ضيوف',     cap:30, price:900,  icon:'🏕', grad:'linear-gradient(135deg,#33691e,#558b2f)'},
+  {id:'R2',   type:'resthouse', name:'استراحة VIP بمسبح',   prop:'استراحات ضيوف',     cap:50, price:1600, icon:'🏕', grad:'linear-gradient(135deg,#4e342e,#6d4c41)'},
+  // شاليهات
+  {id:'C1',   type:'chalet',    name:'شاليه بمسبح خاص',     prop:'شاليهات ضيوف',      cap:8,  price:1100, icon:'🏖', grad:'linear-gradient(135deg,#e65100,#fb8c00)'},
+  {id:'C2',   type:'chalet',    name:'شاليه شاطئي فاخر',    prop:'شاليهات ضيوف',      cap:12, price:1900, icon:'🏝', grad:'linear-gradient(135deg,#00838f,#00acc1)'},
 ];
 
 // ── Integrated services / add-ons ─────────────────────────────
@@ -838,9 +917,11 @@ var UNIT_PHOTOS = loadUnitPhotos();
 function unitBg(u){ return UNIT_PHOTOS[u.id] ? ('url('+UNIT_PHOTOS[u.id]+')') : u.grad; }
 
 var TYPE_META = {
-  hotel:     {e:'🏨', n:'فندق',          c:'غرف وأجنحة'},
-  apartment: {e:'🏢', n:'شقق مفروشة',     c:'وحدات سكنية'},
-  villa:     {e:'🏡', n:'فلل وشاليهات',   c:'بمسابح خاصة'},
+  hotel:     {e:'🏨', n:'فندق',      c:'غرف وأجنحة'},
+  apartment: {e:'🏢', n:'شقق مفروشة', c:'وحدات سكنية'},
+  resthouse: {e:'🏕', n:'استراحة',   c:'استراحات عائلية'},
+  chalet:    {e:'🏖', n:'شاليه',     c:'بمسبح خاص'},
+  villa:     {e:'🏡', n:'فيلا',      c:'فلل خاصة'},
 };
 
 var DE = { type:'hotel', unitId:null, svcs:{} };
@@ -958,10 +1039,139 @@ window.deConfirm = function(){
   toast('✓ حجز مباشر مؤكد: '+name+' · '+unit.name+' · '+toAr(total)+' ر.س · عمولة ٠٪');
 };
 
+// ═══════════ Facilities catalogue (external bookable services) ═══════════
+//   basis: person | hour | session | event | flat
+var FACILITIES = [
+  {id:'breakfast', name:'إفطار / بوفيه',     icon:'🍳', unit:'لكل شخص',     basis:'person',  prices:{hotel:55,   apartment:45, resthouse:40,   chalet:50,   villa:60},   grad:'linear-gradient(135deg,#ef6c00,#fb8c00)'},
+  {id:'meeting',   name:'قاعة اجتماعات',     icon:'🏛', unit:'لكل ساعة',    basis:'hour',    prices:{hotel:250,  apartment:0,  resthouse:180,  chalet:0,    villa:0},    grad:'linear-gradient(135deg,#283593,#3949ab)'},
+  {id:'spa',       name:'السبا',             icon:'💆', unit:'لكل جلسة',    basis:'session', prices:{hotel:180,  apartment:0,  resthouse:120,  chalet:150,  villa:200},  grad:'linear-gradient(135deg,#6a1b9a,#8e24aa)'},
+  {id:'birthday',  name:'حفلة عيد ميلاد',    icon:'🎂', unit:'لكل مناسبة',  basis:'event',   prices:{hotel:900,  apartment:0,  resthouse:1200, chalet:1500, villa:1800}, grad:'linear-gradient(135deg,#c2185b,#e91e63)'},
+  {id:'wedding',   name:'قاعة أفراح / زفاف', icon:'💍', unit:'لكل مناسبة',  basis:'event',   prices:{hotel:5000, apartment:0,  resthouse:3500, chalet:0,    villa:8000}, grad:'linear-gradient(135deg,#ad1457,#d81b60)'},
+  {id:'pool',      name:'دخول المسبح',       icon:'🏊', unit:'لكل شخص/يوم', basis:'person',  prices:{hotel:60,   apartment:40, resthouse:80,   chalet:100,  villa:120},  grad:'linear-gradient(135deg,#0277bd,#039be5)'},
+  {id:'gym',       name:'الصالة الرياضية',   icon:'🏋', unit:'لكل شخص/يوم', basis:'person',  prices:{hotel:50,   apartment:35, resthouse:0,    chalet:0,    villa:0},    grad:'linear-gradient(135deg,#37474f,#546e7a)'},
+  {id:'cafe',      name:'الكافيه',           icon:'☕', unit:'قسيمة',       basis:'flat',    prices:{hotel:120,  apartment:0,  resthouse:100,  chalet:120,  villa:0},    grad:'linear-gradient(135deg,#5d4037,#795548)'},
+];
+// per-subscriber overrides (price per type, plus name/desc/photo per facility)
+var FAC_PRICES = (function(){ try { return JSON.parse(localStorage.getItem('dheuof_facility_prices')||'{}'); } catch(e){ return {}; } })();
+var FAC_META   = (function(){ try { return JSON.parse(localStorage.getItem('dheuof_facility_meta')||'{}'); } catch(e){ return {}; } })();
+function facPrice(id, type){
+  if (FAC_PRICES[type] && FAC_PRICES[type][id]!=null && FAC_PRICES[type][id]!=='') return parseFloat(FAC_PRICES[type][id])||0;
+  var f = FACILITIES.find(function(x){ return x.id===id; });
+  return f ? (f.prices[type]||0) : 0;
+}
+function facName(f){ return (FAC_META[f.id] && FAC_META[f.id].name) || f.name; }
+function facDesc(f){ return (FAC_META[f.id] && FAC_META[f.id].desc) || ''; }
+function facPhoto(f){ return FAC_META[f.id] && FAC_META[f.id].photo; }
+function facBg(f){ return facPhoto(f) ? ('url('+facPhoto(f)+')') : f.grad; }
+function saveFacPrices(){ localStorage.setItem('dheuof_facility_prices', JSON.stringify(FAC_PRICES)); }
+function saveFacMeta(){ localStorage.setItem('dheuof_facility_meta', JSON.stringify(FAC_META)); }
+
+// ── External facility booking flow ────────────────────────────
+var FB = { type:'hotel', items:{} };
+function fbRenderTypes(){
+  document.getElementById('fb-types').innerHTML = Object.keys(TYPE_META).map(function(t){
+    var m=TYPE_META[t]; var on=FB.type===t?' on':'';
+    return '<div class="de-type'+on+'" onclick="fbSetType(\''+t+'\')"><div class="e">'+m.e+'</div><div class="n">'+m.n+'</div><div class="c">'+m.c+'</div></div>';
+  }).join('');
+}
+window.fbSetType=function(t){ FB.type=t; FB.items={}; fbRenderTypes(); fbRenderFacs(); fbRecalc(); };
+function fbRenderFacs(){
+  var list=FACILITIES.filter(function(f){ return facPrice(f.id,FB.type)>0; });
+  var el=document.getElementById('fb-facs');
+  if(list.length===0){ el.innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--fg-3);font-size:12px;padding:24px;background:var(--surface-2);border-radius:10px">لا توجد خدمات مسعّرة لهذا النوع — حدّد الأسعار من 🏢 لوحة المنشأة</div>'; return; }
+  el.innerHTML=list.map(function(f){
+    var on=FB.items[f.id]?' on':'';
+    var qty=FB.items[f.id]||1;
+    var price=facPrice(f.id,FB.type);
+    var emoji=facPhoto(f)?'':f.icon;
+    var desc=facDesc(f);
+    return '<div class="fac'+on+'" id="fac-'+f.id+'">'
+      +'<div class="ph" style="background-image:'+facBg(f)+'" onclick="fbToggle(\''+f.id+'\')">'+emoji+'<span class="tag">'+toAr(price)+' ر.س</span><span class="ck">✓</span></div>'
+      +'<div class="body" onclick="fbToggle(\''+f.id+'\')"><div class="nm">'+facName(f)+'</div><div class="un">'+f.unit+'</div>'+(desc?'<div class="desc">'+desc+'</div>':'')+'</div>'
+      +'<div class="fac-qty"><label>الكمية ('+f.unit+')</label>'
+      +'<button onclick="fbQty(\''+f.id+'\',-1)">−</button>'
+      +'<span class="q" id="q-'+f.id+'">'+toAr(qty)+'</span>'
+      +'<button onclick="fbQty(\''+f.id+'\',1)">+</button></div></div>';
+  }).join('');
+}
+window.fbToggle=function(id){ if(FB.items[id]) delete FB.items[id]; else FB.items[id]=1; fbRenderFacs(); fbRecalc(); };
+window.fbQty=function(id,d){ var q=(FB.items[id]||1)+d; if(q<1)q=1; FB.items[id]=q; var el=document.getElementById('q-'+id); if(el)el.textContent=toAr(q); fbRecalc(); };
+function fbRecalc(){
+  var total=0;
+  Object.keys(FB.items).forEach(function(id){ total += facPrice(id,FB.type)*FB.items[id]; });
+  document.getElementById('fb-total').textContent=toAr(total)+' ر.س';
+  var n=Object.keys(FB.items).length;
+  document.getElementById('fb-count').textContent = n>0 ? ('— '+toAr(n)+' خدمة مختارة') : '';
+}
+window.openFacilityBooking=function(){
+  FB={type:'hotel',items:{}};
+  fbRenderTypes(); fbRenderFacs();
+  ['fb-name','fb-phone','fb-date'].forEach(function(id){ document.getElementById(id).value=''; });
+  fbRecalc();
+  document.getElementById('facility-modal').style.display='flex';
+};
+window.closeFacilityBooking=function(){ document.getElementById('facility-modal').style.display='none'; };
+window.fbConfirm=function(){
+  var name=document.getElementById('fb-name').value.trim();
+  var date=document.getElementById('fb-date').value;
+  var ids=Object.keys(FB.items);
+  if(ids.length===0){ alert('اختر خدمة واحدة على الأقل'); return; }
+  if(!name){ alert('أدخل اسم العميل'); return; }
+  if(!date){ alert('اختر تاريخ الخدمة'); return; }
+  var total=0, lines=[];
+  ids.forEach(function(id){
+    var f=FACILITIES.find(function(x){return x.id===id;});
+    var qty=FB.items[id]; total+=facPrice(id,FB.type)*qty;
+    lines.push(facName(f)+' ×'+toAr(qty));
+  });
+  var bk={ id:'F'+Date.now().toString().slice(-6), guest:name, ch:'direct', kind:'facility',
+    room:'🎟 '+ids.map(function(id){ return facName(FACILITIES.find(function(x){return x.id===id;})); }).join(' + '),
+    nights:0, amount:total, checkIn:date, status:'conf',
+    phone:document.getElementById('fb-phone').value.trim(), email:'', services:lines, propType:FB.type, external:true };
+  saveDirectBooking(bk);
+  closeFacilityBooking();
+  CURRENT_CH='all';
+  document.querySelectorAll('.bk-tab').forEach(function(b,i){ b.classList.toggle('on', i===0); });
+  toast('🎟 تم حجز خدمة خارجية: '+name+' · '+toAr(total)+' ر.س · عمولة ٠٪');
+};
+
 // ═══════════ Establishment platform panel ═══════════
-var ES_PENDING_UNIT = null;
+var ES_PHOTO_TARGET = null;   // {kind:'unit'|'facility', id}
+var ESF_TYPE = 'hotel';
+
+// ── Establishment profile (name / manager phone / location) ──
+var ES_PROFILE = (function(){ try { return JSON.parse(localStorage.getItem('dheuof_establishment_profile')||'{}'); } catch(e){ return {}; } })();
+window.epSet = function(key, val){
+  ES_PROFILE[key] = val.trim();
+  localStorage.setItem('dheuof_establishment_profile', JSON.stringify(ES_PROFILE));
+  applyEstablishmentProfile();
+};
+function esLoadProfile(){
+  var n=document.getElementById('ep-name'), p=document.getElementById('ep-phone'), l=document.getElementById('ep-loc');
+  if(n) n.value = ES_PROFILE.name || '';
+  if(p) p.value = ES_PROFILE.phone || '';
+  if(l) l.value = ES_PROFILE.loc || '';
+}
+function applyEstablishmentProfile(){
+  var bar = document.getElementById('es-profile-bar');
+  if(!ES_PROFILE.name && !ES_PROFILE.phone && !ES_PROFILE.loc){ if(bar) bar.style.display='none'; return; }
+  if(!bar){
+    bar = document.createElement('div');
+    bar.id = 'es-profile-bar';
+    bar.style.cssText = 'display:flex;flex-wrap:wrap;gap:14px;align-items:center;background:linear-gradient(135deg,#1B4D3D,#2d6a52);color:#fff;border-radius:12px;padding:12px 18px;margin-bottom:16px;font-size:13px';
+    var head = document.querySelector('.mod-head');
+    if(head && head.parentNode) head.parentNode.insertBefore(bar, head.nextSibling);
+  }
+  bar.style.display='flex';
+  var loc = ES_PROFILE.loc || '';
+  var locHtml = /^https?:\/\//i.test(loc) ? ('<a href="'+loc+'" target="_blank" style="color:#FFD600;text-decoration:none">📍 الموقع على الخريطة</a>') : (loc?('📍 '+loc):'');
+  bar.innerHTML = (ES_PROFILE.name?'<span style="font-family:var(--font-ar-display);font-weight:700;font-size:15px">🏢 '+ES_PROFILE.name+'</span>':'')
+    + (ES_PROFILE.phone?'<a href="tel:'+ES_PROFILE.phone+'" style="color:#fff;text-decoration:none;background:rgba(255,255,255,.12);border-radius:8px;padding:5px 12px">📞 المسؤول: '+ES_PROFILE.phone+'</a>':'')
+    + (locHtml?'<span style="background:rgba(255,255,255,.12);border-radius:8px;padding:5px 12px">'+locHtml+'</span>':'');
+}
+
 window.openEstablishment = function(){
-  esRenderUnits(); esRenderServices();
+  esLoadProfile(); esRenderUnits(); esRenderFacEditor();
   document.getElementById('establishment-modal').style.display = 'flex';
 };
 window.closeEstablishment = function(){ document.getElementById('establishment-modal').style.display = 'none'; };
@@ -969,35 +1179,49 @@ window.closeEstablishment = function(){ document.getElementById('establishment-m
 function esRenderUnits(){
   document.getElementById('es-units').innerHTML = UNITS.map(function(u){
     var has = !!UNIT_PHOTOS[u.id];
-    var bg = unitBg(u);
     var emoji = has ? '' : u.icon;
     return '<div class="es-unit">'
-      + '<div class="ph" style="background-image:'+bg+'">'+emoji+'</div>'
+      + '<div class="ph" style="background-image:'+unitBg(u)+'">'+emoji+'</div>'
       + '<div class="info"><div class="nm">'+u.name+'</div><div class="meta">'+TYPE_META[u.type].n+' · '+u.prop+' · '+toAr(u.price)+' ر.س/ليلة</div></div>'
-      + '<button class="up'+(has?' has':'')+'" onclick="esPickPhoto(\''+u.id+'\')">'+(has?'✓ تغيير الصورة':'📷 رفع صورة')+'</button>'
-      + (has ? '<button class="up" style="background:#FEE2E2;color:#C0392B;border-color:#FECACA" onclick="esRemovePhoto(\''+u.id+'\')">حذف</button>' : '')
+      + '<button class="up'+(has?' has':'')+'" onclick="esPickPhoto(\'unit\',\''+u.id+'\')">'+(has?'✓ تغيير الصورة':'📷 رفع صورة')+'</button>'
+      + (has ? '<button class="up" style="background:#FEE2E2;color:#C0392B;border-color:#FECACA" onclick="esRemovePhoto(\'unit\',\''+u.id+'\')">حذف</button>' : '')
       + '</div>';
   }).join('');
 }
-function esRenderServices(){
-  document.getElementById('es-svcs').innerHTML = SERVICES.map(function(s){
-    return '<div class="de-svc on" style="cursor:default">'
-      + '<div class="e">'+s.icon+'</div>'
-      + '<div class="info"><div class="nm">'+s.name+'</div><div class="un">'+s.un+'</div></div>'
-      + '<div class="pr">'+toAr(s.price)+'</div></div>';
+
+function esRenderFacEditor(){
+  document.getElementById('esf-tabs').innerHTML = Object.keys(TYPE_META).map(function(t){
+    var on=ESF_TYPE===t?' on':'';
+    return '<div class="fp-tab'+on+'" onclick="esfSetType(\''+t+'\')">'+TYPE_META[t].e+' '+TYPE_META[t].n+'</div>';
+  }).join('');
+  document.getElementById('esf-cards').innerHTML = FACILITIES.map(function(f){
+    var has=!!facPhoto(f); var emoji=has?'':f.icon;
+    var p=facPrice(f.id,ESF_TYPE);
+    return '<div class="fp-card">'
+      + '<div class="ph" style="background-image:'+facBg(f)+'" onclick="esPickPhoto(\'facility\',\''+f.id+'\')">'+emoji+'<span class="cam">📷</span></div>'
+      + '<div class="mid">'
+      +   '<input class="nm-in" value="'+facName(f).replace(/"/g,'&quot;')+'" onchange="esfSetName(\''+f.id+'\',this.value)"/>'
+      +   '<input class="desc-in" value="'+facDesc(f).replace(/"/g,'&quot;')+'" placeholder="وصف الخدمة يظهر للعميل... ('+f.unit+')" onchange="esfSetDesc(\''+f.id+'\',this.value)"/>'
+      + '</div>'
+      + '<div class="price-col"><input type="number" min="0" value="'+p+'" onchange="esfSetPrice(\''+f.id+'\',this.value)"/><div class="lbl">ر.س · '+TYPE_META[ESF_TYPE].n+'</div></div>'
+      + '</div>';
   }).join('');
 }
-window.esPickPhoto = function(unitId){
-  ES_PENDING_UNIT = unitId;
+window.esfSetType  = function(t){ ESF_TYPE=t; esRenderFacEditor(); };
+window.esfSetPrice = function(id,val){ if(!FAC_PRICES[ESF_TYPE]) FAC_PRICES[ESF_TYPE]={}; FAC_PRICES[ESF_TYPE][id]=val; saveFacPrices(); toast('✓ تم حفظ السعر'); };
+window.esfSetName  = function(id,val){ if(!FAC_META[id]) FAC_META[id]={}; FAC_META[id].name=val.trim(); saveFacMeta(); };
+window.esfSetDesc  = function(id,val){ if(!FAC_META[id]) FAC_META[id]={}; FAC_META[id].desc=val.trim(); saveFacMeta(); };
+
+window.esPickPhoto = function(kind,id){
+  ES_PHOTO_TARGET = {kind:kind, id:id};
   document.getElementById('es-file').value = '';
   document.getElementById('es-file').click();
 };
 window.esHandlePhoto = function(ev){
   var file = ev.target.files && ev.target.files[0];
-  if (!file || !ES_PENDING_UNIT) return;
+  if (!file || !ES_PHOTO_TARGET) return;
   var reader = new FileReader();
   reader.onload = function(e){
-    // downscale to keep localStorage small
     var img = new Image();
     img.onload = function(){
       var canvas = document.createElement('canvas');
@@ -1006,29 +1230,38 @@ window.esHandlePhoto = function(ev){
       canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
       var data = canvas.toDataURL('image/jpeg', 0.8);
       try {
-        UNIT_PHOTOS[ES_PENDING_UNIT] = data;
-        localStorage.setItem('dheuof_unit_photos', JSON.stringify(UNIT_PHOTOS));
-        esRenderUnits();
-        toast('✓ تم رفع صورة الوحدة');
+        if (ES_PHOTO_TARGET.kind==='unit'){
+          UNIT_PHOTOS[ES_PHOTO_TARGET.id] = data;
+          localStorage.setItem('dheuof_unit_photos', JSON.stringify(UNIT_PHOTOS));
+          esRenderUnits();
+        } else {
+          if(!FAC_META[ES_PHOTO_TARGET.id]) FAC_META[ES_PHOTO_TARGET.id]={};
+          FAC_META[ES_PHOTO_TARGET.id].photo = data;
+          saveFacMeta();
+          esRenderFacEditor();
+        }
+        toast('✓ تم رفع الصورة');
       } catch(err){ alert('تعذّر حفظ الصورة (المساحة ممتلئة). جرّب صورة أصغر.'); }
-      ES_PENDING_UNIT = null;
+      ES_PHOTO_TARGET = null;
     };
     img.src = e.target.result;
   };
   reader.readAsDataURL(file);
 };
-window.esRemovePhoto = function(unitId){
-  delete UNIT_PHOTOS[unitId];
-  localStorage.setItem('dheuof_unit_photos', JSON.stringify(UNIT_PHOTOS));
-  esRenderUnits();
-  toast('تم حذف صورة الوحدة');
+window.esRemovePhoto = function(kind,id){
+  if (kind==='unit'){ delete UNIT_PHOTOS[id]; localStorage.setItem('dheuof_unit_photos', JSON.stringify(UNIT_PHOTOS)); esRenderUnits(); }
+  else { if(FAC_META[id]) delete FAC_META[id].photo; saveFacMeta(); esRenderFacEditor(); }
+  toast('تم حذف الصورة');
 };
 
 // Close modals on overlay click
-['direct-modal','establishment-modal'].forEach(function(id){
+['direct-modal','establishment-modal','facility-modal'].forEach(function(id){
   var ov = document.getElementById(id);
   if (ov) ov.addEventListener('click', function(e){ if (e.target===ov) ov.style.display='none'; });
 });
+
+// Show saved establishment profile ribbon on load
+applyEstablishmentProfile();
 </script>
 </body>
 </html>
