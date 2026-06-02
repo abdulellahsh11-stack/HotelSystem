@@ -45,7 +45,7 @@ class DatabasePool:
         self,
         database_url: str = "",
         min_conn: int = 2,
-        max_conn: int = 10,
+        max_conn: int = int(os.environ.get("MAX_PG_CONN", "20")),
         json_path: str = "admin_store.json",
     ):
         # تجنب إعادة التهيئة (Singleton)
