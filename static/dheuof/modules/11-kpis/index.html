@@ -1198,12 +1198,21 @@ setTimeout(function(){
 // ── Pickup window selector ────────────────────────────────────────────────
 (function initPickupWindows(){
   var winBtns = document.querySelectorAll('.pickup-window-btn');
+  var rows = Array.prototype.slice.call(
+    document.querySelectorAll('.pickup-table-wrap .pu-tr:not(.is-head)'));
+  function applyWindow(n){
+    rows.forEach(function(r, i){ r.style.display = (i < n) ? '' : 'none'; });
+  }
   winBtns.forEach(function(btn){
     btn.addEventListener('click', function(){
       winBtns.forEach(function(b){ b.classList.remove('is-active'); });
       btn.classList.add('is-active');
+      applyWindow(parseInt(btn.getAttribute('data-win'), 10) || rows.length);
     });
   });
+  // initial window = active button's value
+  var active = document.querySelector('.pickup-window-btn.is-active');
+  applyWindow(active ? (parseInt(active.getAttribute('data-win'), 10) || rows.length) : rows.length);
 })();
 
 // ── Pricing rules active count ────────────────────────────────────────────
@@ -1212,7 +1221,10 @@ function updateActiveRules(){
   var count = 0;
   checks.forEach(function(c){ if(c.checked) count++; });
   var tag = document.querySelector('#tab-pricing .mod-tag.ok');
-  if (tag) tag.textContent = count + ' قواعد نشطة';
+  if (tag) {
+    var label = count === 1 ? 'قاعدة نشطة' : (count === 2 ? 'قاعدتان نشطتان' : 'قواعد نشطة');
+    tag.textContent = count + ' ' + label;
+  }
 }
 
 // ── Apply channels button → toast ─────────────────────────────────────────
@@ -1250,28 +1262,6 @@ function dlXLS(content, filename){
   var a = document.createElement('a');
   a.href = u; a.download = filename; a.click();
   setTimeout(function(){ URL.revokeObjectURL(u); }, 1000);
-}
-
-function toXLS(headers, rows, sheetName){
-  var s = '<Styles>'
-    + '<Style ss:ID="H"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1B4D3D" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center"/></Style>'
-    + '<Style ss:ID="OK"><Interior ss:Color="#DCEEE6" ss:Pattern="Solid"/><Font ss:Color="#1B5E40" ss:Bold="1"/></Style>'
-    + '<Style ss:ID="WARN"><Interior ss:Color="#F6E7C2" ss:Pattern="Solid"/><Font ss:Color="#7A5C00" ss:Bold="1"/></Style>'
-    + '<Style ss:ID="BAD"><Interior ss:Color="#F1D8CF" ss:Pattern="Solid"/><Font ss:Color="#7A1A00" ss:Bold="1"/></Style>'
-    + '</Styles>';
-  function esc(v){ return String(v == null ? '' : v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-  function cell(v){
-    if (v && typeof v === 'object' && 's' in v)
-      return '<Cell ss:StyleID="' + v.s + '"><Data ss:Type="String">' + esc(v.v) + '</Data></Cell>';
-    return '<Cell><Data ss:Type="' + (typeof v === 'number' ? 'Number' : 'String') + '">' + esc(v) + '</Data></Cell>';
-  }
-  var hRow = '<Row>' + headers.map(function(h){ return '<Cell ss:StyleID="H"><Data ss:Type="String">' + esc(h) + '</Data></Cell>'; }).join('') + '</Row>';
-  var dRows = rows.map(function(r){ return '<Row>' + r.map(cell).join('') + '</Row>'; }).join('');
-  return '<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?>'
-    + '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'
-    + s
-    + '<Worksheet ss:Name="' + esc(sheetName) + '"><Table>' + hRow + dRows + '</Table></Worksheet>'
-    + '</Workbook>';
 }
 
 var KPI_DATA = [
@@ -1336,6 +1326,7 @@ window.kpiExportPDF = function(){
   }).join('');
 
   var win = window.open('', '_blank', 'width=1020,height=780');
+  if (!win) { showToast('فضلاً اسمح بالنوافذ المنبثقة لطباعة التقرير'); return; }
   win.document.write('<!doctype html><html lang="ar" dir="rtl"><head>'
     + '<meta charset="utf-8"/><title>تقرير الإيرادات والمؤشرات</title>'
     + '<style>'
