@@ -162,16 +162,46 @@
         <div class="left">
           <div class="num-row">
             <span class="num">10 · CHANNELS</span>
-            <span class="en-tag">Channel Manager · OTA Sync</span>
+            <span class="en-tag">Direct Booking First · OTA Optional</span>
           </div>
-          <h1>تسويق القنوات</h1>
-          <p class="sub">إدارة موحّدة لجميع قنوات الحجز الخارجية — أسعار، إتاحة، عمولات، أداء.</p>
+          <h1>قنوات الحجز</h1>
+          <p class="sub">الحجز المباشر عبر ضيوف هو الأساس — بصفر عمولة. ربط القنوات الخارجية خيار إضافي اختياري.</p>
         </div>
         <div class="actions">
           <button onclick="exportCSV()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">📊 Excel</button>
           <button onclick="exportPDF()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--white);color:var(--ink-900);border:1px solid var(--ink-100);cursor:pointer">🖨 تقرير PDF</button>
-          <button onclick="openAddChannelModal()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--brand-700);color:var(--paper);border:none;cursor:pointer">+ ربط قناة جديدة</button>
         </div>
+      </div>
+
+      <!-- ═══ PRIMARY: Direct Booking — Zero Commission ═══ -->
+      <div data-m-rise style="background:linear-gradient(135deg,var(--gold-500),var(--gold-700));border-radius:16px;padding:26px 30px;margin-bottom:18px;display:grid;grid-template-columns:1fr auto auto;gap:24px;align-items:center;position:relative;overflow:hidden;box-shadow:0 10px 30px rgba(154,116,48,.22)">
+        <div style="position:relative">
+          <div style="display:inline-flex;align-items:center;gap:7px;background:rgba(14,42,34,.16);color:var(--brand-900);font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;margin-bottom:10px">⭐ الخيار الأساسي</div>
+          <div style="font-family:var(--font-ar-display);font-size:24px;font-weight:700;color:var(--brand-900)">الحجز المباشر عبر ضيوف</div>
+          <div style="font-size:13px;color:var(--brand-800);margin-top:5px;line-height:1.6">الضيف يحجز مباشرة من موقع منشأتك — بدون أي وسيط، وبدون أي عمولة. كل ريال يصل إليك كاملاً.</div>
+          <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+            <a href="/static/dheuof/modules/17-bookings/index.html" style="background:var(--brand-900);color:var(--gold-300);text-decoration:none;font-size:13px;font-weight:600;padding:10px 20px;border-radius:8px">فتح محرك الحجز المباشر ←</a>
+            <button onclick="copyDirectLink()" style="background:rgba(255,255,255,.85);color:var(--brand-900);border:none;font-family:var(--font-ar);font-size:13px;font-weight:600;padding:10px 18px;border-radius:8px;cursor:pointer">🔗 نسخ رابط الحجز</button>
+          </div>
+        </div>
+        <div style="text-align:center;position:relative;border-inline-start:1px solid rgba(14,42,34,.18);padding-inline-start:24px">
+          <div style="font-family:var(--font-en);font-size:42px;font-weight:700;color:var(--brand-900);line-height:1">٠٪</div>
+          <div style="font-size:11px;color:var(--brand-800);margin-top:4px;font-weight:600">عمولة على الحجز المباشر</div>
+        </div>
+        <div style="text-align:center;position:relative;border-inline-start:1px solid rgba(14,42,34,.18);padding-inline-start:24px">
+          <div style="font-family:var(--font-en);font-size:42px;font-weight:700;color:var(--brand-900);line-height:1">١٤٨</div>
+          <div style="font-size:11px;color:var(--brand-800);margin-top:4px;font-weight:600">حجز مباشر هذا الشهر</div>
+        </div>
+      </div>
+
+      <!-- ═══ SECONDARY: Optional external channels ═══ -->
+      <div data-m-rise style="display:flex;align-items:center;gap:10px;margin:22px 0 12px">
+        <div style="flex:1;height:1px;background:var(--hairline)"></div>
+        <span style="font-size:12px;color:var(--fg-3);font-weight:600">قنوات خارجية اختيارية — لزيادة الوصول مقابل عمولة</span>
+        <div style="flex:1;height:1px;background:var(--hairline)"></div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
+        <button onclick="openAddChannelModal()" style="font-family:var(--font-ar);font-weight:500;font-size:13px;padding:9px 16px;border-radius:6px;background:var(--brand-700);color:var(--paper);border:none;cursor:pointer">+ ربط قناة خارجية (اختياري)</button>
       </div>
 
       <div class="ch-banner" data-m-rise>
@@ -1277,6 +1307,17 @@ window.syncAllChannels = (function(_orig){
       });
   };
 })(window.syncAllChannels);
+
+// ── Direct booking link (zero-commission primary channel) ───────────────────
+window.copyDirectLink = function(){
+  var link = window.location.origin + '/static/dheuof/modules/17-bookings/index.html';
+  var done = function(){ toast('✓ تم نسخ رابط الحجز المباشر — شاركه مع ضيوفك (صفر عمولة)'); };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(link).then(done).catch(function(){ window.prompt('انسخ رابط الحجز المباشر:', link); });
+  } else {
+    window.prompt('انسخ رابط الحجز المباشر:', link);
+  }
+};
 
 // ── Boot: load data on init ──────────────────────────────────────────────────
 setTimeout(function(){ loadReservations(); loadSyncLog(); }, 400);
