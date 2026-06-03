@@ -1,11 +1,7 @@
-const CACHE = 'dheuof-staff-v1';
+const CACHE = 'dheuof-staff-v2';
 const PRECACHE = [
   '/static/dheuof/staff-mobile/index.html',
-  '/static/dheuof/staff-mobile/mobile.css',
-  '/static/dheuof/staff-mobile/Screens.jsx',
-  '/static/dheuof/staff-mobile/ios-frame.jsx',
   '/static/dheuof/staff-mobile/manifest.json',
-  '/static/dheuof/colors_and_type.css',
 ];
 
 self.addEventListener('install', e => {
