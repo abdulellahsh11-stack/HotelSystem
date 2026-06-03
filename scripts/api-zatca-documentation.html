@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<style>
+@font-face { font-family:'Taj'; src:url('file:///tmp/arfonts/Tajawal-Regular.ttf'); font-weight:400; }
+@font-face { font-family:'Taj'; src:url('file:///tmp/arfonts/Tajawal-Bold.ttf'); font-weight:700; }
+@font-face { font-family:'Cairo'; src:url('file:///tmp/arfonts/Cairo.ttf'); }
+:root{ --brand:#1B4D3D; --brand2:#266554; --gold:#C9A85F; --gold2:#9A7430;
+  --ink:#16201C; --muted:#6b7770; --line:#e4e9e6; --soft:#f0f4f2; --code:#0E2A22; }
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Taj',sans-serif;color:var(--ink);font-size:11.5px;line-height:1.65;}
+@page{ size:A4; margin:14mm 12mm; @bottom-center{ content:"ضيوف · Dheuof API — www.dheuof.com"; font-family:'Taj'; font-size:8px; color:#999; } }
+.page{ page-break-after:always; }
+.page:last-child{ page-break-after:auto; }
+h1{font-family:'Cairo';font-size:25px;color:var(--brand);font-weight:700;}
+h2{font-family:'Cairo';font-size:17px;color:var(--brand);margin:16px 0 9px;padding-bottom:5px;border-bottom:2px solid var(--gold);}
+h3{font-family:'Cairo';font-size:13.5px;color:var(--brand2);margin:13px 0 6px;}
+.sub{color:var(--muted);font-size:12.5px;}
+p{margin:6px 0;}
+code,.mono{font-family:'Courier New',monospace;background:var(--soft);padding:1px 5px;border-radius:4px;font-size:10.5px;color:var(--code);direction:ltr;display:inline-block;}
+pre{background:var(--code);color:#E8F0EC;padding:13px 15px;border-radius:9px;font-family:'Courier New',monospace;font-size:9.5px;line-height:1.6;direction:ltr;text-align:left;overflow-x:auto;margin:9px 0;white-space:pre-wrap;}
+pre .k{color:#C9A85F;} pre .s{color:#9CCBBE;} pre .c{color:#6b8a7a;}
+table{width:100%;border-collapse:collapse;margin:9px 0;font-size:10.5px;}
+th,td{padding:7px 8px;border:1px solid var(--line);text-align:right;vertical-align:top;}
+th{background:var(--brand);color:#fff;font-family:'Cairo';font-weight:700;font-size:10.5px;}
+tr:nth-child(even) td{background:var(--soft);}
+.method{display:inline-block;font-family:'Courier New',monospace;font-size:9.5px;font-weight:700;padding:2px 8px;border-radius:5px;color:#fff;direction:ltr;}
+.get{background:#2f7d54;} .post{background:#185FA5;} .delete{background:#C0392B;}
+.cover{text-align:center;padding-top:54px;}
+.logo{font-family:'Cairo';font-size:40px;font-weight:700;color:var(--brand);}
+.logo .d{color:var(--gold);}
+.cover h1{font-size:28px;margin:20px 0 8px;}
+.cover .tag{font-size:14px;color:var(--muted);}
+.cover-card{margin:36px auto 0;width:80%;background:var(--soft);border:1px solid var(--line);border-radius:14px;padding:22px;}
+.cover-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed var(--line);font-size:12.5px;}
+.cover-row:last-child{border-bottom:none;}
+.cover-row b{color:var(--brand);}
+.note{background:var(--soft);border-right:4px solid var(--gold);padding:10px 13px;border-radius:0 7px 7px 0;margin:10px 0;font-size:11px;}
+.ok{background:#eef7f1;border-right-color:#2f9d63;}
+.warn{background:#fdf6e9;border-right-color:var(--gold);}
+.badge{display:inline-block;background:var(--gold);color:#3a2c08;font-size:9px;font-weight:700;padding:2px 9px;border-radius:8px;}
+.scope{display:inline-block;font-family:'Courier New',monospace;font-size:9px;background:#eef4f1;color:var(--brand);padding:1px 6px;border-radius:4px;margin:2px 2px;direction:ltr;}
+.qr-box{display:flex;gap:14px;align-items:center;background:var(--soft);border-radius:10px;padding:14px;margin:10px 0;}
+.qr-box .q{width:90px;height:90px;background:#fff;border:1px solid var(--line);border-radius:8px;display:grid;place-items:center;font-size:42px;flex-shrink:0;}
+ul{margin:6px 18px;} li{margin:3px 0;}
+.foot{margin-top:14px;padding-top:8px;border-top:1px solid var(--line);color:var(--muted);font-size:9px;text-align:center;}
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="page cover">
+  <div class="logo">ضي<span class="d">و</span>ف · Dheu<span class="d">o</span>f</div>
+  <h1>توثيق الـ API الكامل</h1>
+  <div class="tag">الفوترة الإلكترونية ZATCA · واجهات الربط لكل البرامج · إدارة المفاتيح</div>
+  <div class="cover-card">
+    <div class="cover-row"><span>الإصدار</span><b>Open API v1</b></div>
+    <div class="cover-row"><span>قاعدة المسار</span><b class="mono">/api/open/v1</b></div>
+    <div class="cover-row"><span>المصادقة</span><b>X-API-Key (لكل مشترك)</b></div>
+    <div class="cover-row"><span>الفوترة</span><b>متوافقة مع ZATCA — المرحلة 1</b></div>
+    <div class="cover-row"><span>التغطية</span><b>9 برامج + المحاسبة + المفاتيح</b></div>
+    <div class="cover-row"><span>عدد النقاط</span><b>16 endpoint</b></div>
+  </div>
+  <div class="tag" style="margin-top:26px">www.dheuof.com — يونيو 2026</div>
+</div>
+
+<!-- PAGE 2 — Overview & Auth -->
+<div class="page">
+  <h1>1 · نظرة عامة والمصادقة</h1>
+  <p class="sub">واجهة موحّدة تتيح ربط أي برنامج خارجي أو تطبيق بمنصة ضيوف، بمرونة كاملة حسب البرنامج ورقم المشترك والصلاحيات.</p>
+
+  <h2>المعمارية</h2>
+  <table>
+    <tr><th>الطبقة</th><th>الوصف</th></tr>
+    <tr><td><b>المشترك (client_id)</b></td><td>كل مفتاح API مرتبط برقم مشترك واحد — العزل التام بين المنشآت</td></tr>
+    <tr><td><b>المفتاح (API Key)</b></td><td>يبدأ بـ <code>dhk_</code> — يُخزَّن كـ SHA-256 hash + قناع فقط، لا يُحفظ خاماً أبداً</td></tr>
+    <tr><td><b>النطاقات (Scopes)</b></td><td>صلاحيات دقيقة لكل برنامج (قراءة/كتابة) — مبدأ أقل صلاحية</td></tr>
+  </table>
+
+  <h2>المصادقة</h2>
+  <p>أرسل المفتاح في ترويسة كل طلب:</p>
+  <pre><span class="c"># كل طلب يتطلب الترويسة:</span>
+<span class="k">X-API-Key</span>: dhk_xxxxxxxxxxxxxxxxxxxx
+
+<span class="c"># مثال — جلب الغرف:</span>
+curl https://www.dheuof.com/api/open/v1/rooms \
+  -H <span class="s">"X-API-Key: dhk_xxxxxxxxxxxxxxxxxxxx"</span></pre>
+
+  <div class="note ok"><b>الأمان:</b> المفتاح يظهر <b>مرة واحدة فقط</b> عند الإصدار. بعدها لا يمكن استرجاعه — فقط القناع <code>dhk_abc••••WXYZ</code> للتعرّف عليه.</div>
+
+  <h2>النطاقات المتاحة (Scopes)</h2>
+  <p>
+    <span class="scope">rooms:read</span><span class="scope">rooms:write</span>
+    <span class="scope">bookings:read</span><span class="scope">bookings:write</span>
+    <span class="scope">guests:read</span><span class="scope">guests:write</span>
+    <span class="scope">invoices:read</span><span class="scope">invoices:write</span>
+    <span class="scope">pos:read</span><span class="scope">pos:write</span>
+    <span class="scope">inventory:read</span><span class="scope">inventory:write</span>
+    <span class="scope">hr:read</span><span class="scope">channels:read</span><span class="scope">channels:write</span>
+    <span class="scope">kpi:read</span><span class="scope">accounting:read</span><span class="scope">accounting:write</span>
+  </p>
+
+  <h2>إدارة المفاتيح</h2>
+  <table>
+    <tr><th>الطريقة</th><th>المسار</th><th>الوصف</th></tr>
+    <tr><td><span class="method get">GET</span></td><td class="mono">/keys</td><td>قائمة مفاتيح المشترك + النطاقات المتاحة</td></tr>
+    <tr><td><span class="method post">POST</span></td><td class="mono">/keys</td><td>إصدار مفتاح جديد (يظهر مرة واحدة)</td></tr>
+    <tr><td><span class="method delete">DEL</span></td><td class="mono">/keys/{id}</td><td>إيقاف مفتاح</td></tr>
+  </table>
+  <pre><span class="c"># إصدار مفتاح جديد (يتطلب جلسة مشترك)</span>
+POST /api/open/v1/keys
+{
+  <span class="k">"name"</span>: <span class="s">"تطبيق المحاسبة"</span>,
+  <span class="k">"scopes"</span>: [<span class="s">"invoices:read"</span>, <span class="s">"invoices:write"</span>, <span class="s">"accounting:read"</span>]
+}
+<span class="c"># الرد:</span>
+{
+  <span class="k">"api_key"</span>: <span class="s">"dhk_fxR3...OFA8"</span>,   <span class="c">// احفظه الآن — لن يظهر ثانية</span>
+  <span class="k">"key_hint"</span>: <span class="s">"dhk_fxR••••OFA8"</span>,
+  <span class="k">"scopes"</span>: [<span class="s">"invoices:read"</span>, <span class="s">"invoices:write"</span>, <span class="s">"accounting:read"</span>]
+}</pre>
+</div>
+
+<!-- PAGE 3 — ZATCA Accounting -->
+<div class="page">
+  <h1>2 · المحاسبة والفوترة ZATCA</h1>
+  <p class="sub">فوترة إلكترونية متوافقة مع متطلبات هيئة الزكاة والضريبة والجمارك — المرحلة الأولى (فاتورة).</p>
+
+  <h2>الحقول المتوافقة مع ZATCA</h2>
+  <table>
+    <tr><th>الحقل</th><th>المصدر</th><th>إلزامي</th></tr>
+    <tr><td><b>اسم الشركة</b> (البائع)</td><td class="mono">company_name</td><td>✓ نعم</td></tr>
+    <tr><td><b>الرقم الضريبي</b> (البائع)</td><td class="mono">seller_vat</td><td>✓ نعم (15 رقم)</td></tr>
+    <tr><td><b>اسم الضيف</b> (المشتري)</td><td class="mono">guest_name</td><td>✓ نعم</td></tr>
+    <tr><td>الرقم الضريبي للمشتري</td><td class="mono">buyer_vat</td><td>اختياري</td></tr>
+    <tr><td>الطابع الزمني</td><td class="mono">timestamp</td><td>تلقائي</td></tr>
+    <tr><td>ض.ق.م 15%</td><td>محسوبة تلقائياً</td><td>✓ تلقائي</td></tr>
+  </table>
+
+  <h2>رمز QR متوافق (TLV → Base64)</h2>
+  <div class="qr-box">
+    <div class="q">▦</div>
+    <div>
+      <p style="margin-top:0"><b>5 حقول مُرمّزة TLV حسب مواصفة ZATCA:</b></p>
+      <ul style="font-size:10px">
+        <li><b>Tag 1:</b> اسم البائع (اسم الشركة)</li>
+        <li><b>Tag 2:</b> الرقم الضريبي للبائع</li>
+        <li><b>Tag 3:</b> الطابع الزمني (ISO-8601)</li>
+        <li><b>Tag 4:</b> الإجمالي شامل الضريبة</li>
+        <li><b>Tag 5:</b> إجمالي ض.ق.م</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>إنشاء فاتورة ضريبية</h3>
+  <pre><span class="method post">POST</span> /api/open/v1/invoices
+<span class="k">X-API-Key</span>: dhk_xxxx   <span class="c">// scope: invoices:write</span>
+{
+  <span class="k">"company_name"</span>: <span class="s">"فندق ضيوف للضيافة"</span>,
+  <span class="k">"seller_vat"</span>:   <span class="s">"300000000000003"</span>,
+  <span class="k">"guest_name"</span>:   <span class="s">"أحمد محمد القحطاني"</span>,
+  <span class="k">"buyer_vat"</span>:    <span class="s">""</span>,
+  <span class="k">"line_items"</span>: [
+    { <span class="k">"description"</span>:<span class="s">"إقامة ليلة - جناح"</span>, <span class="k">"qty"</span>:2, <span class="k">"unit_price"</span>:400 },
+    { <span class="k">"description"</span>:<span class="s">"خدمة الغرف"</span>,      <span class="k">"qty"</span>:1, <span class="k">"unit_price"</span>:120 }
+  ]
+}</pre>
+  <h3>الرد — فاتورة كاملة</h3>
+  <pre>{
+  <span class="k">"id"</span>: <span class="s">"INV-EA6C59D4"</span>,
+  <span class="k">"zatca_uuid"</span>: <span class="s">"ea6c59d4-..."</span>,
+  <span class="k">"company_name"</span>: <span class="s">"فندق ضيوف للضيافة"</span>,
+  <span class="k">"seller_vat"</span>: <span class="s">"300000000000003"</span>,
+  <span class="k">"buyer_name"</span>: <span class="s">"أحمد محمد القحطاني"</span>,
+  <span class="k">"subtotal"</span>: 920.00,
+  <span class="k">"vat_rate"</span>: 0.15,
+  <span class="k">"vat_amount"</span>: 138.00,
+  <span class="k">"total_amount"</span>: 1058.00,
+  <span class="k">"currency"</span>: <span class="s">"SAR"</span>,
+  <span class="k">"zatca_qr"</span>: <span class="s">"ARHZgdmG2K8...="</span>,   <span class="c">// Base64 TLV للـ QR</span>
+  <span class="k">"invoice_hash"</span>: <span class="s">"a3f8...64hex"</span>
+}</pre>
+
+  <div class="note warn"><b>التحقق من الرقم الضريبي:</b> النظام يرفض أي رقم ضريبي لا يطابق قاعدة السعودية (15 رقماً، يبدأ وينتهي بالرقم 3).</div>
+
+  <h3>نقاط المحاسبة الأخرى</h3>
+  <table>
+    <tr><th>الطريقة</th><th>المسار</th><th>الوصف</th></tr>
+    <tr><td><span class="method get">GET</span></td><td class="mono">/accounting/summary</td><td>الإيرادات + ض.ق.م المحصّلة + عدد الفواتير</td></tr>
+    <tr><td><span class="method get">GET</span></td><td class="mono">/invoices</td><td>قائمة فواتير المشترك</td></tr>
+    <tr><td><span class="method get">GET</span></td><td class="mono">/invoices/{id}</td><td>فاتورة محددة مع QR والـ hash</td></tr>
+  </table>
+</div>
+
+<!-- PAGE 4 — All module APIs -->
+<div class="page">
+  <h1>3 · واجهات كل البرامج</h1>
+  <p class="sub">نقطة ربط لكل برنامج — مرونة كاملة حسب الصلاحية ورقم المشترك. كل النقاط تحت <code>/api/open/v1</code>.</p>
+
+  <h2>الحساب والهوية</h2>
+  <table>
+    <tr><th>الطريقة</th><th>المسار</th><th>النطاق</th><th>الوصف</th></tr>
+    <tr><td><span class="method get">GET</span></td><td class="mono">/me</td><td>—</td><td>رقم المشترك والنطاقات المتاحة للمفتاح</td></tr>
+  </table>
+
+  <h2>الغرف والإتاحة · الحجوزات · الضيوف</h2>
+  <table>
+    <tr><th>الطريقة</th><th>المسار</th><th>النطاق</th><th>الوصف</th></tr>
+    <tr><td><span class="method get">GET</span></td><td class="mono">/rooms</td><td class="mono">rooms:read</td><td>كل الغرف</td></tr>
+    <tr><td><span class="method get">GET</span></td><td class="mono">/availability</td><td class="mono">rooms:read</td><td>الغرف المتاحة (check_in/check_out)</td></tr>
+    <tr><td><span class="method get">GET</span></td><td class="mono">/bookings</td><td class="mono">bookings:read</td><td>الحجوزات (فلتر status اختياري)</td></tr>
+    <tr><td><span class="method get">GET</span></td><td class="mono">/guests</td><td class="mono">guests:read</td><td>ملفات الضيوف</td></tr>
+  </table>
+
+  <h2>نقاط البيع · المخزون</h2>
+  <table>
+    <tr><th>الطريقة</th><th>المسار</th><th>النطاق</th><th>الوصف</th></tr>
+    <tr><td><span class="method get">GET</span></td><td class="mono">/pos</td><td class="mono">pos:read</td><td>معاملات نقاط البيع</td></tr>
+    <tr><td><span class="method get">GET</span></td><td class="mono">/inventory</td><td class="mono">inventory:read</td><td>أصناف المخزون</td></tr>
+  </table>
+
+  <h2>القنوات (OTA) · مؤشرات الأداء</h2>
+  <table>
+    <tr><th>الطريقة</th><th>المسار</th><th>النطاق</th><th>الوصف</th></tr>
+    <tr><td><span class="method get">GET</span></td><td class="mono">/channels/reservations</td><td class="mono">channels:read</td><td>الحجوزات الواردة من القنوات</td></tr>
+    <tr><td><span class="method get">GET</span></td><td class="mono">/kpi/occupancy</td><td class="mono">kpi:read</td><td>نسبة الإشغال الحالية</td></tr>
+  </table>
+
+  <h3>مثال رد نموذجي</h3>
+  <pre><span class="c"># GET /api/open/v1/kpi/occupancy</span>
+{
+  <span class="k">"success"</span>: true,
+  <span class="k">"data"</span>: {
+    <span class="k">"total_rooms"</span>: 48,
+    <span class="k">"occupied"</span>: 31,
+    <span class="k">"occupancy_pct"</span>: 64.6
+  }
+}</pre>
+
+  <h2>أكواد الأخطاء</h2>
+  <table>
+    <tr><th>الكود</th><th>المعنى</th></tr>
+    <tr><td><b>401</b></td><td>X-API-Key مفقود أو غير صالح أو موقوف</td></tr>
+    <tr><td><b>403</b></td><td>النطاق غير كافٍ لهذه العملية</td></tr>
+    <tr><td><b>404</b></td><td>المورد غير موجود</td></tr>
+    <tr><td><b>400</b></td><td>بيانات غير صالحة (مثل رقم ضريبي خاطئ)</td></tr>
+    <tr><td><b>503</b></td><td>الخدمة غير مُفعّلة (PostgreSQL مطلوب)</td></tr>
+  </table>
+</div>
+
+<!-- PAGE 5 — Integration scenarios + files -->
+<div class="page">
+  <h1>4 · سيناريوهات الربط والملفات</h1>
+
+  <h2>سيناريو: ربط برنامج محاسبة خارجي</h2>
+  <ul>
+    <li><b>1.</b> المشترك يُصدر مفتاحاً بنطاق <code>invoices:write</code> + <code>accounting:read</code></li>
+    <li><b>2.</b> البرنامج الخارجي يُنشئ فواتير ZATCA عبر <code>POST /invoices</code></li>
+    <li><b>3.</b> يسحب الملخص المالي عبر <code>GET /accounting/summary</code></li>
+    <li><b>4.</b> كل فاتورة تحمل QR متوافق جاهز للطباعة والتدقيق</li>
+  </ul>
+
+  <h2>سيناريو: تطبيق جوال للحجوزات</h2>
+  <ul>
+    <li><b>1.</b> مفتاح بنطاق <code>rooms:read</code> + <code>bookings:read</code></li>
+    <li><b>2.</b> يعرض الإتاحة عبر <code>GET /availability</code></li>
+    <li><b>3.</b> يتابع الحجوزات عبر <code>GET /bookings</code></li>
+  </ul>
+
+  <h2>سيناريو: لوحة تحليلات</h2>
+  <ul>
+    <li>مفتاح <code>kpi:read</code> + <code>accounting:read</code> → يغذّي لوحة خارجية بالإشغال والإيرادات</li>
+  </ul>
+
+  <h2>الملفات المُنفّذة في هذا التسليم</h2>
+  <table>
+    <tr><th>الملف</th><th>الوصف</th></tr>
+    <tr><td class="mono">services/api_keys.py</td><td>مدير مفاتيح API — إصدار/تدقيق/إيقاف + 18 نطاق</td></tr>
+    <tr><td class="mono">services/zatca.py</td><td>فوترة ZATCA — QR (TLV/Base64)، ض.ق.م 15%، تحقق الرقم الضريبي</td></tr>
+    <tr><td class="mono">routes/open_api.py</td><td>16 نقطة موحّدة لكل البرامج + المحاسبة + المفاتيح</td></tr>
+    <tr><td class="mono">main.py</td><td>تحميل مستقل لكل خدمة + تسجيل المسارات</td></tr>
+  </table>
+
+  <div class="note ok"><b>تم التحقق:</b> جميع الحسابات الضريبية مُختبَرة (920 + 138 ض.ق.م = 1058 ر.س)، رمز QR يُولّد TLV صحيحاً، التطبيق يُقلع بنجاح مع تسجيل 16 نقطة API.</div>
+
+  <h2>الخطوة التالية للتفعيل الكامل</h2>
+  <table>
+    <tr><th>البند</th><th>الحالة</th></tr>
+    <tr><td>بنية API + ZATCA (الكود)</td><td>✅ جاهز ومُختبَر</td></tr>
+    <tr><td>تفعيل على PostgreSQL إنتاجي</td><td>تلقائي عند توفر قاعدة البيانات</td></tr>
+    <tr><td>ZATCA المرحلة 2 (التكامل المباشر مع الهيئة)</td><td>يحتاج شهادة وتسجيل لدى الهيئة</td></tr>
+    <tr><td>واجهة إدارة المفاتيح للمشترك</td><td>قابلة للإضافة في لوحة التحكم</td></tr>
+  </table>
+
+  <div class="foot">ضيوف · Dheuof — توثيق Open API v1 · ZATCA Phase 1 · يونيو 2026 · www.dheuof.com</div>
+</div>
+
+</body>
+</html>
