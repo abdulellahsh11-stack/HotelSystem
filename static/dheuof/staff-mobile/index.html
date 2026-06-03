@@ -7,9 +7,12 @@
 <meta name="theme-color" content="#143A2E"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<meta name="apple-mobile-web-app-title" content="ضيوف موظفون"/>
+<meta name="apple-mobile-web-app-title" content="ضيوف Staff"/>
 <meta name="mobile-web-app-capable" content="yes"/>
+<meta name="description" content="تطبيق الموظفين الذكي — إدارة المهام والتراسل والحضور والسكن"/>
 <link rel="manifest" href="/static/dheuof/staff-mobile/manifest.json"/>
+<link rel="apple-touch-icon" href="/static/dheuof/staff-mobile/icon-192.svg"/>
+<link rel="icon" type="image/svg+xml" href="/static/dheuof/staff-mobile/icon-192.svg"/>
 <style>
   :root{
     --brand:#143A2E; --brand2:#1B4D3D; --brand3:#266554; --brand-soft:#E4F0EB;
@@ -19,6 +22,8 @@
     --good:#2F9D63; --good-soft:#DCFCE7; --warn:#D97706; --warn-soft:#FEF3C7;
     --bad:#C0392B; --bad-soft:#FEE2E2;
     --font:'Tajawal','Segoe UI',Tahoma,Arial,sans-serif;
+    --sat: env(safe-area-inset-top,0px);
+    --sab: env(safe-area-inset-bottom,0px);
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   body{font-family:var(--font);background:#d9dce0;color:var(--ink);min-height:100vh}
@@ -28,6 +33,27 @@
   /* phone frame on desktop; full-bleed on mobile */
   .phone{max-width:430px;margin:0 auto;min-height:100vh;background:var(--bg);position:relative;display:flex;flex-direction:column;box-shadow:0 0 60px rgba(0,0,0,.18)}
   @media(min-width:480px){ body{padding:24px 0} .phone{min-height:calc(100vh - 48px);border-radius:28px;overflow:hidden} }
+
+  /* ── PWA banners ── */
+  #install-bar{display:none;align-items:center;gap:10px;padding:10px 14px;background:linear-gradient(135deg,var(--brand2),var(--brand));color:#fff;font-size:13px;flex-shrink:0}
+  #install-bar.show{display:flex}
+  #install-bar .msg{flex:1;line-height:1.4}
+  #install-bar .msg b{display:block;font-size:14px}
+  #install-bar .ibtn{background:var(--gold);color:var(--brand);border:none;padding:9px 16px;border-radius:8px;font-weight:700;font-size:13px;white-space:nowrap}
+  #install-bar .cls{background:rgba(255,255,255,.15);border:none;color:#fff;width:28px;height:28px;border-radius:50%;font-size:14px;flex-shrink:0}
+  #offline-bar{display:none;background:#7f1d1d;color:#fff;font-size:12px;padding:8px 14px;text-align:center;flex-shrink:0}
+  #offline-bar.show{display:block}
+  #update-bar{display:none;background:var(--brand3);color:#fff;font-size:12px;padding:8px 14px;text-align:center;cursor:pointer;flex-shrink:0}
+  #update-bar.show{display:block}
+  /* iOS install instructions */
+  #ios-hint{display:none;position:absolute;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:flex-end;padding:16px}
+  #ios-hint.show{display:flex}
+  #ios-hint .box{background:#fff;border-radius:20px;padding:24px;width:100%}
+  #ios-hint .box h3{font-size:17px;font-weight:700;margin-bottom:6px}
+  #ios-hint .box p{font-size:13px;color:var(--ink2);line-height:1.7;margin-bottom:16px}
+  #ios-hint .step{display:flex;align-items:center;gap:10px;margin:10px 0;font-size:13px}
+  #ios-hint .step .n{width:26px;height:26px;border-radius:50%;background:var(--brand2);color:#fff;display:grid;place-items:center;font-weight:700;font-size:12px;flex-shrink:0}
+
 
   .screen{flex:1;overflow-y:auto;padding:0 0 84px}
   .pad{padding:16px}
@@ -184,6 +210,19 @@
 </head>
 <body>
 <div class="phone" id="phone">
+
+  <!-- PWA: Install bar (Android/Chrome) -->
+  <div id="install-bar">
+    <div class="msg"><b>📲 ثبّت التطبيق على جهازك</b>يعمل بدون إنترنت كتطبيق كامل</div>
+    <button class="ibtn" onclick="pwaInstall()">تثبيت</button>
+    <button class="cls" onclick="this.closest('#install-bar').classList.remove('show')">✕</button>
+  </div>
+
+  <!-- PWA: Offline indicator -->
+  <div id="offline-bar">📶 أنت غير متصل بالإنترنت — التطبيق يعمل محلياً</div>
+
+  <!-- PWA: Update available -->
+  <div id="update-bar" onclick="pwaUpdate()">🔄 تحديث جديد متاح — اضغط هنا للتحديث</div>
 
   <!-- LOGIN -->
   <div class="login" id="loginView">
@@ -551,8 +590,113 @@ function viewMe(){
 
 /* ============ إقلاع ============ */
 buildLogin();
-(function(){ var c=load(LS.cur,null); if(c&&byId(c)){ me=byId(c); enterApp(); } })();
-if('serviceWorker' in navigator){ navigator.serviceWorker.register('/static/dheuof/staff-mobile/sw.js').catch(function(){}); }
+(function(){
+  // URL tab routing from shortcuts
+  var p = new URLSearchParams(location.search);
+  var t = p.get('tab'); if(t) tab = t;
+  var c = load(LS.cur,null);
+  if(c && byId(c)){ me=byId(c); enterApp(); }
+})();
+
+/* ============ PWA ============ */
+var _deferredPrompt = null;
+var _swReg = null;
+
+// Service Worker
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/static/dheuof/staff-mobile/sw.js')
+    .then(function(reg){
+      _swReg = reg;
+      reg.addEventListener('updatefound', function(){
+        var w = reg.installing;
+        w.addEventListener('statechange', function(){
+          if(w.state === 'installed' && navigator.serviceWorker.controller){
+            el('update-bar').classList.add('show');
+          }
+        });
+      });
+    }).catch(function(){});
+
+  // Message from SW
+  navigator.serviceWorker.addEventListener('message', function(e){
+    if(e.data && e.data.type === 'SYNC_DONE') toast('تمت مزامنة البيانات ✓');
+  });
+}
+
+// Install prompt (Android/Chrome)
+window.addEventListener('beforeinstallprompt', function(e){
+  e.preventDefault(); _deferredPrompt = e;
+  // Only show if not already installed
+  if(!window.matchMedia('(display-mode: standalone)').matches){
+    el('install-bar').classList.add('show');
+  }
+});
+window.addEventListener('appinstalled', function(){
+  el('install-bar').classList.remove('show');
+  _deferredPrompt = null;
+  toast('✓ تم تثبيت تطبيق ضيوف على جهازك!');
+});
+
+window.pwaInstall = function(){
+  if(_deferredPrompt){
+    _deferredPrompt.prompt();
+    _deferredPrompt.userChoice.then(function(r){
+      if(r.outcome === 'accepted') el('install-bar').classList.remove('show');
+      _deferredPrompt = null;
+    });
+  } else if(/iPhone|iPad/i.test(navigator.userAgent)){
+    el('ios-hint').classList.add('show');
+  }
+};
+window.pwaUpdate = function(){
+  if(_swReg && _swReg.waiting){
+    _swReg.waiting.postMessage('SKIP_WAITING');
+  }
+  el('update-bar').classList.remove('show');
+  window.location.reload();
+};
+
+// iOS: show install hint on page load if not standalone
+(function(){
+  var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  var isStandalone = ('standalone' in navigator && navigator.standalone) ||
+                     window.matchMedia('(display-mode: standalone)').matches;
+  var shown = localStorage.getItem('dh_ios_hint_shown');
+  if(isIOS && !isStandalone && !shown){
+    setTimeout(function(){ el('ios-hint').classList.add('show'); }, 3000);
+    localStorage.setItem('dh_ios_hint_shown','1');
+  }
+})();
+
+// Offline/Online indicator
+function setOnline(on){
+  var b = el('offline-bar');
+  if(b){ if(on) b.classList.remove('show'); else b.classList.add('show'); }
+}
+window.addEventListener('online',  function(){ setOnline(true);  toast('✓ عاد الاتصال بالإنترنت'); });
+window.addEventListener('offline', function(){ setOnline(false); toast('📶 انقطع الإنترنت — يعمل محلياً'); });
+setOnline(navigator.onLine);
+
+// Push notification permission
+window.requestPushPermission = function(){
+  if(!('Notification' in window)) return;
+  Notification.requestPermission().then(function(p){
+    toast(p==='granted'?'✓ تم تفعيل الإشعارات':'لم يتم السماح بالإشعارات');
+  });
+};
 </script>
+
+<!-- iOS install hint overlay -->
+<div id="ios-hint" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="box">
+    <h3>📲 تثبيت تطبيق ضيوف على iPhone</h3>
+    <p>أضف التطبيق إلى شاشتك الرئيسية ليعمل كتطبيق كامل — بدون إنترنت.</p>
+    <div class="step"><div class="n">1</div><span>اضغط على زر <b>المشاركة</b> ↑ في أسفل المتصفح</span></div>
+    <div class="step"><div class="n">2</div><span>اختر <b>"إضافة إلى الشاشة الرئيسية"</b></span></div>
+    <div class="step"><div class="n">3</div><span>اضغط <b>"إضافة"</b> — ستجد أيقونة ضيوف على شاشتك</span></div>
+    <button onclick="el('ios-hint').classList.remove('show')" style="width:100%;margin-top:16px;padding:13px;border:none;border-radius:12px;background:var(--brand2);color:#fff;font-size:15px;font-weight:700">فهمت ✓</button>
+  </div>
+</div>
+
 </body>
 </html>
