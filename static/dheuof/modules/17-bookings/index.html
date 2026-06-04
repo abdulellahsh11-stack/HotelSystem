@@ -572,6 +572,7 @@
   </div>
 </div>
 
+<script src="/static/dheuof/shared/module-base.js"></script>
 <script src="/static/dheuof/shared/sidebar.js"></script>
 <script>StaticSidebar.mount({ activeId: "17-bookings", placeholder: "بحث في الحجوزات..." });</script>
 <script src="/static/dheuof/assets/animations.js"></script>
@@ -1154,11 +1155,31 @@ window.deConfirm = function(){
     pay: document.getElementById('de-pay').value, propType: DE.type,
     services: chosenSvcs
   };
-  saveDirectBooking(bk);
-  closeDirectBooking();
-  CURRENT_CH = 'all';
-  document.querySelectorAll('.bk-tab').forEach(function(b,i){ b.classList.toggle('on', i===0); });
-  toast('✓ حجز مباشر مؤكد: '+name+' · '+unit.name+' · '+toAr(total)+' ر.س · عمولة ٠٪');
+  // Persist to backend reservations API (cascade), fall back to local on failure
+  DH.fetch('/api/m17/reservations', {
+    method:'POST',
+    body: JSON.stringify({
+      guest_name:   name,
+      phone:        bk.phone,
+      room_id:      unit.id,
+      check_in:     bk.checkIn,
+      check_out:    document.getElementById('de-out').value,
+      total_amount: total,
+      source:       'direct'
+    })
+  }).then(function(res){
+    saveDirectBooking(bk);
+    closeDirectBooking();
+    CURRENT_CH = 'all';
+    document.querySelectorAll('.bk-tab').forEach(function(b,i){ b.classList.toggle('on', i===0); });
+    if(res){
+      toast('✓ حجز مباشر مؤكد: '+name+' · '+unit.name+' · '+toAr(total)+' ر.س · عمولة ٠٪');
+      if(window.loadBookingsFromAPI) loadBookingsFromAPI();
+      if(window.loadBookingStats) loadBookingStats();
+    } else {
+      toast('تم الحفظ محلياً (تعذّر الاتصال بالخادم)');
+    }
+  });
 };
 
 // ═══════════ Facilities catalogue (external bookable services) ═══════════

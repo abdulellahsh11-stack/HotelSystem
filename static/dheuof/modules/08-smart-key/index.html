@@ -1247,7 +1247,7 @@ window.renderMaintenanceOrders = function() {
         + (status === 'open'
             ? '<button class="mnt-act" onclick="updateOrderStatus(' + o.id + ',\'in_progress\')">بدء</button>'
             : status === 'in_progress'
-            ? '<button class="mnt-act" onclick="updateOrderStatus(' + o.id + ',\'completed\')">إغلاق</button>'
+            ? '<button class="mnt-act" onclick="closeMaintenanceOrder(' + o.id + ')">إغلاق</button>'
             : '<span style="font-size:11px;color:var(--fg-3)">مكتمل</span>')
       + '</span>'
       + '</div>';
@@ -1273,6 +1273,50 @@ window.updateOrderStatus = function(id, newStatus) {
     })
     .catch(function(err) {
       toast('تعذّر تحديث الحالة — ' + err.message);
+    });
+};
+
+/* Close a maintenance order via the integration cascade:
+   deducts inventory parts, records actual cost, frees the room.
+   POST /api/integration/maintenance/close
+     body: {order_id, parts:[{item_id,qty}], actual_cost, free_room} */
+window.closeMaintenanceOrder = function(id) {
+  var o = MNT_ORDERS.find(function(x){ return x.id === id; }) || {};
+  var costStr = prompt('التكلفة الفعلية للإصلاح (ر.س):', '0');
+  if (costStr === null) return;
+  var actualCost = parseFloat(costStr) || 0;
+  var freeRoom = confirm('هل تم إصلاح العطل وتحرير الغرفة لتعود للخدمة؟\n(موافق = تحرير الغرفة)');
+  fetch('/api/integration/maintenance/close', {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      order_id:    id,
+      parts:       [],
+      actual_cost: actualCost,
+      free_room:   freeRoom
+    })
+  })
+    .then(function(r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function(res) {
+      if (!res || res.success === false) throw new Error((res && res.detail) || 'خطأ');
+      o.status = 'completed';
+      loadMaintenanceOrders();
+      loadMaintenanceStats();
+      var parts = ['اكتملت الصيانة ✓'];
+      if (res.room_status || res.room) parts.push('الغرفة: ' + (res.room_status || res.room));
+      else if (freeRoom) parts.push('الغرفة عادت للخدمة');
+      if (res.cost != null || actualCost) parts.push('التكلفة: ' + (res.cost != null ? res.cost : actualCost) + ' ر.س');
+      var inv = res.inventory_deducted != null ? res.inventory_deducted : res.inventory;
+      if (typeof inv === 'number') parts.push('خصم مخزون: ' + inv + ' صنف');
+      else if (Array.isArray(inv) && inv.length) parts.push('خصم مخزون: ' + inv.length + ' صنف');
+      toast(parts.join(' · '), 'success');
+    })
+    .catch(function(err) {
+      toast('تعذّر إغلاق طلب الصيانة — ' + err.message);
     });
 };
 

@@ -1385,8 +1385,12 @@ async function loadPackages(){
         <div class="fg"><label>السعر</label><input data-pk="${i}" data-pf="price" value="${esc(p.price)}" placeholder="٢٬٤٠٠ أو حسب الطلب"></div>
         <div class="fg"><label>العملة</label><input data-pk="${i}" data-pf="currency" value="${esc(p.currency)}" placeholder="ر.س"></div>
       </div>
-      <div class="fg"><label>المدة</label><input data-pk="${i}" data-pf="period" value="${esc(p.period)}" placeholder="/شهر"></div>
-      <div class="fg"><label>ملاحظة التوفير (اختياري)</label><input data-pk="${i}" data-pf="save_note" value="${esc(p.save_note)}" placeholder="توفير ١٬٢٠٠ ر.س شهرياً"></div>
+      <div class="fg-row">
+        <div class="fg"><label>المدة</label><input data-pk="${i}" data-pf="period" value="${esc(p.period)}" placeholder="/شهر"></div>
+        <div class="fg"><label>الخصم ٪ (اختياري)</label><input data-pk="${i}" data-pf="discount_percent" type="number" min="0" max="100" value="${esc(p.discount_percent||0)}" placeholder="0"></div>
+      </div>
+      ${p.price_after && p.discount_percent>0?`<div style="font-size:.78rem;color:#10b981;margin:-4px 0 8px">السعر بعد الخصم: <strong>${esc(p.price_after)} ${esc(p.currency)}</strong> <span style="color:#94a3b8;text-decoration:line-through">${esc(p.price_original)}</span></div>`:''}
+      <div class="fg"><label>ملاحظة التوفير (اختياري)</label><input data-pk="${i}" data-pf="save_note" value="${esc(p.save_note)}" placeholder="يُحسب تلقائياً عند وضع خصم"></div>
       <div class="fg"><label>نص الزر</label><input data-pk="${i}" data-pf="cta" value="${esc(p.cta)}" placeholder="ابدأ التجربة"></div>
     </div>`).join('');
   document.getElementById('pkg-saved').style.display='none';
@@ -3439,20 +3443,63 @@ _DEFAULT_PACKAGES = [
     },
 ]
 
-_PKG_EDITABLE = ("name_ar", "name_en", "price", "currency", "period", "save_note", "cta")
+# discount_percent: خصم اختياري (٠–١٠٠) يحرّره المالك من اللوحة
+_PKG_EDITABLE = ("name_ar", "name_en", "price", "currency", "period",
+                 "save_note", "cta", "discount_percent")
+
+
+def _arabic_to_int(s) -> Optional[float]:
+    """يحوّل سعراً عربياً/إنجليزياً مثل '٥٬٤٠٠' أو '5,400' إلى رقم — أو None."""
+    if s is None:
+        return None
+    trans = str.maketrans("٠١٢٣٤٥٦٧٨٩،٬", "0123456789,,")
+    digits = str(s).translate(trans).replace(",", "").replace(" ", "")
+    try:
+        return float(digits)
+    except (ValueError, TypeError):
+        return None
+
+
+def _int_to_arabic(n: float) -> str:
+    """يحوّل رقماً إلى صيغة عربية بفاصل آلاف '٬'."""
+    whole = int(round(n))
+    grouped = f"{whole:,}".replace(",", "٬")
+    return grouped.translate(str.maketrans("0123456789", "٠١٢٣٤٥٦٧٨٩"))
 
 
 def _merge_packages(stored: list) -> list:
-    """يدمج القيم المحفوظة فوق الافتراضية حسب id — يضمن وجود الباقات الثلاث دائماً."""
+    """يدمج القيم المحفوظة فوق الافتراضية حسب id — يضمن وجود الباقات الثلاث دائماً.
+
+    يحسب أيضاً السعر بعد الخصم (price_after) و discount_percent المطبّق.
+    """
     by_id = {p.get("id"): dict(p) for p in (stored or []) if isinstance(p, dict)}
     result = []
     for default in _DEFAULT_PACKAGES:
         merged = dict(default)
+        merged.setdefault("discount_percent", 0)
         saved = by_id.get(default["id"])
         if isinstance(saved, dict):
             for k in _PKG_EDITABLE:
                 if k in saved and saved[k] is not None:
                     merged[k] = saved[k]
+        # احسب السعر بعد الخصم
+        try:
+            pct = float(merged.get("discount_percent", 0) or 0)
+        except (ValueError, TypeError):
+            pct = 0
+        pct = max(0, min(pct, 100))
+        merged["discount_percent"] = pct
+        base = _arabic_to_int(merged.get("price"))
+        if base is not None and pct > 0:
+            after = round(base * (1 - pct / 100))
+            merged["price_after"] = _int_to_arabic(after)
+            merged["price_original"] = merged.get("price")
+            if not merged.get("save_note"):
+                saved_amount = _int_to_arabic(base - after)
+                merged["save_note"] = f"خصم {int(pct)}٪ — وفّر {saved_amount} {merged.get('currency','')}"
+        else:
+            merged["price_after"] = merged.get("price")
+            merged["price_original"] = ""
         result.append(merged)
     return result
 
