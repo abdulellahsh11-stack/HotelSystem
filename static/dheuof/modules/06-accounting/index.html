@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <title>ضيوف · المحاسبة العامة</title>
-<meta name="viewport" content="width=1440, initial-scale=1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
 <link rel="stylesheet" href="/static/dheuof/colors_and_type.css"/>
 <link rel="stylesheet" href="/static/dheuof/assets/animations.css"/>
 <link rel="stylesheet" href="/static/dheuof/shared/chrome.css"/>
@@ -1304,6 +1304,167 @@ function toast(msg,isErr){
 }
 
 /* ════════════════════════════════════════════════
+   API — Revenue Summary
+════════════════════════════════════════════════ */
+function loadRevenueSummary(){
+  var kpiRevEl  = document.getElementById('kpi-rev');
+  var kpiExpEl  = document.getElementById('kpi-exp');
+  var kpiNetEl  = document.getElementById('kpi-net');
+  /* show loading state */
+  ['kpi-rev','kpi-exp','kpi-net'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el){ el.childNodes[0].textContent = '…'; }
+  });
+  fetch('/api/m06acc/revenue/summary')
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      /* API returns {today, this_week, this_month, last_month} */
+      function setKpi(id, val){
+        var el = document.getElementById(id);
+        if(!el) return;
+        el.childNodes[0].textContent = typeof val === 'number' ? val.toLocaleString('ar-EG') : '—';
+      }
+      setKpi('kpi-rev', d.today);
+      /* Update meta labels with week/month context */
+      var revMeta = document.getElementById('kpi-rev-m');
+      if(revMeta && d.this_week != null){
+        revMeta.textContent = 'الأسبوع: ' + Number(d.this_week).toLocaleString('ar-EG') + ' ر.س';
+      }
+      var netMeta = document.getElementById('kpi-net-m');
+      if(netMeta && d.this_month != null){
+        netMeta.textContent = 'الشهر: ' + Number(d.this_month).toLocaleString('ar-EG') + ' ر.س';
+      }
+      /* balance badge */
+      var badge = document.getElementById('acc-balance-badge');
+      if(badge && d.this_month != null){
+        badge.textContent = 'الرصيد الحالي: ' + Number(d.this_month).toLocaleString('ar-EG') + ' ر.س';
+      }
+    })
+    .catch(function(err){
+      console.warn('loadRevenueSummary:', err);
+      toast('تعذّر تحميل ملخص الإيرادات', true);
+    });
+}
+
+/* ════════════════════════════════════════════════
+   API — Invoices
+════════════════════════════════════════════════ */
+function loadInvoices(){
+  var tbody = document.getElementById('ac-tbody');
+  if(!tbody) return;
+  tbody.innerHTML = '<div style="padding:32px;text-align:center;color:var(--fg-3);font-size:13px">جارٍ تحميل الفواتير…</div>';
+  fetch('/api/m06acc/invoices')
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if(!res.success || !res.data || !res.data.length){
+        tbody.innerHTML = '<div style="padding:36px;text-align:center;color:var(--fg-3);font-size:13px">لا توجد فواتير مسجّلة</div>';
+        return;
+      }
+      /* Map invoices to journal-style MANUAL entries so existing renderJournal() works */
+      res.data.forEach(function(inv){
+        /* avoid duplicates on re-load */
+        var exists = MANUAL.some(function(e){ return e.apiId === inv.id; });
+        if(exists) return;
+        var amt = parseFloat(inv.total_room) || 0;
+        MANUAL.unshift({
+          id: manualNextId++,
+          apiId: inv.id,
+          type: 'cr',
+          desc: 'فاتورة #' + inv.booking_number + ' — ' + (inv.guest_name || ''),
+          acct: 'إيراد الغرف',
+          src: 'الضيوف',
+          amt: amt,
+          vat: false,
+          time: inv.check_in || '--:--',
+          note: 'غرفة ' + (inv.room_number || '—') + ' · حتى ' + (inv.check_out || '—'),
+          link: inv.booking_number,
+          status: inv.status,
+        });
+      });
+      renderJournal();
+      updateKPIs();
+    })
+    .catch(function(err){
+      console.warn('loadInvoices:', err);
+      tbody.innerHTML = '<div style="padding:36px;text-align:center;color:var(--danger-600);font-size:13px">تعذّر تحميل الفواتير</div>';
+      toast('تعذّر تحميل الفواتير', true);
+    });
+}
+
+/* ════════════════════════════════════════════════
+   API — Monthly Chart
+════════════════════════════════════════════════ */
+function loadMonthlyChart(){
+  fetch('/api/m06acc/revenue/by-month')
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      if(!Array.isArray(data) || !data.length) return;
+      /* Use last 6 months from the API, falling back to static data for remainder */
+      var apiMonths = data.slice(-6);
+      var mx = Math.max.apply(null, apiMonths.map(function(m){ return parseFloat(m.revenue) || 0; })) || 1;
+      var w = document.getElementById('bars-wrap');
+      if(!w) return;
+      w.innerHTML = apiMonths.map(function(m){
+        var rev = parseFloat(m.revenue) || 0;
+        var rh  = Math.max(Math.round(rev / mx * 88), 2);
+        /* bookings_count as a secondary bar proxy — scale same axis */
+        var bk  = parseFloat(m.bookings_count) || 0;
+        var bh  = bk > 0 ? Math.max(Math.round((bk / mx) * 88 * 0.5), 2) : 2;
+        var label = m.month ? String(m.month).slice(5, 7) + '/' + String(m.month).slice(0, 4) : '—';
+        return '<div class="bar-col">'
+          + '<div style="display:flex;gap:3px;align-items:flex-end;height:88px">'
+          + '<div class="bar rev" style="height:' + rh + 'px;width:48%"></div>'
+          + '<div class="bar exp" style="height:' + bh + 'px;width:48%;background:var(--brand-400)"></div>'
+          + '</div>'
+          + '<div class="mon">' + label + '</div>'
+          + '</div>';
+      }).join('');
+    })
+    .catch(function(err){
+      console.warn('loadMonthlyChart:', err);
+      /* silently keep the static chart rendered by renderChart() */
+    });
+}
+
+/* ════════════════════════════════════════════════
+   API — Outstanding / Overdue
+════════════════════════════════════════════════ */
+function loadOutstanding(){
+  fetch('/api/m06acc/outstanding')
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      var list = Array.isArray(res) ? res : (res.data || []);
+      if(!list.length) return;
+      /* Inject overdue bookings as debit/warning entries */
+      list.forEach(function(inv){
+        var exists = MANUAL.some(function(e){ return e.apiId === 'od-' + inv.id; });
+        if(exists) return;
+        var amt = parseFloat(inv.total_room || inv.amount) || 0;
+        MANUAL.unshift({
+          id: manualNextId++,
+          apiId: 'od-' + inv.id,
+          type: 'dr',
+          desc: 'مستحق متأخر — ' + (inv.guest_name || '') + ' #' + (inv.booking_number || inv.id),
+          acct: 'مصاريف متنوعة',
+          src: 'الضيوف',
+          amt: amt,
+          vat: false,
+          time: inv.check_out || '--:--',
+          note: 'متأخر الدفع',
+          link: inv.booking_number || '',
+        });
+      });
+      renderJournal();
+      updateKPIs();
+      toast('تحميل ' + list.length + ' فاتورة متأخرة ✓');
+    })
+    .catch(function(err){
+      console.warn('loadOutstanding:', err);
+      /* non-critical — no toast needed */
+    });
+}
+
+/* ════════════════════════════════════════════════
    INIT
 ════════════════════════════════════════════════ */
 
@@ -1327,6 +1488,12 @@ window.addEventListener('storage', function(ev) {
 
 renderJournal();
 updateKPIs();
+
+/* Load live API data after initial static render */
+loadRevenueSummary();
+loadInvoices();
+loadMonthlyChart();
+loadOutstanding();
 
 })();
 </script>

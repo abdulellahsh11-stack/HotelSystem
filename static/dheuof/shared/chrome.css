@@ -304,3 +304,51 @@ button { font: inherit; cursor: pointer; }
   transition: all 140ms;
 }
 .dh-ftrial-close:hover { background: rgba(255,255,255,0.07); color: var(--paper); }
+
+/* ── Mobile responsive breakpoints ────────────────────────────────── */
+@media (max-width: 1024px) {
+  .dh-sidebar { width: 220px; }
+  .dh-main { padding: 16px; }
+}
+
+@media (max-width: 768px) {
+  .dh-app { flex-direction: column; }
+  .dh-sidebar {
+    position: fixed;
+    top: 0; right: -280px;
+    width: 280px;
+    height: 100vh;
+    z-index: 9999;
+    transition: right 200ms ease;
+  }
+  .dh-sidebar.is-open { right: 0; }
+  .dh-main {
+    margin-right: 0 !important;
+    padding: 12px;
+    min-height: 100vh;
+  }
+  .dh-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .dh-topbar-menu-btn { display: flex !important; }
+}
+
+/* ── Hamburger menu button (hidden by default, visible on mobile) ── */
+.dh-topbar-menu-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-2);
+  border: 1px solid var(--ink-100);
+  color: var(--ink-700);
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: background var(--dur-fast);
+}
+.dh-topbar-menu-btn svg { width: 16px; height: 16px; }
+.dh-topbar-menu-btn:hover { background: var(--white); color: var(--ink-900); }

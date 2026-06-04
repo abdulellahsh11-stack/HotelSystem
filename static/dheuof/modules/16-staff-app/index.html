@@ -232,6 +232,10 @@
 <script>
 /* ============ بيانات الموظفين ============ */
 var STAFF = [];
+// STAFF is populated from /api/m06/employees on boot.
+// Tasks tab is augmented with real /api/m07/tasks (housekeeping) entries.
+// Housing tab is populated from /api/m07/rooms/status.
+
 var LS = {
   cur:   'dh_staff_cur',
   msgs:  'dh_staff_msgs',
@@ -241,13 +245,43 @@ var LS = {
 var me = null, activePeer = null;
 
 function byId(id){ return STAFF.filter(function(s){return s.id===id})[0]; }
-function initials(n){ var p=n.trim().split(/\s+/); return (p[0][0]||'')+(p[1]?p[1][0]:''); }
+function initials(n){ var p=(n||'').trim().split(/\s+/); return (p[0]?p[0][0]:'')+(p[1]?p[1][0]:''); }
 function esc(v){ return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 function load(k,d){ try{ var v=JSON.parse(localStorage.getItem(k)); return v==null?d:v; }catch(e){ return d; } }
 function save(k,v){ localStorage.setItem(k, JSON.stringify(v)); }
 function now(){ var d=new Date(); return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0'); }
 function toast(t){ var el=byEl('toast'); el.textContent=t; el.classList.add('show'); setTimeout(function(){el.classList.remove('show')},2200); }
 function byEl(id){ return document.getElementById(id); }
+
+/* ============ تحميل الموظفين من API ============ */
+function loadStaffFromAPI(){
+  return fetch('/api/m06/employees', { credentials: 'same-origin' })
+    .then(function(r){ return r.ok ? r.json() : Promise.reject(r.status); })
+    .then(function(res){
+      var employees = (res.data || res.employees || []);
+      STAFF = employees.map(function(emp){
+        // Normalise fields to match app expectations
+        var colors = ['#1B4D3D','#3B8772','#9A7430','#C9A85F','#6BAB9A','#266554','#DBC084'];
+        var colorIdx = Math.abs((emp.id || 0)) % colors.length;
+        return {
+          id:    String(emp.id || emp.employee_id),
+          name:  emp.name || emp.full_name || ('موظف #' + emp.id),
+          role:  emp.position || emp.role || emp.department || '',
+          color: emp.color || colors[colorIdx]
+        };
+      });
+      buildLoginOptions();
+      // Auto-resume session if stored
+      var cur = load(LS.cur, null);
+      if (cur && byId(cur)) { me = byId(cur); enterApp(); }
+      return STAFF;
+    })
+    .catch(function(){
+      // Fallback: keep empty STAFF — login screen will show "no staff"
+      buildLoginOptions();
+      return [];
+    });
+}
 
 /* ============ تسجيل الدخول / الخروج ============ */
 function buildLoginOptions(){

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <title>ضيوف · إدارة الإيرادات والمؤشرات</title>
-<meta name="viewport" content="width=1440, initial-scale=1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
 <link rel="stylesheet" href="/static/dheuof/colors_and_type.css"/>
 <link rel="stylesheet" href="/static/dheuof/assets/animations.css"/>
 <link rel="stylesheet" href="/static/dheuof/shared/chrome.css"/>
@@ -853,24 +853,30 @@ setTimeout(function(){
 }, 80);
 
 // ── Build occupancy bar chart ─────────────────────────────────────────────
-(function buildOccBars(){
+function buildOccBars(valuesByYYYYMM){
   // Last 12 months ending with the current month (full Arabic month names)
   var monthNames = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
   var now = new Date();
   var months = [];
+  var keys = [];
   for (var k = 11; k >= 0; k--){
     var d = new Date(now.getFullYear(), now.getMonth() - k, 1);
     months.push(monthNames[d.getMonth()]);
+    var mm = String(d.getMonth() + 1); if(mm.length<2) mm='0'+mm;
+    keys.push(d.getFullYear() + '-' + mm);
   }
-  // Occupancy values per month — empty until real data is recorded
-  var values = [];
+  // map to values array using provided lookup or zeros
+  var map = valuesByYYYYMM || {};
+  var values = keys.map(function(k){ return map[k] != null ? map[k] : null; });
   var container = document.getElementById('occ-bars-container');
   if (!container) return;
-  var hasData = values.length === months.length;
-  var maxV = hasData ? Math.max.apply(null, values) : 0;
+  container.innerHTML = '';
+  var nonNull = values.filter(function(v){ return v != null; });
+  var hasData = nonNull.length > 0;
+  var maxV = hasData ? Math.max.apply(null, nonNull) : 0;
   months.forEach(function(m, i){
-    var v = hasData ? values[i] : null;
-    var pct = (hasData && maxV > 0) ? Math.round(v / maxV * 100) : 0;
+    var v = values[i];
+    var pct = (hasData && maxV > 0 && v != null) ? Math.round(v / maxV * 100) : 0;
     var isCurrent = i === months.length - 1;
     var col = document.createElement('div');
     col.className = 'occ-bar-col';
@@ -882,7 +888,76 @@ setTimeout(function(){
       '<div class="occ-bar-lbl">' + m + '</div>';
     container.appendChild(col);
   });
-})();
+  // update average badge
+  var badge = document.getElementById('occ-avg-badge');
+  if (badge && nonNull.length > 0){
+    var avg = Math.round(nonNull.reduce(function(a,b){return a+b;},0) / nonNull.length);
+    badge.textContent = 'متوسط ' + avg + '٪';
+  }
+}
+
+// ── Load KPI dashboard from API ───────────────────────────────────────────
+async function loadKpiDashboard(){
+  try {
+    var res = await fetch('/api/m11/dashboard');
+    var json = await res.json();
+    if (!json.success || !json.data) { buildOccBars({}); return; }
+    var d = json.data;
+
+    // ── Update KPI strip cards ────────────────────────────────────────────
+    var cards = document.querySelectorAll('.kpi-strip .kpi-card');
+    // Card order: RevPAR, ADR, OCC, GOPPAR, ALOS
+    function setCard(card, val, extra){
+      if (!card) return;
+      var valEl = card.querySelector('.kc-val');
+      if (valEl) {
+        var curEl = valEl.querySelector('.cur');
+        var curHtml = curEl ? curEl.outerHTML : '';
+        valEl.innerHTML = (val != null ? val : '—') + curHtml;
+      }
+      if (extra != null) {
+        var chEl = card.querySelector('.kc-change');
+        if (chEl) { chEl.textContent = extra; chEl.className = 'kc-change'; }
+      }
+    }
+    if (cards[0]) setCard(cards[0], d.revpar != null ? Math.round(d.revpar) : null);
+    if (cards[1]) setCard(cards[1], d.adr    != null ? Math.round(d.adr)    : null);
+    if (cards[2]) setCard(cards[2], d.occupancy_rate != null ? d.occupancy_rate : null);
+    if (cards[3]) setCard(cards[3], d.revenue_month != null ? Math.round(d.revenue_month).toLocaleString('en') : null);
+    if (cards[4]) setCard(cards[4], null); // ALOS not in dashboard endpoint
+
+    // update KPI_DATA so exports stay in sync
+    if (d.revpar   != null) { KPI_DATA[0].val = Math.round(d.revpar); }
+    if (d.adr      != null) { KPI_DATA[1].val = Math.round(d.adr); }
+    if (d.occupancy_rate != null){ KPI_DATA[2].val = d.occupancy_rate; }
+    if (d.revenue_month  != null){ KPI_DATA[3].val = Math.round(d.revenue_month).toLocaleString('en'); }
+
+    // ── Build occupancy chart from monthly_revenue ────────────────────────
+    var monthly = d.monthly_revenue || [];
+    var occMap = {};
+    monthly.forEach(function(r){
+      // monthly_revenue rows have {month:'YYYY-MM', revenue, invoices}
+      // We don't have per-month occupancy from this endpoint — use revenue as proxy
+      // If a daily_kpis table is populated via /api/m11/revpar, that would be better,
+      // but dashboard only returns occupancy_rate for today. Use revenue bars instead.
+      if (r.month) occMap[r.month] = parseFloat(r.revenue) || 0;
+    });
+    // If no monthly data, fall back to showing current occupancy in current month slot
+    if (Object.keys(occMap).length === 0 && d.occupancy_rate != null){
+      var now2 = new Date();
+      var mm2 = String(now2.getMonth()+1); if(mm2.length<2) mm2='0'+mm2;
+      occMap[now2.getFullYear()+'-'+mm2] = d.occupancy_rate;
+    }
+    buildOccBars(occMap);
+
+  } catch(e){
+    console.error('loadKpiDashboard error', e);
+    buildOccBars({});
+  }
+}
+
+// ── Page load ─────────────────────────────────────────────────────────────
+loadKpiDashboard();
 
 // ── Tab switching ─────────────────────────────────────────────────────────
 (function initTabs(){

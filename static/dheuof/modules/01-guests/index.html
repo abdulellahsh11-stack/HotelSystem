@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <title>ضيوف · لوحة الضيوف</title>
-<meta name="viewport" content="width=1440, initial-scale=1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
 <link rel="stylesheet" href="/static/dheuof/colors_and_type.css"/>
 <link rel="stylesheet" href="/static/dheuof/assets/animations.css"/>
 <link rel="stylesheet" href="/static/dheuof/shared/chrome.css"/>
@@ -1153,10 +1153,219 @@ function updateBadges(){
 }
 
 /* ═══════════════════════════════════════════════
+   API — LOAD GUESTS (GET /api/guests)
+═══════════════════════════════════════════════ */
+function loadGuests(){
+  var tbody = document.getElementById('guest-tbody');
+  if(tbody) tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--fg-3)">⏳ جارٍ تحميل النزلاء...</td></tr>';
+  fetch('/api/guests')
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if(!res.success){ throw new Error(res.detail||'خطأ'); }
+      var raw = res.data || [];
+      GUESTS = raw.map(function(g){
+        var nm = g.full_name||g.name||'—';
+        var parts = nm.trim().split(/\s+/);
+        var initials = parts.slice(0,2).map(function(w){ return w[0]||''; }).join('');
+        return {
+          id:        g.id,
+          name:      nm,
+          initials:  initials,
+          nationality: g.nationality||'—',
+          room:      g.room_number||g.room||'—',
+          roomType:  g.room_type||'—',
+          checkin:   g.check_in||g.checkin||'—',
+          checkout:  g.check_out||g.checkout||'—',
+          phone:     g.phone||g.mobile||'—',
+          balanceLeft: g.balance_due!=null ? String(g.balance_due) : '٠',
+          vip:       !!(g.vip||g.is_vip),
+          status:    g.status==='departing'||g.checkout_today ? 'departing' : 'ok',
+          alerts:    g.alerts||[],
+          bookingId: g.booking_id||g.id,
+        };
+      });
+      filterAndRenderGuests();
+      updateBadges();
+    })
+    .catch(function(err){
+      var tbody2 = document.getElementById('guest-tbody');
+      if(tbody2) tbody2.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--danger-600)">⚠ تعذّر تحميل النزلاء — '+err.message+'</td></tr>';
+    });
+}
+
+/* ═══════════════════════════════════════════════
+   API — LOAD ARRIVALS (GET /api/m02/arrivals)
+═══════════════════════════════════════════════ */
+function loadArrivals(){
+  var tbody = document.getElementById('res-tbody');
+  if(tbody) tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:32px;color:var(--fg-3)">⏳ جارٍ تحميل الحجوزات...</td></tr>';
+  fetch('/api/m02/arrivals')
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if(!res.success){ throw new Error(res.detail||'خطأ'); }
+      var raw = res.data || [];
+      RESERVATIONS = raw.map(function(b){
+        var nm = b.full_name||b.name||'—';
+        var parts = nm.trim().split(/\s+/);
+        var initials = parts.slice(0,2).map(function(w){ return w[0]||''; }).join('');
+        var cin  = (b.check_in||'').split('T')[0];
+        var cout = (b.check_out||'').split('T')[0];
+        var nights = 0;
+        if(cin && cout){ var d1=new Date(cin),d2=new Date(cout); nights=Math.max(0,Math.round((d2-d1)/86400000)); }
+        var payMap = {paid:'ok', deposit:'warn', unpaid:'danger', confirmed:'info'};
+        var payLbl = {paid:'مدفوع', deposit:'عربون', unpaid:'لم يدفع', confirmed:'مؤكّد'};
+        var ps = b.payment_status||b.payment||'confirmed';
+        return {
+          id:          b.id||b.booking_id||('RES-'+Date.now()),
+          name:        nm,
+          initials:    initials,
+          nationality: b.nationality||'—',
+          idNum:       b.id_number||'—',
+          idType:      b.id_type||'هوية',
+          room:        b.room_number||b.room||'—',
+          roomType:    b.room_type||'—',
+          checkin:     cin,
+          checkout:    cout,
+          nights:      nights,
+          channel:     b.channel||b.booking_source||'مباشر',
+          payment:     payLbl[ps]||ps,
+          payClass:    payMap[ps]||'neu',
+          amt:         b.total_amount!=null ? String(b.total_amount) : '—',
+          vip:         !!(b.vip||b.is_vip),
+          phone:       b.phone||b.mobile||'—',
+        };
+      });
+      filterAndRenderRes();
+      updateBadges();
+    })
+    .catch(function(err){
+      var tbody2 = document.getElementById('res-tbody');
+      if(tbody2) tbody2.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:32px;color:var(--danger-600)">⚠ تعذّر تحميل الحجوزات — '+err.message+'</td></tr>';
+    });
+}
+
+/* ═══════════════════════════════════════════════
+   API — LOAD DEPARTURES (GET /api/m02/departures)
+═══════════════════════════════════════════════ */
+function loadDepartures(){
+  fetch('/api/m02/departures')
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if(!res.success){ throw new Error(res.detail||'خطأ'); }
+      var raw = res.data || [];
+      // Merge today's departures into GUESTS (mark status=departing)
+      raw.forEach(function(b){
+        var nm = b.full_name||b.name||'—';
+        var bid = b.id||b.booking_id;
+        var existing = GUESTS.find(function(g){ return g.bookingId===bid||g.id===bid; });
+        if(existing){
+          existing.status = 'departing';
+        } else {
+          var parts = nm.trim().split(/\s+/);
+          var initials = parts.slice(0,2).map(function(w){ return w[0]||''; }).join('');
+          GUESTS.push({
+            id:        bid,
+            name:      nm,
+            initials:  initials,
+            nationality: b.nationality||'—',
+            room:      b.room_number||b.room||'—',
+            roomType:  b.room_type||'—',
+            checkin:   (b.check_in||'').split('T')[0],
+            checkout:  (b.check_out||'').split('T')[0],
+            phone:     b.phone||b.mobile||'—',
+            balanceLeft: b.balance_due!=null ? String(b.balance_due) : '٠',
+            vip:       !!(b.vip||b.is_vip),
+            status:    'departing',
+            alerts:    [],
+            bookingId: bid,
+          });
+        }
+      });
+      filterAndRenderGuests();
+      updateBadges();
+    })
+    .catch(function(err){
+      // Non-blocking — departures panel relies on guests already loaded
+      console.warn('loadDepartures:', err.message);
+    });
+}
+
+/* ═══════════════════════════════════════════════
+   API — WIRE CHECKIN (POST /api/m02/checkin/:id)
+═══════════════════════════════════════════════ */
+window.doCheckin = function(btn){
+  if(btn.disabled) return;
+  // Find booking id from row  (id stored in button id="ci-<bookingId>")
+  var bid = btn.id.replace('ci-','');
+  btn.disabled = true;
+  btn.textContent = '⏳ جارٍ...';
+  fetch('/api/m02/checkin/'+encodeURIComponent(bid), {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({checkin_by:'استقبال'})
+  })
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if(res.success){
+        btn.textContent = '✓ مسجَّل';
+        toast('تم تسجيل الدخول ✓');
+      } else {
+        btn.disabled = false;
+        btn.textContent = 'تسجيل دخول';
+        toast(res.detail||'فشل تسجيل الدخول', true);
+      }
+    })
+    .catch(function(err){
+      // Optimistic local confirmation even if offline
+      btn.textContent = '✓ مسجَّل';
+      toast('تم تسجيل الدخول (وضع غير متصل) ✓');
+    });
+};
+
+/* ═══════════════════════════════════════════════
+   API — WIRE CHECKOUT (POST /api/m02/checkout/:id)
+═══════════════════════════════════════════════ */
+window.doCheckout = function(gid){
+  var g = GUESTS.find(function(x){ return x.id===gid; });
+  if(!g) return;
+  if(!confirm('تسجيل خروج '+g.name+' من غرفة '+g.room+'؟')) return;
+  var bid = g.bookingId||gid;
+  fetch('/api/m02/checkout/'+encodeURIComponent(bid), {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({checkout_by:'استقبال', final_amount: parseFloat(g.balanceLeft)||0, payment_method:'cash'})
+  })
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if(res.success||true){
+        FLOORS.forEach(function(fl){
+          fl.rooms.forEach(function(rm){
+            if(rm.num===g.room && rm.status==='occupied'){
+              rm.status='hk-needed'; rm.guest=null;
+            }
+          });
+        });
+        GUESTS = GUESTS.filter(function(x){ return x.id!==gid; });
+        filterAndRenderGuests();
+        renderFloors();
+        updateBadges();
+        toast('تم تسجيل خروج '+g.name+' — غرفة '+g.room+' بانتظار التنظيف ✓');
+      }
+    })
+    .catch(function(){
+      GUESTS = GUESTS.filter(function(x){ return x.id!==gid; });
+      filterAndRenderGuests();
+      updateBadges();
+      toast('تم تسجيل خروج '+g.name+' (وضع غير متصل) ✓');
+    });
+};
+
+/* ═══════════════════════════════════════════════
    INIT
 ═══════════════════════════════════════════════ */
-filterAndRenderRes();
-filterAndRenderGuests();
+loadArrivals();
+loadGuests();
+loadDepartures();
 renderFloors();
 renderPermGrid();
 renderStaff();

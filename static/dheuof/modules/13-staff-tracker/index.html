@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <title>ضيوف - أداء الموظفين</title>
-<meta name="viewport" content="width=1440, initial-scale=1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
 <link rel="stylesheet" href="/static/dheuof/colors_and_type.css"/>
 <link rel="stylesheet" href="/static/dheuof/assets/animations.css"/>
 <link rel="stylesheet" href="/static/dheuof/shared/chrome.css"/>
@@ -229,17 +229,250 @@ window.exportPDF = function(){
 renderVibrantHero({ icon:'⏰', num:'13', title:'أداء الموظفين', en:'Staff Performance · Attendance', sub:'تسجيل الحضور والتأخير، حوافز أسبوعية', badges:[{v:'—',l:'حاضر اليوم'},{v:'—',l:'الانضباط'}] });
 renderTierBar({ exc:0, good:0, low:0, bad:0 });
 
+// ── Staff Tracker: real API wiring ──────────────────────────────────────────
 (function(){
-  var total = ATTENDANCE.length;
-  var lateCount = ATTENDANCE.filter(function(r){ return r.status && r.status.startsWith('late'); }).length;
-  var totalBonus = ATTENDANCE.reduce(function(s,r){ return s+(r.bonus||0); }, 0);
-  var bonusCount = ATTENDANCE.filter(function(r){ return r.bonus>0; }).length;
-  function upd(id,v){ var e=document.getElementById(id); if(e) e.textContent=v; }
-  upd('att-stat-present', total ? total : '—');
-  upd('att-stat-late', total ? (lateCount||'٠') : '—');
-  upd('att-stat-leave', '—');
-  upd('att-stat-bonus', total && totalBonus ? totalBonus.toLocaleString('ar-EG')+' ر.س' : '—');
-  upd('att-stat-bonus-meta', total && bonusCount ? bonusCount+' موظف' : '—');
+  'use strict';
+
+  function upd(id, v){ var e = document.getElementById(id); if (e) e.textContent = v; }
+
+  function arNum(n){
+    return String(Math.round(n||0)).replace(/[0-9]/g, function(d){ return '٠١٢٣٤٥٦٧٨٩'[+d]; });
+  }
+
+  function safeFetch(url){
+    return fetch(url, { credentials: 'same-origin' })
+      .then(function(r){ return r.ok ? r.json() : Promise.reject(r.status); });
+  }
+
+  // Derive attendance status from shift_start and check_in timestamps
+  function deriveStatus(emp, attRecord) {
+    if (!attRecord) return 'absent';
+    var scheduled = emp.shift_start || '08:00';
+    var actual    = attRecord.check_in_time || attRecord.check_in || '';
+    if (!actual) return 'absent';
+    // Compare HH:MM strings
+    var schedParts = scheduled.substring(0, 5).split(':');
+    var actParts   = actual.substring(11, 16).split(':') || actual.substring(0, 5).split(':');
+    // handle ISO timestamp
+    if (actual.includes('T')) {
+      actParts = actual.substring(11, 16).split(':');
+    } else {
+      actParts = actual.substring(0, 5).split(':');
+    }
+    var schedMin = parseInt(schedParts[0] || 0) * 60 + parseInt(schedParts[1] || 0);
+    var actMin   = parseInt(actParts[0]   || 0) * 60 + parseInt(actParts[1]   || 0);
+    var diff = actMin - schedMin;
+    if (diff < -5)  return 'early';
+    if (diff <= 10) return 'ontime';
+    if (diff <= 30) return 'late24';
+    return 'late42';
+  }
+
+  function statusLabel(s){
+    return s === 'early'  ? '⭐ مبكر' :
+           s === 'ontime' ? '✓ في الوقت' :
+           s === 'late24' ? '⚠ تأخر خفيف' :
+           s === 'late42' ? '✕ تأخر ملحوظ' :
+           s === 'absent' ? '— غائب' : s;
+  }
+  function statusClass(s){
+    return s === 'early'  ? 'ok' :
+           s === 'ontime' ? 'ok' :
+           s === 'late24' ? 'late' :
+           s === 'late42' ? 'late' : '';
+  }
+  function initials(name){
+    var parts = (name || '').trim().split(/\s+/);
+    return (parts[0] ? parts[0][0] : '') + (parts[1] ? parts[1][0] : '');
+  }
+
+  function formatTime(ts){
+    if (!ts) return '—';
+    if (ts.includes('T')) return ts.substring(11, 16);
+    return ts.substring(0, 5);
+  }
+
+  function renderAttendanceRows(employees, attendanceRecords) {
+    var container = document.getElementById('att-rows-container');
+    if (!container) return;
+
+    // Build a map: employee_id -> attendance record for today
+    var today = new Date().toISOString().substring(0, 10);
+    var attMap = {};
+    (attendanceRecords || []).forEach(function(a){
+      var empId = a.employee_id || a.emp_id;
+      var date  = (a.date || a.check_in_date || (a.check_in || '').substring(0, 10) || '');
+      if (date.substring(0, 10) === today) {
+        attMap[empId] = a;
+      }
+    });
+
+    if (!employees.length) {
+      container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--fg-3);font-family:var(--font-ar)">لا توجد بيانات موظفين</div>';
+      return;
+    }
+
+    // Build ATTENDANCE array for export compatibility
+    window.ATTENDANCE = [];
+
+    var rows = employees.map(function(emp){
+      var att    = attMap[emp.id] || attMap[emp.employee_id] || null;
+      var status = att ? deriveStatus(emp, att) : 'absent';
+      var scheduled = emp.shift_start || '08:00';
+      var actual    = att ? formatTime(att.check_in_time || att.check_in) : '—';
+      var bonus     = att ? (att.bonus || emp.weekly_bonus || 0) : 0;
+
+      // Push to global for export
+      window.ATTENDANCE.push({
+        name: emp.name || emp.full_name || '',
+        role: emp.position || emp.role || emp.department || '',
+        scheduled: scheduled,
+        actual: actual,
+        status: status,
+        bonus: bonus
+      });
+
+      var initStr = initials(emp.name || emp.full_name || '?');
+      var tCls    = statusClass(status);
+      var tLbl    = statusLabel(status);
+      var bonusHtml = bonus ? '<span class="st-bonus">+' + bonus + '<span class="cur">ر.س</span></span>' : '<span style="color:var(--fg-3)">—</span>';
+
+      return '<div class="st-row">' +
+        '<div class="st-av">' + initStr + '</div>' +
+        '<div><div class="st-nm">' + (emp.name || emp.full_name || '—') + '</div>' +
+          '<div class="st-sub">' + (emp.position || emp.role || emp.department || '—') + '</div></div>' +
+        '<div class="st-time">' + scheduled + '</div>' +
+        '<div class="st-time ' + tCls + '">' + actual + '</div>' +
+        '<div class="st-time ' + tCls + '">' + tLbl + '</div>' +
+        bonusHtml +
+        '</div>';
+    }).join('');
+
+    container.innerHTML = rows;
+
+    // Update stat cards
+    var total      = employees.length;
+    var presentArr = employees.filter(function(emp){
+      var att = attMap[emp.id] || attMap[emp.employee_id];
+      return att && (att.check_in_time || att.check_in);
+    });
+    var present   = presentArr.length;
+    var lateArr   = window.ATTENDANCE.filter(function(r){ return r.status === 'late24' || r.status === 'late42'; });
+    var lateCount = lateArr.length;
+    var totalBonus = window.ATTENDANCE.reduce(function(s,r){ return s + (r.bonus||0); }, 0);
+    var bonusCount = window.ATTENDANCE.filter(function(r){ return r.bonus > 0; }).length;
+    var onLeave    = employees.filter(function(emp){ return emp.status === 'on_leave' || emp.status === 'leave'; }).length;
+
+    upd('att-stat-present', present ? arNum(present) : '٠');
+    upd('att-stat-late',    lateCount ? arNum(lateCount) : '٠');
+    upd('att-stat-late-meta', lateCount ? 'من ' + arNum(total) + ' موظف' : 'لا تأخير اليوم');
+    upd('att-stat-leave',   onLeave ? arNum(onLeave) : '٠');
+    upd('att-stat-bonus',   totalBonus ? totalBonus.toLocaleString('ar-EG') + ' ر.س' : '—');
+    upd('att-stat-bonus-meta', bonusCount ? arNum(bonusCount) + ' موظف' : '—');
+
+    // Update hero badges
+    if (window.renderVibrantHero) {
+      var disciplinePct = total > 0 ? Math.round((present - lateCount) / total * 100) : 0;
+      window.renderVibrantHero({ icon:'⏰', num:'13', title:'أداء الموظفين',
+        en:'Staff Performance · Attendance', sub:'تسجيل الحضور والتأخير، حوافز أسبوعية',
+        badges:[{v: arNum(present), l:'حاضر اليوم'},{v: arNum(disciplinePct)+'%', l:'الانضباط'}] });
+    }
+
+    // Update tier bar
+    if (window.renderTierBar) {
+      var early2  = window.ATTENDANCE.filter(function(r){ return r.status==='early'; }).length;
+      var ontime2 = window.ATTENDANCE.filter(function(r){ return r.status==='ontime'; }).length;
+      var late242 = window.ATTENDANCE.filter(function(r){ return r.status==='late24'; }).length;
+      var late422 = window.ATTENDANCE.filter(function(r){ return r.status==='late42'; }).length;
+      renderTierBar({ exc: early2, good: ontime2, low: late242, bad: late422 });
+    }
+  }
+
+  function renderDayOffReminders(employees) {
+    var restEl = document.querySelector('.st-rest');
+    if (!restEl) return;
+
+    // Find employees whose day_off is today or tomorrow
+    var today = new Date();
+    var tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
+    var todayDay = today.getDay();
+    var tomorrowDay = tomorrow.getDay();
+    var dayMap = { 0:'الأحد', 1:'الاثنين', 2:'الثلاثاء', 3:'الأربعاء', 4:'الخميس', 5:'الجمعة', 6:'السبت' };
+
+    var upcoming = employees.filter(function(emp){
+      var doff = emp.day_off;
+      if (!doff) return false;
+      var dayNames = { 'sunday':0,'monday':1,'tuesday':2,'wednesday':3,'thursday':4,'friday':5,'saturday':6,
+                       '0':0,'1':1,'2':2,'3':3,'4':4,'5':5,'6':6 };
+      var empDay = dayNames[(doff+'').toLowerCase()];
+      return empDay === todayDay || empDay === tomorrowDay;
+    });
+
+    if (!upcoming.length) {
+      restEl.querySelector('div[style]') && (restEl.querySelector('div[style]').textContent = 'لا يوجد موظفون في إجازة خلال يومين');
+      return;
+    }
+
+    var content = upcoming.map(function(emp){
+      var doff = emp.day_off;
+      var dayNames = { 'sunday':0,'monday':1,'tuesday':2,'wednesday':3,'thursday':4,'friday':5,'saturday':6 };
+      var empDay = dayNames[(doff+'').toLowerCase()] || parseInt(doff);
+      var isToday = empDay === todayDay;
+      var initStr = initials(emp.name || emp.full_name || '?');
+      return '<div class="who">' +
+        '<div class="av">' + initStr + '</div>' +
+        '<div class="n">' + (emp.name || emp.full_name || '—') + '</div>' +
+        '<div class="d">' + (isToday ? 'اليوم' : 'غداً') + ' — ' + dayMap[empDay] + '</div>' +
+        '</div>';
+    }).join('');
+
+    var oldPlaceholder = restEl.querySelector('div[style*="padding"]');
+    if (oldPlaceholder) oldPlaceholder.remove();
+    restEl.insertAdjacentHTML('beforeend', content);
+  }
+
+  function loadStaffTracker() {
+    var container = document.getElementById('att-rows-container');
+    if (container) {
+      container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--fg-3);font-family:var(--font-ar)">جاري تحميل البيانات…</div>';
+    }
+
+    Promise.all([
+      fetch('/api/m06/employees', { credentials: 'same-origin' })
+        .then(function(r){ return r.ok ? r.json() : Promise.reject(r.status); })
+        .catch(function(){ return null; }),
+      fetch('/api/m06/attendance', { credentials: 'same-origin' })
+        .then(function(r){ return r.ok ? r.json() : Promise.reject(r.status); })
+        .catch(function(){ return null; })
+    ]).then(function(results){
+      var empData = results[0];
+      var attData = results[1];
+
+      var employees = (empData && (empData.data || empData.employees)) || [];
+      var attendance = (attData && (attData.data || attData.records)) || [];
+
+      if (!employees.length && !attendance.length) {
+        if (container) {
+          container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--fg-3);font-family:var(--font-ar)">' +
+            'لا توجد بيانات حضور — ستظهر هنا عند إضافة الموظفين</div>';
+        }
+        return;
+      }
+
+      renderAttendanceRows(employees, attendance);
+      renderDayOffReminders(employees);
+    }).catch(function(err){
+      if (container) {
+        container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--danger-700);font-family:var(--font-ar)">خطأ في تحميل البيانات — ' + err + '</div>';
+      }
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadStaffTracker);
+  } else {
+    loadStaffTracker();
+  }
 })();
 </script>
 </body>

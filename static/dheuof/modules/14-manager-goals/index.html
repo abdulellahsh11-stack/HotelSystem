@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <title>ضيوف - أهداف المدير</title>
-<meta name="viewport" content="width=1440, initial-scale=1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
 <link rel="stylesheet" href="/static/dheuof/colors_and_type.css"/>
 <link rel="stylesheet" href="/static/dheuof/assets/animations.css"/>
 <link rel="stylesheet" href="/static/dheuof/shared/chrome.css"/>
@@ -84,9 +84,9 @@
   .gl-notify .item { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; padding: 10px 0; border-top: 1px solid var(--hairline); align-items: center; }
   .gl-notify .item:first-of-type { border-top: none; }
   .gl-notify .item .ic { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; font-size: 14px; }
-  .gl-notify .item .ic.good { background: #DCEEE6; color: var(--success-700); }
-  .gl-notify .item .ic.warn { background: #F6E7C2; color: var(--warning-700); }
-  .gl-notify .item .ic.info { background: #D6E1F0; color: var(--info-700); }
+  .gl-notify .item .ic.good { background: var(--success-100); color: var(--success-700); }
+  .gl-notify .item .ic.warn { background: var(--warning-100); color: var(--warning-700); }
+  .gl-notify .item .ic.info { background: var(--info-100); color: var(--info-700); }
   .gl-notify .item .body { font-size: 13px; color: var(--ink-900); line-height: 1.45; }
   .gl-notify .item .body .sub { font-size: 11px; color: var(--fg-3); margin-top: 2px; }
   .gl-notify .item .when { font-family: var(--font-mono); font-size: 11px; color: var(--fg-3); }
@@ -170,7 +170,232 @@ function toXLS(headers,rows,name){var s='<Styles><Style ss:ID="H"><Font ss:Bold=
 function dlXLS(c,fn){var b=new Blob([c],{type:'application/vnd.ms-excel;charset=utf-8'});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download=fn;a.click();setTimeout(function(){URL.revokeObjectURL(u);},1000);}
 function toast(msg,isErr){var old=document.querySelector('.dh-toast');if(old)old.remove();var t=document.createElement('div');t.className='dh-toast';t.style.cssText='position:fixed;bottom:24px;inset-inline-end:24px;background:'+(isErr?'#b91c1c':'#1B4D3D')+';color:#fff;padding:12px 18px;border-radius:8px;font-family:"Tajawal",sans-serif;font-size:13px;z-index:9999;display:flex;gap:8px';t.innerHTML='<span style="color:'+(isErr?'#fca5a5':'#C9A85F')+'">'+(isErr?'✕':'✓')+'</span>'+msg;document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .4s';setTimeout(function(){if(t.parentNode)t.remove();},400);},3000);}
 
+// ── Default KPI targets (editable, overridable by API) ─────────
+var KPI_TARGETS = {
+  occupancy_rate:  75,    // % target occupancy
+  revenue_month:   50000, // SAR monthly revenue target
+  bookings_month:  80,    // bookings per month target
+  adr:             300,   // Average Daily Rate target (SAR)
+  revpar:          200,   // RevPAR target (SAR)
+  checkins_today:  5,     // daily check-ins target
+};
+
 var GOALS = [];
+var _apiData = { kpi: null, stats: null, revenue: null };
+
+// ── formatters ──────────────────────────────────────────────────
+function _fmt(n, decimals) {
+  if (n == null || isNaN(n)) return '—';
+  return Number(n).toLocaleString('ar-SA', { maximumFractionDigits: decimals || 0 });
+}
+function _pct(actual, target) {
+  if (!target || target <= 0) return 0;
+  return Math.min(Math.round((actual / target) * 100), 999);
+}
+
+// ── Build GOALS array from live API data ────────────────────────
+function _buildGoalsFromData() {
+  var kpi  = (_apiData.kpi  && _apiData.kpi.data)  ? _apiData.kpi.data  : {};
+  var bk   = _apiData.stats || {};
+  var rev  = (_apiData.revenue && _apiData.revenue.data) ? _apiData.revenue.data : {};
+
+  // Merge revenue: prefer m11 revenue_month, fall back to m06acc this_month, then m17 total_revenue
+  var revenueActual = kpi.revenue_month != null
+    ? kpi.revenue_month
+    : (rev.this_month != null ? parseFloat(rev.this_month) : (bk.total_revenue || 0));
+
+  var occupancyActual  = kpi.occupancy_rate   != null ? kpi.occupancy_rate   : null;
+  var bookingsActual   = kpi.bookings_month   != null ? kpi.bookings_month   : (bk.total_bookings || 0);
+  var adrActual        = kpi.adr              != null ? kpi.adr              : null;
+  var revparActual     = kpi.revpar           != null ? kpi.revpar           : null;
+  var checkinsActual   = kpi.checkins_today   != null ? kpi.checkins_today   : 0;
+
+  var hasData = Object.keys(kpi).length > 0 || Object.keys(bk).length > 0;
+
+  GOALS = [
+    {
+      name: 'إشغال الغرف',
+      icon: '🏨',
+      target: KPI_TARGETS.occupancy_rate + '%',
+      targetNum: KPI_TARGETS.occupancy_rate,
+      achieved: occupancyActual != null ? occupancyActual + '%' : (hasData ? '٠٪' : '—'),
+      achievedNum: occupancyActual != null ? occupancyActual : 0,
+      pct: occupancyActual != null ? _pct(occupancyActual, KPI_TARGETS.occupancy_rate) : 0,
+      unit: '%',
+      live: occupancyActual != null,
+    },
+    {
+      name: 'إيرادات الشهر',
+      icon: '💰',
+      target: _fmt(KPI_TARGETS.revenue_month) + ' ر.س',
+      targetNum: KPI_TARGETS.revenue_month,
+      achieved: _fmt(revenueActual) + ' ر.س',
+      achievedNum: revenueActual,
+      pct: _pct(revenueActual, KPI_TARGETS.revenue_month),
+      unit: 'SAR',
+      live: true,
+    },
+    {
+      name: 'الحجوزات الشهرية',
+      icon: '📅',
+      target: KPI_TARGETS.bookings_month + ' حجز',
+      targetNum: KPI_TARGETS.bookings_month,
+      achieved: bookingsActual + ' حجز',
+      achievedNum: bookingsActual,
+      pct: _pct(bookingsActual, KPI_TARGETS.bookings_month),
+      unit: 'bookings',
+      live: true,
+    },
+    {
+      name: 'متوسط سعر الغرفة (ADR)',
+      icon: '📊',
+      target: _fmt(KPI_TARGETS.adr) + ' ر.س',
+      targetNum: KPI_TARGETS.adr,
+      achieved: adrActual != null ? _fmt(adrActual) + ' ر.س' : (hasData ? '٠ ر.س' : '—'),
+      achievedNum: adrActual != null ? adrActual : 0,
+      pct: adrActual != null ? _pct(adrActual, KPI_TARGETS.adr) : 0,
+      unit: 'SAR',
+      live: adrActual != null,
+    },
+    {
+      name: 'إيراد الغرفة المتاحة (RevPAR)',
+      icon: '📈',
+      target: _fmt(KPI_TARGETS.revpar) + ' ر.س',
+      targetNum: KPI_TARGETS.revpar,
+      achieved: revparActual != null ? _fmt(revparActual) + ' ر.س' : (hasData ? '٠ ر.س' : '—'),
+      achievedNum: revparActual != null ? revparActual : 0,
+      pct: revparActual != null ? _pct(revparActual, KPI_TARGETS.revpar) : 0,
+      unit: 'SAR',
+      live: revparActual != null,
+    },
+    {
+      name: 'وصول اليوم',
+      icon: '🛎️',
+      target: KPI_TARGETS.checkins_today + ' ضيف',
+      targetNum: KPI_TARGETS.checkins_today,
+      achieved: checkinsActual + ' ضيف',
+      achievedNum: checkinsActual,
+      pct: _pct(checkinsActual, KPI_TARGETS.checkins_today),
+      unit: 'guests',
+      live: true,
+    },
+  ];
+}
+
+// ── Render goals grid ───────────────────────────────────────────
+function _renderGoals() {
+  var grid = document.getElementById('goals-grid');
+  if (!grid) return;
+
+  if (GOALS.length === 0) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--fg-3);font-family:var(--font-ar)">'
+      + '<div style="font-size:40px;margin-bottom:12px;opacity:.4">🎯</div>'
+      + '<div style="font-size:15px;font-weight:600;margin-bottom:6px">لا توجد بيانات بعد</div>'
+      + '<div style="font-size:13px">تعذّر تحميل البيانات من الخادم</div></div>';
+    return;
+  }
+
+  var html = '';
+  GOALS.forEach(function(g) {
+    var barPct = Math.min(g.pct, 100);
+    var cls = g.pct >= 100 ? 'done' : g.pct < 50 ? 'behind' : '';
+    html += '<div class="gl-card ' + cls + '">'
+      + '<div class="head"><div class="ic">' + g.icon + '</div><div class="pct">' + g.pct + '٪</div></div>'
+      + '<div class="nm">' + g.name + '</div>'
+      + '<div class="target">الهدف: ' + g.target + '</div>'
+      + '<div class="bar"><div style="width:' + barPct + '%"></div></div>'
+      + '<div class="foot-info">'
+      + '<span>المحقق</span>'
+      + '<span class="now">' + g.achieved + '</span>'
+      + '</div>'
+      + '</div>';
+  });
+  grid.innerHTML = html;
+}
+
+// ── Render overall ring + hero stats ───────────────────────────
+function _renderOverall() {
+  if (GOALS.length === 0) return;
+  var avg = Math.round(GOALS.reduce(function(s, g) { return s + g.pct; }, 0) / GOALS.length);
+  var circumference = 2 * Math.PI * 68; // r=68
+  var dashArr = Math.round((avg / 100) * circumference) + ' ' + circumference;
+
+  var circle = document.querySelector('.gl-ring svg circle:last-child');
+  if (circle) circle.setAttribute('stroke-dasharray', dashArr);
+
+  var vEl = document.querySelector('.gl-ring .v');
+  if (vEl) vEl.textContent = avg + '٪';
+
+  // Update vibrant hero badges
+  var achieved = GOALS.filter(function(g) { return g.pct >= 100; }).length;
+  if (window.renderVibrantHero) {
+    renderVibrantHero({
+      icon: '🎯', num: '14', title: 'أهداف المدير', en: 'Manager Goals · OKRs',
+      sub: 'أضف أهدافك الشهرية والفصلية لتتابع الإنجاز بشكل فوري',
+      badges: [{ v: avg + '٪', l: 'الإنجاز الكلي' }, { v: achieved + '/' + GOALS.length, l: 'هدف محقق' }]
+    });
+  }
+  if (window.renderTierBar) {
+    var exc  = GOALS.filter(function(g) { return g.pct >= 100; }).length;
+    var good = GOALS.filter(function(g) { return g.pct >= 80 && g.pct < 100; }).length;
+    var low  = GOALS.filter(function(g) { return g.pct >= 50 && g.pct < 80; }).length;
+    var bad  = GOALS.filter(function(g) { return g.pct < 50; }).length;
+    renderTierBar({ exc: exc, good: good, low: low, bad: bad });
+  }
+}
+
+// ── Render notifications feed ───────────────────────────────────
+function _renderNotifications() {
+  var feed = document.querySelector('.gl-notify');
+  if (!feed || GOALS.length === 0) return;
+
+  var items = [];
+  GOALS.forEach(function(g) {
+    if (g.pct >= 100) {
+      items.push({ cls: 'good', icon: '✓', title: 'تم تحقيق هدف «' + g.name + '»', sub: 'الإنجاز: ' + g.achieved + ' من أصل ' + g.target });
+    } else if (g.pct < 50) {
+      items.push({ cls: 'warn', icon: '!', title: 'تأخر في هدف «' + g.name + '»', sub: 'المحقق: ' + g.achieved + ' · الهدف: ' + g.target + ' (' + g.pct + '٪)' });
+    }
+  });
+
+  if (items.length === 0) {
+    var ontrack = GOALS.filter(function(g) { return g.pct >= 50; }).length;
+    items.push({ cls: 'info', icon: 'i', title: 'جميع الأهداف في المسار', sub: ontrack + ' من ' + GOALS.length + ' أهداف ضمن النطاق المقبول' });
+  }
+
+  var now = new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+  var html = '<h4><span class="pulse"></span>تنبيهات الأهداف - مباشر</h4>';
+  items.forEach(function(it) {
+    html += '<div class="item">'
+      + '<div class="ic ' + it.cls + '">' + it.icon + '</div>'
+      + '<div class="body">' + it.title + '<div class="sub">' + it.sub + '</div></div>'
+      + '<div class="when">' + now + '</div>'
+      + '</div>';
+  });
+  feed.innerHTML = html;
+}
+
+// ── Main loader — fetch all 3 APIs in parallel ──────────────────
+function loadGoalsData() {
+  Promise.all([
+    fetch('/api/m11/dashboard').then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; }),
+    fetch('/api/m17/stats').then(function(r)    { return r.ok ? r.json() : null; }).catch(function() { return null; }),
+    fetch('/api/m06acc/revenue/summary').then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; }),
+  ]).then(function(results) {
+    _apiData.kpi     = results[0];
+    _apiData.stats   = results[1];
+    _apiData.revenue = results[2];
+    _buildGoalsFromData();
+    _renderGoals();
+    _renderOverall();
+    _renderNotifications();
+  }).catch(function(err) {
+    console.warn('loadGoalsData error:', err);
+  });
+}
+
+// Load on page load
+loadGoalsData();
 
 window.exportCSV = function(){
   var headers = ['الهدف','نسبة الإنجاز (%)','المستهدف','المحقق','التقييم'];
@@ -258,7 +483,8 @@ window.exportPDF = function(){
 };
 </script>
 <script>
-renderVibrantHero({ icon:'🎯', num:'14', title:'أهداف المدير', en:'Manager Goals · OKRs', sub:'أضف أهدافك الشهرية والفصلية لتتابع الإنجاز بشكل فوري', badges:[{v:'—',l:'الإنجاز الكلي'},{v:'—',l:'هدف نشط'}] });
+// Initial skeleton — loadGoalsData() will update these with live values
+renderVibrantHero({ icon:'🎯', num:'14', title:'أهداف المدير', en:'Manager Goals · OKRs', sub:'أضف أهدافك الشهرية والفصلية لتتابع الإنجاز بشكل فوري', badges:[{v:'…',l:'الإنجاز الكلي'},{v:'…',l:'هدف محقق'}] });
 renderTierBar({ exc:0, good:0, low:0, bad:0 });
 </script>
 </body>

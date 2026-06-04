@@ -19,6 +19,7 @@ from typing import Optional
 import uvicorn
 from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 
@@ -121,6 +122,24 @@ async def lifespan(app_: FastAPI):
         run_security_hardening(db)
     except Exception as e:
         log.warning(f"security hardening migrations: {e}")
+    try:
+        from db.schema_v3 import run_sessions_migration
+        run_sessions_migration(db)
+    except Exception as e:
+        log.warning(f"sessions migration: {e}")
+
+    # ── Sentry (APM / error tracking) ──────────────────────────────────────
+    if cfg.has_sentry:
+        try:
+            import sentry_sdk
+            sentry_sdk.init(
+                dsn=cfg.sentry_dsn,
+                traces_sample_rate=0.1,
+                environment="production" if not cfg.debug else "development",
+            )
+            log.info("✓ Sentry initialized")
+        except Exception as e:
+            log.warning(f"Sentry init failed: {e}")
 
     # Load optional services — each independent so one failure doesn't sink the rest
     app_.state.pricing = None
@@ -152,8 +171,31 @@ async def lifespan(app_: FastAPI):
     except Exception as e:
         log.warning(f"ZATCA service unavailable: {e}")
 
+    # ── Background session cleanup (every 6 hours) ─────────────────────────
+    import asyncio
+
+    async def _session_cleanup():
+        while True:
+            await asyncio.sleep(6 * 3600)
+            try:
+                if db.use_postgres:
+                    db.execute("DELETE FROM client_sessions WHERE expires_at < NOW()")
+                    # Also clear expired from in-memory dict
+                    now_ts = datetime.now().isoformat()
+                    with _lock:
+                        stale = [t for t, s in list(_client_sessions.items())
+                                 if s.get("created_at", "9999") < (datetime.now() - timedelta(days=8)).isoformat()]
+                        for t in stale:
+                            _client_sessions.pop(t, None)
+                    log.info("✅ Session cleanup completed")
+            except Exception as e:
+                log.warning(f"Session cleanup error: {e}")
+
+    _cleanup_task = asyncio.create_task(_session_cleanup())
+
     yield
 
+    _cleanup_task.cancel()
     db.close()
 
 
@@ -161,6 +203,9 @@ async def lifespan(app_: FastAPI):
 #  App
 # ──────────────────────────────────────────────────────────────
 app = FastAPI(title="ضيوف — Dheuof Hotel SaaS", version="3.0.0", lifespan=lifespan, docs_url=None, redoc_url=None)
+
+# GZip compression for all text responses ≥ 1 KB
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 # M4 fix: قصر CORS على نطاقات ضيوف المعروفة بدل "*" مع بقاء credentials
 _ALLOWED_ORIGINS = [o.strip() for o in os.environ.get(
@@ -177,6 +222,19 @@ app.add_middleware(
 
 os.makedirs("static", exist_ok=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+
+@app.middleware("http")
+async def add_cache_headers(request: Request, call_next):
+    response = await call_next(request)
+    path = request.url.path
+    if path.startswith("/static/") and not path.endswith(".html"):
+        # Cache immutable static assets (CSS, JS, fonts, images) for 7 days
+        response.headers["Cache-Control"] = "public, max-age=604800, immutable"
+    elif path.startswith("/static/") and path.endswith(".html"):
+        # HTML modules — no-cache so changes deploy immediately
+        response.headers["Cache-Control"] = "no-cache, must-revalidate"
+    return response
 
 # ── Module Routers — جميع الوحدات الـ 15 + وجهات سياحية ─────
 try:
@@ -256,6 +314,34 @@ try:
 except Exception as e:
     log.warning(f"Open API: {e}")
 
+try:
+    from routes.m04_inventory import router as m04_router
+    app.include_router(m04_router)
+    log.info("✓ M04 Inventory")
+except Exception as e:
+    log.warning(f"M04: {e}")
+
+try:
+    from routes.m17_bookings import router as m17_router
+    app.include_router(m17_router)
+    log.info("✓ M17 Bookings")
+except Exception as e:
+    log.warning(f"M17: {e}")
+
+try:
+    from routes.m06_accounting import router as m06acc_router
+    app.include_router(m06acc_router)
+    log.info("✓ M06acc Accounting")
+except Exception as e:
+    log.warning(f"M06acc: {e}")
+
+try:
+    from routes.m07_pos import router as m07_router
+    app.include_router(m07_router)
+    log.info("✓ M07 POS")
+except Exception as e:
+    log.warning(f"M07: {e}")
+
 
 # ──────────────────────────────────────────────────────────────
 #  Auth helpers
@@ -294,6 +380,23 @@ def get_client_session(request: Request) -> Optional[dict]:
         return None
     with _lock:
         session = _client_sessions.get(token)
+    # If not in memory (e.g. after restart), try PostgreSQL
+    if session is None:
+        try:
+            db = getattr(request.app.state, "db", None)
+            if db and db.use_postgres:
+                row = db.execute(
+                    """SELECT client_id, created_at FROM client_sessions
+                       WHERE token=%s AND expires_at > NOW()""",
+                    (token,), fetch="one"
+                )
+                if row:
+                    session = {"client_id": row["client_id"],
+                               "created_at": str(row["created_at"])}
+                    with _lock:
+                        _client_sessions[token] = session
+        except Exception:
+            pass
     if session is None:
         return None
     # Finding #8: enforce server-side session TTL (8 hours)
@@ -2097,18 +2200,117 @@ async def mod_trips():     return _serve_module("15-tourism-trips")
 # ──────────────────────────────────────────────────────────────
 @app.get("/api/health")
 async def health():
-    return {"ok": True}
+    return {"ok": True, "status": "healthy"}
 
 
 @app.get("/api/status")
 async def status(request: Request):
     db = request.app.state.db
+    sessions_count = 0
+    try:
+        with _lock:
+            sessions_count = len(_client_sessions)
+    except Exception:
+        pass
     return {
         "ok": True,
         "version": "3.0.0",
         "db": db.health(),
+        "active_sessions": sessions_count,
         "time": datetime.now().isoformat(),
     }
+
+
+@app.get("/api/analytics/overview")
+async def analytics_overview(request: Request, session=Depends(require_client)):
+    """Aggregated cross-module overview for the analytics dashboard (M12)."""
+    try:
+        db = request.app.state.db
+        cid = session["client_id"]
+        result = {
+            "employees": {"total": 0, "active": 0},
+            "bookings": {"this_month": 0, "revenue_this_month": 0, "occupancy_rate": 0},
+            "inventory": {"total_items": 0, "low_stock": 0, "total_value": 0},
+            "maintenance": {"open_orders": 0, "in_progress": 0},
+            "tours": {"total_tours": 0, "bookings_this_month": 0},
+        }
+        if not db.use_postgres:
+            return {"success": True, "data": result}
+
+        # Employees
+        row = db.execute(
+            "SELECT COUNT(*) as total, COUNT(*) FILTER(WHERE status='active') as active FROM employees WHERE client_id=%s",
+            (cid,), fetch="one"
+        )
+        if row:
+            result["employees"] = {"total": row["total"] or 0, "active": row["active"] or 0}
+
+        # Bookings this month
+        row = db.execute(
+            """SELECT COUNT(*) as cnt,
+                      COALESCE(SUM(total_room), 0) as revenue,
+                      ROUND(COUNT(*) FILTER(WHERE status IN ('confirmed','checked_in')) * 100.0 / NULLIF(COUNT(*), 0), 1) as occ
+               FROM bookings
+               WHERE client_id=%s
+                 AND DATE_TRUNC('month', check_in) = DATE_TRUNC('month', NOW())""",
+            (cid,), fetch="one"
+        )
+        if row:
+            result["bookings"] = {
+                "this_month": row["cnt"] or 0,
+                "revenue_this_month": float(row["revenue"] or 0),
+                "occupancy_rate": float(row["occ"] or 0),
+            }
+
+        # Inventory
+        row = db.execute(
+            """SELECT COUNT(*) as total,
+                      COUNT(*) FILTER(WHERE quantity <= reorder_level AND reorder_level > 0) as low_stock,
+                      COALESCE(SUM(quantity * price_per_unit), 0) as total_value
+               FROM warehouse_items WHERE client_id=%s""",
+            (cid,), fetch="one"
+        )
+        if row:
+            result["inventory"] = {
+                "total_items": row["total"] or 0,
+                "low_stock": row["low_stock"] or 0,
+                "total_value": float(row["total_value"] or 0),
+            }
+
+        # Maintenance
+        row = db.execute(
+            """SELECT COUNT(*) FILTER(WHERE status='open') as open_cnt,
+                      COUNT(*) FILTER(WHERE status='in_progress') as in_progress
+               FROM maintenance_orders WHERE client_id=%s""",
+            (cid,), fetch="one"
+        )
+        if row:
+            result["maintenance"] = {
+                "open_orders": row["open_cnt"] or 0,
+                "in_progress": row["in_progress"] or 0,
+            }
+
+        # Tours
+        row = db.execute(
+            """SELECT COUNT(DISTINCT tc.id) as total_tours,
+                      COUNT(tb.id) FILTER(WHERE DATE_TRUNC('month', tb.created_at) = DATE_TRUNC('month', NOW())) as monthly_bookings
+               FROM tour_catalog tc
+               LEFT JOIN tour_bookings tb ON tc.id = tb.tour_id AND tb.client_id=%s
+               WHERE tc.client_id=%s""",
+            (cid, cid), fetch="one"
+        )
+        if row:
+            result["tours"] = {
+                "total_tours": row["total_tours"] or 0,
+                "bookings_this_month": row["monthly_bookings"] or 0,
+            }
+
+        return {"success": True, "data": result}
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error(f"analytics_overview error: {e}", exc_info=True)
+        raise HTTPException(500, f"خطأ في التحليلات: {str(e)}")
 
 
 # ──────────────────────────────────────────────────────────────
@@ -2311,11 +2513,27 @@ async def client_login(request: Request):
         return HTMLResponse(_login_page("كلمة المرور خاطئة"), status_code=401)
 
     token = _new_token()
+    session_data = {
+        "client_id": client_id,
+        "created_at": datetime.now().isoformat(),
+    }
     with _lock:
-        _client_sessions[token] = {
-            "client_id": client_id,
-            "created_at": datetime.now().isoformat(),
-        }
+        _client_sessions[token] = session_data
+    # Persist session to PostgreSQL when available
+    try:
+        db = request.app.state.db
+        if db.use_postgres:
+            ip = request.client.host if request.client else ""
+            ua = request.headers.get("user-agent", "")[:200]
+            expires = datetime.now() + timedelta(days=7)
+            db.execute(
+                """INSERT INTO client_sessions (token, client_id, expires_at, ip_address, user_agent)
+                   VALUES (%s, %s, %s, %s, %s)
+                   ON CONFLICT (token) DO NOTHING""",
+                (token, client_id, expires.isoformat(), ip, ua)
+            )
+    except Exception as _e:
+        log.debug(f"session persist skipped: {_e}")
 
     response = RedirectResponse("/", status_code=303)
     response.set_cookie("client_token", token, httponly=True, samesite="lax", max_age=86400 * 7)
@@ -2330,6 +2548,13 @@ async def client_logout(request: Request):
         session = None
         with _lock:
             session = _client_sessions.pop(token, None)
+        # Remove from PostgreSQL sessions table
+        try:
+            db = request.app.state.db
+            if db.use_postgres:
+                db.execute("DELETE FROM client_sessions WHERE token=%s", (token,))
+        except Exception:
+            pass
         # Finding #8: persist revocation so other servers/restarts honor it
         try:
             from db.security import revoke_token

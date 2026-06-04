@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <title>ضيوف · تحليل البيانات بالذكاء الاصطناعي</title>
-<meta name="viewport" content="width=1440, initial-scale=1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
 <link rel="stylesheet" href="/static/dheuof/colors_and_type.css"/>
 <link rel="stylesheet" href="/static/dheuof/assets/animations.css"/>
 <link rel="stylesheet" href="/static/dheuof/shared/chrome.css"/>
@@ -390,8 +390,10 @@
 <script>StaticSidebar.mount({ activeId: "12-analytics", placeholder: "اسأل عن أي شيء في بياناتك..." });</script>
 <script src="/static/dheuof/assets/animations.js"></script>
 <script>
+  // ── Occupancy heatmap ────────────────────────────────────────────────────
   // Build occupancy heatmap as a real calendar for one selected month.
   // Layout: 7 weekday rows (Sat→Fri) × N week columns, filled column-major.
+  // OCC is populated from real /api/m17/reservations data via loadHeatmap().
   (function buildHm() {
     var grid = document.getElementById('hm-grid');
     if (!grid) return;
@@ -402,7 +404,7 @@
     var titleEl  = document.getElementById('hm-title');
 
     // Occupancy per day, keyed 'YYYY-M-D' (0-based month) → 0..100.
-    // Empty until real bookings are recorded; cells stay "no data".
+    // Populated by loadHeatmap(); cells show "no data" until loaded.
     var OCC = {};
 
     function arNum(n){ return String(n).replace(/[0-9]/g, function(d){ return '٠١٢٣٤٥٦٧٨٩'[+d]; }); }
@@ -463,9 +465,54 @@
     monthSel.value = now.getMonth();
     yearSel.value  = curYear;
 
-    monthSel.addEventListener('change', render);
-    yearSel.addEventListener('change', render);
+    // loadHeatmap: fetch reservations for selected month and compute per-day occupancy
+    window._hmRender = render;
+    window._hmOCC    = OCC;
+
+    function loadHeatmap(){
+      var year  = parseInt(yearSel.value, 10);
+      var month = parseInt(monthSel.value, 10); // 0-based
+      var pad   = function(n){ return n < 10 ? '0' + n : '' + n; };
+      var dateFrom = year + '-' + pad(month + 1) + '-01';
+      var lastDay  = new Date(year, month + 1, 0).getDate();
+      var dateTo   = year + '-' + pad(month + 1) + '-' + pad(lastDay);
+      fetch('/api/m17/reservations?date_from=' + dateFrom + '&date_to=' + dateTo)
+        .then(function(r){ return r.ok ? r.json() : Promise.reject(r.status); })
+        .then(function(res){
+          // Clear OCC for this view then count occupied nights per day
+          for (var k in OCC) delete OCC[k];
+          var bookings = (res.data || []);
+          bookings.forEach(function(b){
+            if (!b.check_in || !b.check_out) return;
+            var cur  = new Date(b.check_in);
+            var end  = new Date(b.check_out);
+            while (cur < end){
+              var y2 = cur.getFullYear();
+              var m2 = cur.getMonth(); // 0-based
+              var d2 = cur.getDate();
+              if (y2 === year && m2 === month){
+                var key = y2 + '-' + m2 + '-' + d2;
+                OCC[key] = (OCC[key] || 0) + 1;
+              }
+              cur.setDate(cur.getDate() + 1);
+            }
+          });
+          // Normalise raw counts to 0-100 scale (assume each booking = one room occupied)
+          // Use max bookings in month as 100% for relative heatmap
+          var maxVal = 1;
+          for (var k2 in OCC){ if (OCC[k2] > maxVal) maxVal = OCC[k2]; }
+          for (var k3 in OCC){ OCC[k3] = Math.round((OCC[k3] / maxVal) * 100); }
+          render();
+        })
+        .catch(function(){ render(); }); // show empty heatmap on error
+    }
+
+    monthSel.addEventListener('change', loadHeatmap);
+    yearSel.addEventListener('change', loadHeatmap);
+    // Initial render with placeholder, real data loaded by loadAnalyticsDashboard()
     render();
+    // Expose so loadAnalyticsDashboard can trigger after fetches complete
+    window._loadHeatmap = loadHeatmap;
   })();
 </script>
 <script>
@@ -608,6 +655,299 @@ setTimeout(function(){
 <script>
 renderVibrantHero({ icon:'🧠', num:'12', title:'تحليل البيانات', en:'Insights & Analytics · SWOT', sub:'اربط البرامج لتفعيل التحليل التلقائي والرؤى الذكية', badges:[{v:'—',l:'رؤية نشطة'},{v:'—',l:'يوم تنبؤ'}] });
 renderTierBar({ exc:0, good:0, low:0, bad:0 });
+</script>
+
+<script>
+// ── Analytics Dashboard Data Loader ──────────────────────────────────────────
+(function(){
+  'use strict';
+
+  // Helper: safely get nested property
+  function get(obj){ var args=Array.prototype.slice.call(arguments,1); return args.reduce(function(o,k){return o&&o[k]!=null?o[k]:null;},obj); }
+
+  // Helper: set text content of element by id
+  function setText(id, val){
+    var el = document.getElementById(id);
+    if (el) el.textContent = val;
+  }
+
+  // Helper: update an SVG gauge arc and label
+  function updateGauge(svgSelector, pct, label, subLabel) {
+    // pct: 0-100, arc radius 80, centre 100,100, from (20,100) to (180,100)
+    var svg = document.querySelector(svgSelector);
+    if (!svg) return;
+    var arc = svg.querySelectorAll('path')[1]; // second path is the filled arc
+    var txt = svg.querySelectorAll('text');
+    if (!arc || txt.length < 2) return;
+    var p = Math.max(0, Math.min(100, pct || 0));
+    var angle = (p / 100) * Math.PI; // 0..PI across semicircle
+    var r = 80;
+    var cx = 100, cy = 100;
+    var x = cx + r * Math.cos(Math.PI - angle);
+    var y = cy - r * Math.sin(Math.PI - angle);
+    if (p >= 100) {
+      arc.setAttribute('d', 'M 20 100 A 80 80 0 0 1 180 100');
+    } else if (p <= 0) {
+      arc.setAttribute('d', 'M 20 100 A 80 80 0 0 1 20 100');
+    } else {
+      var largeArc = angle > (Math.PI / 2) ? 1 : 0;
+      arc.setAttribute('d', 'M 20 100 A 80 80 0 0 1 ' + x.toFixed(2) + ' ' + y.toFixed(2));
+    }
+    txt[0].textContent = label || '—';
+    txt[1].textContent = subLabel || '';
+  }
+
+  // Show loading state on stat source indicators
+  function markSourceLoading(num) {
+    document.querySelectorAll('.an-src').forEach(function(el){
+      var n = el.querySelector('.num');
+      if (n && n.textContent.trim() === num) {
+        el.querySelector('.rec').textContent = '— جاري التحميل…';
+      }
+    });
+  }
+  function markSourceLive(num, recText) {
+    document.querySelectorAll('.an-src').forEach(function(el){
+      var n = el.querySelector('.num');
+      if (n && n.textContent.trim() === num) {
+        el.classList.remove('is-off');
+        el.classList.add('is-on');
+        if (recText) el.querySelector('.rec').textContent = recText;
+      }
+    });
+  }
+  function markSourceError(num) {
+    document.querySelectorAll('.an-src').forEach(function(el){
+      var n = el.querySelector('.num');
+      if (n && n.textContent.trim() === num) {
+        el.querySelector('.rec').textContent = '— خطأ في الاتصال';
+      }
+    });
+  }
+
+  // Safe fetch: returns { ok, data } — never throws
+  function safeFetch(url) {
+    return fetch(url, { credentials: 'same-origin' })
+      .then(function(r) {
+        if (!r.ok) return { ok: false, data: null };
+        return r.json().then(function(d){ return { ok: true, data: d }; }).catch(function(){ return { ok: false, data: null }; });
+      })
+      .catch(function() { return { ok: false, data: null }; });
+  }
+
+  // Format number in Arabic-Eastern numerals
+  function arNum(n){
+    return String(Math.round(n)).replace(/[0-9]/g, function(d){ return '٠١٢٣٤٥٦٧٨٩'[+d]; });
+  }
+
+  window.loadAnalyticsDashboard = function() {
+    // Mark sources as loading
+    ['06','13','09'].forEach(markSourceLoading);
+
+    Promise.all([
+      safeFetch('/api/m06/employees'),    // 0 — headcount
+      safeFetch('/api/m11/dashboard'),    // 1 — KPI metrics
+      safeFetch('/api/m13/items'),        // 2 — inventory count
+      safeFetch('/api/m17/stats'),        // 3 — booking stats
+      safeFetch('/api/m06acc/revenue/summary') // 4 — revenue summary
+    ]).then(function(results) {
+      var empRes     = results[0];
+      var kpiRes     = results[1];
+      var invRes     = results[2];
+      var statsRes   = results[3];
+      var revRes     = results[4];
+
+      // ── Employees / headcount ─────────────────────────────────────────────
+      if (empRes.ok && empRes.data) {
+        var employees = get(empRes.data, 'data') || [];
+        var headcount = employees.length;
+        markSourceLive('09', '— ' + arNum(headcount) + ' موظف');
+      } else {
+        markSourceError('09');
+      }
+
+      // ── KPI dashboard ─────────────────────────────────────────────────────
+      if (kpiRes.ok && kpiRes.data) {
+        var d = kpiRes.data;
+        var occ     = get(d, 'data', 'occupancy_rate') || get(d, 'occupancy_rate') || null;
+        var adr     = get(d, 'data', 'adr')            || get(d, 'adr')            || null;
+        var revpar  = get(d, 'data', 'revpar')         || get(d, 'revpar')         || null;
+        var goppar  = get(d, 'data', 'goppar')         || get(d, 'goppar')         || null;
+        var alos    = get(d, 'data', 'alos')           || get(d, 'alos')           || null;
+        var totalRooms = get(d, 'data', 'total_rooms') || get(d, 'total_rooms') || 0;
+
+        if (occ !== null) {
+          var occPct = parseFloat(occ);
+          updateGauge('.an-gauge:nth-child(1) svg', occPct,
+            Math.round(occPct) + '%', 'OCC MTD');
+        }
+        if (adr !== null) {
+          var adrVal = parseFloat(adr);
+          updateGauge('.an-gauge:nth-child(2) svg', Math.min(adrVal / 2000 * 100, 100),
+            Math.round(adrVal).toLocaleString('ar-SA'), 'ADR ر.س');
+        }
+        if (revpar !== null) {
+          var rvp = parseFloat(revpar);
+          updateGauge('.an-gauge:nth-child(3) svg', Math.min(rvp / 1500 * 100, 100),
+            Math.round(rvp).toLocaleString('ar-SA'), 'RevPAR ر.س');
+        }
+        if (goppar !== null) {
+          var gop = parseFloat(goppar);
+          updateGauge('.an-gauge:nth-child(4) svg', Math.min(gop / 1000 * 100, 100),
+            Math.round(gop).toLocaleString('ar-SA'), 'GOPPAR ر.س');
+        }
+        if (alos !== null) {
+          var alosVal = parseFloat(alos);
+          updateGauge('.an-gauge:nth-child(5) svg', Math.min(alosVal / 14 * 100, 100),
+            alosVal.toFixed(1), 'ALOS ليلة');
+        }
+
+        markSourceLive('06', '— بيانات KPI محدّثة');
+
+        // Update AI summary badge if we have real data
+        var liveEl = document.querySelector('.an-summary .bd.live');
+        if (liveEl) {
+          liveEl.innerHTML = '<span class="dt"></span>بيانات حية';
+        }
+
+        // Build vibrant hero badges from real data
+        if (occ !== null && revpar !== null) {
+          if (window.renderVibrantHero) {
+            window.renderVibrantHero({ icon:'🧠', num:'12', title:'تحليل البيانات', en:'Insights & Analytics · SWOT',
+              sub:'محرّك التحليل يجمع البيانات من كل برامجك المشترَكة',
+              badges:[{v: Math.round(parseFloat(occ))+'%', l:'إشغال MTD'},{v: Math.round(parseFloat(revpar||0)).toLocaleString('ar-SA'), l:'RevPAR ر.س'}] });
+          }
+        }
+      } else {
+        markSourceError('06');
+      }
+
+      // ── Inventory count ───────────────────────────────────────────────────
+      if (invRes.ok && invRes.data) {
+        var items = get(invRes.data, 'data') || [];
+        var itemCount = items.length;
+        markSourceLive('13', '— ' + arNum(itemCount) + ' صنف');
+      } else {
+        markSourceError('13');
+      }
+
+      // ── Booking stats ─────────────────────────────────────────────────────
+      if (statsRes.ok && statsRes.data) {
+        var sd = get(statsRes.data, 'data') || statsRes.data;
+        var total_bookings = sd.total_bookings || sd.total || 0;
+        var checkins_today = sd.checkins_today || 0;
+        markSourceLive('01', '— ' + arNum(total_bookings) + ' حجز');
+
+        // Populate revenue donut total from booking data if accounting is unavailable
+        if (!revRes.ok && total_bookings) {
+          var totalEl = document.querySelector('.an-chart-card .ch-total');
+          if (totalEl) totalEl.innerHTML = arNum(total_bookings) + ' <span class="cur">حجز</span>';
+        }
+
+        // Trigger heatmap load now that data sources are warm
+        if (typeof window._loadHeatmap === 'function') {
+          window._loadHeatmap();
+        }
+      } else {
+        if (typeof window._loadHeatmap === 'function') {
+          window._loadHeatmap(); // still try — heatmap has its own error handling
+        }
+      }
+
+      // ── Revenue summary ───────────────────────────────────────────────────
+      if (revRes.ok && revRes.data) {
+        var rv = get(revRes.data, 'data') || revRes.data;
+        var totalRevenue = rv.total_revenue || rv.total || 0;
+        var roomRevenue  = rv.rooms_revenue  || rv.rooms  || 0;
+        var fbRevenue    = rv.fb_revenue     || rv.fb     || 0;
+        var spaRevenue   = rv.spa_revenue    || rv.spa    || 0;
+        var otherRevenue = rv.other_revenue  || rv.other  || 0;
+
+        if (totalRevenue) {
+          // Update donut total text
+          var totalEl = document.querySelector('.an-chart-row .an-chart-card:first-child .ch-total');
+          if (totalEl) totalEl.innerHTML = Math.round(totalRevenue).toLocaleString('ar-SA') + ' <span class="cur">ر.س</span>';
+
+          // Update legend values
+          var lis = document.querySelectorAll('.donut-legend .li');
+          var vals = [roomRevenue, fbRevenue, spaRevenue, otherRevenue];
+          lis.forEach(function(li, i) {
+            var span = li.querySelector('.lv');
+            if (span && vals[i]) {
+              span.textContent = Math.round(vals[i]).toLocaleString('ar-SA') + ' ر.س';
+            }
+          });
+
+          // Draw donut arcs
+          var donutSvg = document.querySelector('.donut-wrap svg');
+          if (donutSvg && totalRevenue > 0) {
+            var colors = ['#1B4D3D','#C9A85F','#6BAB9A','#9A7430'];
+            var segments = [roomRevenue, fbRevenue, spaRevenue, otherRevenue];
+            var cx2 = 100, cy2 = 100, r2 = 74, sw = 22;
+            var existing = donutSvg.querySelector('circle');
+            // Remove old segment arcs before adding new ones
+            var oldArcs = donutSvg.querySelectorAll('path.rev-seg');
+            oldArcs.forEach(function(a){ a.parentNode.removeChild(a); });
+            var cumAngle = -Math.PI / 2; // start at top
+            segments.forEach(function(val, idx){
+              if (!val || val <= 0) return;
+              var frac = val / totalRevenue;
+              var sweep = frac * 2 * Math.PI;
+              var x1 = cx2 + r2 * Math.cos(cumAngle);
+              var y1 = cy2 + r2 * Math.sin(cumAngle);
+              cumAngle += sweep;
+              var x2 = cx2 + r2 * Math.cos(cumAngle);
+              var y2 = cy2 + r2 * Math.sin(cumAngle);
+              var large = sweep > Math.PI ? 1 : 0;
+              var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+              path.setAttribute('class', 'rev-seg');
+              path.setAttribute('d',
+                'M ' + x1.toFixed(2) + ' ' + y1.toFixed(2) +
+                ' A ' + r2 + ' ' + r2 + ' 0 ' + large + ' 1 ' +
+                x2.toFixed(2) + ' ' + y2.toFixed(2));
+              path.setAttribute('stroke', colors[idx]);
+              path.setAttribute('stroke-width', sw);
+              path.setAttribute('fill', 'none');
+              path.setAttribute('stroke-linecap', 'butt');
+              donutSvg.appendChild(path);
+            });
+
+            // Update center text
+            var texts = donutSvg.querySelectorAll('text');
+            if (texts[0]) texts[0].textContent = 'الإيرادات';
+            if (texts[1]) texts[1].textContent = Math.round(totalRevenue / 1000) + 'K';
+          }
+
+          markSourceLive('06', '— إيرادات MTD');
+        }
+      }
+
+      // ── Tier bar: update with KPI data if available ───────────────────────
+      if (kpiRes.ok && kpiRes.data) {
+        var d2 = get(kpiRes.data, 'data') || {};
+        var exc=0, good=0, low=0, bad=0;
+        var metrics = ['occupancy_rate','adr','revpar','goppar','alos'];
+        metrics.forEach(function(m){
+          var v = parseFloat(d2[m]);
+          if (!isNaN(v)) {
+            if (v >= 75) exc++;
+            else if (v >= 50) good++;
+            else if (v >= 25) low++;
+            else bad++;
+          }
+        });
+        if (window.renderTierBar) renderTierBar({ exc:exc, good:good, low:low, bad:bad });
+      }
+    });
+  };
+
+  // Run on page load
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', window.loadAnalyticsDashboard);
+  } else {
+    window.loadAnalyticsDashboard();
+  }
+})();
 </script>
 </body>
 </html>

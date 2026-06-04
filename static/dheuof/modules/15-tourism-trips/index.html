@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <title>ضيوف · جولات سياحية</title>
-<meta name="viewport" content="width=1440, initial-scale=1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
 <link rel="stylesheet" href="/static/dheuof/colors_and_type.css"/>
 <link rel="stylesheet" href="/static/dheuof/assets/animations.css"/>
 <link rel="stylesheet" href="/static/dheuof/shared/chrome.css"/>
@@ -13,7 +13,7 @@
 
   /* ── Banner ─────────────────────────────────────────────── */
   .tr-banner {
-    background: linear-gradient(135deg, #143A2E 0%, #0E2A22 100%);
+    background: linear-gradient(135deg, var(--brand-800) 0%, var(--brand-900) 100%);
     color: var(--paper);
     border-radius: 14px;
     padding: 24px 28px;
@@ -66,7 +66,7 @@
   .tr-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,.1); }
   .tr-card .img {
     height: 140px;
-    background: linear-gradient(135deg, #1B4D3D 0%, #0E2A22 100%);
+    background: linear-gradient(135deg, var(--brand-700) 0%, var(--brand-900) 100%);
     display: grid; place-items: center;
     font-size: 48px;
     position: relative;
@@ -86,7 +86,7 @@
     position: absolute;
     top: 10px; inset-inline-end: 10px;
     background: rgba(0,0,0,.5);
-    color: #fff;
+    color: var(--white);
     border-radius: 6px;
     padding: 4px 8px;
     font-size: 11px;
@@ -340,6 +340,160 @@ setTimeout(function(){
 // ── Data ──────────────────────────────────────────────────────
 var TRIPS = [];
 
+// ── Tour type emoji map ────────────────────────────────────────
+var TYPE_EMOJI = { cultural: '🏛', outdoor: '🌿', adventure: '🧗', night: '🌙', city: '🏙', desert: '🏜', historical: '🕌' };
+function tourEmoji(type){ return TYPE_EMOJI[type] || '🗺'; }
+
+// ── Render a single tour card ──────────────────────────────────
+function renderTourCard(t){
+  var emoji = tourEmoji(t.tour_type);
+  var price = parseFloat(t.price_adult || 0);
+  var cap   = parseInt(t.max_capacity || 0);
+  var dur   = parseFloat(t.duration_hours || 0);
+  var statusLabel = t.status === 'active' ? 'متاحة' : 'متوقفة';
+  var card = document.createElement('div');
+  card.className = 'tr-card';
+  card.dataset.region = t.city || t.tour_type || '';
+  card.dataset.id = t.id;
+  card.innerHTML =
+    '<div class="img">' +
+      '<span style="font-size:48px">' + emoji + '</span>' +
+      '<div class="price-tag">' + price + ' ر.س</div>' +
+      '<div class="avail-tag">' + statusLabel + '</div>' +
+    '</div>' +
+    '<div class="body">' +
+      '<div class="region-pill">🗺 ' + (t.tour_type || 'جولة') + '</div>' +
+      '<div class="name">' + (t.name_ar || '') + '</div>' +
+      '<div class="type">' + (t.tour_code || '') + '</div>' +
+      '<div class="details">' +
+        '<div class="dt">المدة<span class="dv">' + dur + ' ساعة</span></div>' +
+        '<div class="dt">الطاقة<span class="dv">' + cap + ' شخص</span></div>' +
+        '<div class="dt">سعر الطفل<span class="dv">' + parseFloat(t.price_child || 0) + ' ر.س</span></div>' +
+        '<div class="dt">الحالة<span class="dv">' + statusLabel + '</span></div>' +
+      '</div>' +
+      '<button class="book-btn" onclick="bookTrip(' + t.id + ')">حجز الجولة</button>' +
+    '</div>';
+  return card;
+}
+
+// ── Load tours from API ────────────────────────────────────────
+async function loadTours(){
+  var grid = document.getElementById('trips-grid');
+  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--fg-3);font-family:var(--font-ar)"><div style="font-size:30px;margin-bottom:12px;opacity:.5">⏳</div><div style="font-size:14px">جاري تحميل الجولات...</div></div>';
+  try {
+    var res = await fetch('/api/m14/tours');
+    var json = await res.json();
+    var tours = (json.success && Array.isArray(json.data)) ? json.data : [];
+    TRIPS = tours.map(function(t){
+      return { id: t.id, name: t.name_ar, region: t.city || t.tour_type || '',
+               type: t.tour_type, price: parseFloat(t.price_adult || 0),
+               cap: parseInt(t.max_capacity || 1), booked: 0,
+               time: '', guide: '', emoji: tourEmoji(t.tour_type) };
+    });
+    grid.innerHTML = '';
+    if (tours.length === 0) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--fg-3);font-family:var(--font-ar)"><div style="font-size:40px;margin-bottom:12px;opacity:.4">🗺</div><div style="font-size:15px;font-weight:600;margin-bottom:6px">لا توجد جولات بعد</div><div style="font-size:13px">اضغط «إضافة جولة» لإضافة أول جولة سياحية</div></div>';
+      return;
+    }
+    tours.forEach(function(t){ grid.appendChild(renderTourCard(t)); });
+    var activeTours = tours.filter(function(t){ return t.status === 'active'; });
+    var badgeEl = document.getElementById('tr-badge-active');
+    if (badgeEl) badgeEl.textContent = activeTours.length;
+    var regions = Array.from(new Set(tours.map(function(t){ return t.city || t.tour_type || ''; }).filter(Boolean)));
+    var regBadge = document.getElementById('tr-badge-regions');
+    if (regBadge) regBadge.textContent = regions.length;
+  } catch(e) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--fg-3);font-family:var(--font-ar)"><div style="font-size:40px;margin-bottom:12px;opacity:.4">🗺</div><div style="font-size:15px;font-weight:600;margin-bottom:6px">لا توجد جولات بعد</div><div style="font-size:13px">اضغط «إضافة جولة» لإضافة أول جولة سياحية</div></div>';
+    console.error('loadTours error', e);
+  }
+}
+
+// ── Load bookings from API ─────────────────────────────────────
+async function loadTripBookings(){
+  try {
+    var res = await fetch('/api/m14/bookings');
+    var json = await res.json();
+    var bookings = (json.success && Array.isArray(json.data)) ? json.data : [];
+
+    var bkBadge = document.getElementById('tr-badge-bookings');
+    if (bkBadge) bkBadge.textContent = bookings.length;
+
+    var now = new Date();
+    var thisMonth = now.getMonth(); var thisYear = now.getFullYear();
+    var monthBookings = bookings.filter(function(b){
+      if (!b.tour_date) return false;
+      var d = new Date(b.tour_date);
+      return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+    });
+    var monthRev = monthBookings.reduce(function(s, b){ return s + parseFloat(b.total_price || 0); }, 0);
+    var totalRev  = bookings.reduce(function(s, b){ return s + parseFloat(b.total_price || 0); }, 0);
+
+    var sideCards = document.querySelectorAll('.tr-side-card');
+    if (sideCards.length >= 2) {
+      var revCard = sideCards[1];
+      var revValEl = revCard.querySelector('div[style*="font-size:32px"]');
+      if (revValEl) {
+        revValEl.innerHTML = monthRev.toLocaleString('ar-EG') + ' <span style="font-size:14px;color:var(--fg-3)">ر.س</span>';
+      }
+      var barEl = revCard.querySelector('div[style*="width:0%"]');
+      if (barEl && totalRev > 0) {
+        barEl.style.width = Math.min(100, Math.round(monthRev / totalRev * 100)) + '%';
+      }
+    }
+
+    if (sideCards.length >= 3) {
+      var bkCard = sideCards[2];
+      var head = bkCard.querySelector('.tr-side-head');
+      while (head && head.nextSibling) head.parentNode.removeChild(head.nextSibling);
+      if (bookings.length === 0) {
+        var emptyDiv = document.createElement('div');
+        emptyDiv.style.cssText = 'text-align:center;padding:24px;color:var(--fg-3);font-size:13px;font-family:var(--font-ar)';
+        emptyDiv.textContent = 'لا توجد حجوزات بعد';
+        bkCard.appendChild(emptyDiv);
+      } else {
+        var inner = '';
+        bookings.slice(0, 5).forEach(function(b){
+          var dateStr = b.tour_date ? new Date(b.tour_date).toLocaleDateString('ar-SA') : '—';
+          var price   = parseFloat(b.total_price || 0).toLocaleString('ar-EG');
+          var statusColor = b.status === 'confirmed' ? 'var(--brand-700)' : 'var(--fg-3)';
+          inner += '<div style="padding:10px 18px;border-top:1px solid var(--hairline);font-size:12px">'
+            + '<div style="font-weight:500;color:var(--ink-900);margin-bottom:3px">' + (b.tour_name || ('جولة #' + b.tour_id)) + '</div>'
+            + '<div style="display:flex;justify-content:space-between;color:var(--fg-3)">'
+            + '<span>' + dateStr + (b.guide_name ? ' · ' + b.guide_name : '') + '</span>'
+            + '<span style="color:' + statusColor + '">' + price + ' ر.س</span>'
+            + '</div></div>';
+        });
+        var wrapper = document.createElement('div');
+        wrapper.innerHTML = inner;
+        bkCard.appendChild(wrapper);
+      }
+    }
+
+    var countMap = {};
+    bookings.forEach(function(b){
+      var tid = String(b.tour_id);
+      countMap[tid] = (countMap[tid] || 0) + (parseInt(b.adults_count || 0) + parseInt(b.children_count || 0));
+    });
+    TRIPS.forEach(function(t){ t.booked = countMap[String(t.id)] || 0; });
+
+  } catch(e) {
+    console.error('loadTripBookings error', e);
+  }
+}
+
+// ── Load KPI stats from /api/m14/stats ────────────────────────
+async function loadTourStats(){
+  try {
+    var res = await fetch('/api/m14/stats');
+    var json = await res.json();
+    if (!json.success) return;
+    var activeEl = document.getElementById('tr-badge-active');
+    if (activeEl && json.active_tours != null) activeEl.textContent = json.active_tours;
+    var bkBadge = document.getElementById('tr-badge-bookings');
+    if (bkBadge && json.total_bookings != null) bkBadge.textContent = json.total_bookings;
+  } catch(e) { /* ignore */ }
+}
+
 // ── Filter & Sort ─────────────────────────────────────────────
 window.filterTrips = function(region, btn) {
   document.querySelectorAll('.tr-chip').forEach(function(c){ c.classList.remove('on'); });
@@ -376,12 +530,49 @@ window.bookTrip = function(id) {
 // ── Modal ─────────────────────────────────────────────────────
 window.openAddTrip = function() { document.getElementById('trip-modal').style.display = 'flex'; };
 window.closeAddTrip = function() { document.getElementById('trip-modal').style.display = 'none'; };
-window.saveTrip = function() {
+window.saveTrip = async function() {
   var name = document.getElementById('t-name').value.trim();
   if (!name) { alert('أدخل اسم الجولة'); return; }
-  var region = document.getElementById('t-region').value;
-  alert('✓ تمت إضافة الجولة: ' + name + '\nالمنطقة: ' + region + '\nسيُزامن مع النظام.');
-  closeAddTrip();
+  var region   = document.getElementById('t-region').value;
+  var cat      = document.getElementById('t-cat').value;
+  var price    = parseFloat(document.getElementById('t-price').value) || 0;
+  var cap      = parseInt(document.getElementById('t-cap').value) || 10;
+  var dur      = parseFloat(document.getElementById('t-dur').value) || 3;
+  var guide    = document.getElementById('t-guide').value.trim();
+  var payload  = {
+    name_ar: name,
+    tour_type: cat,
+    city: region,
+    duration_hours: dur,
+    price_adult: price,
+    price_child: Math.round(price * 0.5),
+    max_capacity: cap,
+    guide_name: guide
+  };
+  try {
+    var res = await fetch('/api/m14/tours', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    var json = await res.json();
+    if (json.success) {
+      toast('✓ تمت إضافة الجولة: ' + name);
+      closeAddTrip();
+      document.getElementById('t-name').value = '';
+      document.getElementById('t-price').value = '';
+      document.getElementById('t-cap').value = '';
+      document.getElementById('t-dur').value = '';
+      document.getElementById('t-guide').value = '';
+      await loadTours();
+      await loadTourStats();
+    } else {
+      alert('حدث خطأ أثناء الحفظ');
+    }
+  } catch(e) {
+    console.error('saveTrip error', e);
+    alert('تعذّر الاتصال بالخادم');
+  }
 };
 
 // ── Export helpers ──────────────────────────────────
@@ -389,6 +580,13 @@ function todayStr(){var d=new Date();return d.getFullYear()+(d.getMonth()+1<10?'
 function toXLS(headers,rows,name){var s='<Styles><Style ss:ID="H"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1B4D3D" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center"/></Style><Style ss:ID="BAD"><Interior ss:Color="#C0392B" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style><Style ss:ID="WARN"><Interior ss:Color="#D97706" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style><Style ss:ID="OK"><Interior ss:Color="#BBF7D0" ss:Pattern="Solid"/><Font ss:Color="#1B7A56" ss:Bold="1"/></Style><Style ss:ID="EXC"><Interior ss:Color="#1B7A56" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style></Styles>';function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}function cell(v){if(v&&typeof v==='object'&&'s' in v)return '<Cell ss:StyleID="'+v.s+'"><Data ss:Type="String">'+esc(v.v)+'</Data></Cell>';return '<Cell><Data ss:Type="'+(typeof v==='number'?'Number':'String')+'">'+esc(v)+'</Data></Cell>';}var hRow='<Row>'+headers.map(function(h){return '<Cell ss:StyleID="H"><Data ss:Type="String">'+esc(h)+'</Data></Cell>';}).join('')+'</Row>';var dRows=rows.map(function(r){return '<Row>'+r.map(cell).join('')+'</Row>';}).join('');return '<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'+s+'<Worksheet ss:Name="'+esc(name)+'"><Table>'+hRow+dRows+'</Table></Worksheet></Workbook>';}
 function dlXLS(c,fn){var b=new Blob([c],{type:'application/vnd.ms-excel;charset=utf-8'});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download=fn;a.click();setTimeout(function(){URL.revokeObjectURL(u);},1000);}
 function toast(msg){var old=document.querySelector('.dh-toast');if(old)old.remove();var t=document.createElement('div');t.className='dh-toast';t.style.cssText='position:fixed;bottom:24px;inset-inline-end:24px;background:#1B4D3D;color:#fff;padding:12px 18px;border-radius:8px;font-family:"Tajawal",sans-serif;font-size:13px;z-index:9999;display:flex;gap:8px';t.innerHTML='<span style="color:#C9A85F">✓</span>'+msg;document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .4s';setTimeout(function(){if(t.parentNode)t.remove();},400);},3000);}
+
+// ── Page load ─────────────────────────────────────────────────
+(function init(){
+  loadTours();
+  loadTripBookings();
+  loadTourStats();
+})();
 
 window.exportCSV = function(){
   var headers = ['اسم الجولة','المنطقة','الوصف','السعر (ر.س)','الطاقة','الحجوزات','المتاح','الوقت','المرشد','نسبة الإشغال'];

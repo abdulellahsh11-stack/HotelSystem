@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <title>ضيوف · المستندات الحكومية</title>
-<meta name="viewport" content="width=1440, initial-scale=1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
 <link rel="stylesheet" href="/static/dheuof/colors_and_type.css"/>
 <link rel="stylesheet" href="/static/dheuof/assets/animations.css"/>
 <link rel="stylesheet" href="/static/dheuof/shared/chrome.css"/>
@@ -898,6 +898,101 @@ window.exportPDF = function(){
    INIT
 ═══════════════════════════════════════════════ */
 refresh();
+
+/* ═══════════════════════════════════════════════
+   API — LOAD TOURISM DATA (GET /api/guests)
+   Fetches guest list and uses it to:
+   1. Pre-fill the "add document" guest selector
+   2. Update the notif-recipient display
+   3. Show a banner when guests have docs needing attention
+═══════════════════════════════════════════════ */
+function loadTourismData(){
+  fetch('/api/guests')
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if(!res.success){ throw new Error(res.detail||'خطأ في الخادم'); }
+      var guests = res.data || [];
+      if(!guests.length) return;
+
+      // 1. Update notif-recipient with property manager name if available
+      var mgr = guests.find(function(g){ return g.role==='manager'||g.is_manager; });
+      var recipient = document.getElementById('notif-recipient');
+      if(recipient){
+        recipient.textContent = mgr
+          ? (mgr.full_name||mgr.name||'المدير')
+          : 'مدير المنشأة';
+      }
+
+      // 2. Build a guest selector inside showAddDoc prefill
+      //    Store guest list globally for form pre-fill
+      window._TOURISM_GUESTS = guests;
+
+      // 3. Inject a "pre-fill from guest" section into the upload zone subtitle
+      var uploadSub = document.getElementById('upload-sub');
+      if(uploadSub && guests.length){
+        uploadSub.innerHTML = 'PDF يُستخرج منه البيانات تلقائياً · JPG · PNG · أقصى ١٠ ميجا'
+          + ' · <span style="color:var(--brand-700);font-weight:600">'
+          + guests.length + ' ضيف متاح للتعبئة التلقائية</span>';
+      }
+
+      // 4. Add a "pre-fill guest" button to the add-doc modal (patch showAddDoc)
+      var _origShowAddDoc = window.showAddDoc;
+      window.showAddDoc = function(prefill){
+        _origShowAddDoc(prefill);
+        // After modal opens, inject guest selector if guests exist
+        setTimeout(function(){
+          var modalBody = document.querySelector('.dh-modal .modal-body');
+          if(!modalBody) return;
+          var gs = window._TOURISM_GUESTS||[];
+          if(!gs.length) return;
+          // Only inject once
+          if(modalBody.querySelector('#guest-prefill-sel')) return;
+          var wrap = document.createElement('div');
+          wrap.style.cssText = 'margin-bottom:14px;padding:10px 12px;background:var(--brand-50);border:1px solid var(--brand-200);border-radius:8px';
+          wrap.innerHTML = '<label style="font-size:11px;font-weight:600;color:var(--brand-700);display:block;margin-bottom:6px">تعبئة تلقائية من بيانات الضيوف</label>'
+            + '<div style="display:flex;gap:8px;align-items:center">'
+            + '<select id="guest-prefill-sel" style="flex:1;padding:7px 10px;border:1px solid var(--brand-300);border-radius:6px;font-family:var(--font-ar);font-size:12px;background:var(--white)">'
+            + '<option value="">— اختر ضيفاً —</option>'
+            + gs.map(function(g,i){
+                var nm = g.full_name||g.name||'—';
+                var nat = g.nationality ? ' · '+g.nationality : '';
+                return '<option value="'+i+'">'+nm+nat+'</option>';
+              }).join('')
+            + '</select>'
+            + '<button type="button" onclick="prefillFromGuest()" style="padding:7px 14px;background:var(--brand-700);color:var(--paper);border:none;border-radius:6px;font-family:var(--font-ar);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">تعبئة ←</button>'
+            + '</div>';
+          modalBody.insertBefore(wrap, modalBody.firstChild);
+        }, 50);
+      };
+
+    })
+    .catch(function(err){
+      // Non-blocking — tourism data is supplementary
+      console.warn('loadTourismData:', err.message);
+    });
+}
+
+/* Pre-fill add-doc modal from selected guest */
+window.prefillFromGuest = function(){
+  var sel = document.getElementById('guest-prefill-sel');
+  if(!sel || sel.value === '') return;
+  var g = (window._TOURISM_GUESTS||[])[parseInt(sel.value, 10)];
+  if(!g) return;
+  var nameField = document.getElementById('d-name');
+  var numField  = document.getElementById('d-num');
+  if(nameField && !nameField.value){
+    var nm = g.full_name||g.name||'';
+    nameField.value = nm ? 'وثيقة إقامة — '+nm : '';
+  }
+  if(numField && !numField.value){
+    numField.value = g.id_number||g.national_id||'';
+  }
+  toast('تم تعبئة البيانات من ملف الضيف ✓');
+};
+
+// Load on page ready
+document.addEventListener('DOMContentLoaded', function(){ loadTourismData(); });
+if(document.readyState !== 'loading'){ loadTourismData(); }
 
 })();
 </script>

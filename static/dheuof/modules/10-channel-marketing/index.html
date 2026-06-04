@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <title>ضيوف · تسويق القنوات</title>
-<meta name="viewport" content="width=1440, initial-scale=1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
 <link rel="stylesheet" href="/static/dheuof/colors_and_type.css"/>
 <link rel="stylesheet" href="/static/dheuof/assets/animations.css"/>
 <link rel="stylesheet" href="/static/dheuof/shared/chrome.css"/>
@@ -1319,8 +1319,65 @@ window.copyDirectLink = function(){
   }
 };
 
+// ── Load channel connections → update banner + cards ────────────────────────
+function loadChannelConnections(){
+  chApi('connections').then(function(data){
+    if(!data.success || !data.data) return;
+    var list = Array.isArray(data.data) ? data.data : [];
+
+    // Update CHANNELS array with real status
+    list.forEach(function(conn){
+      var ch = CHANNELS.filter(function(c){ return c.name.toLowerCase().replace(/[^a-z0-9]/g,'') === (conn.channel_code||'').toLowerCase().replace(/[^a-z0-9]/g,''); })[0];
+      if(ch){
+        ch.status   = conn.status === 'active' ? 'connected' : conn.status || 'inactive';
+        ch.bookings = conn.bookings_month || 0;
+        ch.revenue  = conn.revenue_month  || 0;
+      }
+      // Mark in CONNECTED_KEYS
+      if(conn.status === 'active' && conn.channel_code){
+        CONNECTED_KEYS[conn.channel_code] = true;
+      }
+    });
+
+    // Update banner
+    var connectedCount = list.filter(function(c){ return c.status === 'active'; }).length;
+    var totalBookings  = list.reduce(function(s,c){ return s + (c.bookings_month||0); }, 0);
+    var bannerTxt = document.getElementById('ch-banner-txt');
+    if(bannerTxt && connectedCount > 0){
+      bannerTxt.textContent = connectedCount + ' قنوات متصلة · ٤٢ قناة متاحة';
+    }
+    var bookingsV = document.getElementById('ch-bookings-v');
+    if(bookingsV && totalBookings > 0){
+      bookingsV.textContent = totalBookings;
+    }
+
+    // Update channel cards with real bookings/revenue
+    list.forEach(function(conn){
+      var code = (conn.channel_code||'').toLowerCase();
+      var card = document.querySelector('#ch-cards-grid .ch-card[data-ch="'+code+'"]');
+      if(!card) return;
+      var figs = card.querySelectorAll('.fig .v');
+      if(figs.length >= 2){
+        figs[0].textContent = conn.bookings_month || 0;
+        figs[1].innerHTML = (conn.revenue_month ? Number(conn.revenue_month).toLocaleString('ar-EG') : '٠') + '<span class="cur">ر.س</span>';
+      }
+      var tag = card.querySelector('.mod-tag');
+      if(tag && conn.status === 'active'){
+        tag.className = 'mod-tag ok';
+        tag.innerHTML = '<span class="d"></span>متصل';
+      } else if(tag && conn.status === 'inactive'){
+        card.classList.add('is-off');
+        tag.className = 'mod-tag neu';
+        tag.innerHTML = '<span class="d"></span>غير مفعّل';
+      }
+    });
+  }).catch(function(){
+    /* silent — keep static display */
+  });
+}
+
 // ── Boot: load data on init ──────────────────────────────────────────────────
-setTimeout(function(){ loadReservations(); loadSyncLog(); }, 400);
+setTimeout(function(){ loadReservations(); loadSyncLog(); loadChannelConnections(); }, 400);
 </script>
 </body>
 </html>

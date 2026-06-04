@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <title>المفتاح الذكي — حارس البيانات</title>
-<meta name="viewport" content="width=1440, initial-scale=1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
 <link rel="stylesheet" href="/static/dheuof/colors_and_type.css"/>
 <link rel="stylesheet" href="/static/dheuof/assets/animations.css"/>
 <link rel="stylesheet" href="/static/dheuof/shared/chrome.css"/>
@@ -268,6 +268,94 @@ body { background: var(--paper-tint); }
 #sk-toast.show { transform:translateY(0); opacity:1; pointer-events:auto; }
 #sk-toast.success { background:#14532D; }
 #sk-toast.warn { background:#92400E; }
+
+/* ── Maintenance (صيانة) tab styles ── */
+.mnt-kpi-row {
+  display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:16px;
+}
+.mnt-kpi {
+  background:var(--white); border:1px solid var(--hairline); border-radius:10px;
+  padding:14px 16px; text-align:center;
+}
+.mnt-kpi .kv { font-family:var(--font-en); font-size:30px; font-weight:700; color:var(--ink-900); line-height:1; }
+.mnt-kpi .kv.open   { color:#DC2626; }
+.mnt-kpi .kv.prog   { color:#D97706; }
+.mnt-kpi .kv.done   { color:#16A34A; }
+.mnt-kpi .kv.urgent { color:#B91C1C; }
+.mnt-kpi .kl { font-size:10px; color:var(--fg-3); margin-top:5px; letter-spacing:.04em; font-family:var(--font-en); }
+.mnt-toolbar {
+  display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap;
+}
+.mnt-toolbar select {
+  font-family:var(--font-ar); font-size:12px; padding:7px 12px; border:1px solid var(--ink-100);
+  border-radius:7px; background:var(--white); color:var(--ink-900); outline:none; cursor:pointer;
+}
+.mnt-btn-new {
+  margin-inline-start:auto; background:#7C2D12; color:var(--paper); border:none;
+  font-family:var(--font-ar); font-size:12px; font-weight:500; padding:8px 16px;
+  border-radius:7px; cursor:pointer; transition:background 140ms;
+}
+.mnt-btn-new:hover { background:#6B2410; }
+.mnt-table { background:var(--white); border:1px solid var(--hairline); border-radius:12px; overflow:hidden; }
+.mnt-row {
+  display:grid; grid-template-columns:100px 80px 1.8fr 120px 110px 110px 90px;
+  gap:12px; align-items:center; padding:12px 18px;
+  border-top:1px solid var(--hairline); font-size:13px;
+}
+.mnt-row.hd {
+  background:var(--paper-tint); border-top:none; font-size:11px;
+  color:var(--fg-3); font-weight:600;
+}
+.mnt-row:hover:not(.hd) { background:var(--paper-tint); }
+.mnt-pri {
+  display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:600;
+  padding:3px 8px; border-radius:5px;
+}
+.mnt-pri.urgent   { background:#FEE2E2; color:#B91C1C; }
+.mnt-pri.high     { background:#FEF3C7; color:#B45309; }
+.mnt-pri.normal   { background:#DBEAFE; color:#1D4ED8; }
+.mnt-pri.low      { background:#F3F4F6; color:#4B5563; }
+.mnt-status {
+  display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:600;
+  padding:3px 9px; border-radius:5px;
+}
+.mnt-status.open        { background:#FEE2E2; color:#DC2626; }
+.mnt-status.in_progress { background:#FEF3C7; color:#D97706; }
+.mnt-status.completed   { background:#DCFCE7; color:#16A34A; }
+.mnt-status.cancelled   { background:#F3F4F6; color:#6B7280; }
+.mnt-act {
+  background:var(--white); border:1px solid var(--ink-100); color:var(--ink-700);
+  font-family:var(--font-ar); font-size:11px; padding:5px 10px; border-radius:5px;
+  cursor:pointer; transition:all 130ms; white-space:nowrap;
+}
+.mnt-act:hover { background:var(--surface-2); }
+/* new-order form */
+.mnt-form-wrap {
+  display:none; background:var(--white); border:1px solid var(--hairline);
+  border-radius:12px; padding:22px 24px; margin-bottom:16px;
+}
+.mnt-form-wrap.open { display:block; }
+.mnt-form-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin-bottom:14px; }
+.mnt-form-grid textarea { grid-column:1/-1; }
+.mnt-form-grid label { font-size:11px; color:var(--fg-3); display:block; margin-bottom:4px; }
+.mnt-form-grid input, .mnt-form-grid select, .mnt-form-grid textarea {
+  width:100%; padding:9px 12px; border:1.5px solid var(--hairline); border-radius:8px;
+  font-family:var(--font-ar); font-size:13px; outline:none; box-sizing:border-box;
+  background:var(--white); color:var(--ink-900);
+}
+.mnt-form-grid input:focus, .mnt-form-grid select:focus, .mnt-form-grid textarea:focus {
+  border-color:var(--brand-400);
+}
+.mnt-form-grid textarea { resize:vertical; min-height:70px; }
+.mnt-form-actions { display:flex; gap:10px; margin-top:4px; }
+.mnt-form-submit {
+  background:#7C2D12; color:var(--paper); border:none; font-family:var(--font-ar);
+  font-size:13px; font-weight:500; padding:10px 22px; border-radius:8px; cursor:pointer;
+}
+.mnt-form-cancel {
+  background:var(--paper-tint); color:var(--ink-800); border:1px solid var(--ink-100);
+  font-family:var(--font-ar); font-size:13px; padding:10px 18px; border-radius:8px; cursor:pointer;
+}
 </style>
 </head>
 <body>
@@ -370,6 +458,7 @@ body { background: var(--paper-tint); }
         <button class="sk-tab" onclick="showTab('rules',this)">⚙ قواعد التبليغ</button>
         <button class="sk-tab" onclick="showTab('durations',this)">⏱ المدد والتوقيت</button>
         <button class="sk-tab" onclick="showTab('log',this)">📋 السجل الكامل</button>
+        <button class="sk-tab" onclick="showTab('maintenance',this)">🔧 الصيانة <span class="tbadge" id="tabMntBadge" style="background:var(--ink-200);color:var(--ink-700)">—</span></button>
       </div>
 
       <!-- ═══ TAB 1: Alarms ═══ -->
@@ -453,6 +542,92 @@ body { background: var(--paper-tint); }
         </div>
         <div class="sk-log" id="logTable"></div>
       </div>
+
+      <!-- ═══ TAB 5: Maintenance ═══ -->
+      <div class="sk-pane" id="pane-maintenance">
+
+        <!-- KPI cards -->
+        <div class="mnt-kpi-row" id="mntKpiRow">
+          <div class="mnt-kpi"><div class="kv open" id="mntKpiOpen">—</div><div class="kl">OPEN</div></div>
+          <div class="mnt-kpi"><div class="kv prog" id="mntKpiProg">—</div><div class="kl">IN PROGRESS</div></div>
+          <div class="mnt-kpi"><div class="kv done" id="mntKpiDone">—</div><div class="kl">COMPLETED</div></div>
+          <div class="mnt-kpi"><div class="kv urgent" id="mntKpiUrgent">—</div><div class="kl">URGENT</div></div>
+          <div class="mnt-kpi"><div class="kv" id="mntKpiTotal" style="color:var(--ink-500)">—</div><div class="kl">TOTAL</div></div>
+        </div>
+
+        <!-- New-order form (hidden by default) -->
+        <div class="mnt-form-wrap" id="mntFormWrap">
+          <div style="font-size:15px;font-weight:700;color:var(--ink-900);margin-bottom:14px">🔧 طلب صيانة جديد</div>
+          <div class="mnt-form-grid">
+            <div>
+              <label>نوع العطل</label>
+              <select id="mntIssueType">
+                <option value="electrical">كهرباء</option>
+                <option value="plumbing">سباكة</option>
+                <option value="hvac">تكييف / تهوية</option>
+                <option value="furniture">أثاث وديكور</option>
+                <option value="cleaning">نظافة</option>
+                <option value="general">عام / أخرى</option>
+              </select>
+            </div>
+            <div>
+              <label>الأولوية</label>
+              <select id="mntPriority">
+                <option value="urgent">عاجل</option>
+                <option value="high">عالية</option>
+                <option value="normal" selected>عادية</option>
+                <option value="low">منخفضة</option>
+              </select>
+            </div>
+            <div>
+              <label>مُسنَد إلى (اختياري)</label>
+              <input id="mntAssignedTo" type="text" placeholder="اسم الفني أو الفريق"/>
+            </div>
+            <div style="grid-column:1/-1">
+              <label>وصف العطل</label>
+              <textarea id="mntDescription" placeholder="صف المشكلة بالتفصيل…"></textarea>
+            </div>
+          </div>
+          <div class="mnt-form-actions">
+            <button class="mnt-form-submit" onclick="submitNewOrder()">إرسال الطلب</button>
+            <button class="mnt-form-cancel" onclick="toggleMntForm(false)">إلغاء</button>
+            <span id="mntFormMsg" style="font-size:12px;color:var(--success-700);margin-inline-start:10px;display:none"></span>
+          </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="mnt-toolbar">
+          <select id="mntStatusFilter" onchange="renderMaintenanceOrders()">
+            <option value="">جميع الطلبات</option>
+            <option value="open">مفتوحة</option>
+            <option value="in_progress">قيد التنفيذ</option>
+            <option value="completed">مكتملة</option>
+            <option value="cancelled">ملغاة</option>
+          </select>
+          <select id="mntPriFilter" onchange="renderMaintenanceOrders()">
+            <option value="">جميع الأولويات</option>
+            <option value="urgent">عاجل</option>
+            <option value="high">عالية</option>
+            <option value="normal">عادية</option>
+            <option value="low">منخفضة</option>
+          </select>
+          <span id="mntCount" style="font-size:12px;color:var(--fg-3)"></span>
+          <button onclick="loadMaintenanceOrders()" style="background:var(--white);border:1px solid var(--ink-100);color:var(--ink-700);font-family:var(--font-ar);font-size:12px;padding:7px 12px;border-radius:7px;cursor:pointer">↻ تحديث</button>
+          <button class="mnt-btn-new" onclick="toggleMntForm(true)">+ طلب جديد</button>
+        </div>
+
+        <!-- Orders table -->
+        <div class="mnt-table" id="mntTable">
+          <div class="mnt-row hd">
+            <span>رقم الطلب</span><span>الغرفة</span><span>الوصف</span>
+            <span>النوع</span><span>الأولوية</span><span>الحالة</span><span>إجراء</span>
+          </div>
+          <div id="mntRows">
+            <div class="sk-empty"><div class="eic">⏳</div>جارٍ تحميل طلبات الصيانة…</div>
+          </div>
+        </div>
+
+      </div><!-- /pane-maintenance -->
 
     </main>
   </div>
@@ -970,6 +1145,197 @@ window.runScan = function() {
 })();
 
 /* ════════════════════════════════
+   MAINTENANCE — fetch helpers
+════════════════════════════════ */
+var MNT_ORDERS = [];
+
+var MNT_ISSUE_LABELS = {
+  electrical:'كهرباء', plumbing:'سباكة', hvac:'تكييف / تهوية',
+  furniture:'أثاث', cleaning:'نظافة', general:'عام'
+};
+var MNT_PRI_LABELS = {urgent:'عاجل', high:'عالية', normal:'عادية', low:'منخفضة'};
+var MNT_STATUS_LABELS = {open:'مفتوح', in_progress:'قيد التنفيذ', completed:'مكتملة', cancelled:'ملغاة'};
+
+window.loadMaintenanceOrders = function() {
+  var rows = document.getElementById('mntRows');
+  if (rows) rows.innerHTML = '<div class="sk-empty"><div class="eic">⏳</div>جارٍ تحميل طلبات الصيانة…</div>';
+
+  fetch('/api/m08/orders', { credentials: 'include' })
+    .then(function(r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function(res) {
+      if (!res.success) throw new Error(res.detail || 'خطأ من الخادم');
+      MNT_ORDERS = res.data || [];
+      loadMaintenanceStats();
+      renderMaintenanceOrders();
+    })
+    .catch(function(err) {
+      MNT_ORDERS = [];
+      loadMaintenanceStats();
+      if (rows) rows.innerHTML = '<div class="sk-empty"><div class="eic">⚠️</div>تعذّر تحميل الطلبات — ' + err.message + '</div>';
+    });
+};
+
+window.loadMaintenanceStats = function() {
+  var open     = MNT_ORDERS.filter(function(o){ return o.status === 'open'; }).length;
+  var inProg   = MNT_ORDERS.filter(function(o){ return o.status === 'in_progress'; }).length;
+  var done     = MNT_ORDERS.filter(function(o){ return o.status === 'completed'; }).length;
+  var urgent   = MNT_ORDERS.filter(function(o){ return o.priority === 'urgent'; }).length;
+  var total    = MNT_ORDERS.length;
+
+  var kv = function(id, v) { var el = document.getElementById(id); if (el) el.textContent = v; };
+  kv('mntKpiOpen',   open);
+  kv('mntKpiProg',   inProg);
+  kv('mntKpiDone',   done);
+  kv('mntKpiUrgent', urgent);
+  kv('mntKpiTotal',  total);
+
+  /* update the maintenance tab badge */
+  var badge = document.getElementById('tabMntBadge');
+  if (badge) {
+    var pending = open + inProg;
+    badge.textContent = pending > 0 ? pending : '✓';
+    badge.style.background = pending > 0 ? '#EF4444' : 'var(--success-600)';
+    badge.style.color = '#fff';
+  }
+};
+
+window.renderMaintenanceOrders = function() {
+  var statusFilter = (document.getElementById('mntStatusFilter') || {}).value || '';
+  var priFilter    = (document.getElementById('mntPriFilter')    || {}).value || '';
+
+  var list = MNT_ORDERS.filter(function(o) {
+    if (statusFilter && o.status !== statusFilter) return false;
+    if (priFilter    && o.priority !== priFilter)  return false;
+    return true;
+  });
+
+  var cnt = document.getElementById('mntCount');
+  if (cnt) cnt.textContent = list.length + ' طلب';
+
+  var rows = document.getElementById('mntRows');
+  if (!rows) return;
+
+  if (!list.length) {
+    rows.innerHTML = '<div class="sk-empty"><div class="eic">' +
+      (MNT_ORDERS.length === 0 ? '📋' : '🔍') + '</div>' +
+      (MNT_ORDERS.length === 0 ? 'لا توجد طلبات صيانة بعد — أضف طلباً جديداً' : 'لا توجد نتائج مطابقة للفلتر') +
+      '</div>';
+    return;
+  }
+
+  rows.innerHTML = list.map(function(o) {
+    var pri    = o.priority || 'normal';
+    var status = o.status   || 'open';
+    var priLabel    = MNT_PRI_LABELS[pri]    || pri;
+    var statusLabel = MNT_STATUS_LABELS[status] || status;
+    var issueLabel  = MNT_ISSUE_LABELS[o.issue_type] || (o.issue_type || '—');
+    var desc = o.description ? (o.description.length > 60 ? o.description.slice(0, 60) + '…' : o.description) : '—';
+    var room = o.room_number || o.room_id || '—';
+    var orderNum = o.order_number || ('#' + o.id);
+
+    return '<div class="mnt-row">'
+      + '<span style="font-family:var(--font-mono);font-size:11px;color:var(--fg-3)">' + orderNum + '</span>'
+      + '<span>' + room + '</span>'
+      + '<span style="color:var(--ink-800)">' + desc + '</span>'
+      + '<span>' + issueLabel + '</span>'
+      + '<span><span class="mnt-pri ' + pri + '">' + priLabel + '</span></span>'
+      + '<span><span class="mnt-status ' + status + '">' + statusLabel + '</span></span>'
+      + '<span>'
+        + (status === 'open'
+            ? '<button class="mnt-act" onclick="updateOrderStatus(' + o.id + ',\'in_progress\')">بدء</button>'
+            : status === 'in_progress'
+            ? '<button class="mnt-act" onclick="updateOrderStatus(' + o.id + ',\'completed\')">إغلاق</button>'
+            : '<span style="font-size:11px;color:var(--fg-3)">مكتمل</span>')
+      + '</span>'
+      + '</div>';
+  }).join('');
+};
+
+window.updateOrderStatus = function(id, newStatus) {
+  fetch('/api/m08/orders/' + id, {
+    method: 'PUT',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status: newStatus })
+  })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+      if (!res.success) throw new Error(res.detail || 'خطأ');
+      var o = MNT_ORDERS.find(function(x){ return x.id === id; });
+      if (o) o.status = newStatus;
+      loadMaintenanceStats();
+      renderMaintenanceOrders();
+      var labels = { in_progress: 'بدأ التنفيذ', completed: 'اكتملت الصيانة ✓' };
+      toast(labels[newStatus] || 'تم تحديث الحالة', 'success');
+    })
+    .catch(function(err) {
+      toast('تعذّر تحديث الحالة — ' + err.message);
+    });
+};
+
+window.toggleMntForm = function(open) {
+  var wrap = document.getElementById('mntFormWrap');
+  if (wrap) wrap.classList.toggle('open', !!open);
+  if (open) {
+    ['mntIssueType','mntPriority','mntAssignedTo','mntDescription'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.value = el.tagName === 'SELECT' ? el.options[0].value : '';
+    });
+    var msg = document.getElementById('mntFormMsg');
+    if (msg) { msg.style.display = 'none'; msg.textContent = ''; }
+  }
+};
+
+window.submitNewOrder = function() {
+  var issueType   = (document.getElementById('mntIssueType')   || {}).value || 'general';
+  var priority    = (document.getElementById('mntPriority')    || {}).value || 'normal';
+  var assignedTo  = (document.getElementById('mntAssignedTo')  || {}).value || '';
+  var description = (document.getElementById('mntDescription') || {}).value || '';
+
+  if (!description.trim()) {
+    toast('أدخل وصف العطل أولاً');
+    return;
+  }
+
+  var submitBtn = document.querySelector('.mnt-form-submit');
+  var msg = document.getElementById('mntFormMsg');
+  if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '…جارٍ الحفظ'; }
+  if (msg) { msg.style.display = 'none'; }
+
+  fetch('/api/m08/orders', {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      issue_type:  issueType,
+      priority:    priority,
+      assigned_to: assignedTo || null,
+      description: description
+    })
+  })
+    .then(function(r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function(res) {
+      if (!res.success) throw new Error(res.detail || 'خطأ من الخادم');
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'إرسال الطلب'; }
+      if (msg) { msg.textContent = '✓ تم إرسال الطلب بنجاح'; msg.style.display = 'inline'; }
+      toggleMntForm(false);
+      loadMaintenanceOrders();
+      toast('✓ تم إنشاء طلب الصيانة بنجاح', 'success');
+    })
+    .catch(function(err) {
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'إرسال الطلب'; }
+      if (msg) { msg.textContent = 'خطأ: ' + err.message; msg.style.display = 'inline'; msg.style.color = '#DC2626'; }
+      toast('تعذّر إرسال الطلب — ' + err.message);
+    });
+};
+
+/* ════════════════════════════════
    INIT
 ════════════════════════════════ */
 setTimeout(function(){
@@ -978,6 +1344,7 @@ setTimeout(function(){
   renderRules();
   renderDurations();
   updateStats();
+  loadMaintenanceOrders();
 }, 80);
 
 })();

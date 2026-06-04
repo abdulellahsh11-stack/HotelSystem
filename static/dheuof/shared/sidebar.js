@@ -358,6 +358,9 @@
     var initials = session && session.name ? session.name.split(' ').map(function(w){ return w[0]; }).join('').slice(0,2) : 'زر';
 
     return '<header class="dh-topbar">' +
+      '<button class="dh-topbar-menu-btn" aria-label="القائمة" onclick="(function(){var s=document.querySelector(\'.dh-sidebar\');if(s)s.classList.toggle(\'is-open\');})()">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>' +
+      '</button>' +
       '<div class="dh-search">' +
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>' +
         '<input placeholder="' + placeholder + '"/>' +

@@ -577,6 +577,36 @@ NEW_TRIGGERS = [
     ("trg_emp_updated",  "employees"),
 ]
 
+# ── Sessions table migration ────────────────────────────────────────────────
+SESSIONS_MIGRATION = """
+CREATE TABLE IF NOT EXISTS client_sessions (
+    token       VARCHAR(64) PRIMARY KEY,
+    client_id   VARCHAR(50) NOT NULL,
+    created_at  TIMESTAMPTZ DEFAULT NOW(),
+    expires_at  TIMESTAMPTZ NOT NULL,
+    user_agent  TEXT,
+    ip_address  VARCHAR(50)
+);
+CREATE INDEX IF NOT EXISTS idx_csess_client ON client_sessions(client_id);
+CREATE INDEX IF NOT EXISTS idx_csess_exp    ON client_sessions(expires_at)
+"""
+
+
+def run_sessions_migration(db) -> None:
+    import logging
+    log = logging.getLogger("dheuof.db.sessions")
+    if not db.use_postgres:
+        return
+    for stmt in SESSIONS_MIGRATION.split(";"):
+        s = stmt.strip()
+        if s:
+            try:
+                db.execute(s)
+            except Exception as e:
+                if "already exists" not in str(e).lower():
+                    log.warning(f"sessions migration: {e}")
+    log.info("✅ client_sessions table ready")
+
 
 def run_v3_migrations(db) -> None:
     import logging
