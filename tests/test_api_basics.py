@@ -120,6 +120,45 @@ class TestIndexPage:
             f"GET / returned unexpected status {response.status_code}"
         )
 
+
+# ---------------------------------------------------------------------------
+# Test 3b — Server-side auth gate: program pages are locked until login
+# ---------------------------------------------------------------------------
+
+class TestServerSideAuthGate:
+    def test_module_page_unauthenticated_redirects_to_login(self):
+        """Direct navigation to a module page without a session → 302 /login."""
+        client = TestClient(app, raise_server_exceptions=False, follow_redirects=False)
+        resp = client.get(
+            "/static/dheuof/modules/07-pos/index.html",
+            headers={"accept": "text/html"},
+        )
+        assert resp.status_code == 302, f"Expected 302 redirect, got {resp.status_code}"
+        assert resp.headers.get("location") == "/login"
+
+    def test_shortcut_route_unauthenticated_redirects_to_login(self):
+        """Pretty shortcut (/hr) without a session → 302 /login."""
+        client = TestClient(app, raise_server_exceptions=False, follow_redirects=False)
+        resp = client.get("/hr", headers={"accept": "text/html"})
+        assert resp.status_code == 302
+        assert resp.headers.get("location") == "/login"
+
+    def test_module_page_authenticated_serves_html(self):
+        """With a valid session the module page is served (200)."""
+        from datetime import datetime
+        token = "gate-test-token"
+        _client_sessions[token] = {"client_id": "gate_client", "created_at": datetime.now().isoformat()}
+        try:
+            client = TestClient(app, raise_server_exceptions=False, follow_redirects=False)
+            client.cookies.set("client_token", token)
+            resp = client.get(
+                "/static/dheuof/modules/07-pos/index.html",
+                headers={"accept": "text/html"},
+            )
+            assert resp.status_code == 200, f"Expected 200 for authed user, got {resp.status_code}"
+        finally:
+            _client_sessions.pop(token, None)
+
     def test_root_html_content_type_or_redirect(self):
         """GET / that returns 200 must serve HTML."""
         client = TestClient(app, raise_server_exceptions=False, follow_redirects=True)

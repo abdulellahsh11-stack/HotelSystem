@@ -275,6 +275,40 @@ async def add_security_and_cache_headers(request: Request, call_next):
     response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
     return response
 
+
+# Module shortcut paths that must be locked behind login (server-side gate)
+_PROTECTED_PAGE_PREFIXES = (
+    "/dheuof", "/guests-module", "/shumus", "/tourism", "/inventory",
+    "/warehouse", "/account", "/accounting", "/pos", "/smart-key", "/hr",
+    "/channels", "/marketing-channels", "/analytics", "/staff",
+    "/ota-bookings", "/trips", "/tourism-trips", "/guests", "/bookings",
+)
+
+
+@app.middleware("http")
+async def server_side_auth_gate(request: Request, call_next):
+    """Real lock: serve program pages only to authenticated clients.
+
+    Without a valid session, any direct navigation to a module page (either the
+    pretty shortcut like /pos or the raw /static/dheuof/modules/<m>/index.html)
+    is redirected to /login. This closes the gap where the client-side JS auth
+    wall could be bypassed by disabling JavaScript or hitting the static file.
+    """
+    path = request.url.path
+    is_module_html = (
+        path.startswith("/static/dheuof/modules/") and path.endswith("/index.html")
+    )
+    is_shortcut = path in _PROTECTED_PAGE_PREFIXES
+    if is_module_html or is_shortcut:
+        if get_client_session(request) is None:
+            # Browsers navigating get a redirect; programmatic/XHR get 401
+            accept = request.headers.get("accept", "")
+            if "text/html" in accept:
+                return RedirectResponse("/login", status_code=302)
+            return JSONResponse({"detail": "غير مصرح — يلزم تسجيل الدخول"}, status_code=401)
+    return await call_next(request)
+
+
 # ── Module Routers — جميع الوحدات الـ 15 + وجهات سياحية ─────
 try:
     from routes.m02_frontdesk import router as m02_router
