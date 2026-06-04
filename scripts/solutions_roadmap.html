@@ -1,0 +1,325 @@
+<!doctype html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="utf-8">
+<style>
+  @page {
+    size: A4;
+    margin: 16mm 14mm 18mm 14mm;
+    @bottom-center {
+      content: "ضيوف · خارطة الحلول التقنية · يونيو ٢٠٢٥";
+      font-family: 'Tajawal', sans-serif; font-size: 8pt; color: #9aa39e;
+    }
+    @bottom-left {
+      content: counter(page) " / " counter(pages);
+      font-family: 'Tajawal', sans-serif; font-size: 8pt; color: #9aa39e;
+    }
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Tajawal', 'Cairo', sans-serif; color: #14110E; font-size: 10.5pt; line-height: 1.6; }
+  h1,h2,h3 { font-family: 'Cairo','Tajawal', sans-serif; }
+
+  /* COVER */
+  .cover { text-align: center; padding-top: 40mm; page-break-after: always; }
+  .cover .logo { font-size: 40pt; font-weight: 800; color: #1B4D3D; letter-spacing: -1px; }
+  .cover .logo .dot { color: #C9A85F; }
+  .cover .tag { font-size: 14pt; color: #266554; margin-top: 6mm; font-weight: 600; }
+  .cover .sub { font-size: 11pt; color: #6B6052; margin-top: 3mm; }
+  .cover .rule { width: 60mm; height: 3px; background: linear-gradient(90deg,#C9A85F,#1B4D3D); margin: 10mm auto; border-radius: 2px; }
+  .cover .date { font-size: 9.5pt; color: #8B8175; margin-top: 30mm; }
+
+  /* Summary table */
+  table.sum { width: 100%; border-collapse: collapse; margin: 6mm 0; font-size: 9.5pt; }
+  table.sum th { background: #1B4D3D; color: #fff; padding: 7px 9px; font-weight: 700; text-align: right; }
+  table.sum td { padding: 6px 9px; border-bottom: 1px solid #E4F0EB; }
+  table.sum tr:nth-child(even) td { background: #F2F8F5; }
+
+  /* Problem card */
+  .prob { page-break-inside: avoid; margin-bottom: 9mm; border: 1px solid #E6DFD1; border-radius: 10px; overflow: hidden; }
+  .prob-head { background: #FDF2F2; border-right: 5px solid #C0392B; padding: 9px 14px; }
+  .prob-head .n { display:inline-block; background:#C0392B; color:#fff; width: 26px; height: 26px; line-height: 26px; text-align:center; border-radius: 50%; font-weight:800; font-size: 11pt; margin-left: 8px; }
+  .prob-head .t { font-size: 13pt; font-weight: 800; color: #962419; }
+  .prob-head .en { font-size: 8.5pt; color: #b07a73; display:block; margin-top: 2px; margin-right: 34px;}
+  .prob-meta { display:flex; gap: 0; background:#FEF9F0; padding: 6px 14px; font-size: 8.8pt; color:#7A5A22; border-bottom: 1px solid #F1E6C8;}
+  .prob-meta span { margin-left: 18px; }
+  .prob-meta b { color:#5C4419; }
+  .prob-body { padding: 10px 14px; }
+  .prob-body .desc { font-size: 10pt; color: #322B23; margin-bottom: 8px; }
+
+  .sol { background: #F2F8F5; border-radius: 8px; padding: 8px 12px; margin-top: 6px; }
+  .sol .sol-t { font-weight: 800; color: #1A7A2A; font-size: 10pt; margin-bottom: 5px; }
+  .sol ol { margin-right: 18px; }
+  .sol li { font-size: 9.6pt; margin-bottom: 3px; color: #1F1A15; }
+  .sol li b { color: #143A2E; }
+
+  /* Code block - LTR */
+  pre { direction: ltr; text-align: left; background: #1e293b; color: #e2e8f0; border-radius: 8px;
+        padding: 10px 12px; font-family: 'DejaVu Sans Mono', monospace; font-size: 7.6pt; line-height: 1.5;
+        margin-top: 7px; white-space: pre-wrap; overflow-wrap: anywhere; }
+  pre .c { color: #7dd3a0; }     /* comment */
+  pre .k { color: #93c5fd; }     /* keyword */
+  pre .s { color: #fcd9a0; }     /* string */
+  .code-label { direction: rtl; text-align: right; font-size: 8.5pt; font-weight:700; color:#1B4D3D; margin-top:7px; }
+
+  h2.section { font-size: 16pt; color: #1B4D3D; margin: 4mm 0 3mm; padding-bottom: 2mm; border-bottom: 2px solid #C9A85F; }
+  .stars { color: #C9A85F; letter-spacing: 1px; }
+
+  table.road { width:100%; border-collapse: collapse; font-size: 9pt; margin-top: 4mm; }
+  table.road th { background:#1B4D3D; color:#fff; padding:6px 8px; text-align:right; }
+  table.road td { padding: 6px 8px; border-bottom:1px solid #E4F0EB; vertical-align: top; }
+  table.road tr:nth-child(even) td { background:#F2F8F5; }
+  .res { font-weight:800; color:#1A7A2A; white-space:nowrap; }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <div class="logo">ضيوف<span class="dot">.</span></div>
+  <div class="tag">خارطة الحلول التقنية</div>
+  <div class="sub">تحليل المشكلات الستة · طريقة الحل · نماذج الكود المختصرة</div>
+  <div class="rule"></div>
+  <div class="date">يونيو ٢٠٢٥ — نسخة المطورين الداخلية</div>
+</div>
+
+<!-- SUMMARY -->
+<h2 class="section">ملخص المشكلات والأولويات</h2>
+<table class="sum">
+  <thead><tr><th style="width:6%">#</th><th style="width:42%">المشكلة</th><th style="width:20%">النوع</th><th style="width:16%">الدرجة</th><th style="width:16%">الأولوية</th></tr></thead>
+  <tbody>
+    <tr><td>١</td><td>مدير قنوات OTA غير ناضج (ربط أولي)</td><td>تكامل</td><td><span class="stars">★★</span>☆☆☆</td><td>🔴 عالية</td></tr>
+    <tr><td>٢</td><td>بوابات دفع غير معتمدة بالكامل (PCI)</td><td>أمان / دفع</td><td><span class="stars">★★</span>☆☆☆</td><td>🔴 عالية</td></tr>
+    <tr><td>٣</td><td>كثير من الواجهات تعمل بتخزين محلي</td><td>بنية تقنية</td><td><span class="stars">★★★</span>☆☆</td><td>🟡 متوسطة</td></tr>
+    <tr><td>٤</td><td>لا واجهات API عامة ولا متجر تطبيقات</td><td>تكامل</td><td><span class="stars">★★</span>☆☆☆</td><td>🟡 متوسطة</td></tr>
+    <tr><td>٥</td><td>سجل عملاء ومراجع محدود (منتج جديد)</td><td>تسويق</td><td><span class="stars">★★</span>☆☆☆</td><td>🟠 مهمة</td></tr>
+    <tr><td>٦</td><td>غياب شهادات أمنية معتمدة</td><td>أمان</td><td><span class="stars">★★</span>½☆☆</td><td>🔴 عالية</td></tr>
+  </tbody>
+</table>
+
+<!-- PROBLEM 1 -->
+<div class="prob">
+  <div class="prob-head">
+    <span class="n">١</span><span class="t">مدير قنوات OTA غير ناضج — ربط أولي فقط</span>
+    <span class="en">OTA Channel Manager — Initial Integration Only</span>
+  </div>
+  <div class="prob-meta"><span>الدرجة: <b>★★☆☆☆ ٢/٥</b></span><span>الأثر: <b>خسارة حجوزات Booking / Expedia</b></span><span>الجهد: <b>متوسط</b></span></div>
+  <div class="prob-body">
+    <div class="desc">الوحدة الحالية تعرض قائمة حجوزات ثابتة دون ربط حقيقي بمنصات OTA: لا مزامنة تلقائية للتوافر، ولا إرسال للأسعار (Rate Push)، ولا استقبال آلي للحجوزات الجديدة. النتيجة تضارب التواريخ وخسارة الحجوزات.</div>
+    <div class="sol">
+      <div class="sol-t">✓ الحل · الخطوات</div>
+      <ol>
+        <li><b>إنشاء صفحة channel-manager.html</b> — لوحة إدارة القنوات (Booking.com، Expedia، Agoda، Airbnb)</li>
+        <li><b>إعدادات API لكل قناة</b> — حقول Property ID و API Key و Channel Code مع زر اختبار اتصال</li>
+        <li><b>نموذج Rate Push</b> — إرسال الأسعار والتوافر عبر REST API</li>
+        <li><b>سجل المزامنة</b> — جدول يعرض آخر مزامنة: التاريخ، القناة، الحالة، عدد السجلات</li>
+        <li><b>Webhook لاستقبال الحجوزات</b> — مسار <code dir=ltr>/api/channel/webhook/{channel}</code></li>
+      </ol>
+    </div>
+    <div class="code-label">نموذج كود مختصر — Channel Manager</div>
+<pre><span class="c">// channel-manager.html — إرسال السعر للقناة</span>
+<span class="k">async function</span> pushRates() {
+  <span class="k">const</span> body = { channel: sel.value, roomTypeId: <span class="s">'STD'</span>,
+                date: dateInput.value, price: priceInput.value,
+                available: avInput.value };
+  <span class="k">const</span> r = <span class="k">await</span> fetch(<span class="s">'/api/channel/push-rates'</span>, {
+    method:<span class="s">'POST'</span>, headers:{<span class="s">'Content-Type'</span>:<span class="s">'application/json'</span>},
+    body: JSON.stringify(body) });
+  showToast(r.ok ? <span class="s">'تم الإرسال ✓'</span> : <span class="s">'فشل الإرسال ✗'</span>);
+}
+
+<span class="c"># FastAPI (main.py) — استقبال حجوزات القناة</span>
+<span class="k">@app.post</span>(<span class="s">'/api/channel/webhook/{channel}'</span>)
+<span class="k">async def</span> channel_webhook(channel: str, payload: dict):
+    booking = map_booking(channel, payload)
+    db.add(booking); db.commit()
+    <span class="k">return</span> {<span class="s">'status'</span>: <span class="s">'ok'</span>}</pre>
+  </div>
+</div>
+
+<!-- PROBLEM 2 -->
+<div class="prob">
+  <div class="prob-head">
+    <span class="n">٢</span><span class="t">بوابات الدفع غير معتمدة بالكامل (PCI-DSS)</span>
+    <span class="en">Payment Gateways — PCI-DSS Compliance Gap</span>
+  </div>
+  <div class="prob-meta"><span>الدرجة: <b>★★☆☆☆ ٢/٥</b></span><span>الأثر: <b>تعذّر قبول مدى / Visa أمنياً</b></span><span>الجهد: <b>منخفض</b></span></div>
+  <div class="prob-body">
+    <div class="desc">بوابات الدفع مصمّمة بصرياً لكن الربط الفعلي غير مكتمل. معالجة بيانات البطاقات في الخادم تُعرّض المنصة لمخاطر PCI-DSS. الحل المعياري: تفويض المعالجة الكاملة لبوابات معتمدة (Tap / Moyasar) عبر Tokenization فقط — دون لمس أرقام البطاقات إطلاقاً.</div>
+    <div class="sol">
+      <div class="sol-t">✓ الحل · الخطوات</div>
+      <ol>
+        <li><b>استخدام Tap.js SDK فقط</b> — نموذج الدفع يُحمَّل من Tap، والبيانات لا تمر بخادمنا</li>
+        <li><b>Token فقط في الخادم</b> — استقبال token ثم استدعاء <code dir=ltr>/charges</code> به</li>
+        <li><b>3D Secure تلقائي</b> — تفعيله مع callback للنجاح/الفشل</li>
+        <li><b>Moyasar بوابة احتياطية</b> — نفس المبدأ: مفتاح عام فقط في الواجهة</li>
+        <li><b>شارة PCI-DSS</b> — عبارة «مدفوعات مؤمّنة · PCI-DSS Level 1» مع أيقونة قفل</li>
+      </ol>
+    </div>
+    <div class="code-label">نموذج كود مختصر — Tap Tokenization</div>
+<pre><span class="c">&lt;!-- payments.html — نموذج Tap (tokenization فقط) --&gt;</span>
+&lt;script src=<span class="s">"https://cdn.tap.company/v1/"</span>&gt;&lt;/script&gt;
+Tap.setKey(<span class="s">'pk_live_YOUR_KEY'</span>);  <span class="c">// مفتاح عام فقط — آمن</span>
+<span class="k">const</span> card = Tap.createCard({ container: <span class="s">'#card-element'</span> });
+card.createToken().then(token =&gt; {
+  <span class="c">// أرسل token فقط — ليس بيانات البطاقة</span>
+  fetch(<span class="s">'/api/payment/charge'</span>, { method:<span class="s">'POST'</span>,
+    body: JSON.stringify({ token: token.id, amount: 1200 }) });
+});
+
+<span class="c"># backend — استقبال token فقط</span>
+<span class="k">def</span> charge(token: str, amount: int):
+    <span class="k">return</span> tap.Charge.create(token=token, amount=amount, currency=<span class="s">'SAR'</span>)</pre>
+  </div>
+</div>
+
+<!-- PROBLEM 3 -->
+<div class="prob">
+  <div class="prob-head">
+    <span class="n">٣</span><span class="t">كثير من الواجهات تعمل بتخزين محلي فقط</span>
+    <span class="en">Interfaces Rely on localStorage — No Backend Sync</span>
+  </div>
+  <div class="prob-meta"><span>الدرجة: <b>★★★☆☆ ٣/٥</b></span><span>الأثر: <b>فقدان البيانات عند تغيير الجهاز</b></span><span>الجهد: <b>متوسط</b></span></div>
+  <div class="prob-body">
+    <div class="desc">بعض الوحدات (جولات سياحية، المهام، الإعدادات) تحفظ البيانات في localStorage المرتبط بجهاز واحد: لا مشاركة بين الموظفين، ولا نسخ احتياطي، وتُفقد عند مسح ذاكرة المتصفح. الحل استبدالها باستدعاءات fetch إلى الخادم.</div>
+    <div class="sol">
+      <div class="sol-t">✓ الحل · الخطوات</div>
+      <ol>
+        <li><b>إنشاء مسارات بسيطة</b> — <code dir=ltr>POST/GET /api/data/{module}</code> في main.py</li>
+        <li><b>جدول module_data</b> — id، property_id، module، key، value، updated_at</li>
+        <li><b>استبدال localStorage.setItem</b> — بـ fetch إلى الخادم</li>
+        <li><b>Fallback محلي</b> — عند فشل الاتصال يُحفظ محلياً ويُعاد الإرسال لاحقاً</li>
+        <li><b>مؤشر حالة الحفظ</b> — نقطة خضراء «محفوظ» / برتقالية «جارٍ الحفظ»</li>
+      </ol>
+    </div>
+    <div class="code-label">نموذج كود مختصر — من localStorage إلى API</div>
+<pre><span class="c">// قبل (مشكلة)</span>
+localStorage.setItem(<span class="s">'tours'</span>, JSON.stringify(tours));
+
+<span class="c">// بعد (الحل)</span>
+<span class="k">async function</span> saveData(key, value) {
+  <span class="k">try</span> {
+    <span class="k">await</span> fetch(<span class="s">'/api/data/save'</span>, { method:<span class="s">'POST'</span>,
+      headers:{<span class="s">'Content-Type'</span>:<span class="s">'application/json'</span>},
+      body: JSON.stringify({ module: MODULE_ID, key, value }) });
+  } <span class="k">catch</span> {
+    localStorage.setItem(key, JSON.stringify(value)); <span class="c">// fallback</span>
+  }
+}</pre>
+  </div>
+</div>
+
+<!-- PROBLEM 4 -->
+<div class="prob">
+  <div class="prob-head">
+    <span class="n">٤</span><span class="t">لا واجهات API عامة ولا متجر تطبيقات</span>
+    <span class="en">No Public API Interfaces or App Marketplace</span>
+  </div>
+  <div class="prob-meta"><span>الدرجة: <b>★★☆☆☆ ٢/٥</b></span><span>الأثر: <b>تعذّر الربط مع الأنظمة الخارجية</b></span><span>الجهد: <b>متوسط</b></span></div>
+  <div class="prob-body">
+    <div class="desc">لا تتيح المنصة واجهات API عامة للمطورين: لا ربط مع أنظمة المحاسبة (Odoo / QuickBooks)، ولا تطبيقات طرف ثالث، ولا إمكانية بناء Marketplace. الحل توثيق الـ API وإتاحته عبر مفاتيح API.</div>
+    <div class="sol">
+      <div class="sol-t">✓ الحل · الخطوات</div>
+      <ol>
+        <li><b>api-docs.html جاهزة</b> — صفحة توثيق كاملة أُنشئت، يتبقّى ربطها بالقائمة</li>
+        <li><b>نظام مفاتيح API</b> — جدول api_keys: key_hash، property_id، scopes</li>
+        <li><b>Bearer Token</b> — إضافة <code dir=ltr>Depends(verify_api_key)</code> لكل مسار</li>
+        <li><b>Rate Limiting</b> — ١٠٠٠ طلب/ساعة لكل مفتاح يحمي من الإساءة</li>
+        <li><b>أحداث Webhook</b> — إشعار المطور عند: حجز جديد، دفع، إلغاء</li>
+      </ol>
+    </div>
+    <div class="code-label">نموذج كود مختصر — مصادقة مفتاح API</div>
+<pre><span class="c"># FastAPI — حماية أي مسار بمفتاح API</span>
+<span class="k">from</span> fastapi.security <span class="k">import</span> APIKeyHeader
+api_key_header = APIKeyHeader(name=<span class="s">'X-API-Key'</span>)
+
+<span class="k">async def</span> verify_api_key(key=Depends(api_key_header), db=Depends(get_db)):
+    rec = db.query(ApiKey).filter_by(key_hash=hash(key)).first()
+    <span class="k">if not</span> rec: <span class="k">raise</span> HTTPException(401, <span class="s">'مفتاح API غير صالح'</span>)
+    <span class="k">return</span> rec
+
+<span class="k">@app.get</span>(<span class="s">'/api/v1/bookings'</span>, dependencies=[Depends(verify_api_key)])
+<span class="k">async def</span> list_bookings(db=Depends(get_db)):
+    <span class="k">return</span> db.query(Booking).all()</pre>
+  </div>
+</div>
+
+<!-- PROBLEM 5 -->
+<div class="prob">
+  <div class="prob-head">
+    <span class="n">٥</span><span class="t">سجل عملاء ومراجع محدود — منتج جديد</span>
+    <span class="en">Limited Customer References — New Product</span>
+  </div>
+  <div class="prob-meta"><span>الدرجة: <b>★★☆☆☆ ٢/٥</b></span><span>الأثر: <b>صعوبة بناء الثقة مع العملاء الجدد</b></span><span>الجهد: <b>تسويقي</b></span></div>
+  <div class="prob-body">
+    <div class="desc">كونها منصة جديدة، لا توجد قائمة عملاء موثّقة ولا دراسات حالة ولا إحصاءات تبنٍّ، ما يُضعف الثقة أمام منصات تملك آلاف العملاء. الحل بناء البرهان الاجتماعي (Social Proof) بشكل منهجي.</div>
+    <div class="sol">
+      <div class="sol-t">✓ الحل · الخطوات</div>
+      <ol>
+        <li><b>برنامج العملاء الأوائل</b> — ١٠ فنادق بتجربة مجانية ٩٠ يوماً مقابل شهادة وإذن تسمية</li>
+        <li><b>صفحة عملاء ناجحون</b> — شعار الفندق + اقتباس + رقم نتيجة قابل للقياس</li>
+        <li><b>دراسة حالة مفصّلة</b> — التحدي ← الحل ← النتائج بأرقام حقيقية</li>
+        <li><b>شارات الاستخدام</b> — قسم «يثق بنا» في صفحة الباقات</li>
+        <li><b>حضور G2 / Capterra</b> — تسجيل المنصة وطلب تقييمات من الأوائل</li>
+      </ol>
+    </div>
+    <div class="code-label">نموذج كود مختصر — قسم الشهادات</div>
+<pre><span class="c">&lt;!-- packages.html — قسم البرهان الاجتماعي --&gt;</span>
+&lt;section class=<span class="s">"dh-testimonials"</span>&gt;
+  &lt;h2&gt;يثق بضيوف&lt;/h2&gt;
+  &lt;blockquote&gt;
+    &lt;p&gt;"رفعنا الإشغال من ٧٢٪ إلى ٨٩٪ خلال ٣ أشهر"&lt;/p&gt;
+    &lt;cite&gt;— فندق النخبة، الرياض&lt;/cite&gt;
+  &lt;/blockquote&gt;
+&lt;/section&gt;</pre>
+  </div>
+</div>
+
+<!-- PROBLEM 6 -->
+<div class="prob">
+  <div class="prob-head">
+    <span class="n">٦</span><span class="t">غياب شهادات أمنية معتمدة</span>
+    <span class="en">No Formal Security Certifications</span>
+  </div>
+  <div class="prob-meta"><span>الدرجة: <b>★★½☆☆ ٢.٥/٥</b></span><span>الأثر: <b>تعذّر دخول الفنادق الكبرى والحكومية</b></span><span>الجهد: <b>عالٍ</b></span></div>
+  <div class="prob-body">
+    <div class="desc">تفتقر المنصة إلى: SSL مُعلن، وشهادة ISO 27001، وSOC 2 Type II، وامتثال نظام حماية البيانات الشخصية السعودي (PDPL). هذه الشهادات ضرورية لعقود الفنادق الحكومية والسلاسل الكبرى.</div>
+    <div class="sol">
+      <div class="sol-t">✓ الحل · الخطوات</div>
+      <ol>
+        <li><b>SSL/TLS فوري</b> — متوفّر عبر الاستضافة، يُضاف كشارة HTTPS</li>
+        <li><b>التحقق بخطوتين 2FA</b> — مُضاف في sidebar.js، يُظهر جدية الأمان</li>
+        <li><b>صفحة security.html</b> — درجة الأمان، سجل الجلسات، سياسة الخصوصية</li>
+        <li><b>امتثال PDPL أساسي</b> — سياسة خصوصية عربية، موافقة جمع البيانات، حق الحذف</li>
+        <li><b>خارطة طريق ISO 27001</b> — وثيقة (٦–١٢ شهراً) تُثبت الجدية وتُقنع كبار العملاء</li>
+      </ol>
+    </div>
+    <div class="code-label">نموذج كود مختصر — قائمة فحص الأمان</div>
+<pre><span class="c"># security.html — نقاط التحقق الأمنية المعروضة للعميل</span>
+<span class="k">const</span> SECURITY_CHECKS = [
+  { label: <span class="s">'HTTPS / SSL'</span>,           status: <span class="s">'pass'</span> },
+  { label: <span class="s">'التحقق بخطوتين 2FA'</span>,   status: <span class="s">'pass'</span> },
+  { label: <span class="s">'تشفير كلمات المرور'</span>,    status: <span class="s">'pass'</span> },
+  { label: <span class="s">'مهلة الجلسة (٨ ساعات)'</span>, status: <span class="s">'pass'</span> },
+  { label: <span class="s">'ISO 27001'</span>,             status: <span class="s">'pending'</span> },
+  { label: <span class="s">'SOC 2 Type II'</span>,         status: <span class="s">'roadmap'</span> },
+  { label: <span class="s">'امتثال PDPL'</span>,           status: <span class="s">'in-progress'</span> },
+];</pre>
+  </div>
+</div>
+
+<!-- ROADMAP -->
+<h2 class="section">ملخص الأولويات والجدول الزمني</h2>
+<table class="road">
+  <thead><tr><th style="width:5%">#</th><th style="width:22%">المشكلة</th><th style="width:34%">الملف / الحل</th><th style="width:14%">الجهد</th><th style="width:25%">النتيجة المتوقعة</th></tr></thead>
+  <tbody>
+    <tr><td>١</td><td>مدير قنوات OTA</td><td>channel-manager.html + webhook endpoint</td><td>٣ أيام</td><td class="res">٢★ ← ٤★</td></tr>
+    <tr><td>٢</td><td>بوابات الدفع PCI</td><td>payments.html (جاهز) + Tap SDK tokenization</td><td>يوم واحد</td><td class="res">٢★ ← ٤★</td></tr>
+    <tr><td>٣</td><td>التخزين المحلي</td><td>استبدال بـ fetch API + جدول module_data</td><td>يومان</td><td class="res">٣★ ← ٤★</td></tr>
+    <tr><td>٤</td><td>API عامة</td><td>api-docs.html (جاهز) + مفاتيح API + Rate Limiting</td><td>يومان</td><td class="res">٢★ ← ٤★</td></tr>
+    <tr><td>٥</td><td>مراجع محدودة</td><td>العملاء الأوائل + شهادات + G2/Capterra</td><td>٣ أسابيع</td><td class="res">٢★ ← ٣★</td></tr>
+    <tr><td>٦</td><td>شهادات أمنية</td><td>security.html + 2FA (جاهز) + سياسة PDPL</td><td>أسبوعان</td><td class="res">٢.٥★ ← ٤★</td></tr>
+  </tbody>
+</table>
+
+</body>
+</html>
