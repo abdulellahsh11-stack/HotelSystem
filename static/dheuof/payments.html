@@ -643,6 +643,15 @@ function saveSettings(data) {
   try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch(e) {}
 }
 
+// Never persist full secret keys in the browser — store only a masked hint.
+// In production the real key is sent over TLS to the server and stored encrypted.
+function maskKey(k) {
+  if (!k) return '';
+  k = String(k);
+  if (k.length <= 4) return '••••';
+  return k.slice(0, 3) + '••••••' + k.slice(-4);
+}
+
 // ── Toast ──────────────────────────────────────────────────────────────
 var toastTimer;
 function showToast(msg) {
@@ -674,7 +683,8 @@ function saveGateway(gw) {
 
   var s = loadSettings();
   if (!s.gateways) s.gateways = {};
-  s.gateways[gw] = { liveKey: liveKey, testKey: testKey, mode: mode, active: true };
+  // Store masked hints only — real secrets must go to the server, not localStorage.
+  s.gateways[gw] = { liveKey: maskKey(liveKey), testKey: maskKey(testKey), mode: mode, active: true };
   saveSettings(s);
   showToast('تم حفظ إعدادات ' + gw);
 }
@@ -691,7 +701,8 @@ function enableGateway(gw) {
   var s = loadSettings();
   if (!s.gateways) s.gateways = {};
   var modeChip = document.querySelector('[data-gw="' + gw + '"].mode-chip.active');
-  s.gateways[gw] = { liveKey: liveKey, testKey: testKey, mode: modeChip ? modeChip.dataset.mode : 'test', active: true };
+  // Store masked hints only — real secrets must go to the server, not localStorage.
+  s.gateways[gw] = { liveKey: maskKey(liveKey), testKey: maskKey(testKey), mode: modeChip ? modeChip.dataset.mode : 'test', active: true };
   saveSettings(s);
 
   // Update badge in card

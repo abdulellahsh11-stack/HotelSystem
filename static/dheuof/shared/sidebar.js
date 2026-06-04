@@ -23,6 +23,13 @@
     { id: "17-bookings",          ar: "حجوزات القنوات",   num: "17" },
   ];
 
+  /* ── HTML-escape (prevents stored XSS from user-supplied session fields) ── */
+  function esc(v) {
+    return String(v == null ? '' : v)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
   /* ── Auth helpers ──────────────────────────────────────────────────────── */
   function getSession() {
     try { return JSON.parse(localStorage.getItem('dheuof_session') || 'null'); } catch(e) { return null; }
@@ -328,14 +335,14 @@
       ) : (
         '<div class="dh-trial-cta" style="background:rgba(201,168,95,.08);border-color:rgba(201,168,95,.2)">' +
           '<div class="dh-trial-badge" style="background:rgba(201,168,95,.2);color:var(--gold-300)">✓ مشترك نشط</div>' +
-          '<div class="dh-trial-desc">' + (session.name || session.email) + '</div>' +
+          '<div class="dh-trial-desc">' + esc(session.name || session.email) + '</div>' +
           '<button onclick="dhLogout()" class="dh-trial-btn-reg" style="border:none;cursor:pointer;width:100%;text-align:center;background:rgba(255,255,255,.1);color:var(--gold-200)">تسجيل الخروج</button>' +
         '</div>'
       )) +
       '<div class="dh-side-foot">' +
         '<div class="dh-property">' +
-          '<div class="ar">' + property.ar + '</div>' +
-          '<div class="en">' + (property.en || '') + '</div>' +
+          '<div class="ar">' + esc(property.ar) + '</div>' +
+          '<div class="en">' + esc(property.en || '') + '</div>' +
         '</div>' +
       '</div>' +
     '</aside>';
@@ -376,8 +383,8 @@
           '<span class="dot"></span>' +
         '</button>' +
         '<div class="dh-user">' +
-          '<div class="av">' + initials + '</div>' +
-          '<div class="nm"><div class="ar">' + userName + '</div><div class="role">' + userRole + '</div></div>' +
+          '<div class="av">' + esc(initials) + '</div>' +
+          '<div class="nm"><div class="ar">' + esc(userName) + '</div><div class="role">' + esc(userRole) + '</div></div>' +
         '</div>' +
       '</div>' +
     '</header>';
@@ -408,13 +415,26 @@
     setTimeout(function(){ b.classList.add('dh-ftrial-in'); }, 100);
   }
 
-  /* ── Session timeout: 8 hours ─────────────────────────────────────────── */
-  var SESSION_TIMEOUT_MS = 8 * 3600 * 1000; // 8 hours
+  /* ── Session timeout (default 8h, configurable from security page) ────── */
+  var SESSION_TIMEOUT_MS = 8 * 3600 * 1000; // 8 hours default
+
+  function getTimeoutMs() {
+    var v = parseInt(localStorage.getItem('dheuof_session_timeout'), 10);
+    return (isFinite(v) && v > 0) ? v : SESSION_TIMEOUT_MS;
+  }
+
+  // A session is expired if it has no numeric ts, or it is older than the limit.
+  function isSessionExpired(session) {
+    if (!session) return false;
+    var ts = Number(session.ts);
+    if (!isFinite(ts)) return true; // missing/corrupt ts -> force re-auth
+    return (Date.now() - ts) > getTimeoutMs();
+  }
 
   function checkSessionTimeout(opts) {
     var session = getSession();
     if (!session) return;
-    if (Date.now() - session.ts > SESSION_TIMEOUT_MS) {
+    if (isSessionExpired(session)) {
       clearSession();
       /* Re-render as guest and show auth wall */
       var sb = document.querySelector('.dh-sidebar');
@@ -459,7 +479,7 @@
     var session = getSession();
 
     /* Check for session timeout before rendering */
-    if (session && Date.now() - session.ts > SESSION_TIMEOUT_MS) {
+    if (session && isSessionExpired(session)) {
       clearSession();
       session = null;
     }
@@ -488,6 +508,11 @@
       document.addEventListener('DOMContentLoaded', injectTrialBanner);
     } else {
       injectTrialBanner();
+    }
+
+    /* Periodically expire the session while the page stays open (every 60s) */
+    if (!window.__dhTimeoutTimer) {
+      window.__dhTimeoutTimer = setInterval(function(){ checkSessionTimeout(opts); }, 60 * 1000);
     }
   }
 
