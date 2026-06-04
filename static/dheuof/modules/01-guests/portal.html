@@ -101,19 +101,19 @@ body{font-family:var(--font-ar,'Tajawal',Arial,sans-serif);background:#F4F6F8;mi
       <div class="sub">بوابة النزيل الرقمية</div>
     </div>
   </div>
-  <div class="guest-chip" id="header-guest-chip">أحمد الفهد · الغرفة ٤٠٢</div>
+  <div class="guest-chip" id="header-guest-chip">— · —</div>
 </header>
 
 <!-- ── Welcome banner ── -->
 <div class="welcome-banner">
-  <h1 id="welcome-name">أهلاً وسهلاً، أحمد</h1>
+  <h1 id="welcome-name">أهلاً وسهلاً</h1>
   <p class="sub">نسعد بخدمتكم · فندق الواحة الذهبية · الرياض</p>
-  <div class="room-badge">🏨 الغرفة ٤٠٢ — جناح ملكي</div>
+  <div class="room-badge" id="portal-room-badge">🏨 —</div>
   <div class="stay-info">
-    <div class="s">تاريخ الوصول <div class="v">٢٧ مايو ٢٠٢٦</div></div>
-    <div class="s">تاريخ المغادرة <div class="v">٣١ مايو ٢٠٢٦</div></div>
-    <div class="s">الليالي المتبقية <div class="v">٢ ليلة</div></div>
-    <div class="s">الرصيد المستحق <div class="v" style="color:#F59E0B">٦٬٠٩٤ ر.س</div></div>
+    <div class="s">تاريخ الوصول <div class="v" id="portal-checkin">—</div></div>
+    <div class="s">تاريخ المغادرة <div class="v" id="portal-checkout">—</div></div>
+    <div class="s">الليالي المتبقية <div class="v" id="portal-nights">—</div></div>
+    <div class="s">الرصيد المستحق <div class="v" id="portal-balance" style="color:#F59E0B">— ر.س</div></div>
   </div>
 </div>
 
@@ -122,20 +122,20 @@ body{font-family:var(--font-ar,'Tajawal',Arial,sans-serif);background:#F4F6F8;mi
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
     <div>
       <div style="font-size:12px;color:rgba(255,255,255,.6);margin-bottom:4px">نقاط الولاء</div>
-      <div class="loyalty-points">1,240</div>
-      <div style="font-size:12px;color:rgba(255,255,255,.7);margin-top:4px">نقطة · مستوى <span style="color:var(--gold-500,#C9A85F);font-weight:700">ذهبي ★</span></div>
+      <div class="loyalty-points" id="loyalty-points">—</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.7);margin-top:4px">نقطة · مستوى <span style="color:var(--gold-500,#C9A85F);font-weight:700" id="loyalty-level">—</span></div>
     </div>
     <div style="text-align:center">
       <div style="font-size:11px;color:rgba(255,255,255,.6);margin-bottom:8px">الإقامة الحالية تضيف</div>
-      <div style="font-size:24px;font-weight:700;color:var(--gold-500,#C9A85F)">+320</div>
+      <div style="font-size:24px;font-weight:700;color:var(--gold-500,#C9A85F)" id="loyalty-earn">—</div>
       <div style="font-size:11px;color:rgba(255,255,255,.6)">نقطة</div>
     </div>
     <div>
-      <div style="font-size:11px;color:rgba(255,255,255,.6);margin-bottom:6px">للوصول للمستوى البلاتيني</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.6);margin-bottom:6px">للوصول للمستوى التالي</div>
       <div style="background:rgba(255,255,255,.15);border-radius:20px;height:8px;width:160px;overflow:hidden">
-        <div style="width:62%;height:100%;background:var(--gold-500,#C9A85F);border-radius:20px"></div>
+        <div id="loyalty-bar" style="width:0%;height:100%;background:var(--gold-500,#C9A85F);border-radius:20px"></div>
       </div>
-      <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:4px">١٬٢٤٠ / ٢٬٠٠٠ نقطة</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:4px" id="loyalty-progress">— / —</div>
     </div>
   </div>
 </div>
@@ -200,7 +200,7 @@ body{font-family:var(--font-ar,'Tajawal',Arial,sans-serif);background:#F4F6F8;mi
   <div class="svc-card" onclick="openModal('request-modal','wifi')">
     <div class="ic">📶</div>
     <div class="lbl">الواي فاي</div>
-    <div class="sub">كلمة المرور: Oasis@2026</div>
+    <div class="sub" id="wifi-label">كلمة المرور: —</div>
   </div>
 
   <div class="svc-card" onclick="openModal('request-modal','wakeup')">
@@ -316,10 +316,10 @@ body{font-family:var(--font-ar,'Tajawal',Arial,sans-serif);background:#F4F6F8;mi
     <div style="padding:16px;background:var(--brand-50,#F0FDF4);border-radius:10px;margin-bottom:16px">
       <div style="font-size:13px;color:var(--fg-2,#6B7280);margin-bottom:10px">ملخص الإقامة</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px">
-        <div><div style="color:var(--fg-3,#9CA3AF);font-size:11px">النزيل</div><div style="font-weight:600">أحمد الفهد</div></div>
-        <div><div style="color:var(--fg-3,#9CA3AF);font-size:11px">الغرفة</div><div style="font-weight:600">٤٠٢ — جناح ملكي</div></div>
-        <div><div style="color:var(--fg-3,#9CA3AF);font-size:11px">عدد الليالي</div><div style="font-weight:600">٤ ليالٍ</div></div>
-        <div><div style="color:var(--fg-3,#9CA3AF);font-size:11px">الرصيد المستحق</div><div style="font-weight:700;color:var(--brand-700,#1B4D3E)">٦٬٠٩٤ ر.س</div></div>
+        <div><div style="color:var(--fg-3,#9CA3AF);font-size:11px">النزيل</div><div style="font-weight:600" id="checkout-name">—</div></div>
+        <div><div style="color:var(--fg-3,#9CA3AF);font-size:11px">الغرفة</div><div style="font-weight:600" id="checkout-room">—</div></div>
+        <div><div style="color:var(--fg-3,#9CA3AF);font-size:11px">عدد الليالي</div><div style="font-weight:600" id="checkout-nights">—</div></div>
+        <div><div style="color:var(--fg-3,#9CA3AF);font-size:11px">الرصيد المستحق</div><div style="font-weight:700;color:var(--brand-700,#1B4D3E)" id="checkout-balance">— ر.س</div></div>
       </div>
     </div>
     <div class="req-field">

@@ -419,7 +419,7 @@
       </button>
       <div class="dh-user">
         <div class="av">سأ</div>
-        <div class="nm"><div class="ar">سارة أحمد</div><div class="role">مدير المنشأة</div></div>
+        <div class="nm"><div class="ar" id="checkin-staff-name">—</div><div class="role">—</div></div>
       </div>
     </div>
   </header>
@@ -446,7 +446,7 @@
         <div class="ic">⚠</div>
         <div class="txt">
           <div class="ar" id="dash-alert-txt">٣ ضيوف لم يسجّلوا بعد — المتوقع وصولهم قبل الآن</div>
-          <div class="sub">آخر تحديث: الآن · تنبيه أُرسل إلى سارة أحمد</div>
+          <div class="sub">آخر تحديث: الآن</div>
         </div>
         <button class="act" onclick="showView('reservations')">عرض الحجوزات</button>
       </div>
@@ -494,10 +494,7 @@
           <div><div class="ttl">آخر الأنشطة</div><div class="sub">Recent activity — live</div></div>
         </div>
         <div id="activity-feed" style="padding:0 20px 16px">
-          <div style="display:flex;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid var(--hairline)"><span style="font-size:18px">✅</span><div><div style="font-size:13px;font-weight:600;color:var(--ink-900)">تسجيل دخول — خالد العتيبي</div><div style="font-size:11px;color:var(--fg-3)">الغرفة ١٠٤ · منذ ١٢ دقيقة</div></div></div>
-          <div style="display:flex;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid var(--hairline)"><span style="font-size:18px">🧹</span><div><div style="font-size:13px;font-weight:600;color:var(--ink-900)">طُلب تنظيف — الغرفة ٣٠٢</div><div style="font-size:11px;color:var(--fg-3)">بعد مغادرة نورة العنزي · منذ ٣٨ دقيقة</div></div></div>
-          <div style="display:flex;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid var(--hairline)"><span style="font-size:18px">🚪</span><div><div style="font-size:13px;font-weight:600;color:var(--ink-900)">مغادرة — Marcus Chen</div><div style="font-size:11px;color:var(--fg-3)">الغرفة ٣٠١ · تسوية كاملة · منذ ساعة</div></div></div>
-          <div style="display:flex;align-items:center;gap:14px;padding:10px 0"><span style="font-size:18px">📞</span><div><div style="font-size:13px;font-weight:600;color:var(--ink-900)">طلب خدمة — الغرفة ٤٠٢</div><div style="font-size:11px;color:var(--fg-3)">وسائد إضافية · قيد التنفيذ · منذ ساعتين</div></div></div>
+          <div style="padding:30px;text-align:center;color:var(--fg-3);font-size:13px">لا توجد أنشطة بعد</div>
         </div>
       </div>
 
@@ -759,55 +756,33 @@
 /* ════════════════════════════════════════
    DATA
 ════════════════════════════════════════ */
-var RESERVATIONS = [
-  {id:1, init:'أس', name:'أحمد بن سليمان الفهد', vip:true,  room:'٤٠٢', type:'جناح ملكي',    checkin:'2026-05-30', checkout:'2026-06-02', eta:'١٤:٠٠', channel:'مباشر',      status:'done',    note:'وسائد إضافية وفطور في الجناح'},
-  {id:2, init:'نم', name:'نورة المنصور',          vip:false, room:'٢١٨', type:'ديلوكس',       checkin:'2026-05-30', checkout:'2026-06-03', eta:'١٥:٣٠', channel:'Booking.com', status:'done',    note:''},
-  {id:3, init:'LK', name:'Layla Karam',            vip:false, room:'٣٠٧', type:'ديلوكس',       checkin:'2026-05-30', checkout:'2026-06-01', eta:'١٦:٠٠', channel:'Agoda',       status:'done',    note:''},
-  {id:4, init:'فز', name:'فاطمة الزهراني',         vip:true,  room:'٤١٠', type:'جناح',          checkin:'2026-05-30', checkout:'2026-06-04', eta:'١٧:٤٥', channel:'مباشر',      status:'done',    note:'حفل ميلاد — تحضيرات خاصة'},
-  {id:5, init:'خع', name:'خالد العتيبي',           vip:false, room:'١٠٤', type:'ستاندرد',       checkin:'2026-05-30', checkout:'2026-06-02', eta:'١٩:٢٠', channel:'مباشر',      status:'done',    note:''},
-  {id:6, init:'سق', name:'سلطان القحطاني',         vip:false, room:'٢٠٥', type:'ستاندرد',       checkin:'2026-05-30', checkout:'2026-06-01', eta:'٢٠:٠٠', channel:'Expedia',    status:'pending', note:''},
-  {id:7, init:'رع', name:'ريم العمري',             vip:true,  room:'٣١٢', type:'ديلوكس',       checkin:'2026-05-30', checkout:'2026-06-05', eta:'٢١:٠٠', channel:'مباشر',      status:'pending', note:'حساسية من الغلوتين'},
-  {id:8, init:'MH', name:'Mohammed Hassan',        vip:false, room:'١١٠', type:'ستاندرد',       checkin:'2026-05-30', checkout:'2026-06-02', eta:'٢٢:٣٠', channel:'Booking.com', status:'pending', note:''},
-];
+var RESERVATIONS = [];
 
-var GUESTS = [
-  {id:101, init:'أس', name:'أحمد بن سليمان الفهد', vip:true,  room:'٤٠٢', type:'جناح ملكي', since:'2026-05-30', until:'2026-06-02', alerts:['VIP','فطور في الجناح']},
-  {id:102, init:'نم', name:'نورة المنصور',          vip:false, room:'٢١٨', type:'ديلوكس',    since:'2026-05-30', until:'2026-06-03', alerts:[]},
-  {id:103, init:'LK', name:'Layla Karam',            vip:false, room:'٣٠٧', type:'ديلوكس',    since:'2026-05-30', until:'2026-06-01', alerts:['Late checkout']},
-  {id:104, init:'فز', name:'فاطمة الزهراني',        vip:true,  room:'٤١٠', type:'جناح',      since:'2026-05-30', until:'2026-06-04', alerts:['VIP','حفل ميلاد']},
-  {id:105, init:'خع', name:'خالد العتيبي',          vip:false, room:'١٠٤', type:'ستاندرد',   since:'2026-05-30', until:'2026-06-02', alerts:[]},
-  {id:106, init:'MC', name:'Marcus Chen',            vip:false, room:'٣٠١', type:'جناح',      since:'2026-05-28', until:'2026-05-31', alerts:['Late checkout']},
-  {id:107, init:'نع', name:'نورة العنزي',           vip:false, room:'٢١٢', type:'ديلوكس',    since:'2026-05-27', until:'2026-05-31', alerts:['رصيد متبقي: ٨٤٠ ر.س']},
-  {id:108, init:'AH', name:'Ali Hassan',             vip:true,  room:'١٠٨', type:'ستاندرد',   since:'2026-05-26', until:'2026-05-31', alerts:['VIP']},
-  {id:109, init:'سر', name:'سارة الرشيد',           vip:false, room:'٢٢٤', type:'ديلوكس',    since:'2026-05-29', until:'2026-06-02', alerts:[]},
-  {id:110, init:'FM', name:'Fatima Malik',           vip:false, room:'١١٦', type:'ستاندرد',   since:'2026-05-28', until:'2026-06-01', alerts:[]},
-  {id:111, init:'عب', name:'عبدالله البلوي',        vip:false, room:'٣١٥', type:'ستاندرد',   since:'2026-05-29', until:'2026-06-03', alerts:[]},
-  {id:112, init:'OS', name:'Omar Saeed',             vip:true,  room:'٤٠٦', type:'جناح ملكي', since:'2026-05-28', until:'2026-06-01', alerts:['VIP','حمية خاصة']},
-];
+var GUESTS = [];
 
 var FLOORS = [
   { floor:'F1', ar:'الطابق الأول',  rooms:[
-    {no:'١٠١',type:'ستاندرد',status:'dirty'}, {no:'١٠٢',type:'ستاندرد',status:'clean'},{no:'١٠٣',type:'ستاندرد',status:'clean'},
-    {no:'١٠٤',type:'ستاندرد',status:'occ',guest:'خالد العتيبي'},{no:'١٠٥',type:'ستاندرد',status:'clean'},{no:'١٠٦',type:'ستاندرد',status:'maint'},
-    {no:'١٠٧',type:'ستاندرد',status:'clean'},{no:'١٠٨',type:'ستاندرد',status:'occ',guest:'Ali Hassan'},{no:'١٠٩',type:'ستاندرد',status:'dirty'},
+    {no:'١٠١',type:'ستاندرد',status:'clean'},{no:'١٠٢',type:'ستاندرد',status:'clean'},{no:'١٠٣',type:'ستاندرد',status:'clean'},
+    {no:'١٠٤',type:'ستاندرد',status:'clean'},{no:'١٠٥',type:'ستاندرد',status:'clean'},{no:'١٠٦',type:'ستاندرد',status:'clean'},
+    {no:'١٠٧',type:'ستاندرد',status:'clean'},{no:'١٠٨',type:'ستاندرد',status:'clean'},{no:'١٠٩',type:'ستاندرد',status:'clean'},
     {no:'١١٠',type:'ستاندرد',status:'clean'},{no:'١١١',type:'ستاندرد',status:'clean'},{no:'١١٢',type:'ستاندرد',status:'clean'},
-    {no:'١١٦',type:'ستاندرد',status:'occ',guest:'Fatima Malik'},
+    {no:'١١٦',type:'ستاندرد',status:'clean'},
   ]},
   { floor:'F2', ar:'الطابق الثاني', rooms:[
-    {no:'٢٠١',type:'ديلوكس',status:'clean'},{no:'٢٠٢',type:'ديلوكس',status:'dirty'},{no:'٢٠٣',type:'ديلوكس',status:'clean'},
+    {no:'٢٠١',type:'ديلوكس',status:'clean'},{no:'٢٠٢',type:'ديلوكس',status:'clean'},{no:'٢٠٣',type:'ديلوكس',status:'clean'},
     {no:'٢٠٤',type:'ديلوكس',status:'clean'},{no:'٢٠٥',type:'ديلوكس',status:'clean'},{no:'٢٠٦',type:'ديلوكس',status:'clean'},
-    {no:'٢١٢',type:'ديلوكس',status:'occ',guest:'نورة العنزي'},{no:'٢١٨',type:'ديلوكس',status:'occ',guest:'نورة المنصور'},
-    {no:'٢٢٤',type:'ديلوكس',status:'occ',guest:'سارة الرشيد'},{no:'٢٢٥',type:'ديلوكس',status:'dirty'},
+    {no:'٢١٢',type:'ديلوكس',status:'clean'},{no:'٢١٨',type:'ديلوكس',status:'clean'},
+    {no:'٢٢٤',type:'ديلوكس',status:'clean'},{no:'٢٢٥',type:'ديلوكس',status:'clean'},
   ]},
   { floor:'F3', ar:'الطابق الثالث', rooms:[
-    {no:'٣٠١',type:'جناح',status:'occ',guest:'Marcus Chen'},{no:'٣٠٢',type:'جناح',status:'dirty'},{no:'٣٠٣',type:'جناح',status:'clean'},
-    {no:'٣٠٤',type:'جناح',status:'clean'},{no:'٣٠٧',type:'ديلوكس',status:'occ',guest:'Layla Karam'},{no:'٣١٢',type:'ديلوكس',status:'clean'},
-    {no:'٣١٥',type:'ستاندرد',status:'occ',guest:'عبدالله البلوي'},
+    {no:'٣٠١',type:'جناح',status:'clean'},{no:'٣٠٢',type:'جناح',status:'clean'},{no:'٣٠٣',type:'جناح',status:'clean'},
+    {no:'٣٠٤',type:'جناح',status:'clean'},{no:'٣٠٧',type:'ديلوكس',status:'clean'},{no:'٣١٢',type:'ديلوكس',status:'clean'},
+    {no:'٣١٥',type:'ستاندرد',status:'clean'},
   ]},
   { floor:'F4', ar:'الطابق الرابع / جناح', rooms:[
-    {no:'٤٠٢',type:'جناح ملكي',status:'occ',guest:'أحمد الفهد'},{no:'٤٠٤',type:'جناح ملكي',status:'clean'},
-    {no:'٤٠٦',type:'جناح ملكي',status:'occ',guest:'Omar Saeed'},{no:'٤٠٨',type:'جناح ملكي',status:'maint'},
-    {no:'٤١٠',type:'جناح',status:'occ',guest:'فاطمة الزهراني'},{no:'٤١٢',type:'جناح',status:'clean'},
+    {no:'٤٠٢',type:'جناح ملكي',status:'clean'},{no:'٤٠٤',type:'جناح ملكي',status:'clean'},
+    {no:'٤٠٦',type:'جناح ملكي',status:'clean'},{no:'٤٠٨',type:'جناح ملكي',status:'clean'},
+    {no:'٤١٠',type:'جناح',status:'clean'},{no:'٤١٢',type:'جناح',status:'clean'},
   ]},
 ];
 
@@ -815,8 +790,8 @@ var FLOORS = [
    STAFF ROLES (for auto-assignment)
 ════════════════════════════════════════ */
 var HOTEL_ROLES = {
-  housekeeping: {name:'Maria Santos',     phone:'+966 55 000 1111'},
-  maintenance:  {name:'محمد العتيبي',   phone:'+966 55 000 2222'},
+  housekeeping: {name:'—', phone:''},
+  maintenance:  {name:'—', phone:''},
 };
 var TASKS = [];
 var taskCounter = 1;

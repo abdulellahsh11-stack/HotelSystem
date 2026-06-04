@@ -230,7 +230,7 @@
           <label><input type="checkbox" id="ch-wa" checked/> 💬 WhatsApp</label>
           <label><input type="checkbox" id="ch-sms" checked/> 📱 SMS</label>
           <label><input type="checkbox" id="ch-inapp"/> 🔔 إشعار داخل النظام</label>
-          <span style="margin-inline-start:auto;font-size:12px;color:var(--fg-3)">المستلم: <strong style="color:var(--ink-900)" id="notif-recipient">سارة أحمد المالكي</strong></span>
+          <span style="margin-inline-start:auto;font-size:12px;color:var(--fg-3)">المستلم: <strong style="color:var(--ink-900)" id="notif-recipient">—</strong></span>
         </div>
         <div class="save-notif-btn">
           <button class="btn-primary" onclick="saveNotifPrefs()">💾 حفظ التفضيلات</button>
@@ -242,8 +242,8 @@
 </div>
 
 <script>
-renderVibrantHero({ icon:'📋', num:'03', title:'المستندات والاشتراكات', en:'Government Docs · Renewals', sub:'رفع المستندات الحكومية وتنبيهات الانتهاء', badges:[{v:'٤٢',l:'وثيقة نشطة'},{v:'٣',l:'تنتهي ≤ ٣٠ يوم'}] });
-renderTierBar({ exc:28, good:11, low:2, bad:1 });
+renderVibrantHero({ icon:'📋', num:'03', title:'المستندات والاشتراكات', en:'Government Docs · Renewals', sub:'رفع المستندات الحكومية وتنبيهات الانتهاء', badges:[{v:'—',l:'وثيقة نشطة'},{v:'—',l:'تنتهي ≤ ٣٠ يوم'}] });
+renderTierBar({ exc:0, good:0, low:0, bad:0 });
 </script>
 <script src="/static/dheuof/shared/sidebar.js"></script>
 <script>StaticSidebar.mount({ activeId: "03-tourism", placeholder: "بحث في المستندات..." });</script>
@@ -403,7 +403,7 @@ function updateKPIs(){
   if(urgent > 0){
     if(alertAr)   alertAr.textContent  = urgent+' مستندات تنتهي خلال ٣٠ يوم';
     if(alertEn)   alertEn.textContent  = urgent+' documents expire within 30 days · manager notified';
-    if(alertMeta) alertMeta.textContent= 'آخر إشعار مُرسَل إلى سارة أحمد قبل ١٤ ساعة عبر WhatsApp';
+    if(alertMeta) alertMeta.textContent= 'لا توجد إشعارات مُرسَلة بعد';
   } else {
     var banner = document.getElementById('alert-banner');
     if(banner){

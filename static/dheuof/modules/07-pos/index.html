@@ -989,23 +989,7 @@ window.addEventListener('storage', function(ev) {
   applyLinkUI();
 });
 
-var TX = [
-  {id:'TX-0251', outlet:'الاستقبال',   icon:'🛎️', desc:'حجز جماعي — شركة النخيل',     customer:'شركة النخيل للاستثمار',  room:'—',    method:'تحويل بنكي', methodKey:'transfer',   amt:8400, vat:1260, status:'مكتملة', time:'07:45'},
-  {id:'TX-0250', outlet:'مطعم الواحة', icon:'🍽', desc:'إفطار إداري × ٦ أشخاص',       customer:'قسم الموارد البشرية',     room:'داخلي',method:'تخصيص',     methodKey:'allocation', amt:960,  vat:144,  status:'مكتملة', time:'07:30'},
-  {id:'TX-0249', outlet:'الاستقبال',   icon:'🛎️', desc:'تسجيل وصول — ماستركارد',      customer:'يوسف الحربي',             room:'٣١٢',  method:'ماستركارد', methodKey:'mastercard', amt:2800, vat:420,  status:'مكتملة', time:'16:10'},
-  {id:'TX-0248', outlet:'مطعم الواحة', icon:'🍽', desc:'٤ ضيوف · غداء', customer:'أحمد الفهد', room:'٤٠٢', method:'مدى', methodKey:'mada', amt:1240, vat:186, status:'مكتملة', time:'14:32'},
-  {id:'TX-0247', outlet:'مقهى الردهة', icon:'☕', desc:'قهوة + كرواسون', customer:'زائر', room:'—', method:'Apple Pay', methodKey:'apple', amt:48, vat:7.2, status:'مكتملة', time:'14:28'},
-  {id:'TX-0246', outlet:'بار الشاطئ', icon:'🌊', desc:'مشروبات × ٣', customer:'كابانا ١٢', room:'٣٠٧', method:'على الغرفة', methodKey:'room', amt:180, vat:27, status:'مكتملة', time:'14:24'},
-  {id:'TX-0245', outlet:'سبا الواحة', icon:'🧖', desc:'حمام مغربي ٦٠ د', customer:'نورة المنصور', room:'٢١٨', method:'على الغرفة', methodKey:'room', amt:420, vat:63, status:'مكتملة', time:'14:18'},
-  {id:'TX-0244', outlet:'مطعم الواحة', icon:'🍽', desc:'عشاء × ٢', customer:'زوار', room:'—', method:'نقدي', methodKey:'cash', amt:620, vat:93, status:'مكتملة', time:'14:12'},
-  {id:'TX-0243', outlet:'مطعم الواحة', icon:'🍽', desc:'غداء × ٦', customer:'فاطمة الزهراني', room:'٤١٠', method:'على الغرفة', methodKey:'room', amt:1860, vat:279, status:'مكتملة', time:'14:05'},
-  {id:'TX-0242', outlet:'الاستقبال', icon:'🛎️', desc:'تسجيل وصول', customer:'محمد العتيبي', room:'٣٠١', method:'فيزا', methodKey:'visa', amt:3200, vat:480, status:'مكتملة', time:'13:45'},
-  {id:'TX-0241', outlet:'مقهى الردهة', icon:'☕', desc:'باقة إفطار × ٢', customer:'سارة بلال', room:'١١٢', method:'مدى', methodKey:'mada', amt:120, vat:18, status:'مكتملة', time:'09:14'},
-  {id:'TX-0240', outlet:'سبا الواحة', icon:'🧖', desc:'مساج استرخاء', customer:'وليد العنزي', room:'٥٠٦', method:'فيزا', methodKey:'visa', amt:580, vat:87, status:'مكتملة', time:'11:30'},
-  {id:'TX-0239', outlet:'الاستقبال', icon:'🛎️', desc:'منتجع نهاية أسبوع', customer:'ريم الدوسري', room:'٢٢٢', method:'Apple Pay', methodKey:'apple', amt:5440, vat:816, status:'مكتملة', time:'10:50'},
-  {id:'TX-0238', outlet:'بار الشاطئ', icon:'🌊', desc:'عصائر + وجبة خفيفة', customer:'عمر الشهري', room:'—', method:'نقدي', methodKey:'cash', amt:95, vat:14.25, status:'مكتملة', time:'12:10'},
-  {id:'TX-0237', outlet:'مطعم الواحة', icon:'🍽', desc:'بوفيه الإفطار', customer:'خالد القحطاني', room:'٣٠٥', method:'على الغرفة', methodKey:'room', amt:340, vat:51, status:'معلّقة', time:'08:40'},
-];
+var TX = [];
 
 /* ── Toast ── */
 function toast(msg, type) {
@@ -1520,18 +1504,18 @@ renderTierBar({ exc:0, good:0, low:0, bad:0 });
 
 /* ── Feature 1: Table Management ── */
 var TABLE_DATA = [
-  {n:1,  status:'occupied', guests:4, waiter:'محمد', time:'45 دقيقة',   amount:320},
-  {n:2,  status:'occupied', guests:2, waiter:'سارة', time:'٢٠ دقيقة',   amount:185},
-  {n:3,  status:'free',     guests:0, waiter:'',     time:'',            amount:0},
-  {n:4,  status:'occupied', guests:6, waiter:'عمر',  time:'١:١٠ ساعة',  amount:580},
-  {n:5,  status:'free',     guests:0, waiter:'',     time:'',            amount:0},
-  {n:6,  status:'occupied', guests:3, waiter:'نورة', time:'٣٥ دقيقة',   amount:240},
-  {n:7,  status:'reserved', guests:4, waiter:'',     time:'٧:٣٠م',      amount:0},
-  {n:8,  status:'occupied', guests:2, waiter:'محمد', time:'١٥ دقيقة',   amount:95},
-  {n:9,  status:'free',     guests:0, waiter:'',     time:'',            amount:0},
-  {n:10, status:'occupied', guests:5, waiter:'سارة', time:'٥٠ دقيقة',   amount:440},
-  {n:11, status:'occupied', guests:2, waiter:'عمر',  time:'٢٥ دقيقة',   amount:165},
-  {n:12, status:'free',     guests:0, waiter:'',     time:'',            amount:0},
+  {n:1,  status:'free', guests:0, waiter:'', time:'', amount:0},
+  {n:2,  status:'free', guests:0, waiter:'', time:'', amount:0},
+  {n:3,  status:'free', guests:0, waiter:'', time:'', amount:0},
+  {n:4,  status:'free', guests:0, waiter:'', time:'', amount:0},
+  {n:5,  status:'free', guests:0, waiter:'', time:'', amount:0},
+  {n:6,  status:'free', guests:0, waiter:'', time:'', amount:0},
+  {n:7,  status:'free', guests:0, waiter:'', time:'', amount:0},
+  {n:8,  status:'free', guests:0, waiter:'', time:'', amount:0},
+  {n:9,  status:'free', guests:0, waiter:'', time:'', amount:0},
+  {n:10, status:'free', guests:0, waiter:'', time:'', amount:0},
+  {n:11, status:'free', guests:0, waiter:'', time:'', amount:0},
+  {n:12, status:'free', guests:0, waiter:'', time:'', amount:0},
 ];
 
 function renderTables(){

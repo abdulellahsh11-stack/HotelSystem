@@ -626,12 +626,12 @@ function dlXLS(c,fn){var b=new Blob([c],{type:'application/vnd.ms-excel;charset=
 function toast(msg,isErr){var old=document.querySelector('.dh-toast');if(old)old.remove();var t=document.createElement('div');t.className='dh-toast';t.style.cssText='position:fixed;bottom:24px;inset-inline-end:24px;background:'+(isErr?'#b91c1c':'#1B4D3D')+';color:#fff;padding:12px 18px;border-radius:8px;font-family:"Tajawal",sans-serif;font-size:13px;z-index:9999;display:flex;gap:8px';t.innerHTML='<span style="color:'+(isErr?'#fca5a5':'#C9A85F')+'">'+(isErr?'✕':'✓')+'</span>'+msg;document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .4s';setTimeout(function(){if(t.parentNode)t.remove();},400);},3000);}
 
 var CHANNELS = [
-  {name:'Booking.com', status:'connected', bookings:72,  revenue:98400,  commission:15},
-  {name:'Agoda',       status:'connected', bookings:48,  revenue:62800,  commission:17},
-  {name:'Expedia',     status:'connected', bookings:28,  revenue:38400,  commission:18},
-  {name:'Almosafer',   status:'connected', bookings:22,  revenue:28200,  commission:12},
-  {name:'Trip.com',    status:'slow',      bookings:14,  revenue:18200,  commission:16},
-  {name:'Airbnb',      status:'inactive',  bookings:0,   revenue:0,      commission:14},
+  {name:'Booking.com', status:'connected', bookings:0, revenue:0, commission:15},
+  {name:'Agoda',       status:'connected', bookings:0, revenue:0, commission:17},
+  {name:'Expedia',     status:'connected', bookings:0, revenue:0, commission:18},
+  {name:'Almosafer',   status:'connected', bookings:0, revenue:0, commission:12},
+  {name:'Trip.com',    status:'slow',      bookings:0, revenue:0, commission:16},
+  {name:'Airbnb',      status:'inactive',  bookings:0, revenue:0, commission:14},
 ];
 
 window.exportCSV = function(){
@@ -734,8 +734,8 @@ window.exportPDF = function(){
 };
 </script>
 <script>
-renderVibrantHero({ icon:'🌐', num:'10', title:'تسويق القنوات', en:'Channel Marketing · OTA', sub:'Booking، Agoda، Expedia، Almosafer — ٤٢ قناة', badges:[{v:'٢٢٤',l:'حجوزات الشهر'},{v:'٤٢',l:'قناة نشطة'}] });
-renderTierBar({ exc:148, good:54, low:16, bad:6 });
+renderVibrantHero({ icon:'🌐', num:'10', title:'تسويق القنوات', en:'Channel Marketing · OTA', sub:'Booking، Agoda، Expedia، Almosafer — ٤٢ قناة', badges:[{v:'—',l:'حجوزات الشهر'},{v:'—',l:'قناة نشطة'}] });
+renderTierBar({ exc:0, good:0, low:0, bad:0 });
 </script>
 <script>
 // ── Feature 1: Rate Parity Monitor ──────────────────────────────────
