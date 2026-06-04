@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<style>
+@font-face { font-family:'Taj'; src:url('file:///tmp/arfonts/Tajawal-Regular.ttf'); font-weight:400; }
+@font-face { font-family:'Taj'; src:url('file:///tmp/arfonts/Tajawal-Bold.ttf'); font-weight:700; }
+@font-face { font-family:'Cairo'; src:url('file:///tmp/arfonts/Cairo.ttf'); }
+:root{
+  --brand:#1B4D3D; --brand2:#2A6B54; --gold:#C9A85F; --gold2:#B8924A;
+  --ink:#16201C; --muted:#6b7770; --line:#e4e9e6; --bg:#f6f8f7;
+  --good:#1f9d63; --mid:#e0a32e; --bad:#d65745; --soft:#f0f4f2;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Taj',sans-serif;color:var(--ink);font-size:12px;line-height:1.6;}
+@page{ size:A4; margin:14mm 12mm; }
+.page{ page-break-after:always; }
+.page:last-child{ page-break-after:auto; }
+h1{font-family:'Cairo';font-size:26px;color:var(--brand);font-weight:700;}
+h2{font-family:'Cairo';font-size:18px;color:var(--brand);margin:18px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--gold);}
+h3{font-family:'Cairo';font-size:14px;color:var(--brand2);margin:14px 0 6px;}
+.sub{color:var(--muted);font-size:13px;}
+
+/* cover */
+.cover{ text-align:center; padding-top:60px; }
+.logo{ font-family:'Cairo'; font-size:40px; font-weight:700; color:var(--brand); }
+.logo .d{ color:var(--gold); }
+.cover h1{ font-size:30px; margin:22px 0 8px; }
+.cover .tag{ font-size:15px; color:var(--muted); }
+.cover-card{ margin:40px auto 0; width:78%; background:var(--soft); border:1px solid var(--line); border-radius:14px; padding:24px; }
+.cover-row{ display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px dashed var(--line); font-size:13px; }
+.cover-row:last-child{border-bottom:none;}
+.cover-row b{ color:var(--brand); }
+.date{ margin-top:28px; color:var(--muted); font-size:12px; }
+
+/* overall bars */
+.platform-block{ margin:14px 0; }
+.pf-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:5px; }
+.pf-name{ font-family:'Cairo'; font-weight:700; font-size:14px; }
+.pf-name .flag{ font-size:11px; color:var(--muted); font-weight:400; }
+.pf-score{ font-family:'Cairo'; font-weight:700; font-size:15px; }
+.bar{ height:22px; background:var(--soft); border-radius:11px; overflow:hidden; position:relative; border:1px solid var(--line); }
+.bar > span{ position:absolute; top:0; right:0; height:100%; border-radius:11px; display:flex; align-items:center; padding-right:10px; color:#fff; font-family:'Cairo'; font-weight:700; font-size:11px; }
+.fill-dheuof{ background:linear-gradient(90deg,var(--brand2),var(--brand)); }
+.fill-a{ background:linear-gradient(90deg,#8aa0c9,#5e79a8); }
+.fill-b{ background:linear-gradient(90deg,#9a8fc4,#6f5fa8); }
+.fill-c{ background:linear-gradient(90deg,#c79a9a,#a86f6f); }
+.fill-d{ background:linear-gradient(90deg,#8fc4b4,#5fa890); }
+.dheuof-tag{ display:inline-block; background:var(--gold); color:#3a2c08; font-size:9px; font-weight:700; padding:1px 7px; border-radius:8px; margin-right:6px; vertical-align:middle; }
+
+/* matrix table */
+table{ width:100%; border-collapse:collapse; margin:10px 0; font-size:11px; }
+th,td{ padding:7px 6px; text-align:center; border:1px solid var(--line); }
+th{ background:var(--brand); color:#fff; font-family:'Cairo'; font-weight:700; font-size:11px; }
+td.crit{ text-align:right; font-weight:700; background:var(--soft); color:var(--brand); }
+.col-dheuof{ background:#eef6f1; font-weight:700; }
+th.col-dheuof{ background:var(--gold2); }
+.pct{ font-family:'Cairo'; font-weight:700; }
+.c-good{ color:var(--good); }
+.c-mid{ color:var(--mid); }
+.c-bad{ color:var(--bad); }
+
+/* mini radial */
+.dims{ display:flex; flex-wrap:wrap; gap:10px; margin:12px 0; }
+.dim{ width:48%; background:#fff; border:1px solid var(--line); border-radius:12px; padding:12px 14px; }
+.dim h4{ font-family:'Cairo'; font-size:13px; color:var(--brand); margin-bottom:8px; }
+.dim .row{ display:flex; align-items:center; gap:8px; margin:5px 0; font-size:10.5px; }
+.dim .nm{ width:78px; flex-shrink:0; color:var(--muted); }
+.dim .track{ flex:1; height:9px; background:var(--soft); border-radius:5px; overflow:hidden; }
+.dim .track > i{ display:block; height:100%; border-radius:5px; }
+.dim .v{ width:30px; text-align:left; font-family:'Cairo'; font-weight:700; font-size:10px; }
+
+/* strength weakness cards */
+.sw{ display:flex; gap:12px; margin:12px 0; }
+.sw-col{ flex:1; border-radius:12px; padding:14px 16px; }
+.sw-strong{ background:#eef8f1; border:1px solid #c8e6d3; }
+.sw-weak{ background:#fdeeec; border:1px solid #f3cfc9; }
+.sw-col h3{ margin-top:0; }
+.sw-strong h3{ color:var(--good); }
+.sw-weak h3{ color:var(--bad); }
+.sw-col ul{ list-style:none; }
+.sw-col li{ padding:5px 0 5px 0; padding-right:16px; position:relative; font-size:11px; border-bottom:1px dashed rgba(0,0,0,.06); }
+.sw-col li:last-child{border-bottom:none;}
+.sw-strong li:before{ content:'▲'; position:absolute; right:0; color:var(--good); font-size:9px; }
+.sw-weak li:before{ content:'▼'; position:absolute; right:0; color:var(--bad); font-size:9px; }
+.sw-col li b{ color:var(--brand); }
+
+.note{ background:var(--soft); border-right:4px solid var(--gold); padding:11px 14px; border-radius:0 8px 8px 0; margin:12px 0; font-size:11.5px; }
+.legend{ display:flex; gap:16px; flex-wrap:wrap; margin:8px 0; font-size:10.5px; color:var(--muted); }
+.legend span{ display:flex; align-items:center; gap:5px; }
+.dot{ width:11px; height:11px; border-radius:3px; display:inline-block; }
+.foot{ margin-top:14px; padding-top:8px; border-top:1px solid var(--line); color:var(--muted); font-size:9.5px; text-align:center; }
+.win{ font-family:'Cairo'; font-weight:700; color:var(--good); }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="page cover">
+  <div class="logo">ضي<span class="d">و</span>ف · Dheu<span class="d">o</span>f</div>
+  <h1>نسب القوة والضعف</h1>
+  <div class="tag">تحليل تنافسي مرئي — ضيوف مقابل جميع المنصات المحلية والعالمية</div>
+  <div class="cover-card">
+    <div class="cover-row"><span>المنصة محل التقييم</span><b>ضيوف (Dheuof)</b></div>
+    <div class="cover-row"><span>المنصات المقارَنة</span><b>نزيل · Mews · Oracle OPERA · Cloudbeds</b></div>
+    <div class="cover-row"><span>عدد المحاور</span><b>10 محاور رئيسية</b></div>
+    <div class="cover-row"><span>طريقة القياس</span><b>نسبة مئوية 0–100% لكل محور</b></div>
+    <div class="cover-row"><span>النطاق</span><b>السوق السعودي والخليجي</b></div>
+  </div>
+  <div class="date">www.dheuof.com — يونيو 2026</div>
+</div>
+
+<!-- PAGE 2 : OVERALL SCORE -->
+<div class="page">
+  <h1>التقييم الإجمالي</h1>
+  <p class="sub">متوسط مرجّح عبر 10 محاور — كلما طال الشريط زادت القوة الكلية للمنصة.</p>
+
+  <div class="platform-block">
+    <div class="pf-head"><div class="pf-name"><span class="dheuof-tag">منصتنا</span>ضيوف <span class="flag">— السعودية</span></div><div class="pf-score" style="color:var(--brand)">87%</div></div>
+    <div class="bar"><span class="fill-dheuof" style="width:87%">87%</span></div>
+  </div>
+  <div class="platform-block">
+    <div class="pf-head"><div class="pf-name">Mews <span class="flag">— هولندا/عالمي</span></div><div class="pf-score" style="color:#6f5fa8">85%</div></div>
+    <div class="bar"><span class="fill-b" style="width:85%">85%</span></div>
+  </div>
+  <div class="platform-block">
+    <div class="pf-head"><div class="pf-name">Cloudbeds <span class="flag">— أمريكا/عالمي</span></div><div class="pf-score" style="color:#5fa890">83%</div></div>
+    <div class="bar"><span class="fill-d" style="width:83%">83%</span></div>
+  </div>
+  <div class="platform-block">
+    <div class="pf-head"><div class="pf-name">Oracle OPERA <span class="flag">— أمريكا/مؤسسي</span></div><div class="pf-score" style="color:#5e79a8">81%</div></div>
+    <div class="bar"><span class="fill-a" style="width:81%">81%</span></div>
+  </div>
+  <div class="platform-block">
+    <div class="pf-head"><div class="pf-name">نزيل <span class="flag">— السعودية</span></div><div class="pf-score" style="color:#a86f6f">72%</div></div>
+    <div class="bar"><span class="fill-c" style="width:72%">72%</span></div>
+  </div>
+
+  <div class="note">
+    <b>قراءة النتيجة:</b> ضيوف تتصدّر بفارق بسيط بفضل التكامل المحلي العميق (شموس/زاتكا)، والتغطية الشاملة (PMS + ERP ضيافة في منصة واحدة)، والتسعير التنافسي. الفجوة الحقيقية أمام المنصات العالمية تكمن في <b>مدير القنوات الناضج</b> و<b>الشهادات الأمنية المعتمدة</b> — وهي قيد المعالجة في خارطة الحلول.
+  </div>
+
+  <h2>توزيع القوة حسب الفئة</h2>
+  <div class="legend">
+    <span><i class="dot" style="background:var(--good)"></i> قوة عالية (80–100%)</span>
+    <span><i class="dot" style="background:var(--mid)"></i> متوسطة (60–79%)</span>
+    <span><i class="dot" style="background:var(--bad)"></i> نقطة ضعف (&lt;60%)</span>
+  </div>
+  <table>
+    <tr>
+      <th class="crit" style="text-align:right;background:var(--brand)">المحور</th>
+      <th class="col-dheuof">ضيوف</th><th>نزيل</th><th>Mews</th><th>OPERA</th><th>Cloudbeds</th>
+    </tr>
+    <tr><td class="crit">التكامل الحكومي المحلي</td><td class="col-dheuof pct c-good">98%</td><td class="pct c-good">90%</td><td class="pct c-bad">35%</td><td class="pct c-bad">40%</td><td class="pct c-bad">30%</td></tr>
+    <tr><td class="crit">شمولية الوحدات (PMS+ERP)</td><td class="col-dheuof pct c-good">95%</td><td class="pct c-mid">65%</td><td class="pct c-good">88%</td><td class="pct c-good">92%</td><td class="pct c-good">85%</td></tr>
+    <tr><td class="crit">إدارة الحجوزات والنزلاء</td><td class="col-dheuof pct c-good">90%</td><td class="pct c-good">85%</td><td class="pct c-good">95%</td><td class="pct c-good">96%</td><td class="pct c-good">93%</td></tr>
+    <tr><td class="crit">بوابات الدفع (PCI)</td><td class="col-dheuof pct c-mid">78%</td><td class="pct c-mid">70%</td><td class="pct c-good">95%</td><td class="pct c-good">95%</td><td class="pct c-good">92%</td></tr>
+    <tr><td class="crit">مدير القنوات (OTA)</td><td class="col-dheuof pct c-bad">55%</td><td class="pct c-mid">68%</td><td class="pct c-good">96%</td><td class="pct c-good">90%</td><td class="pct c-good">97%</td></tr>
+    <tr><td class="crit">إدارة الإيرادات والتسعير</td><td class="col-dheuof pct c-good">82%</td><td class="pct c-mid">60%</td><td class="pct c-good">93%</td><td class="pct c-good">90%</td><td class="pct c-good">85%</td></tr>
+    <tr><td class="crit">واجهات API ومتجر تطبيقات</td><td class="col-dheuof pct c-mid">70%</td><td class="pct c-bad">45%</td><td class="pct c-good">95%</td><td class="pct c-good">88%</td><td class="pct c-good">90%</td></tr>
+    <tr><td class="crit">الأمان والشهادات المعتمدة</td><td class="col-dheuof pct c-mid">75%</td><td class="pct c-mid">65%</td><td class="pct c-good">96%</td><td class="pct c-good">98%</td><td class="pct c-good">94%</td></tr>
+    <tr><td class="crit">التعريب وتجربة المستخدم العربية</td><td class="col-dheuof pct c-good">97%</td><td class="pct c-good">92%</td><td class="pct c-mid">60%</td><td class="pct c-bad">55%</td><td class="pct c-mid">62%</td></tr>
+    <tr><td class="crit">السعر مقابل القيمة</td><td class="col-dheuof pct c-good">92%</td><td class="pct c-good">80%</td><td class="pct c-mid">65%</td><td class="pct c-bad">50%</td><td class="pct c-mid">70%</td></tr>
+  </table>
+  <div class="foot">القيم تقديرية مبنية على المواصفات المعلنة للمنصات (2025–2026) وتقييم الوحدات الفعلية لمنصة ضيوف · لأغراض التحليل التنافسي الداخلي.</div>
+</div>
+
+<!-- PAGE 3 : Dheuof strengths/weaknesses -->
+<div class="page">
+  <h1>ضيوف — نقاط القوة والضعف</h1>
+  <p class="sub">تحليل مباشر لموقع منصة ضيوف مقابل السوق.</p>
+  <div class="sw">
+    <div class="sw-col sw-strong">
+      <h3>نقاط القوة</h3>
+      <ul>
+        <li><b>التكامل الحكومي 98%</b> — شموس وزاتكا أصلياً، يتفوق على جميع المنصات العالمية</li>
+        <li><b>الشمولية 95%</b> — 17 وحدة (PMS + POS + ERP ضيافة + موارد بشرية) في منصة واحدة</li>
+        <li><b>التعريب 97%</b> — RTL أصلي وتجربة عربية كاملة لا تضاهيها OPERA/Mews</li>
+        <li><b>السعر/القيمة 92%</b> — تكلفة أقل بكثير من المنصات العالمية</li>
+        <li><b>تكامل محلي</b> — مدى / STC Pay / Apple Pay جاهزة</li>
+      </ul>
+    </div>
+    <div class="sw-col sw-weak">
+      <h3>نقاط الضعف</h3>
+      <ul>
+        <li><b>مدير القنوات 55%</b> — ربط OTA أولي، يحتاج نضوج (Booking/Expedia/Airbnb)</li>
+        <li><b>API 70%</b> — موثّق لكن لا يوجد متجر تطبيقات بعد</li>
+        <li><b>الشهادات الأمنية 75%</b> — لا توجد شهادة PCI-DSS / ISO معتمدة رسمياً بعد</li>
+        <li><b>بوابات الدفع 78%</b> — التكامل PCI لم يكتمل بالكامل</li>
+        <li><b>سجل المراجع</b> — منتج جديد، قاعدة عملاء محدودة</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>الفجوة مقابل كل منافس (نقاط مئوية)</h2>
+  <p class="sub">الأخضر = ضيوف تتفوق · الأحمر = المنافس يتفوق</p>
+  <table>
+    <tr><th class="crit" style="text-align:right;background:var(--brand)">المنافس</th><th>إجمالي ضيوف</th><th>إجمالي المنافس</th><th>الفجوة</th><th>النتيجة</th></tr>
+    <tr><td class="crit">نزيل</td><td class="col-dheuof">87%</td><td>72%</td><td class="pct c-good">+15</td><td class="win">ضيوف تتفوق</td></tr>
+    <tr><td class="crit">Oracle OPERA</td><td class="col-dheuof">87%</td><td>81%</td><td class="pct c-good">+6</td><td class="win">ضيوف تتفوق</td></tr>
+    <tr><td class="crit">Cloudbeds</td><td class="col-dheuof">87%</td><td>83%</td><td class="pct c-good">+4</td><td class="win">ضيوف تتفوق</td></tr>
+    <tr><td class="crit">Mews</td><td class="col-dheuof">87%</td><td>85%</td><td class="pct c-good">+2</td><td class="win">ضيوف تتفوق (هامش ضيق)</td></tr>
+  </table>
+
+  <div class="note">
+    <b>الخلاصة الاستراتيجية:</b> ضيوف تكسب بوضوح في السوق المحلي (تكامل + تعريب + سعر)، وتنافس عالمياً بهامش ضيق. لإغلاق الفجوة نهائياً أمام Mews/Cloudbeds: إنضاج <b>مدير القنوات</b> ونيل <b>شهادة PCI-DSS وISO 27001</b> — وهما البندان الوحيدان دون 60% أو قرب الحدود.
+  </div>
+</div>
+
+<!-- PAGE 4 : per-dimension mini bars -->
+<div class="page">
+  <h1>القوة لكل منصة عبر المحاور</h1>
+  <p class="sub">خريطة قوة مصغّرة — لكل منصة بصمة قوتها الخاصة.</p>
+  <div class="dims">
+
+    <div class="dim">
+      <h4>ضيوف</h4>
+      <div class="row"><span class="nm">تكامل محلي</span><span class="track"><i style="width:98%;background:var(--good)"></i></span><span class="v">98</span></div>
+      <div class="row"><span class="nm">شمولية</span><span class="track"><i style="width:95%;background:var(--good)"></i></span><span class="v">95</span></div>
+      <div class="row"><span class="nm">تعريب</span><span class="track"><i style="width:97%;background:var(--good)"></i></span><span class="v">97</span></div>
+      <div class="row"><span class="nm">سعر/قيمة</span><span class="track"><i style="width:92%;background:var(--good)"></i></span><span class="v">92</span></div>
+      <div class="row"><span class="nm">مدير قنوات</span><span class="track"><i style="width:55%;background:var(--bad)"></i></span><span class="v">55</span></div>
+      <div class="row"><span class="nm">أمان معتمد</span><span class="track"><i style="width:75%;background:var(--mid)"></i></span><span class="v">75</span></div>
+    </div>
+
+    <div class="dim">
+      <h4>نزيل</h4>
+      <div class="row"><span class="nm">تكامل محلي</span><span class="track"><i style="width:90%;background:var(--good)"></i></span><span class="v">90</span></div>
+      <div class="row"><span class="nm">شمولية</span><span class="track"><i style="width:65%;background:var(--mid)"></i></span><span class="v">65</span></div>
+      <div class="row"><span class="nm">تعريب</span><span class="track"><i style="width:92%;background:var(--good)"></i></span><span class="v">92</span></div>
+      <div class="row"><span class="nm">سعر/قيمة</span><span class="track"><i style="width:80%;background:var(--good)"></i></span><span class="v">80</span></div>
+      <div class="row"><span class="nm">مدير قنوات</span><span class="track"><i style="width:68%;background:var(--mid)"></i></span><span class="v">68</span></div>
+      <div class="row"><span class="nm">أمان معتمد</span><span class="track"><i style="width:65%;background:var(--mid)"></i></span><span class="v">65</span></div>
+    </div>
+
+    <div class="dim">
+      <h4>Mews</h4>
+      <div class="row"><span class="nm">تكامل محلي</span><span class="track"><i style="width:35%;background:var(--bad)"></i></span><span class="v">35</span></div>
+      <div class="row"><span class="nm">شمولية</span><span class="track"><i style="width:88%;background:var(--good)"></i></span><span class="v">88</span></div>
+      <div class="row"><span class="nm">تعريب</span><span class="track"><i style="width:60%;background:var(--mid)"></i></span><span class="v">60</span></div>
+      <div class="row"><span class="nm">سعر/قيمة</span><span class="track"><i style="width:65%;background:var(--mid)"></i></span><span class="v">65</span></div>
+      <div class="row"><span class="nm">مدير قنوات</span><span class="track"><i style="width:96%;background:var(--good)"></i></span><span class="v">96</span></div>
+      <div class="row"><span class="nm">أمان معتمد</span><span class="track"><i style="width:96%;background:var(--good)"></i></span><span class="v">96</span></div>
+    </div>
+
+    <div class="dim">
+      <h4>Oracle OPERA</h4>
+      <div class="row"><span class="nm">تكامل محلي</span><span class="track"><i style="width:40%;background:var(--bad)"></i></span><span class="v">40</span></div>
+      <div class="row"><span class="nm">شمولية</span><span class="track"><i style="width:92%;background:var(--good)"></i></span><span class="v">92</span></div>
+      <div class="row"><span class="nm">تعريب</span><span class="track"><i style="width:55%;background:var(--bad)"></i></span><span class="v">55</span></div>
+      <div class="row"><span class="nm">سعر/قيمة</span><span class="track"><i style="width:50%;background:var(--bad)"></i></span><span class="v">50</span></div>
+      <div class="row"><span class="nm">مدير قنوات</span><span class="track"><i style="width:90%;background:var(--good)"></i></span><span class="v">90</span></div>
+      <div class="row"><span class="nm">أمان معتمد</span><span class="track"><i style="width:98%;background:var(--good)"></i></span><span class="v">98</span></div>
+    </div>
+
+    <div class="dim">
+      <h4>Cloudbeds</h4>
+      <div class="row"><span class="nm">تكامل محلي</span><span class="track"><i style="width:30%;background:var(--bad)"></i></span><span class="v">30</span></div>
+      <div class="row"><span class="nm">شمولية</span><span class="track"><i style="width:85%;background:var(--good)"></i></span><span class="v">85</span></div>
+      <div class="row"><span class="nm">تعريب</span><span class="track"><i style="width:62%;background:var(--mid)"></i></span><span class="v">62</span></div>
+      <div class="row"><span class="nm">سعر/قيمة</span><span class="track"><i style="width:70%;background:var(--mid)"></i></span><span class="v">70</span></div>
+      <div class="row"><span class="nm">مدير قنوات</span><span class="track"><i style="width:97%;background:var(--good)"></i></span><span class="v">97</span></div>
+      <div class="row"><span class="nm">أمان معتمد</span><span class="track"><i style="width:94%;background:var(--good)"></i></span><span class="v">94</span></div>
+    </div>
+
+    <div class="dim" style="background:var(--brand);color:#fff;">
+      <h4 style="color:var(--gold)">الخلاصة</h4>
+      <p style="font-size:11px;line-height:1.8;">
+        <b style="color:var(--gold)">ضيوف</b> = أقوى محلياً، أشمل وظيفياً، أفضل سعراً.<br><br>
+        فجوتها الوحيدة محصورة في <b>مدير القنوات</b> و<b>الشهادات الأمنية</b> — وكلاهما ضمن خارطة الحلول قصيرة المدى.<br><br>
+        إغلاق هذين البندين يرفع الإجمالي من <b style="color:var(--gold)">87%</b> إلى <b style="color:var(--gold)">~94%</b> ويجعلها المتصدّر بلا منازع.
+      </p>
+    </div>
+
+  </div>
+  <div class="foot">ضيوف · Dheuof — www.dheuof.com · تحليل تنافسي مرئي · يونيو 2026</div>
+</div>
+
+</body>
+</html>
