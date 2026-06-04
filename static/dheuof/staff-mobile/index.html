@@ -67,6 +67,12 @@
   .login select,.login input{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;margin-bottom:16px;background:rgba(255,255,255,.95)}
   .login .lbtn{width:100%;padding:15px;border:none;border-radius:12px;background:var(--gold);color:var(--brand);font-size:16px;font-weight:700}
   .role-hint{background:rgba(201,168,95,.14);border:1px solid rgba(201,168,95,.3);border-radius:10px;padding:11px 14px;font-size:12px;color:var(--gold-soft);margin-bottom:18px;line-height:1.6}
+  /* language selector */
+  .lang-bar{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:22px}
+  .lang-chip{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:#fff;font-size:12px;padding:7px 13px;border-radius:999px;font-weight:600}
+  .lang-chip.on{background:var(--gold);color:var(--brand);border-color:var(--gold)}
+  .lang-select{display:flex;align-items:center;gap:8px;background:var(--card);border-radius:12px;padding:13px 16px;margin-bottom:8px;font-size:14px}
+  .lang-select select{margin-inline-start:auto;border:1px solid var(--line);border-radius:9px;padding:8px 12px;font-size:14px;background:var(--bg)}
 
   /* ── header ── */
   .hd{background:linear-gradient(135deg,var(--brand2),var(--brand));color:#fff;padding:18px 16px 16px;border-radius:0 0 20px 20px}
@@ -213,28 +219,29 @@
 
   <!-- PWA: Install bar (Android/Chrome) -->
   <div id="install-bar">
-    <div class="msg"><b>📲 ثبّت التطبيق على جهازك</b>يعمل بدون إنترنت كتطبيق كامل</div>
-    <button class="ibtn" onclick="pwaInstall()">تثبيت</button>
+    <div class="msg"><b data-i18n="pwa_install_t">📲 ثبّت التطبيق على جهازك</b><span data-i18n="pwa_install_s">يعمل بدون إنترنت كتطبيق كامل</span></div>
+    <button class="ibtn" onclick="pwaInstall()" data-i18n="pwa_install_btn">تثبيت</button>
     <button class="cls" onclick="this.closest('#install-bar').classList.remove('show')">✕</button>
   </div>
 
   <!-- PWA: Offline indicator -->
-  <div id="offline-bar">📶 أنت غير متصل بالإنترنت — التطبيق يعمل محلياً</div>
+  <div id="offline-bar" data-i18n="pwa_offline">📶 أنت غير متصل بالإنترنت — التطبيق يعمل محلياً</div>
 
   <!-- PWA: Update available -->
-  <div id="update-bar" onclick="pwaUpdate()">🔄 تحديث جديد متاح — اضغط هنا للتحديث</div>
+  <div id="update-bar" onclick="pwaUpdate()" data-i18n="pwa_update">🔄 تحديث جديد متاح — اضغط هنا للتحديث</div>
 
   <!-- LOGIN -->
   <div class="login" id="loginView">
+    <div class="lang-bar" id="loginLangBar"></div>
     <div class="logo">📱</div>
-    <h1>تطبيق الموظفين</h1>
+    <h1 data-i18n="app_title">تطبيق الموظفين</h1>
     <p>ضيوف · Staff App</p>
-    <div class="role-hint">👤 اختر اسمك — وسيتم تحميل <b>وضع المدير</b> أو <b>وضع الموظف</b> تلقائياً حسب صلاحيتك.</div>
-    <label>الموظف</label>
+    <div class="role-hint" data-i18n="login_hint">👤 اختر اسمك — وسيتم تحميل وضع المدير أو وضع الموظف تلقائياً حسب صلاحيتك.</div>
+    <label data-i18n="lbl_employee">الموظف</label>
     <select id="loginUser"></select>
-    <label>الرمز السري (تجريبي: 0000)</label>
+    <label data-i18n="lbl_pin">الرمز السري (تجريبي: 0000)</label>
     <input id="loginPin" type="password" value="0000" inputmode="numeric"/>
-    <button class="lbtn" onclick="doLogin()">دخول</button>
+    <button class="lbtn" onclick="doLogin()" data-i18n="btn_login">دخول</button>
   </div>
 
   <!-- APP -->
@@ -249,8 +256,8 @@
       </div>
       <div class="body" id="convBody"></div>
       <div class="comp">
-        <input id="convInput" placeholder="اكتب رسالة…" onkeydown="if(event.key==='Enter')sendMsg()"/>
-        <button onclick="sendMsg()">إرسال</button>
+        <input id="convInput" data-i18n-ph="ph_message" placeholder="اكتب رسالة…" onkeydown="if(event.key==='Enter')sendMsg()"/>
+        <button onclick="sendMsg()" data-i18n="btn_send">إرسال</button>
       </div>
     </div>
 
@@ -261,24 +268,24 @@
   <!-- task sheet -->
   <div class="ov" id="taskSheet">
     <div class="sheet">
-      <h3 id="taskSheetTitle">مهمة جديدة</h3>
-      <div class="fld"><label>عنوان المهمة</label><input id="ntTitle" placeholder="مثال: تجهيز غرفة 204"/></div>
-      <div class="fld" id="ntToWrap"><label>إسناد إلى موظف</label><select id="ntTo"></select></div>
-      <div class="fld"><label>الأولوية</label><select id="ntPri"><option value="high">عاجلة</option><option value="mid" selected>متوسطة</option><option value="low">عادية</option></select></div>
-      <div class="fld"><label>تفاصيل وإيضاح المهمة</label><textarea id="ntDesc" placeholder="اشرح المطلوب بوضوح…"></textarea></div>
-      <button class="save" onclick="createTask()">إرسال المهمة</button>
-      <button class="cancel" onclick="closeSheet('taskSheet')">إلغاء</button>
+      <h3 id="taskSheetTitle" data-i18n="sheet_new_task">مهمة جديدة</h3>
+      <div class="fld"><label data-i18n="lbl_task_title">عنوان المهمة</label><input id="ntTitle" data-i18n-ph="ph_task_title" placeholder="مثال: تجهيز غرفة 204"/></div>
+      <div class="fld" id="ntToWrap"><label data-i18n="lbl_assign_to">إسناد إلى موظف</label><select id="ntTo"></select></div>
+      <div class="fld"><label data-i18n="lbl_priority">الأولوية</label><select id="ntPri"><option value="high" data-i18n="pri_high">عاجلة</option><option value="mid" selected data-i18n="pri_mid">متوسطة</option><option value="low" data-i18n="pri_low">عادية</option></select></div>
+      <div class="fld"><label data-i18n="lbl_task_desc">تفاصيل وإيضاح المهمة</label><textarea id="ntDesc" data-i18n-ph="ph_task_desc" placeholder="اشرح المطلوب بوضوح…"></textarea></div>
+      <button class="save" onclick="createTask()" data-i18n="btn_send_task">إرسال المهمة</button>
+      <button class="cancel" onclick="closeSheet('taskSheet')" data-i18n="btn_cancel">إلغاء</button>
     </div>
   </div>
 
   <!-- clarify sheet -->
   <div class="ov" id="clarSheet">
     <div class="sheet">
-      <h3>طلب إيضاح</h3>
+      <h3 data-i18n="sheet_clarify">طلب إيضاح</h3>
       <input type="hidden" id="clarTaskId"/>
-      <div class="fld"><label>سؤالك للمُرسِل</label><textarea id="clarText" placeholder="ما الذي تريد توضيحه؟"></textarea></div>
-      <button class="save" onclick="submitClarify()">إرسال السؤال</button>
-      <button class="cancel" onclick="closeSheet('clarSheet')">إلغاء</button>
+      <div class="fld"><label data-i18n="lbl_your_question">سؤالك للمُرسِل</label><textarea id="clarText" data-i18n-ph="ph_clarify" placeholder="ما الذي تريد توضيحه؟"></textarea></div>
+      <button class="save" onclick="submitClarify()" data-i18n="btn_send_question">إرسال السؤال</button>
+      <button class="cancel" onclick="closeSheet('clarSheet')" data-i18n="btn_cancel">إلغاء</button>
     </div>
   </div>
 
@@ -286,16 +293,174 @@
 </div>
 
 <script>
+/* ============ اللغات / Languages ============ */
+var LANGS = [
+  { code:'ar', name:'العربية',  flag:'🇸🇦', dir:'rtl' },
+  { code:'en', name:'English',  flag:'🇬🇧', dir:'ltr' },
+  { code:'hi', name:'हिन्दी',    flag:'🇮🇳', dir:'ltr' },
+  { code:'ne', name:'नेपाली',    flag:'🇳🇵', dir:'ltr' },
+  { code:'bn', name:'বাংলা',     flag:'🇧🇩', dir:'ltr' }
+];
+var I18N = {
+  app_title:      {ar:'تطبيق الموظفين', en:'Staff App', hi:'स्टाफ ऐप', ne:'कर्मचारी एप', bn:'স্টাফ অ্যাপ'},
+  login_hint:     {ar:'👤 اختر اسمك — وسيتم تحميل وضع المدير أو وضع الموظف تلقائياً حسب صلاحيتك.', en:'👤 Select your name — Manager or Employee mode loads automatically based on your role.', hi:'👤 अपना नाम चुनें — आपकी भूमिका के अनुसार मैनेजर या कर्मचारी मोड अपने आप लोड होगा।', ne:'👤 आफ्नो नाम छान्नुहोस् — तपाईंको भूमिका अनुसार प्रबन्धक वा कर्मचारी मोड स्वतः लोड हुन्छ।', bn:'👤 আপনার নাম নির্বাচন করুন — আপনার ভূমিকা অনুযায়ী ম্যানেজার বা কর্মচারী মোড স্বয়ংক্রিয়ভাবে লোড হবে।'},
+  lbl_employee:   {ar:'الموظف', en:'Employee', hi:'कर्मचारी', ne:'कर्मचारी', bn:'কর্মচারী'},
+  lbl_pin:        {ar:'الرمز السري (تجريبي: 0000)', en:'PIN (demo: 0000)', hi:'पिन (डेमो: 0000)', ne:'पिन (डेमो: 0000)', bn:'পিন (ডেমো: 0000)'},
+  btn_login:      {ar:'دخول', en:'Login', hi:'लॉगिन', ne:'लगइन', bn:'লগইন'},
+  mgr_suffix:     {ar:'(مدير)', en:'(Manager)', hi:'(मैनेजर)', ne:'(प्रबन्धक)', bn:'(ম্যানেজার)'},
+  err_pin:        {ar:'الرمز السري غير صحيح', en:'Incorrect PIN', hi:'गलत पिन', ne:'गलत पिन', bn:'ভুল পিন'},
+  lbl_language:   {ar:'اللغة', en:'Language', hi:'भाषा', ne:'भाषा', bn:'ভাষা'},
+
+  nav_home:  {ar:'الرئيسية', en:'Home', hi:'होम', ne:'गृह', bn:'হোম'},
+  nav_tasks: {ar:'المهام', en:'Tasks', hi:'कार्य', ne:'कार्य', bn:'কাজ'},
+  nav_chat:  {ar:'التراسل', en:'Chat', hi:'चैट', ne:'च्याट', bn:'চ্যাট'},
+  nav_house: {ar:'السكن', en:'Housing', hi:'आवास', ne:'आवास', bn:'আবাসন'},
+  nav_me:    {ar:'حسابي', en:'Profile', hi:'प्रोफ़ाइल', ne:'प्रोफाइल', bn:'প্রোফাইল'},
+
+  greet_morning: {ar:'صباح الخير', en:'Good morning', hi:'सुप्रभात', ne:'शुभ प्रभात', bn:'শুভ সকাল'},
+  greet_evening: {ar:'مساء الخير', en:'Good evening', hi:'शुभ संध्या', ne:'शुभ साँझ', bn:'শুভ সন্ধ্যা'},
+  badge_mgr:   {ar:'مدير', en:'Manager', hi:'मैनेजर', ne:'प्रबन्धक', bn:'ম্যানেজার'},
+  badge_staff: {ar:'موظف', en:'Employee', hi:'कर्मचारी', ne:'कर्मचारी', bn:'কর্মচারী'},
+
+  att_in:      {ar:'تسجيل الحضور', en:'Check In', hi:'चेक इन', ne:'चेक इन', bn:'চেক ইন'},
+  att_out:     {ar:'تسجيل الانصراف', en:'Check Out', hi:'चेक आउट', ne:'चेक आउट', bn:'চেক আউট'},
+  att_in_sub:  {ar:'بصمة ذكية + GPS', en:'Smart fingerprint + GPS', hi:'स्मार्ट फिंगरप्रिंट + GPS', ne:'स्मार्ट फिंगरप्रिन्ट + GPS', bn:'স্মার্ট ফিঙ্গারপ্রিন্ট + GPS'},
+  att_out_sub: {ar:'أنت حاضر الآن', en:'You are present now', hi:'आप अभी उपस्थित हैं', ne:'तपाईं अहिले उपस्थित हुनुहुन्छ', bn:'আপনি এখন উপস্থিত'},
+  att_done_in: {ar:'تم تسجيل الحضور ✓', en:'Checked in ✓', hi:'चेक इन हो गया ✓', ne:'चेक इन भयो ✓', bn:'চেক ইন হয়েছে ✓'},
+  att_done_out:{ar:'تم تسجيل الانصراف', en:'Checked out', hi:'चेक आउट हो गया', ne:'चेक आउट भयो', bn:'চেক আউট হয়েছে'},
+
+  stat_hours:     {ar:'ساعة عمل', en:'Work hrs', hi:'कार्य घंटे', ne:'काम घण्टा', bn:'কর্মঘণ্টা'},
+  stat_mytasks:   {ar:'مهامي', en:'My tasks', hi:'मेरे कार्य', ne:'मेरा कार्य', bn:'আমার কাজ'},
+  stat_done:      {ar:'منجزة', en:'Done', hi:'पूर्ण', ne:'सम्पन्न', bn:'সম্পন্ন'},
+  stat_remaining: {ar:'متبقّية', en:'Remaining', hi:'शेष', ne:'बाँकी', bn:'বাকি'},
+
+  mgr_overview: {ar:'نظرة المدير', en:'Manager Overview', hi:'मैनेजर अवलोकन', ne:'प्रबन्धक अवलोकन', bn:'ম্যানেজার সারসংক্ষেপ'},
+  mgr_present:  {ar:'حاضر الآن', en:'Present now', hi:'अभी उपस्थित', ne:'अहिले उपस्थित', bn:'এখন উপস্থিত'},
+  mgr_open:     {ar:'مهام مفتوحة', en:'Open tasks', hi:'खुले कार्य', ne:'खुला कार्य', bn:'খোলা কাজ'},
+  mgr_closed:   {ar:'مهام مغلقة', en:'Closed tasks', hi:'बंद कार्य', ne:'बन्द कार्य', bn:'বন্ধ কাজ'},
+
+  today_schedule: {ar:'جدول اليوم', en:'Today’s Schedule', hi:'आज का शेड्यूल', ne:'आजको तालिका', bn:'আজকের সূচি'},
+  sch_shift: {ar:'الوردية القادمة', en:'Next shift', hi:'अगली शिफ्ट', ne:'अर्को पाली', bn:'পরবর্তী শিফট'},
+  sch_meal:  {ar:'وقت الوجبة', en:'Meal time', hi:'भोजन समय', ne:'खाना समय', bn:'খাবার সময়'},
+  sch_end:   {ar:'نهاية الوردية', en:'Shift end', hi:'शिफ्ट समाप्ति', ne:'पाली अन्त्य', bn:'শিফট শেষ'},
+
+  tasks_manage: {ar:'إدارة المهام', en:'Manage Tasks', hi:'कार्य प्रबंधन', ne:'कार्य व्यवस्थापन', bn:'কাজ ব্যবস্থাপনা'},
+  tasks_mine:   {ar:'مهامي', en:'My Tasks', hi:'मेरे कार्य', ne:'मेरा कार्य', bn:'আমার কাজ'},
+  btn_assign:   {ar:'+ إسناد مهمة', en:'+ Assign task', hi:'+ कार्य सौंपें', ne:'+ कार्य तोक्नुहोस्', bn:'+ কাজ অর্পণ'},
+  filt_all:     {ar:'الكل', en:'All', hi:'सभी', ne:'सबै', bn:'সব'},
+  filt_open:    {ar:'المفتوحة', en:'Open', hi:'खुले', ne:'खुला', bn:'খোলা'},
+  no_tasks:     {ar:'لا توجد مهام', en:'No tasks', hi:'कोई कार्य नहीं', ne:'कुनै कार्य छैन', bn:'কোনো কাজ নেই'},
+
+  st_open:   {ar:'مفتوحة', en:'Open', hi:'खुला', ne:'खुला', bn:'খোলা'},
+  st_prog:   {ar:'قيد التنفيذ', en:'In progress', hi:'प्रगति में', ne:'प्रगतिमा', bn:'চলমান'},
+  st_closed: {ar:'مغلقة', en:'Closed', hi:'बंद', ne:'बन्द', bn:'বন্ধ'},
+  pri_high:  {ar:'عاجلة', en:'Urgent', hi:'अत्यावश्यक', ne:'जरुरी', bn:'জরুরি'},
+  pri_mid:   {ar:'متوسطة', en:'Medium', hi:'मध्यम', ne:'मध्यम', bn:'মাঝারি'},
+  pri_low:   {ar:'عادية', en:'Normal', hi:'सामान्य', ne:'सामान्य', bn:'সাধারণ'},
+
+  lbl_from:  {ar:'من', en:'From', hi:'से', ne:'बाट', bn:'থেকে'},
+  lbl_to:    {ar:'إلى', en:'To', hi:'को', ne:'लाई', bn:'প্রতি'},
+  act_start: {ar:'بدء التنفيذ', en:'Start', hi:'शुरू करें', ne:'सुरु', bn:'শুরু'},
+  act_clarify:{ar:'طلب إيضاح', en:'Ask clarification', hi:'स्पष्टीकरण मांगें', ne:'स्पष्टीकरण माग्नुहोस्', bn:'ব্যাখ্যা চান'},
+  act_close: {ar:'إغلاق', en:'Close', hi:'बंद करें', ne:'बन्द', bn:'বন্ধ'},
+  act_reopen:{ar:'إعادة فتح', en:'Reopen', hi:'फिर खोलें', ne:'पुनः खोल्नुहोस्', bn:'পুনরায় খুলুন'},
+  lbl_reply: {ar:'الرد', en:'Reply', hi:'उत्तर', ne:'जवाफ', bn:'উত্তর'},
+  act_answer:{ar:'الرد على الإيضاح', en:'Answer clarification', hi:'स्पष्टीकरण का उत्तर दें', ne:'स्पष्टीकरण जवाफ', bn:'ব্যাখ্যার উত্তর'},
+
+  toast_closed:   {ar:'تم إغلاق المهمة ✓', en:'Task closed ✓', hi:'कार्य बंद ✓', ne:'कार्य बन्द ✓', bn:'কাজ বন্ধ ✓'},
+  toast_started:  {ar:'بدأ التنفيذ', en:'Started', hi:'शुरू हुआ', ne:'सुरु भयो', bn:'শুরু হয়েছে'},
+  toast_reopened: {ar:'أعيد فتح المهمة', en:'Task reopened', hi:'कार्य फिर खुला', ne:'कार्य पुनः खुल्यो', bn:'কাজ পুনরায় খোলা'},
+  sheet_new_task: {ar:'إسناد مهمة جديدة', en:'Assign new task', hi:'नया कार्य सौंपें', ne:'नयाँ कार्य तोक्नुहोस्', bn:'নতুন কাজ অর্পণ'},
+  err_task_title: {ar:'أدخل عنوان المهمة', en:'Enter task title', hi:'कार्य शीर्षक दर्ज करें', ne:'कार्य शीर्षक लेख्नुहोस्', bn:'কাজের শিরোনাম দিন'},
+  toast_assigned: {ar:'تم إسناد المهمة ✓', en:'Task assigned ✓', hi:'कार्य सौंपा गया ✓', ne:'कार्य तोकियो ✓', bn:'কাজ অর্পিত ✓'},
+  err_question:   {ar:'اكتب سؤالك', en:'Write your question', hi:'अपना प्रश्न लिखें', ne:'आफ्नो प्रश्न लेख्नुहोस्', bn:'আপনার প্রশ্ন লিখুন'},
+  toast_clarify_sent:{ar:'تم إرسال طلب الإيضاح', en:'Clarification sent', hi:'स्पष्टीकरण भेजा गया', ne:'स्पष्टीकरण पठाइयो', bn:'ব্যাখ্যা পাঠানো হয়েছে'},
+  prompt_answer:  {ar:'ردك على طلب الإيضاح:', en:'Your reply to the clarification:', hi:'स्पष्टीकरण का आपका उत्तर:', ne:'स्पष्टीकरणको तपाईंको जवाफ:', bn:'ব্যাখ্যার আপনার উত্তর:'},
+  toast_answer_sent:{ar:'تم إرسال الرد', en:'Reply sent', hi:'उत्तर भेजा गया', ne:'जवाफ पठाइयो', bn:'উত্তর পাঠানো হয়েছে'},
+
+  chat_title: {ar:'التراسل بين الموظفين', en:'Staff Messaging', hi:'स्टाफ संदेश', ne:'कर्मचारी सन्देश', bn:'স্টাফ বার্তা'},
+  chat_start: {ar:'ابدأ المحادثة', en:'Start the conversation', hi:'बातचीत शुरू करें', ne:'कुराकानी सुरु गर्नुहोस्', bn:'কথোপকথন শুরু করুন'},
+  ph_message: {ar:'اكتب رسالة…', en:'Type a message…', hi:'संदेश लिखें…', ne:'सन्देश लेख्नुहोस्…', bn:'বার্তা লিখুন…'},
+  btn_send:   {ar:'إرسال', en:'Send', hi:'भेजें', ne:'पठाउनुहोस्', bn:'পাঠান'},
+
+  house_title: {ar:'فحص أدوات السكن', en:'Housing Tools Inspection', hi:'आवास उपकरण निरीक्षण', ne:'आवास उपकरण निरीक्षण', bn:'আবাসন সরঞ্জাম পরিদর্শন'},
+  btn_reset:   {ar:'إعادة تعيين', en:'Reset', hi:'रीसेट', ne:'रिसेट', bn:'রিসেট'},
+  house_hint:  {ar:'اضغط كل أداة: غير محدد ← سليم ✓ ← يحتاج صيانة ✕', en:'Tap each tool: unset → OK ✓ → needs repair ✗', hi:'प्रत्येक उपकरण टैप करें: अनसेट → ठीक ✓ → मरम्मत चाहिए ✗', ne:'प्रत्येक उपकरण थिच्नुहोस्: नसेट → ठीक ✓ → मर्मत चाहिन्छ ✗', bn:'প্রতিটি সরঞ্জাম ট্যাপ করুন: অসেট → ঠিক ✓ → মেরামত দরকার ✗'},
+  toast_reset: {ar:'تمت إعادة التعيين', en:'Reset done', hi:'रीसेट हो गया', ne:'रिसेट भयो', bn:'রিসেট সম্পন্ন'},
+
+  prof_mgr_mode:   {ar:'وضع المدير', en:'Manager Mode', hi:'मैनेजर मोड', ne:'प्रबन्धक मोड', bn:'ম্যানেজার মোড'},
+  prof_staff_mode: {ar:'وضع الموظف', en:'Employee Mode', hi:'कर्मचारी मोड', ne:'कर्मचारी मोड', bn:'কর্মচারী মোড'},
+  prof_id:     {ar:'رقم الموظف', en:'Employee ID', hi:'कर्मचारी आईडी', ne:'कर्मचारी आईडी', bn:'কর্মচারী আইডি'},
+  prof_status: {ar:'الحالة', en:'Status', hi:'स्थिति', ne:'स्थिति', bn:'অবস্থা'},
+  prof_present:{ar:'حاضر', en:'Present', hi:'उपस्थित', ne:'उपस्थित', bn:'উপস্থিত'},
+  prof_absent: {ar:'منصرف', en:'Out', hi:'अनुपस्थित', ne:'अनुपस्थित', bn:'বাইরে'},
+  prof_perm:   {ar:'الصلاحية', en:'Permission', hi:'अनुमति', ne:'अनुमति', bn:'অনুমতি'},
+  prof_perm_mgr:  {ar:'إسناد + إدارة', en:'Assign + Manage', hi:'सौंपना + प्रबंधन', ne:'तोक्ने + व्यवस्थापन', bn:'অর্পণ + ব্যবস্থাপনা'},
+  prof_perm_staff:{ar:'تنفيذ المهام', en:'Execute tasks', hi:'कार्य निष्पादन', ne:'कार्य कार्यान्वयन', bn:'কাজ সম্পাদন'},
+  prof_notif:  {ar:'الإشعارات', en:'Notifications', hi:'सूचनाएं', ne:'सूचनाहरू', bn:'বিজ্ঞপ্তি'},
+  prof_notif_on:{ar:'مفعّلة', en:'Enabled', hi:'सक्षम', ne:'सक्षम', bn:'সক্রিয়'},
+  btn_logout:  {ar:'🚪 تسجيل الخروج', en:'🚪 Logout', hi:'🚪 लॉगआउट', ne:'🚪 लगआउट', bn:'🚪 লগআউট'},
+
+  sheet_clarify:     {ar:'طلب إيضاح', en:'Ask Clarification', hi:'स्पष्टीकरण मांगें', ne:'स्पष्टीकरण माग्नुहोस्', bn:'ব্যাখ্যা চান'},
+  lbl_your_question: {ar:'سؤالك للمُرسِل', en:'Your question to the sender', hi:'भेजने वाले से आपका प्रश्न', ne:'पठाउनेलाई तपाईंको प्रश्न', bn:'প্রেরকের কাছে আপনার প্রশ্ন'},
+  btn_send_question: {ar:'إرسال السؤال', en:'Send question', hi:'प्रश्न भेजें', ne:'प्रश्न पठाउनुहोस्', bn:'প্রশ্ন পাঠান'},
+  btn_cancel:        {ar:'إلغاء', en:'Cancel', hi:'रद्द करें', ne:'रद्द', bn:'বাতিল'},
+  lbl_task_title:    {ar:'عنوان المهمة', en:'Task title', hi:'कार्य शीर्षक', ne:'कार्य शीर्षक', bn:'কাজের শিরোনাম'},
+  lbl_assign_to:     {ar:'إسناد إلى موظف', en:'Assign to employee', hi:'कर्मचारी को सौंपें', ne:'कर्मचारीलाई तोक्नुहोस्', bn:'কর্মচারীকে অর্পণ'},
+  lbl_priority:      {ar:'الأولوية', en:'Priority', hi:'प्राथमिकता', ne:'प्राथमिकता', bn:'অগ্রাধিকার'},
+  lbl_task_desc:     {ar:'تفاصيل وإيضاح المهمة', en:'Task details & clarification', hi:'कार्य विवरण और स्पष्टीकरण', ne:'कार्य विवरण र स्पष्टीकरण', bn:'কাজের বিবরণ ও ব্যাখ্যা'},
+  btn_send_task:     {ar:'إرسال المهمة', en:'Send task', hi:'कार्य भेजें', ne:'कार्य पठाउनुहोस्', bn:'কাজ পাঠান'},
+  ph_task_title:     {ar:'مثال: تجهيز غرفة 204', en:'e.g. Prepare room 204', hi:'उदा. कमरा 204 तैयार करें', ne:'जस्तै कोठा 204 तयार गर्नुहोस्', bn:'যেমন রুম 204 প্রস্তুত করুন'},
+  ph_task_desc:      {ar:'اشرح المطلوب بوضوح…', en:'Explain the task clearly…', hi:'कार्य स्पष्ट रूप से समझाएं…', ne:'कार्य स्पष्ट रूपमा बुझाउनुहोस्…', bn:'কাজটি স্পষ্টভাবে ব্যাখ্যা করুন…'},
+  ph_clarify:        {ar:'ما الذي تريد توضيحه؟', en:'What do you need clarified?', hi:'आप क्या स्पष्ट करना चाहते हैं?', ne:'के स्पष्ट गर्न चाहनुहुन्छ?', bn:'কী স্পষ্ট করতে চান?'},
+
+  pwa_install_t:   {ar:'📲 ثبّت التطبيق على جهازك', en:'📲 Install the app on your device', hi:'📲 अपने डिवाइस पर ऐप इंस्टॉल करें', ne:'📲 आफ्नो उपकरणमा एप इन्स्टल गर्नुहोस्', bn:'📲 আপনার ডিভাইসে অ্যাপ ইনস্টল করুন'},
+  pwa_install_s:   {ar:'يعمل بدون إنترنت كتطبيق كامل', en:'Works offline as a full app', hi:'पूर्ण ऐप की तरह ऑफ़लाइन काम करता है', ne:'पूर्ण एप जस्तै अफलाइन काम गर्छ', bn:'সম্পূর্ণ অ্যাপ হিসেবে অফলাইনে কাজ করে'},
+  pwa_install_btn: {ar:'تثبيت', en:'Install', hi:'इंस्टॉल', ne:'इन्स्टल', bn:'ইনস্টল'},
+  pwa_offline:     {ar:'📶 أنت غير متصل بالإنترنت — التطبيق يعمل محلياً', en:'📶 You are offline — the app works locally', hi:'📶 आप ऑफ़लाइन हैं — ऐप स्थानीय रूप से काम करता है', ne:'📶 तपाईं अफलाइन हुनुहुन्छ — एप स्थानीय रूपमा काम गर्छ', bn:'📶 আপনি অফলাইন — অ্যাপটি স্থানীয়ভাবে কাজ করে'},
+  pwa_update:      {ar:'🔄 تحديث جديد متاح — اضغط هنا للتحديث', en:'🔄 Update available — tap to update', hi:'🔄 अपडेट उपलब्ध — अपडेट के लिए टैप करें', ne:'🔄 अपडेट उपलब्ध — अपडेट गर्न थिच्नुहोस्', bn:'🔄 আপডেট উপলব্ধ — আপডেট করতে ট্যাপ করুন'},
+
+  role_mgr_property:   {ar:'مدير المنشأة', en:'Property Manager', hi:'संपत्ति प्रबंधक', ne:'सम्पत्ति प्रबन्धक', bn:'সম্পত্তি ম্যানেজার'},
+  role_mgr_hk:         {ar:'مديرة التدبير', en:'Housekeeping Manager', hi:'हाउसकीपिंग मैनेजर', ne:'हाउसकिपिङ प्रबन्धक', bn:'হাউসকিপিং ম্যানেজার'},
+  role_sup_reception:  {ar:'مشرف استقبال', en:'Reception Supervisor', hi:'रिसेप्शन पर्यवेक्षक', ne:'रिसेप्शन सुपरभाइजर', bn:'রিসেপশন সুপারভাইজার'},
+  role_staff_hk:       {ar:'موظفة تدبير', en:'Housekeeping Staff', hi:'हाउसकीपिंग स्टाफ', ne:'हाउसकिपिङ कर्मचारी', bn:'হাউসকিপিং স্টাফ'},
+  role_tech_maint:     {ar:'فني صيانة', en:'Maintenance Technician', hi:'रखरखाव तकनीशियन', ne:'मर्मत प्राविधिक', bn:'রক্ষণাবেক্ষণ টেকনিশিয়ান'},
+  role_staff_reception:{ar:'موظفة استقبال', en:'Reception Staff', hi:'रिसेप्शन स्टाफ', ne:'रिसेप्शन कर्मचारी', bn:'রিসেপশন স্টাফ'},
+  role_security:       {ar:'أمن وسلامة', en:'Security & Safety', hi:'सुरक्षा एवं संरक्षा', ne:'सुरक्षा र सेफ्टी', bn:'নিরাপত্তা ও সুরক্ষা'},
+
+  tool_ac:        {ar:'مكيف الهواء', en:'Air Conditioner', hi:'एयर कंडीशनर', ne:'एयर कन्डिसनर', bn:'এয়ার কন্ডিশনার'},
+  tool_heater:    {ar:'السخان', en:'Water Heater', hi:'वॉटर हीटर', ne:'पानी हिटर', bn:'ওয়াটার হিটার'},
+  tool_light:     {ar:'الإضاءة', en:'Lighting', hi:'लाइटिंग', ne:'बत्ती', bn:'আলো'},
+  tool_fridge:    {ar:'الثلاجة', en:'Refrigerator', hi:'रेफ्रिजरेटर', ne:'फ्रिज', bn:'রেফ্রিজারেটর'},
+  tool_furniture: {ar:'أثاث الغرفة', en:'Room Furniture', hi:'कमरे का फर्नीचर', ne:'कोठाको फर्निचर', bn:'রুমের আসবাব'},
+  tool_bathroom:  {ar:'دورة المياه', en:'Bathroom', hi:'बाथरूम', ne:'बाथरूम', bn:'বাথরুম'}
+};
+var LANG = localStorage.getItem('dh_sm_lang') || 'ar';
+function t(key){ var e=I18N[key]; return e ? (e[LANG]||e.ar||key) : key; }
+function langDir(){ var l=LANGS.filter(function(x){return x.code===LANG})[0]; return l?l.dir:'rtl'; }
+function setLang(code){
+  LANG=code; localStorage.setItem('dh_sm_lang',code);
+  applyI18N();
+  if(me){ buildNav(); render(); } else { buildLogin(); buildLoginLangBar(); }
+}
+function applyI18N(){
+  document.documentElement.lang = LANG;
+  document.documentElement.dir = langDir();
+  document.querySelectorAll('[data-i18n]').forEach(function(n){ n.textContent = t(n.getAttribute('data-i18n')); });
+  document.querySelectorAll('[data-i18n-ph]').forEach(function(n){ n.setAttribute('placeholder', t(n.getAttribute('data-i18n-ph'))); });
+}
+
 /* ============ البيانات ============ */
 var STAFF = [
-  { id:'m1', name:'عبدالله الغامدي', role:'مدير المنشأة',   isManager:true,  color:'#143A2E' },
-  { id:'m2', name:'نورة المالكي',    role:'مديرة التدبير',  isManager:true,  color:'#9A7430' },
-  { id:'u1', name:'أحمد الزهراني',   role:'مشرف استقبال',   isManager:false, color:'#1B4D3D' },
-  { id:'u2', name:'سارة القحطاني',   role:'موظفة تدبير',    isManager:false, color:'#266554' },
-  { id:'u3', name:'خالد العتيبي',    role:'فني صيانة',      isManager:false, color:'#3B8772' },
-  { id:'u4', name:'منى الشهري',      role:'موظفة استقبال',  isManager:false, color:'#B68F40' },
-  { id:'u5', name:'فهد الدوسري',     role:'أمن وسلامة',     isManager:false, color:'#0E2A22' }
+  { id:'m1', name:'عبدالله الغامدي', roleKey:'role_mgr_property',    isManager:true,  color:'#143A2E' },
+  { id:'m2', name:'نورة المالكي',    roleKey:'role_mgr_hk',          isManager:true,  color:'#9A7430' },
+  { id:'u1', name:'أحمد الزهراني',   roleKey:'role_sup_reception',   isManager:false, color:'#1B4D3D' },
+  { id:'u2', name:'سارة القحطاني',   roleKey:'role_staff_hk',        isManager:false, color:'#266554' },
+  { id:'u3', name:'خالد العتيبي',    roleKey:'role_tech_maint',      isManager:false, color:'#3B8772' },
+  { id:'u4', name:'منى الشهري',      roleKey:'role_staff_reception', isManager:false, color:'#B68F40' },
+  { id:'u5', name:'فهد الدوسري',     roleKey:'role_security',        isManager:false, color:'#0E2A22' }
 ];
+function roleOf(s){ return t(s.roleKey); }
 var LS={ cur:'dh_sm_cur', msgs:'dh_sm_msgs', tasks:'dh_sm_tasks', house:'dh_sm_house', att:'dh_sm_att' };
 var me=null, activePeer=null, tab='home', taskFilter='all';
 
@@ -307,16 +472,22 @@ function save(k,v){ localStorage.setItem(k,JSON.stringify(v)); }
 function el(id){ return document.getElementById(id); }
 function now(){ var d=new Date(); return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0'); }
 function toast(t){ var e=el('toast'); e.textContent=t; e.classList.add('show'); clearTimeout(window._tt); window._tt=setTimeout(function(){e.classList.remove('show')},2200); }
-function ar(n){ return Number(n).toLocaleString('ar-EG'); }
+function ar(n){ return LANG==='ar' ? Number(n).toLocaleString('ar-EG') : String(n); }
+function buildLoginLangBar(){
+  var bar=el('loginLangBar'); if(!bar) return;
+  bar.innerHTML=LANGS.map(function(l){
+    return '<button class="lang-chip'+(l.code===LANG?' on':'')+'" onclick="setLang(\''+l.code+'\')">'+l.flag+' '+l.name+'</button>';
+  }).join('');
+}
 
 /* ============ دخول/خروج ============ */
 function buildLogin(){
   el('loginUser').innerHTML = STAFF.map(function(s){
-    return '<option value="'+s.id+'">'+esc(s.name)+' — '+esc(s.role)+(s.isManager?' (مدير)':'')+'</option>';
+    return '<option value="'+s.id+'">'+esc(s.name)+' — '+esc(roleOf(s))+(s.isManager?' '+t('mgr_suffix'):'')+'</option>';
   }).join('');
 }
 function doLogin(){
-  if(el('loginPin').value!=='0000'){ toast('الرمز السري غير صحيح'); return; }
+  if(el('loginPin').value!=='0000'){ toast(t('err_pin')); return; }
   me=byId(el('loginUser').value); save(LS.cur,me.id); enterApp();
 }
 function logout(){
@@ -332,11 +503,11 @@ function enterApp(){
 /* ============ التنقل ============ */
 function buildNav(){
   var items=[
-    {k:'home',  ic:'🏠', l:'الرئيسية'},
-    {k:'tasks', ic:'✅', l:'المهام'},
-    {k:'chat',  ic:'💬', l:'التراسل'},
-    {k:'house', ic:'🛏', l:'السكن'},
-    {k:'me',    ic:'👤', l:'حسابي'}
+    {k:'home',  ic:'🏠', l:t('nav_home')},
+    {k:'tasks', ic:'✅', l:t('nav_tasks')},
+    {k:'chat',  ic:'💬', l:t('nav_chat')},
+    {k:'house', ic:'🛏', l:t('nav_house')},
+    {k:'me',    ic:'👤', l:t('nav_me')}
   ];
   el('nav').innerHTML=items.map(function(it){
     var badge = it.k==='tasks' ? openTaskCount() : 0;
@@ -359,34 +530,34 @@ function render(){
 function attState(){ return load(LS.att,{})[me.id]||'out'; }
 function toggleAtt(){
   var a=load(LS.att,{}); a[me.id]= attState()==='in'?'out':'in'; save(LS.att,a);
-  toast(a[me.id]==='in'?'تم تسجيل الحضور ✓':'تم تسجيل الانصراف'); render();
+  toast(a[me.id]==='in'?t('att_done_in'):t('att_done_out')); render();
 }
 function viewHome(){
   var inOn = attState()==='in';
   var myTasks = load(LS.tasks,[]).filter(function(t){return t.to===me.id});
   var doneToday = myTasks.filter(function(t){return t.status==='closed'}).length;
-  var greet = new Date().getHours()<12?'صباح الخير':'مساء الخير';
+  var greet = new Date().getHours()<12?t('greet_morning'):t('greet_evening');
   return ''+
   '<div class="hd"><div class="row">'+
     '<div><div class="greet">'+greet+'، '+esc(me.name.split(' ')[0])+' 👋</div>'+
-      '<div class="role">'+esc(me.role)+'<span class="badge">'+(me.isManager?'مدير':'موظف')+'</span></div></div>'+
+      '<div class="role">'+esc(roleOf(me))+'<span class="badge">'+(me.isManager?t('badge_mgr'):t('badge_staff'))+'</span></div></div>'+
     '<div class="av">'+esc(initials(me.name))+'</div>'+
   '</div>'+
   '<div class="att">'+
     '<button class="att-btn '+(inOn?'on':'')+'" onclick="toggleAtt()"><div class="ic">⏱</div>'+
-      '<div class="t">'+(inOn?'تسجيل الانصراف':'تسجيل الحضور')+'</div><div class="s">'+(inOn?'أنت حاضر الآن':'بصمة ذكية + GPS')+'</div></button>'+
+      '<div class="t">'+(inOn?t('att_out'):t('att_in'))+'</div><div class="s">'+(inOn?t('att_out_sub'):t('att_in_sub'))+'</div></button>'+
   '</div></div>'+
   '<div class="stats">'+
-    '<div class="stat"><div class="v">'+(inOn?'٧٫٣':'٠٫٠')+'</div><div class="l">ساعة عمل</div></div>'+
-    '<div class="stat"><div class="v">'+ar(myTasks.length)+'</div><div class="l">مهامي</div></div>'+
-    '<div class="stat"><div class="v">'+ar(doneToday)+'</div><div class="l">منجزة</div></div>'+
-    '<div class="stat"><div class="v">'+ar(openTaskCount())+'</div><div class="l">متبقّية</div></div>'+
+    '<div class="stat"><div class="v">'+(inOn?(LANG==='ar'?'٧٫٣':'7.3'):(LANG==='ar'?'٠٫٠':'0.0'))+'</div><div class="l">'+t('stat_hours')+'</div></div>'+
+    '<div class="stat"><div class="v">'+ar(myTasks.length)+'</div><div class="l">'+t('stat_mytasks')+'</div></div>'+
+    '<div class="stat"><div class="v">'+ar(doneToday)+'</div><div class="l">'+t('stat_done')+'</div></div>'+
+    '<div class="stat"><div class="v">'+ar(openTaskCount())+'</div><div class="l">'+t('stat_remaining')+'</div></div>'+
   '</div>'+
   (me.isManager?managerOverview():'')+
-  '<div class="sec-t">جدول اليوم</div>'+
-  '<div class="sch"><span class="ic">🔔</span><span class="nm">الوردية القادمة</span><span class="tm">٠٨:٠٠</span></div>'+
-  '<div class="sch"><span class="ic">🍽</span><span class="nm">وقت الوجبة</span><span class="tm">١٣:٠٠</span></div>'+
-  '<div class="sch"><span class="ic">🌙</span><span class="nm">نهاية الوردية</span><span class="tm">١٦:٠٠</span></div>';
+  '<div class="sec-t">'+t('today_schedule')+'</div>'+
+  '<div class="sch"><span class="ic">🔔</span><span class="nm">'+t('sch_shift')+'</span><span class="tm">08:00</span></div>'+
+  '<div class="sch"><span class="ic">🍽</span><span class="nm">'+t('sch_meal')+'</span><span class="tm">13:00</span></div>'+
+  '<div class="sch"><span class="ic">🌙</span><span class="nm">'+t('sch_end')+'</span><span class="tm">16:00</span></div>';
 }
 function managerOverview(){
   var tasks=load(LS.tasks,[]);
@@ -394,10 +565,10 @@ function managerOverview(){
   var att=load(LS.att,{});
   var present=STAFF.filter(function(s){return !s.isManager && att[s.id]==='in'}).length;
   var staff=STAFF.filter(function(s){return !s.isManager}).length;
-  return '<div class="sec-t">نظرة المدير</div><div class="mgr-grid">'+
-    '<div class="mgr-c"><div class="v" style="color:var(--brand2)">'+ar(present)+'/'+ar(staff)+'</div><div class="l">حاضر الآن</div></div>'+
-    '<div class="mgr-c"><div class="v" style="color:var(--warn)">'+ar(open)+'</div><div class="l">مهام مفتوحة</div></div>'+
-    '<div class="mgr-c"><div class="v" style="color:var(--good)">'+ar(tasks.filter(function(t){return t.status==='closed'}).length)+'</div><div class="l">مهام مغلقة</div></div>'+
+  return '<div class="sec-t">'+t('mgr_overview')+'</div><div class="mgr-grid">'+
+    '<div class="mgr-c"><div class="v" style="color:var(--brand2)">'+ar(present)+'/'+ar(staff)+'</div><div class="l">'+t('mgr_present')+'</div></div>'+
+    '<div class="mgr-c"><div class="v" style="color:var(--warn)">'+ar(open)+'</div><div class="l">'+t('mgr_open')+'</div></div>'+
+    '<div class="mgr-c"><div class="v" style="color:var(--good)">'+ar(tasks.filter(function(t){return t.status==='closed'}).length)+'</div><div class="l">'+t('mgr_closed')+'</div></div>'+
   '</div>';
 }
 
@@ -424,103 +595,102 @@ function viewTasks(){
   var filtersHtml='';
   if(me.isManager){
     var emps=STAFF.filter(function(s){return !s.isManager});
-    filtersHtml='<div class="filters"><button class="filt '+(taskFilter==='all'?'on':'')+'" onclick="setFilter(\'all\')">الكل</button>'+
-      '<button class="filt '+(taskFilter==='open'?'on':'')+'" onclick="setFilter(\'open\')">المفتوحة</button>'+
+    filtersHtml='<div class="filters"><button class="filt '+(taskFilter==='all'?'on':'')+'" onclick="setFilter(\'all\')">'+t('filt_all')+'</button>'+
+      '<button class="filt '+(taskFilter==='open'?'on':'')+'" onclick="setFilter(\'open\')">'+t('filt_open')+'</button>'+
       emps.map(function(e){return '<button class="filt '+(taskFilter===e.id?'on':'')+'" onclick="setFilter(\''+e.id+'\')">'+esc(e.name.split(' ')[0])+'</button>';}).join('')+
       '</div>';
     if(taskFilter==='open') list=list.filter(function(t){return t.status!=='closed'});
     else if(taskFilter!=='all') list=list.filter(function(t){return t.to===taskFilter});
   }
 
-  var head='<div class="sec-t">'+(me.isManager?'إدارة المهام':'مهامي')+
-    (me.isManager?'<button class="add" onclick="openNewTask()">+ إسناد مهمة</button>':'')+'</div>';
+  var head='<div class="sec-t">'+(me.isManager?t('tasks_manage'):t('tasks_mine'))+
+    (me.isManager?'<button class="add" onclick="openNewTask()">'+t('btn_assign')+'</button>':'')+'</div>';
 
-  if(!list.length) return head+filtersHtml+'<div class="empty"><div class="ic">✅</div>لا توجد مهام</div>';
+  if(!list.length) return head+filtersHtml+'<div class="empty"><div class="ic">✅</div>'+t('no_tasks')+'</div>';
   return head+filtersHtml+list.map(taskCard).join('');
 }
 function setFilter(f){ taskFilter=f; render(); }
-function taskCard(t){
-  var inbound=t.to===me.id;
-  var stTxt={open:'مفتوحة',prog:'قيد التنفيذ',closed:'مغلقة'}[t.status];
-  var stCls={open:'open',prog:'prog',closed:'closed'}[t.status];
-  var priTxt={high:'عاجلة',mid:'متوسطة',low:'عادية'}[t.pri];
-  var fromN=byId(t.from)?byId(t.from).name:t.from;
-  var toN=byId(t.to)?byId(t.to).name:t.to;
+function taskCard(tk){
+  var inbound=tk.to===me.id;
+  var stTxt={open:t('st_open'),prog:t('st_prog'),closed:t('st_closed')}[tk.status];
+  var stCls={open:'open',prog:'prog',closed:'closed'}[tk.status];
+  var priTxt={high:t('pri_high'),mid:t('pri_mid'),low:t('pri_low')}[tk.pri];
+  var fromN=byId(tk.from)?byId(tk.from).name:tk.from;
+  var toN=byId(tk.to)?byId(tk.to).name:tk.to;
   var acts='';
-  if(t.status!=='closed'){
-    if(inbound && t.status==='open') acts+='<button class="act go" onclick="setSt(\''+t.id+'\',\'prog\')">بدء التنفيذ</button>';
-    if(inbound) acts+='<button class="act gh" onclick="askClar(\''+t.id+'\')">طلب إيضاح</button>';
-    acts+='<button class="act cl" onclick="setSt(\''+t.id+'\',\'closed\')">إغلاق</button>';
+  if(tk.status!=='closed'){
+    if(inbound && tk.status==='open') acts+='<button class="act go" onclick="setSt(\''+tk.id+'\',\'prog\')">'+t('act_start')+'</button>';
+    if(inbound) acts+='<button class="act gh" onclick="askClar(\''+tk.id+'\')">'+t('act_clarify')+'</button>';
+    acts+='<button class="act cl" onclick="setSt(\''+tk.id+'\',\'closed\')">'+t('act_close')+'</button>';
   } else {
-    acts+='<button class="act gh" onclick="setSt(\''+t.id+'\',\'open\')">إعادة فتح</button>';
+    acts+='<button class="act gh" onclick="setSt(\''+tk.id+'\',\'open\')">'+t('act_reopen')+'</button>';
   }
   var clar='';
-  if(t.clar&&t.clar.length){
-    clar='<div class="clar">'+t.clar.map(function(c){
+  if(tk.clar&&tk.clar.length){
+    clar='<div class="clar">'+tk.clar.map(function(c){
       return '<div class="clar-i"><b>'+esc(byId(c.by)?byId(c.by).name:c.by)+':</b> '+esc(c.q)+
-        (c.a?'<br>↩ <b>الرد:</b> '+esc(c.a):'')+'</div>';
+        (c.a?'<br>↩ <b>'+t('lbl_reply')+':</b> '+esc(c.a):'')+'</div>';
     }).join('')+'</div>';
-    // manager can answer
-    if(me.isManager && t.clar.some(function(c){return !c.a})){
-      acts+='<button class="act gh" onclick="answerClar(\''+t.id+'\')">الرد على الإيضاح</button>';
+    if(me.isManager && tk.clar.some(function(c){return !c.a})){
+      acts+='<button class="act gh" onclick="answerClar(\''+tk.id+'\')">'+t('act_answer')+'</button>';
     }
   }
-  return '<div class="task '+(t.status==='closed'?'closed':'')+'">'+
-    '<div class="top"><div style="flex:1"><div class="tt">'+esc(t.title)+'</div>'+
-      '<div class="meta"><span>من: '+esc(fromN)+'</span><span>إلى: '+esc(toN)+'</span><span>'+esc(t.at)+'</span></div></div>'+
-      '<div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end"><span class="pill '+stCls+'">'+stTxt+'</span><span class="pri '+t.pri+'">'+priTxt+'</span></div></div>'+
-    '<div class="desc">'+esc(t.desc)+'</div>'+clar+
+  return '<div class="task '+(tk.status==='closed'?'closed':'')+'">'+
+    '<div class="top"><div style="flex:1"><div class="tt">'+esc(tk.title)+'</div>'+
+      '<div class="meta"><span>'+t('lbl_from')+': '+esc(fromN)+'</span><span>'+t('lbl_to')+': '+esc(toN)+'</span><span>'+esc(tk.at)+'</span></div></div>'+
+      '<div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end"><span class="pill '+stCls+'">'+stTxt+'</span><span class="pri '+tk.pri+'">'+priTxt+'</span></div></div>'+
+    '<div class="desc">'+esc(tk.desc)+'</div>'+clar+
     '<div class="acts">'+acts+'</div></div>';
 }
 function setSt(id,st){
   var tasks=load(LS.tasks,[]); tasks.forEach(function(t){if(t.id===id)t.status=st;}); save(LS.tasks,tasks);
-  toast(st==='closed'?'تم إغلاق المهمة ✓':(st==='prog'?'بدأ التنفيذ':'أعيد فتح المهمة')); buildNav(); render();
+  toast(st==='closed'?t('toast_closed'):(st==='prog'?t('toast_started'):t('toast_reopened'))); buildNav(); render();
 }
 function openNewTask(){
-  el('taskSheetTitle').textContent='إسناد مهمة جديدة';
+  el('taskSheetTitle').textContent=t('sheet_new_task');
   el('ntToWrap').style.display='block';
   el('ntTo').innerHTML=STAFF.filter(function(s){return !s.isManager}).map(function(s){
-    return '<option value="'+s.id+'">'+esc(s.name)+' — '+esc(s.role)+'</option>';}).join('');
+    return '<option value="'+s.id+'">'+esc(s.name)+' — '+esc(roleOf(s))+'</option>';}).join('');
   el('ntTitle').value=''; el('ntDesc').value='';
   el('taskSheet').classList.add('show');
 }
 function createTask(){
   var title=el('ntTitle').value.trim();
-  if(!title){ toast('أدخل عنوان المهمة'); return; }
+  if(!title){ toast(t('err_task_title')); return; }
   var tasks=load(LS.tasks,[]);
   tasks.unshift({ id:'t'+Date.now(), title:title, from:me.id, to:el('ntTo').value,
     pri:el('ntPri').value, status:'open', desc:el('ntDesc').value.trim(), clar:[], at:now() });
-  save(LS.tasks,tasks); closeSheet('taskSheet'); toast('تم إسناد المهمة ✓'); buildNav(); render();
+  save(LS.tasks,tasks); closeSheet('taskSheet'); toast(t('toast_assigned')); buildNav(); render();
 }
 function askClar(id){ el('clarTaskId').value=id; el('clarText').value=''; el('clarSheet').classList.add('show'); }
 function submitClarify(){
   var id=el('clarTaskId').value, q=el('clarText').value.trim();
-  if(!q){ toast('اكتب سؤالك'); return; }
+  if(!q){ toast(t('err_question')); return; }
   var tasks=load(LS.tasks,[]); tasks.forEach(function(t){if(t.id===id){t.clar=t.clar||[];t.clar.push({by:me.id,q:q,at:now()});}}); save(LS.tasks,tasks);
-  closeSheet('clarSheet'); toast('تم إرسال طلب الإيضاح'); render();
+  closeSheet('clarSheet'); toast(t('toast_clarify_sent')); render();
 }
 function answerClar(id){
-  var a=window.prompt('ردك على طلب الإيضاح:'); if(!a) return;
+  var a=window.prompt(t('prompt_answer')); if(!a) return;
   var tasks=load(LS.tasks,[]); tasks.forEach(function(t){if(t.id===id&&t.clar){t.clar.forEach(function(c){if(!c.a)c.a=a;});}}); save(LS.tasks,tasks);
-  toast('تم إرسال الرد'); render();
+  toast(t('toast_answer_sent')); render();
 }
 function closeSheet(id){ el(id).classList.remove('show'); }
 
 /* ============ التراسل ============ */
 function viewChat(){
   var others=STAFF.filter(function(s){return s.id!==me.id});
-  return '<div class="sec-t">التراسل بين الموظفين</div><div class="roster">'+
+  return '<div class="sec-t">'+t('chat_title')+'</div><div class="roster">'+
     others.map(function(s){
       return '<div class="ritem" onclick="openConv(\''+s.id+'\')">'+
         '<div class="av" style="background:linear-gradient(135deg,'+s.color+',#0E2A22)">'+esc(initials(s.name))+'</div>'+
-        '<div><div class="nm">'+esc(s.name)+(s.isManager?' 👑':'')+'</div><div class="rl">'+esc(s.role)+'</div></div>'+
-        '<span class="go">›</span></div>';
+        '<div><div class="nm">'+esc(s.name)+(s.isManager?' 👑':'')+'</div><div class="rl">'+esc(roleOf(s))+'</div></div>'+
+        '<span class="go">'+(langDir()==='rtl'?'›':'‹')+'</span></div>';
     }).join('')+'</div>';
 }
 function convKey(a,b){ return [a,b].sort().join('|'); }
 function openConv(pid){
   activePeer=pid; var p=byId(pid);
-  el('convNm').textContent=p.name; el('convRl').textContent=p.role;
+  el('convNm').textContent=p.name; el('convRl').textContent=roleOf(p);
   renderConv(); el('conv').classList.add('open');
   setTimeout(function(){el('convInput').focus();},250);
 }
@@ -528,7 +698,7 @@ function closeConv(){ el('conv').classList.remove('open'); activePeer=null; }
 function renderConv(){
   var all=load(LS.msgs,{}), thread=all[convKey(me.id,activePeer)]||[];
   var b=el('convBody');
-  if(!thread.length){ b.innerHTML='<div class="empty"><div class="ic">💬</div>ابدأ المحادثة</div>'; return; }
+  if(!thread.length){ b.innerHTML='<div class="empty"><div class="ic">💬</div>'+t('chat_start')+'</div>'; return; }
   b.innerHTML=thread.map(function(m){
     return '<div class="msg '+(m.from===me.id?'me':'them')+'">'+esc(m.text)+'<div class="tm">'+esc(m.at)+'</div></div>';
   }).join('');
@@ -542,27 +712,27 @@ function sendMsg(){
 }
 
 /* ============ السكن ============ */
-var HTOOLS=['مكيف الهواء','السخان','الإضاءة','الثلاجة','أثاث الغرفة','دورة المياه'];
+var HTOOL_KEYS=['tool_ac','tool_heater','tool_light','tool_fridge','tool_furniture','tool_bathroom'];
 var HROOMS=[
-  {no:'سكن A-101', occ:'أحمد الزهراني · خالد العتيبي'},
-  {no:'سكن A-102', occ:'فهد الدوسري'},
-  {no:'سكن B-201', occ:'سارة القحطاني'},
-  {no:'سكن B-202', occ:'منى الشهري'}
+  {no:'A-101', occ:'أحمد الزهراني · خالد العتيبي'},
+  {no:'A-102', occ:'فهد الدوسري'},
+  {no:'B-201', occ:'سارة القحطاني'},
+  {no:'B-202', occ:'منى الشهري'}
 ];
 function viewHouse(){
   var state=load(LS.house,{});
-  return '<div class="sec-t">فحص أدوات السكن<button class="add" onclick="resetHouse()">إعادة تعيين</button></div>'+
-  '<div style="font-size:12px;color:var(--ink3);padding:0 16px 12px">اضغط كل أداة: غير محدد ← سليم ✓ ← يحتاج صيانة ✕</div>'+
+  return '<div class="sec-t">'+t('house_title')+'<button class="add" onclick="resetHouse()">'+t('btn_reset')+'</button></div>'+
+  '<div style="font-size:12px;color:var(--ink3);padding:0 16px 12px">'+t('house_hint')+'</div>'+
   HROOMS.map(function(r){
     var rs=state[r.no]||{}, ok=0;
-    var checks=HTOOLS.map(function(tool){
-      var st=rs[tool]; if(st==='ok')ok++;
+    var checks=HTOOL_KEYS.map(function(tk){
+      var st=rs[tk]; if(st==='ok')ok++;
       var cls=st==='ok'?'ok':(st==='bad'?'bad':''), mk=st==='ok'?'✓':(st==='bad'?'✕':'');
-      return '<div class="chk '+cls+'" onclick="toggleTool(\''+r.no+'\',\''+tool+'\')"><div class="box">'+mk+'</div><span>'+esc(tool)+'</span></div>';
+      return '<div class="chk '+cls+'" onclick="toggleTool(\''+r.no+'\',\''+tk+'\')"><div class="box">'+mk+'</div><span>'+esc(t(tk))+'</span></div>';
     }).join('');
-    var pct=Math.round(ok/HTOOLS.length*100);
-    return '<div class="room"><div class="rt"><div class="rn">'+esc(r.no)+'</div>'+
-      '<span class="pill '+(ok===HTOOLS.length?'closed':(Object.keys(rs).length?'prog':'open'))+'">'+ar(ok)+'/'+ar(HTOOLS.length)+' · '+ar(pct)+'٪</span></div>'+
+    var pct=Math.round(ok/HTOOL_KEYS.length*100);
+    return '<div class="room"><div class="rt"><div class="rn">'+t('nav_house')+' '+esc(r.no)+'</div>'+
+      '<span class="pill '+(ok===HTOOL_KEYS.length?'closed':(Object.keys(rs).length?'prog':'open'))+'">'+ar(ok)+'/'+ar(HTOOL_KEYS.length)+' · '+ar(pct)+'%</span></div>'+
       '<div class="occ">🛏 '+esc(r.occ)+'</div>'+checks+'</div>';
   }).join('');
 }
@@ -572,28 +742,32 @@ function toggleTool(room,tool){
   if(c===undefined)s[room][tool]='ok'; else if(c==='ok')s[room][tool]='bad'; else delete s[room][tool];
   save(LS.house,s); render();
 }
-function resetHouse(){ localStorage.removeItem(LS.house); toast('تمت إعادة التعيين'); render(); }
+function resetHouse(){ localStorage.removeItem(LS.house); toast(t('toast_reset')); render(); }
 
 /* ============ حسابي ============ */
 function viewMe(){
   return '<div class="prof">'+
     '<div class="card"><div class="big-av" style="background:linear-gradient(135deg,'+me.color+',#0E2A22)">'+esc(initials(me.name))+'</div>'+
       '<div class="nm">'+esc(me.name)+'</div>'+
-      '<div class="rl">'+esc(me.role)+'<span class="badge">'+(me.isManager?'وضع المدير':'وضع الموظف')+'</span></div></div>'+
-    '<div class="prow"><span class="ic">🆔</span>رقم الموظف<span class="vv">'+esc(me.id.toUpperCase())+'</span></div>'+
-    '<div class="prow"><span class="ic">⏱</span>الحالة<span class="vv">'+(attState()==='in'?'حاضر':'منصرف')+'</span></div>'+
-    '<div class="prow"><span class="ic">🔑</span>الصلاحية<span class="vv">'+(me.isManager?'إسناد + إدارة':'تنفيذ المهام')+'</span></div>'+
-    '<div class="prow"><span class="ic">🔔</span>الإشعارات<span class="vv">مفعّلة</span></div>'+
+      '<div class="rl">'+esc(roleOf(me))+'<span class="badge">'+(me.isManager?t('prof_mgr_mode'):t('prof_staff_mode'))+'</span></div></div>'+
+    '<div class="lang-select"><span>🌐</span><span>'+t('lbl_language')+'</span>'+
+      '<select onchange="setLang(this.value)">'+LANGS.map(function(l){return '<option value="'+l.code+'"'+(l.code===LANG?' selected':'')+'>'+l.flag+' '+l.name+'</option>';}).join('')+'</select></div>'+
+    '<div class="prow"><span class="ic">🆔</span>'+t('prof_id')+'<span class="vv">'+esc(me.id.toUpperCase())+'</span></div>'+
+    '<div class="prow"><span class="ic">⏱</span>'+t('prof_status')+'<span class="vv">'+(attState()==='in'?t('prof_present'):t('prof_absent'))+'</span></div>'+
+    '<div class="prow"><span class="ic">🔑</span>'+t('prof_perm')+'<span class="vv">'+(me.isManager?t('prof_perm_mgr'):t('prof_perm_staff'))+'</span></div>'+
+    '<div class="prow"><span class="ic">🔔</span>'+t('prof_notif')+'<span class="vv">'+t('prof_notif_on')+'</span></div>'+
   '</div>'+
-  '<button class="logout" onclick="logout()">🚪 تسجيل الخروج</button>';
+  '<button class="logout" onclick="logout()">'+t('btn_logout')+'</button>';
 }
 
 /* ============ إقلاع ============ */
+applyI18N();
+buildLoginLangBar();
 buildLogin();
 (function(){
   // URL tab routing from shortcuts
   var p = new URLSearchParams(location.search);
-  var t = p.get('tab'); if(t) tab = t;
+  var qt = p.get('tab'); if(qt) tab = qt;
   var c = load(LS.cur,null);
   if(c && byId(c)){ me=byId(c); enterApp(); }
 })();
