@@ -3512,6 +3512,12 @@ async def client_register(request: Request):
     password = str(body.get("password", "")).strip()
     activation_key = str(body.get("activation_key", body.get("key", ""))).strip().upper()
 
+    # بيانات التسجيل: الاسم + الجوال + السجل التجاري + المدينة + البريد الإلكتروني
+    reg_phone = str(body.get("phone", "")).strip()
+    reg_email = str(body.get("email", "")).strip()
+    reg_city = str(body.get("city", "")).strip()
+    reg_cr = str(body.get("cr_number", body.get("cr", ""))).strip()
+
     if not hotel_name or not client_id or not password:
         return JSONResponse({"success": False, "error": "جميع الحقول مطلوبة"}, status_code=400)
 
@@ -3551,9 +3557,14 @@ async def client_register(request: Request):
         "status": "trial",
         "pass_hash": pass_hash,
         "pass_salt": pass_salt,
+        "phone": reg_phone,
+        "email": reg_email,
+        "city": reg_city,
         "trial_end": (datetime.now() + timedelta(days=days)).isoformat(),
         "created_at": datetime.now().isoformat(),
         "settings": {},
+        # السجل التجاري يُحفظ في invoice_settings (يُستخدم في الفواتير لاحقاً)
+        "invoice_settings": {"cr_number": reg_cr} if reg_cr else {},
     }
     store.save_client(client)
 

@@ -159,14 +159,22 @@
           '<div class="aw-field"><label>اسم المنشأة</label>',
             '<input id="aw-reg-prop" type="text" placeholder="فندق الواحة · الرياض"/>',
           '</div>',
-          '<div class="aw-field"><label>نوع المنشأة</label>',
-            '<select id="aw-reg-type">',
-              '<option value="hotel">فندق</option>',
-              '<option value="apartment">شقق مفروشة</option>',
-              '<option value="resthouse">استراحة</option>',
-              '<option value="chalet">شاليه</option>',
-              '<option value="villa">فيلا</option>',
-            '</select>',
+          '<div class="aw-grid2">',
+            '<div class="aw-field"><label>نوع المنشأة</label>',
+              '<select id="aw-reg-type">',
+                '<option value="hotel">فندق</option>',
+                '<option value="apartment">شقق مفروشة</option>',
+                '<option value="resthouse">استراحة</option>',
+                '<option value="chalet">شاليه</option>',
+                '<option value="villa">فيلا</option>',
+              '</select>',
+            '</div>',
+            '<div class="aw-field"><label>المدينة</label>',
+              '<input id="aw-reg-city" type="text" placeholder="الرياض"/>',
+            '</div>',
+          '</div>',
+          '<div class="aw-field"><label>السجل التجاري <span style="color:var(--ink-400);font-weight:400">(اختياري)</span></label>',
+            '<input id="aw-reg-cr" type="text" placeholder="1010XXXXXX" dir="ltr" inputmode="numeric"/>',
           '</div>',
           '<div class="aw-field"><label>البريد الإلكتروني</label>',
             '<input id="aw-reg-email" type="email" placeholder="your@email.com" dir="ltr"/>',
@@ -266,18 +274,39 @@
       var lname = (document.getElementById('aw-reg-lname').value || '').trim();
       var prop  = (document.getElementById('aw-reg-prop').value  || '').trim();
       var type  = document.getElementById('aw-reg-type').value;
+      var city  = (document.getElementById('aw-reg-city') || {}).value || '';
+      var cr    = (document.getElementById('aw-reg-cr')   || {}).value || '';
       var email = (document.getElementById('aw-reg-email').value || '').trim();
       var phone = (document.getElementById('aw-reg-phone').value || '').trim();
       var pass  = document.getElementById('aw-reg-pass').value || '';
       var err   = document.getElementById('aw-reg-err');
+      city = city.trim(); cr = cr.trim();
       err.style.display = 'none';
       // رقم جوال سعودي: يبدأ بـ 05 ويتكوّن من 10 أرقام (أو +9665 / 9665)
       var phoneDigits = phone.replace(/[\s\-+]/g, '');
       var phoneOk = /^05\d{8}$/.test(phoneDigits) || /^9665\d{8}$/.test(phoneDigits);
       if (!fname || !email || !phoneOk || pass.length < 6) { err.style.display = 'block'; return; }
       var propName = prop || (fname + ' ' + lname);
-      /* New registrations: 2FA off by default */
-      var session = { email: email, phone: phoneDigits, name: fname + (lname ? ' ' + lname : ''), plan: 'trial', property: propName, propType: type, ts: Date.now(), trialStart: Date.now(), twofa: false };
+      var ownerName = fname + (lname ? ' ' + lname : '');
+      /* بيانات التسجيل الكاملة: اسم المنشأة + المالك + الجوال + السجل التجاري + المدينة + البريد */
+      var session = {
+        email: email, phone: phoneDigits, name: ownerName,
+        plan: 'trial', property: propName, propType: type,
+        city: city, cr_number: cr,
+        ts: Date.now(), trialStart: Date.now(), twofa: false
+      };
+      /* Best-effort: persist the establishment server-side so all modules link to it */
+      try {
+        fetch('/api/client/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            client_id: email, hotel_name: propName, name: ownerName,
+            password: pass, type: type, city: city, phone: phoneDigits,
+            email: email, cr_number: cr
+          })
+        }).catch(function(){});
+      } catch (e) {}
       completeLogin(session);
     };
 
