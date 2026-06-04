@@ -3,57 +3,556 @@
 <head>
 <meta charset="utf-8"/>
 <title>ضيوف · تطبيق الموظفين</title>
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"/>
 <meta name="theme-color" content="#143A2E"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="ضيوف موظفون"/>
 <meta name="mobile-web-app-capable" content="yes"/>
-<meta name="description" content="تطبيق الموظفين الذكي — فندق ضيوف"/>
 <link rel="manifest" href="/static/dheuof/staff-mobile/manifest.json"/>
-<link rel="stylesheet" href="/static/dheuof/colors_and_type.css"/>
-<link rel="stylesheet" href="/static/dheuof/staff-mobile/mobile.css"/>
+<style>
+  :root{
+    --brand:#143A2E; --brand2:#1B4D3D; --brand3:#266554; --brand-soft:#E4F0EB;
+    --gold:#C9A85F; --gold2:#9A7430; --gold-soft:#F8F1DF;
+    --ink:#14110E; --ink2:#4A4137; --ink3:#8B8175;
+    --bg:#F2F2F7; --card:#FFFFFF; --line:#E5E5EA;
+    --good:#2F9D63; --good-soft:#DCFCE7; --warn:#D97706; --warn-soft:#FEF3C7;
+    --bad:#C0392B; --bad-soft:#FEE2E2;
+    --font:'Tajawal','Segoe UI',Tahoma,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{font-family:var(--font);background:#d9dce0;color:var(--ink);min-height:100vh}
+  button{font-family:inherit;cursor:pointer}
+  input,textarea,select{font-family:inherit}
+
+  /* phone frame on desktop; full-bleed on mobile */
+  .phone{max-width:430px;margin:0 auto;min-height:100vh;background:var(--bg);position:relative;display:flex;flex-direction:column;box-shadow:0 0 60px rgba(0,0,0,.18)}
+  @media(min-width:480px){ body{padding:24px 0} .phone{min-height:calc(100vh - 48px);border-radius:28px;overflow:hidden} }
+
+  .screen{flex:1;overflow-y:auto;padding:0 0 84px}
+  .pad{padding:16px}
+
+  /* ── login ── */
+  .login{flex:1;display:flex;flex-direction:column;justify-content:center;padding:32px 26px;background:linear-gradient(160deg,var(--brand),#0E2A22)}
+  .login .logo{font-size:54px;text-align:center;margin-bottom:8px}
+  .login h1{color:#fff;text-align:center;font-size:24px;font-weight:700;margin-bottom:4px}
+  .login p{color:var(--gold);text-align:center;font-size:13px;margin-bottom:30px}
+  .login label{display:block;color:#cfe0d8;font-size:12px;margin:0 2px 7px}
+  .login select,.login input{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;margin-bottom:16px;background:rgba(255,255,255,.95)}
+  .login .lbtn{width:100%;padding:15px;border:none;border-radius:12px;background:var(--gold);color:var(--brand);font-size:16px;font-weight:700}
+  .role-hint{background:rgba(201,168,95,.14);border:1px solid rgba(201,168,95,.3);border-radius:10px;padding:11px 14px;font-size:12px;color:var(--gold-soft);margin-bottom:18px;line-height:1.6}
+
+  /* ── header ── */
+  .hd{background:linear-gradient(135deg,var(--brand2),var(--brand));color:#fff;padding:18px 16px 16px;border-radius:0 0 20px 20px}
+  .hd .row{display:flex;align-items:center;justify-content:space-between}
+  .hd .greet{font-size:18px;font-weight:700}
+  .hd .role{font-size:12px;color:var(--gold);margin-top:2px}
+  .hd .role .badge{background:var(--gold);color:var(--brand);font-size:10px;font-weight:700;padding:2px 9px;border-radius:999px;margin-inline-start:6px}
+  .hd .av{width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.15);display:grid;place-items:center;font-size:16px;font-weight:700;border:2px solid var(--gold)}
+
+  /* attendance */
+  .att{display:flex;gap:12px;margin-top:16px}
+  .att-btn{flex:1;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:14px;color:#fff;text-align:center}
+  .att-btn .ic{font-size:24px}
+  .att-btn .t{font-size:13px;font-weight:600;margin-top:5px}
+  .att-btn .s{font-size:10px;color:var(--gold);margin-top:2px}
+  .att-btn.on{background:var(--gold);color:var(--brand);border-color:var(--gold)}
+  .att-btn.on .s{color:var(--brand2)}
+
+  /* stats */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:16px}
+  .stat{background:var(--card);border-radius:14px;padding:13px 6px;text-align:center}
+  .stat .v{font-size:20px;font-weight:700;color:var(--brand2)}
+  .stat .l{font-size:10px;color:var(--ink3);margin-top:3px}
+
+  .sec-t{font-size:14px;font-weight:700;color:var(--ink);margin:6px 16px 10px;display:flex;align-items:center;justify-content:space-between}
+  .sec-t .add{background:var(--brand2);color:#fff;border:none;border-radius:999px;font-size:12px;font-weight:600;padding:7px 14px}
+
+  /* schedule */
+  .sch{background:var(--card);border-radius:14px;padding:14px 16px;margin:0 16px 10px;display:flex;align-items:center;gap:12px}
+  .sch .ic{font-size:20px}
+  .sch .nm{flex:1;font-size:14px;font-weight:600}
+  .sch .tm{font-size:13px;color:var(--ink3);font-variant-numeric:tabular-nums}
+
+  /* ── tasks ── */
+  .filters{display:flex;gap:7px;padding:0 16px 12px;overflow-x:auto}
+  .filt{padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:12px;color:var(--ink2);white-space:nowrap}
+  .filt.on{background:var(--brand2);color:#fff;border-color:var(--brand2)}
+  .task{background:var(--card);border-radius:14px;padding:15px 16px;margin:0 16px 11px}
+  .task.closed{opacity:.6}
+  .task .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .task .tt{font-size:15px;font-weight:700;line-height:1.4}
+  .task.closed .tt{text-decoration:line-through}
+  .task .meta{font-size:11px;color:var(--ink3);margin-top:5px;display:flex;gap:10px;flex-wrap:wrap}
+  .pill{font-size:10px;font-weight:700;padding:3px 10px;border-radius:999px;white-space:nowrap}
+  .pill.open{background:var(--gold-soft);color:var(--gold2)}
+  .pill.prog{background:var(--brand-soft);color:var(--brand2)}
+  .pill.closed{background:var(--good-soft);color:#166534}
+  .pri{font-size:10px;font-weight:700;padding:3px 9px;border-radius:999px}
+  .pri.high{background:var(--bad-soft);color:var(--bad)}
+  .pri.mid{background:var(--gold-soft);color:var(--gold2)}
+  .pri.low{background:#eee;color:var(--ink2)}
+  .task .desc{font-size:13px;color:var(--ink2);line-height:1.6;margin-top:10px;background:var(--bg);border-radius:10px;padding:10px 12px}
+  .task .clar{margin-top:9px;border-top:1px dashed var(--line);padding-top:9px}
+  .clar-i{font-size:12px;background:var(--brand-soft);border-radius:8px;padding:7px 10px;margin-top:5px;line-height:1.5}
+  .clar-i b{color:var(--brand2)}
+  .acts{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}
+  .act{border:none;border-radius:9px;font-size:12px;font-weight:600;padding:8px 13px}
+  .act.go{background:var(--brand2);color:#fff}
+  .act.cl{background:var(--gold);color:var(--brand)}
+  .act.gh{background:var(--bg);color:var(--ink2);border:1px solid var(--line)}
+
+  /* manager overview */
+  .mgr-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:0 16px 14px}
+  .mgr-c{background:var(--card);border-radius:12px;padding:13px 8px;text-align:center}
+  .mgr-c .v{font-size:22px;font-weight:700}
+  .mgr-c .l{font-size:10px;color:var(--ink3);margin-top:2px}
+
+  /* ── chat ── */
+  .roster{padding:4px 16px 10px}
+  .ritem{display:flex;align-items:center;gap:11px;background:var(--card);border-radius:12px;padding:11px 13px;margin-bottom:8px}
+  .ritem .av{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:14px;font-weight:700;flex-shrink:0}
+  .ritem .nm{font-size:14px;font-weight:600}
+  .ritem .rl{font-size:11px;color:var(--ink3)}
+  .ritem .go{margin-inline-start:auto;color:var(--ink3);font-size:18px}
+  /* conversation overlay */
+  .conv{position:absolute;inset:0;background:var(--bg);display:flex;flex-direction:column;z-index:60;transform:translateX(-100%);transition:transform .25s}
+  .conv.open{transform:none}
+  .conv .chd{background:linear-gradient(135deg,var(--brand2),var(--brand));color:#fff;padding:16px;display:flex;align-items:center;gap:12px}
+  .conv .chd .bk{background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:8px;width:32px;height:32px;font-size:16px}
+  .conv .chd .nm{font-size:15px;font-weight:700}
+  .conv .chd .rl{font-size:11px;color:var(--gold)}
+  .conv .body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px}
+  .msg{max-width:78%;padding:9px 13px;border-radius:15px;font-size:13px;line-height:1.5}
+  .msg.them{align-self:flex-start;background:var(--card);border-bottom-right-radius:4px}
+  .msg.me{align-self:flex-end;background:linear-gradient(135deg,var(--brand2),var(--brand));color:#fff;border-bottom-left-radius:4px}
+  .msg .tm{font-size:9px;opacity:.6;margin-top:3px}
+  .conv .comp{display:flex;gap:8px;padding:10px;background:var(--card);border-top:1px solid var(--line)}
+  .conv .comp input{flex:1;padding:11px 14px;border:1px solid var(--line);border-radius:999px;font-size:13px}
+  .conv .comp button{background:var(--brand2);color:#fff;border:none;border-radius:999px;padding:0 18px;font-weight:600;font-size:13px}
+
+  /* ── housing ── */
+  .room{background:var(--card);border-radius:14px;padding:15px 16px;margin:0 16px 11px}
+  .room .rt{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+  .room .rn{font-size:15px;font-weight:700}
+  .room .occ{font-size:12px;color:var(--ink3);margin-bottom:11px}
+  .chk{display:flex;align-items:center;gap:10px;font-size:13px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;margin-bottom:6px}
+  .chk.ok{background:#eef7f1;border-color:#cce8d6}
+  .chk.bad{background:var(--bad-soft);border-color:#f3cfc9}
+  .chk .box{width:22px;height:22px;border-radius:7px;border:2px solid #c9c4ba;display:grid;place-items:center;font-size:13px;flex-shrink:0}
+  .chk.ok .box{background:var(--good);border-color:var(--good);color:#fff}
+  .chk.bad .box{background:var(--bad);border-color:var(--bad);color:#fff}
+
+  /* ── profile ── */
+  .prof{padding:16px}
+  .prof .card{background:var(--card);border-radius:16px;padding:24px;text-align:center;margin-bottom:14px}
+  .prof .big-av{width:80px;height:80px;border-radius:50%;margin:0 auto 14px;display:grid;place-items:center;color:#fff;font-size:28px;font-weight:700}
+  .prof .nm{font-size:19px;font-weight:700}
+  .prof .rl{font-size:13px;color:var(--ink3);margin-top:3px}
+  .prof .rl .badge{background:var(--gold-soft);color:var(--gold2);font-size:11px;font-weight:700;padding:3px 11px;border-radius:999px;margin-inline-start:6px}
+  .prow{background:var(--card);border-radius:12px;padding:15px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;font-size:14px}
+  .prow .ic{font-size:18px}
+  .prow .vv{margin-inline-start:auto;color:var(--ink3);font-size:13px}
+  .logout{width:calc(100% - 32px);margin:8px 16px;padding:15px;border:none;border-radius:12px;background:var(--bad-soft);color:var(--bad);font-size:15px;font-weight:700}
+
+  /* ── bottom nav ── */
+  .nav{position:absolute;bottom:0;left:0;right:0;max-width:430px;margin:0 auto;display:flex;background:var(--card);border-top:1px solid var(--line);padding:8px 0 max(8px,env(safe-area-inset-bottom))}
+  .nav button{flex:1;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--ink3);position:relative}
+  .nav button .ic{font-size:21px}
+  .nav button .l{font-size:10px}
+  .nav button.on{color:var(--brand2)}
+  .nav .dot{position:absolute;top:-1px;right:calc(50% - 16px);min-width:16px;height:16px;padding:0 4px;background:var(--bad);color:#fff;border-radius:999px;font-size:9px;font-weight:700;display:grid;place-items:center}
+
+  .empty{text-align:center;padding:50px 24px;color:var(--ink3)}
+  .empty .ic{font-size:42px;opacity:.4;margin-bottom:10px}
+
+  .toast{position:absolute;bottom:96px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 22px;border-radius:999px;font-size:13px;z-index:200;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;max-width:90%}
+  .toast.show{opacity:1}
+
+  /* modal */
+  .ov{position:absolute;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;z-index:150}
+  .ov.show{display:flex}
+  .sheet{background:var(--card);border-radius:20px 20px 0 0;width:100%;padding:22px 18px max(22px,env(safe-area-inset-bottom));max-height:90%;overflow-y:auto}
+  .sheet h3{font-size:17px;font-weight:700;margin-bottom:16px}
+  .fld{margin-bottom:13px}
+  .fld label{display:block;font-size:12px;color:var(--ink2);margin-bottom:6px}
+  .fld input,.fld select,.fld textarea{width:100%;padding:12px;border:1px solid var(--line);border-radius:11px;font-size:14px}
+  .fld textarea{min-height:70px;resize:vertical}
+  .sheet .save{width:100%;padding:14px;border:none;border-radius:12px;background:var(--brand2);color:#fff;font-size:15px;font-weight:700;margin-top:4px}
+  .sheet .cancel{width:100%;padding:13px;border:none;border-radius:12px;background:var(--bg);color:var(--ink2);font-size:14px;margin-top:8px}
+</style>
 </head>
 <body>
-<div id="root"></div>
+<div class="phone" id="phone">
 
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <!-- LOGIN -->
+  <div class="login" id="loginView">
+    <div class="logo">📱</div>
+    <h1>تطبيق الموظفين</h1>
+    <p>ضيوف · Staff App</p>
+    <div class="role-hint">👤 اختر اسمك — وسيتم تحميل <b>وضع المدير</b> أو <b>وضع الموظف</b> تلقائياً حسب صلاحيتك.</div>
+    <label>الموظف</label>
+    <select id="loginUser"></select>
+    <label>الرمز السري (تجريبي: 0000)</label>
+    <input id="loginPin" type="password" value="0000" inputmode="numeric"/>
+    <button class="lbtn" onclick="doLogin()">دخول</button>
+  </div>
 
-<script type="text/babel" src="/static/dheuof/staff-mobile/ios-frame.jsx"></script>
-<script type="text/babel" src="/static/dheuof/staff-mobile/Screens.jsx"></script>
+  <!-- APP -->
+  <div id="appView" style="display:none;flex:1;display:none;flex-direction:column;min-height:0">
+    <div class="screen" id="screen"></div>
 
-<script type="text/babel">
-function App() {
-  const isMobile = window.matchMedia('(max-width: 500px)').matches ||
-                   /iPhone|iPad|Android|Mobile/i.test(navigator.userAgent);
-  if (isMobile) {
-    return <StaffApp fullScreen={true}/>;
-  }
-  return (
-    <div className="sm-stage-single">
-      <div>
-        <IOSDevice width={390} height={820}>
-          <StaffApp/>
-        </IOSDevice>
-        <div className="sm-caption">
-          <div className="ar">تطبيق الموظفين الذكي</div>
-          <div className="en">Staff Mobile App · Dheuof Hotel</div>
-        </div>
+    <!-- conversation overlay -->
+    <div class="conv" id="conv">
+      <div class="chd">
+        <button class="bk" onclick="closeConv()">→</button>
+        <div><div class="nm" id="convNm"></div><div class="rl" id="convRl"></div></div>
+      </div>
+      <div class="body" id="convBody"></div>
+      <div class="comp">
+        <input id="convInput" placeholder="اكتب رسالة…" onkeydown="if(event.key==='Enter')sendMsg()"/>
+        <button onclick="sendMsg()">إرسال</button>
       </div>
     </div>
-  );
-}
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
-</script>
+    <!-- bottom nav -->
+    <div class="nav" id="nav"></div>
+  </div>
+
+  <!-- task sheet -->
+  <div class="ov" id="taskSheet">
+    <div class="sheet">
+      <h3 id="taskSheetTitle">مهمة جديدة</h3>
+      <div class="fld"><label>عنوان المهمة</label><input id="ntTitle" placeholder="مثال: تجهيز غرفة 204"/></div>
+      <div class="fld" id="ntToWrap"><label>إسناد إلى موظف</label><select id="ntTo"></select></div>
+      <div class="fld"><label>الأولوية</label><select id="ntPri"><option value="high">عاجلة</option><option value="mid" selected>متوسطة</option><option value="low">عادية</option></select></div>
+      <div class="fld"><label>تفاصيل وإيضاح المهمة</label><textarea id="ntDesc" placeholder="اشرح المطلوب بوضوح…"></textarea></div>
+      <button class="save" onclick="createTask()">إرسال المهمة</button>
+      <button class="cancel" onclick="closeSheet('taskSheet')">إلغاء</button>
+    </div>
+  </div>
+
+  <!-- clarify sheet -->
+  <div class="ov" id="clarSheet">
+    <div class="sheet">
+      <h3>طلب إيضاح</h3>
+      <input type="hidden" id="clarTaskId"/>
+      <div class="fld"><label>سؤالك للمُرسِل</label><textarea id="clarText" placeholder="ما الذي تريد توضيحه؟"></textarea></div>
+      <button class="save" onclick="submitClarify()">إرسال السؤال</button>
+      <button class="cancel" onclick="closeSheet('clarSheet')">إلغاء</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
 
 <script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/static/dheuof/staff-mobile/sw.js')
-    .catch(function(){});
+/* ============ البيانات ============ */
+var STAFF = [
+  { id:'m1', name:'عبدالله الغامدي', role:'مدير المنشأة',   isManager:true,  color:'#143A2E' },
+  { id:'m2', name:'نورة المالكي',    role:'مديرة التدبير',  isManager:true,  color:'#9A7430' },
+  { id:'u1', name:'أحمد الزهراني',   role:'مشرف استقبال',   isManager:false, color:'#1B4D3D' },
+  { id:'u2', name:'سارة القحطاني',   role:'موظفة تدبير',    isManager:false, color:'#266554' },
+  { id:'u3', name:'خالد العتيبي',    role:'فني صيانة',      isManager:false, color:'#3B8772' },
+  { id:'u4', name:'منى الشهري',      role:'موظفة استقبال',  isManager:false, color:'#B68F40' },
+  { id:'u5', name:'فهد الدوسري',     role:'أمن وسلامة',     isManager:false, color:'#0E2A22' }
+];
+var LS={ cur:'dh_sm_cur', msgs:'dh_sm_msgs', tasks:'dh_sm_tasks', house:'dh_sm_house', att:'dh_sm_att' };
+var me=null, activePeer=null, tab='home', taskFilter='all';
+
+function byId(id){ return STAFF.filter(function(s){return s.id===id})[0]; }
+function initials(n){ var p=n.trim().split(/\s+/); return (p[0][0]||'')+(p[1]?p[1][0]:''); }
+function esc(v){ return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function load(k,d){ try{ var v=JSON.parse(localStorage.getItem(k)); return v==null?d:v; }catch(e){ return d; } }
+function save(k,v){ localStorage.setItem(k,JSON.stringify(v)); }
+function el(id){ return document.getElementById(id); }
+function now(){ var d=new Date(); return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0'); }
+function toast(t){ var e=el('toast'); e.textContent=t; e.classList.add('show'); clearTimeout(window._tt); window._tt=setTimeout(function(){e.classList.remove('show')},2200); }
+function ar(n){ return Number(n).toLocaleString('ar-EG'); }
+
+/* ============ دخول/خروج ============ */
+function buildLogin(){
+  el('loginUser').innerHTML = STAFF.map(function(s){
+    return '<option value="'+s.id+'">'+esc(s.name)+' — '+esc(s.role)+(s.isManager?' (مدير)':'')+'</option>';
+  }).join('');
 }
+function doLogin(){
+  if(el('loginPin').value!=='0000'){ toast('الرمز السري غير صحيح'); return; }
+  me=byId(el('loginUser').value); save(LS.cur,me.id); enterApp();
+}
+function logout(){
+  localStorage.removeItem(LS.cur); me=null; activePeer=null; tab='home';
+  el('appView').style.display='none'; el('loginView').style.display='flex';
+}
+function enterApp(){
+  el('loginView').style.display='none';
+  var a=el('appView'); a.style.display='flex';
+  seedTasks(); buildNav(); render();
+}
+
+/* ============ التنقل ============ */
+function buildNav(){
+  var items=[
+    {k:'home',  ic:'🏠', l:'الرئيسية'},
+    {k:'tasks', ic:'✅', l:'المهام'},
+    {k:'chat',  ic:'💬', l:'التراسل'},
+    {k:'house', ic:'🛏', l:'السكن'},
+    {k:'me',    ic:'👤', l:'حسابي'}
+  ];
+  el('nav').innerHTML=items.map(function(it){
+    var badge = it.k==='tasks' ? openTaskCount() : 0;
+    return '<button class="'+(tab===it.k?'on':'')+'" onclick="go(\''+it.k+'\')">'+
+      (badge?'<span class="dot">'+ar(badge)+'</span>':'')+
+      '<span class="ic">'+it.ic+'</span><span class="l">'+it.l+'</span></button>';
+  }).join('');
+}
+function go(k){ tab=k; buildNav(); render(); el('screen').scrollTop=0; }
+
+function render(){
+  if(tab==='home')  el('screen').innerHTML=viewHome();
+  if(tab==='tasks') el('screen').innerHTML=viewTasks();
+  if(tab==='chat')  el('screen').innerHTML=viewChat();
+  if(tab==='house') el('screen').innerHTML=viewHouse();
+  if(tab==='me')    el('screen').innerHTML=viewMe();
+}
+
+/* ============ الرئيسية ============ */
+function attState(){ return load(LS.att,{})[me.id]||'out'; }
+function toggleAtt(){
+  var a=load(LS.att,{}); a[me.id]= attState()==='in'?'out':'in'; save(LS.att,a);
+  toast(a[me.id]==='in'?'تم تسجيل الحضور ✓':'تم تسجيل الانصراف'); render();
+}
+function viewHome(){
+  var inOn = attState()==='in';
+  var myTasks = load(LS.tasks,[]).filter(function(t){return t.to===me.id});
+  var doneToday = myTasks.filter(function(t){return t.status==='closed'}).length;
+  var greet = new Date().getHours()<12?'صباح الخير':'مساء الخير';
+  return ''+
+  '<div class="hd"><div class="row">'+
+    '<div><div class="greet">'+greet+'، '+esc(me.name.split(' ')[0])+' 👋</div>'+
+      '<div class="role">'+esc(me.role)+'<span class="badge">'+(me.isManager?'مدير':'موظف')+'</span></div></div>'+
+    '<div class="av">'+esc(initials(me.name))+'</div>'+
+  '</div>'+
+  '<div class="att">'+
+    '<button class="att-btn '+(inOn?'on':'')+'" onclick="toggleAtt()"><div class="ic">⏱</div>'+
+      '<div class="t">'+(inOn?'تسجيل الانصراف':'تسجيل الحضور')+'</div><div class="s">'+(inOn?'أنت حاضر الآن':'بصمة ذكية + GPS')+'</div></button>'+
+  '</div></div>'+
+  '<div class="stats">'+
+    '<div class="stat"><div class="v">'+(inOn?'٧٫٣':'٠٫٠')+'</div><div class="l">ساعة عمل</div></div>'+
+    '<div class="stat"><div class="v">'+ar(myTasks.length)+'</div><div class="l">مهامي</div></div>'+
+    '<div class="stat"><div class="v">'+ar(doneToday)+'</div><div class="l">منجزة</div></div>'+
+    '<div class="stat"><div class="v">'+ar(openTaskCount())+'</div><div class="l">متبقّية</div></div>'+
+  '</div>'+
+  (me.isManager?managerOverview():'')+
+  '<div class="sec-t">جدول اليوم</div>'+
+  '<div class="sch"><span class="ic">🔔</span><span class="nm">الوردية القادمة</span><span class="tm">٠٨:٠٠</span></div>'+
+  '<div class="sch"><span class="ic">🍽</span><span class="nm">وقت الوجبة</span><span class="tm">١٣:٠٠</span></div>'+
+  '<div class="sch"><span class="ic">🌙</span><span class="nm">نهاية الوردية</span><span class="tm">١٦:٠٠</span></div>';
+}
+function managerOverview(){
+  var tasks=load(LS.tasks,[]);
+  var open=tasks.filter(function(t){return t.status!=='closed'}).length;
+  var att=load(LS.att,{});
+  var present=STAFF.filter(function(s){return !s.isManager && att[s.id]==='in'}).length;
+  var staff=STAFF.filter(function(s){return !s.isManager}).length;
+  return '<div class="sec-t">نظرة المدير</div><div class="mgr-grid">'+
+    '<div class="mgr-c"><div class="v" style="color:var(--brand2)">'+ar(present)+'/'+ar(staff)+'</div><div class="l">حاضر الآن</div></div>'+
+    '<div class="mgr-c"><div class="v" style="color:var(--warn)">'+ar(open)+'</div><div class="l">مهام مفتوحة</div></div>'+
+    '<div class="mgr-c"><div class="v" style="color:var(--good)">'+ar(tasks.filter(function(t){return t.status==='closed'}).length)+'</div><div class="l">مهام مغلقة</div></div>'+
+  '</div>';
+}
+
+/* ============ المهام ============ */
+function seedTasks(){
+  if(load(LS.tasks,null)!==null) return;
+  save(LS.tasks,[
+    { id:'t1', title:'تجهيز جناح 305 لوصول VIP', from:'m1', to:'u2', pri:'high', status:'open', desc:'ضيف يصل 3 عصراً — تجهيز كامل وترتيب الترحيب.', clar:[], at:'09:12' },
+    { id:'t2', title:'إصلاح تكييف غرفة 118', from:'m1', to:'u3', pri:'mid', status:'prog', desc:'النزيل أبلغ عن ضعف التبريد.', clar:[], at:'08:40' },
+    { id:'t3', title:'جرد مستلزمات التدبير', from:'m2', to:'u2', pri:'low', status:'open', desc:'جرد المناشف والمستلزمات قبل نهاية الأسبوع.', clar:[], at:'10:05' }
+  ]);
+}
+function openTaskCount(){
+  if(!me) return 0;
+  var tasks=load(LS.tasks,[]);
+  if(me.isManager) return tasks.filter(function(t){return t.status!=='closed'}).length;
+  return tasks.filter(function(t){return t.to===me.id && t.status!=='closed'}).length;
+}
+function viewTasks(){
+  var tasks=load(LS.tasks,[]);
+  var list = me.isManager ? tasks : tasks.filter(function(t){return t.to===me.id||t.from===me.id});
+
+  // filters
+  var filtersHtml='';
+  if(me.isManager){
+    var emps=STAFF.filter(function(s){return !s.isManager});
+    filtersHtml='<div class="filters"><button class="filt '+(taskFilter==='all'?'on':'')+'" onclick="setFilter(\'all\')">الكل</button>'+
+      '<button class="filt '+(taskFilter==='open'?'on':'')+'" onclick="setFilter(\'open\')">المفتوحة</button>'+
+      emps.map(function(e){return '<button class="filt '+(taskFilter===e.id?'on':'')+'" onclick="setFilter(\''+e.id+'\')">'+esc(e.name.split(' ')[0])+'</button>';}).join('')+
+      '</div>';
+    if(taskFilter==='open') list=list.filter(function(t){return t.status!=='closed'});
+    else if(taskFilter!=='all') list=list.filter(function(t){return t.to===taskFilter});
+  }
+
+  var head='<div class="sec-t">'+(me.isManager?'إدارة المهام':'مهامي')+
+    (me.isManager?'<button class="add" onclick="openNewTask()">+ إسناد مهمة</button>':'')+'</div>';
+
+  if(!list.length) return head+filtersHtml+'<div class="empty"><div class="ic">✅</div>لا توجد مهام</div>';
+  return head+filtersHtml+list.map(taskCard).join('');
+}
+function setFilter(f){ taskFilter=f; render(); }
+function taskCard(t){
+  var inbound=t.to===me.id;
+  var stTxt={open:'مفتوحة',prog:'قيد التنفيذ',closed:'مغلقة'}[t.status];
+  var stCls={open:'open',prog:'prog',closed:'closed'}[t.status];
+  var priTxt={high:'عاجلة',mid:'متوسطة',low:'عادية'}[t.pri];
+  var fromN=byId(t.from)?byId(t.from).name:t.from;
+  var toN=byId(t.to)?byId(t.to).name:t.to;
+  var acts='';
+  if(t.status!=='closed'){
+    if(inbound && t.status==='open') acts+='<button class="act go" onclick="setSt(\''+t.id+'\',\'prog\')">بدء التنفيذ</button>';
+    if(inbound) acts+='<button class="act gh" onclick="askClar(\''+t.id+'\')">طلب إيضاح</button>';
+    acts+='<button class="act cl" onclick="setSt(\''+t.id+'\',\'closed\')">إغلاق</button>';
+  } else {
+    acts+='<button class="act gh" onclick="setSt(\''+t.id+'\',\'open\')">إعادة فتح</button>';
+  }
+  var clar='';
+  if(t.clar&&t.clar.length){
+    clar='<div class="clar">'+t.clar.map(function(c){
+      return '<div class="clar-i"><b>'+esc(byId(c.by)?byId(c.by).name:c.by)+':</b> '+esc(c.q)+
+        (c.a?'<br>↩ <b>الرد:</b> '+esc(c.a):'')+'</div>';
+    }).join('')+'</div>';
+    // manager can answer
+    if(me.isManager && t.clar.some(function(c){return !c.a})){
+      acts+='<button class="act gh" onclick="answerClar(\''+t.id+'\')">الرد على الإيضاح</button>';
+    }
+  }
+  return '<div class="task '+(t.status==='closed'?'closed':'')+'">'+
+    '<div class="top"><div style="flex:1"><div class="tt">'+esc(t.title)+'</div>'+
+      '<div class="meta"><span>من: '+esc(fromN)+'</span><span>إلى: '+esc(toN)+'</span><span>'+esc(t.at)+'</span></div></div>'+
+      '<div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end"><span class="pill '+stCls+'">'+stTxt+'</span><span class="pri '+t.pri+'">'+priTxt+'</span></div></div>'+
+    '<div class="desc">'+esc(t.desc)+'</div>'+clar+
+    '<div class="acts">'+acts+'</div></div>';
+}
+function setSt(id,st){
+  var tasks=load(LS.tasks,[]); tasks.forEach(function(t){if(t.id===id)t.status=st;}); save(LS.tasks,tasks);
+  toast(st==='closed'?'تم إغلاق المهمة ✓':(st==='prog'?'بدأ التنفيذ':'أعيد فتح المهمة')); buildNav(); render();
+}
+function openNewTask(){
+  el('taskSheetTitle').textContent='إسناد مهمة جديدة';
+  el('ntToWrap').style.display='block';
+  el('ntTo').innerHTML=STAFF.filter(function(s){return !s.isManager}).map(function(s){
+    return '<option value="'+s.id+'">'+esc(s.name)+' — '+esc(s.role)+'</option>';}).join('');
+  el('ntTitle').value=''; el('ntDesc').value='';
+  el('taskSheet').classList.add('show');
+}
+function createTask(){
+  var title=el('ntTitle').value.trim();
+  if(!title){ toast('أدخل عنوان المهمة'); return; }
+  var tasks=load(LS.tasks,[]);
+  tasks.unshift({ id:'t'+Date.now(), title:title, from:me.id, to:el('ntTo').value,
+    pri:el('ntPri').value, status:'open', desc:el('ntDesc').value.trim(), clar:[], at:now() });
+  save(LS.tasks,tasks); closeSheet('taskSheet'); toast('تم إسناد المهمة ✓'); buildNav(); render();
+}
+function askClar(id){ el('clarTaskId').value=id; el('clarText').value=''; el('clarSheet').classList.add('show'); }
+function submitClarify(){
+  var id=el('clarTaskId').value, q=el('clarText').value.trim();
+  if(!q){ toast('اكتب سؤالك'); return; }
+  var tasks=load(LS.tasks,[]); tasks.forEach(function(t){if(t.id===id){t.clar=t.clar||[];t.clar.push({by:me.id,q:q,at:now()});}}); save(LS.tasks,tasks);
+  closeSheet('clarSheet'); toast('تم إرسال طلب الإيضاح'); render();
+}
+function answerClar(id){
+  var a=window.prompt('ردك على طلب الإيضاح:'); if(!a) return;
+  var tasks=load(LS.tasks,[]); tasks.forEach(function(t){if(t.id===id&&t.clar){t.clar.forEach(function(c){if(!c.a)c.a=a;});}}); save(LS.tasks,tasks);
+  toast('تم إرسال الرد'); render();
+}
+function closeSheet(id){ el(id).classList.remove('show'); }
+
+/* ============ التراسل ============ */
+function viewChat(){
+  var others=STAFF.filter(function(s){return s.id!==me.id});
+  return '<div class="sec-t">التراسل بين الموظفين</div><div class="roster">'+
+    others.map(function(s){
+      return '<div class="ritem" onclick="openConv(\''+s.id+'\')">'+
+        '<div class="av" style="background:linear-gradient(135deg,'+s.color+',#0E2A22)">'+esc(initials(s.name))+'</div>'+
+        '<div><div class="nm">'+esc(s.name)+(s.isManager?' 👑':'')+'</div><div class="rl">'+esc(s.role)+'</div></div>'+
+        '<span class="go">›</span></div>';
+    }).join('')+'</div>';
+}
+function convKey(a,b){ return [a,b].sort().join('|'); }
+function openConv(pid){
+  activePeer=pid; var p=byId(pid);
+  el('convNm').textContent=p.name; el('convRl').textContent=p.role;
+  renderConv(); el('conv').classList.add('open');
+  setTimeout(function(){el('convInput').focus();},250);
+}
+function closeConv(){ el('conv').classList.remove('open'); activePeer=null; }
+function renderConv(){
+  var all=load(LS.msgs,{}), thread=all[convKey(me.id,activePeer)]||[];
+  var b=el('convBody');
+  if(!thread.length){ b.innerHTML='<div class="empty"><div class="ic">💬</div>ابدأ المحادثة</div>'; return; }
+  b.innerHTML=thread.map(function(m){
+    return '<div class="msg '+(m.from===me.id?'me':'them')+'">'+esc(m.text)+'<div class="tm">'+esc(m.at)+'</div></div>';
+  }).join('');
+  b.scrollTop=b.scrollHeight;
+}
+function sendMsg(){
+  var inp=el('convInput'), txt=inp.value.trim(); if(!txt||!activePeer) return;
+  var all=load(LS.msgs,{}), key=convKey(me.id,activePeer);
+  all[key]=all[key]||[]; all[key].push({from:me.id,text:txt,at:now()}); save(LS.msgs,all);
+  inp.value=''; renderConv();
+}
+
+/* ============ السكن ============ */
+var HTOOLS=['مكيف الهواء','السخان','الإضاءة','الثلاجة','أثاث الغرفة','دورة المياه'];
+var HROOMS=[
+  {no:'سكن A-101', occ:'أحمد الزهراني · خالد العتيبي'},
+  {no:'سكن A-102', occ:'فهد الدوسري'},
+  {no:'سكن B-201', occ:'سارة القحطاني'},
+  {no:'سكن B-202', occ:'منى الشهري'}
+];
+function viewHouse(){
+  var state=load(LS.house,{});
+  return '<div class="sec-t">فحص أدوات السكن<button class="add" onclick="resetHouse()">إعادة تعيين</button></div>'+
+  '<div style="font-size:12px;color:var(--ink3);padding:0 16px 12px">اضغط كل أداة: غير محدد ← سليم ✓ ← يحتاج صيانة ✕</div>'+
+  HROOMS.map(function(r){
+    var rs=state[r.no]||{}, ok=0;
+    var checks=HTOOLS.map(function(tool){
+      var st=rs[tool]; if(st==='ok')ok++;
+      var cls=st==='ok'?'ok':(st==='bad'?'bad':''), mk=st==='ok'?'✓':(st==='bad'?'✕':'');
+      return '<div class="chk '+cls+'" onclick="toggleTool(\''+r.no+'\',\''+tool+'\')"><div class="box">'+mk+'</div><span>'+esc(tool)+'</span></div>';
+    }).join('');
+    var pct=Math.round(ok/HTOOLS.length*100);
+    return '<div class="room"><div class="rt"><div class="rn">'+esc(r.no)+'</div>'+
+      '<span class="pill '+(ok===HTOOLS.length?'closed':(Object.keys(rs).length?'prog':'open'))+'">'+ar(ok)+'/'+ar(HTOOLS.length)+' · '+ar(pct)+'٪</span></div>'+
+      '<div class="occ">🛏 '+esc(r.occ)+'</div>'+checks+'</div>';
+  }).join('');
+}
+function toggleTool(room,tool){
+  var s=load(LS.house,{}); s[room]=s[room]||{};
+  var c=s[room][tool];
+  if(c===undefined)s[room][tool]='ok'; else if(c==='ok')s[room][tool]='bad'; else delete s[room][tool];
+  save(LS.house,s); render();
+}
+function resetHouse(){ localStorage.removeItem(LS.house); toast('تمت إعادة التعيين'); render(); }
+
+/* ============ حسابي ============ */
+function viewMe(){
+  return '<div class="prof">'+
+    '<div class="card"><div class="big-av" style="background:linear-gradient(135deg,'+me.color+',#0E2A22)">'+esc(initials(me.name))+'</div>'+
+      '<div class="nm">'+esc(me.name)+'</div>'+
+      '<div class="rl">'+esc(me.role)+'<span class="badge">'+(me.isManager?'وضع المدير':'وضع الموظف')+'</span></div></div>'+
+    '<div class="prow"><span class="ic">🆔</span>رقم الموظف<span class="vv">'+esc(me.id.toUpperCase())+'</span></div>'+
+    '<div class="prow"><span class="ic">⏱</span>الحالة<span class="vv">'+(attState()==='in'?'حاضر':'منصرف')+'</span></div>'+
+    '<div class="prow"><span class="ic">🔑</span>الصلاحية<span class="vv">'+(me.isManager?'إسناد + إدارة':'تنفيذ المهام')+'</span></div>'+
+    '<div class="prow"><span class="ic">🔔</span>الإشعارات<span class="vv">مفعّلة</span></div>'+
+  '</div>'+
+  '<button class="logout" onclick="logout()">🚪 تسجيل الخروج</button>';
+}
+
+/* ============ إقلاع ============ */
+buildLogin();
+(function(){ var c=load(LS.cur,null); if(c&&byId(c)){ me=byId(c); enterApp(); } })();
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('/static/dheuof/staff-mobile/sw.js').catch(function(){}); }
 </script>
 </body>
 </html>
