@@ -1,0 +1,38 @@
+/* Performance & rendering hints */
+.dh-sidebar { will-change: transform; }
+.dh-topbar { will-change: auto; }
+.dh-card { contain: layout style; }
+.dh-nav-item { will-change: background-color; }
+
+/* Optimize font loading */
+@font-face {
+  font-family: 'IBM Plex Sans Arabic';
+  font-display: swap;
+}
+
+/* Reduce layout recalculation */
+.dh-app { isolation: isolate; }
+img { content-visibility: auto; }
+
+/* Skeleton loading state */
+.dh-skeleton {
+  background: linear-gradient(90deg, var(--sand) 25%, var(--paper) 50%, var(--sand) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+  border-radius: var(--radius-md);
+}
+@keyframes skeleton-pulse {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Mobile performance */
+@media (max-width: 768px) {
+  .dh-sidebar { transform: translateZ(0); }
+}
+
+/* Print optimization */
+@media print {
+  .dh-sidebar, .dh-topbar { display: none !important; }
+  .dh-main { padding: 0 !important; }
+}

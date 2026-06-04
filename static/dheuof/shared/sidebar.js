@@ -35,7 +35,11 @@
     try { return JSON.parse(localStorage.getItem('dheuof_session') || 'null'); } catch(e) { return null; }
   }
   function saveSession(s) {
-    localStorage.setItem('dheuof_session', JSON.stringify(s));
+    // NOTE: session token lives in an HttpOnly+Secure+SameSite=Lax cookie set by the server.
+    // localStorage here holds only non-sensitive UI state (name, plan).
+    // Do NOT store passwords or raw tokens here.
+    var safe = { email: s.email, name: s.name, plan: s.plan, ts: s.ts, twofa: s.twofa };
+    localStorage.setItem('dheuof_session', JSON.stringify(safe));
   }
   function clearSession() {
     localStorage.removeItem('dheuof_session');
@@ -122,8 +126,7 @@
           '</div>',
           '<button class="aw-btn-primary" onclick="dhAuthLogin()">دخول</button>',
           '<div class="aw-demo-hint">',
-            '<strong>حساب تجريبي:</strong> أي بريد إلكتروني + كلمة مرور (٦ أحرف على الأقل)<br/>',
-            'أو جرّب: <strong>demo@dheuof.com</strong> / <strong>demo123</strong>',
+            'للتجربة: أدخل بريدك الإلكتروني وكلمة مرور (٦ أحرف على الأقل) لإنشاء حساب تجريبي فوري',
           '</div>',
         '</div>',
 

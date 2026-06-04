@@ -41,6 +41,10 @@ _lock = threading.Lock()
 _reg_attempts: dict = {}     # ip → [timestamps]
 _REG_MAX_PER_HOUR = int(os.environ.get("REG_MAX_PER_HOUR", "5"))
 
+# Login rate limiting: protect /api/login against brute-force attacks
+_login_attempts: dict = {}   # ip → [timestamps]
+_LOGIN_MAX_PER_MINUTE = int(os.environ.get("LOGIN_MAX_PER_MINUTE", "10"))
+
 
 def _reg_rate_ok(ip: str) -> bool:
     """يسمح بحد أقصى REG_MAX_PER_HOUR تسجيلات لكل IP في الساعة."""
@@ -52,6 +56,19 @@ def _reg_rate_ok(ip: str) -> bool:
             return False
         hits.append(now)
         _reg_attempts[ip] = hits
+        return True
+
+
+def _login_rate_ok(ip: str) -> bool:
+    """Allow at most LOGIN_MAX_PER_MINUTE login attempts per IP per minute (brute-force guard)."""
+    now = datetime.now().timestamp()
+    with _lock:
+        hits = [t for t in _login_attempts.get(ip, []) if now - t < 60]
+        if len(hits) >= _LOGIN_MAX_PER_MINUTE:
+            _login_attempts[ip] = hits
+            return False
+        hits.append(now)
+        _login_attempts[ip] = hits
         return True
 
 
@@ -127,6 +144,11 @@ async def lifespan(app_: FastAPI):
         run_sessions_migration(db)
     except Exception as e:
         log.warning(f"sessions migration: {e}")
+    try:
+        from db.schema_v3 import run_rls_migration
+        run_rls_migration(db)
+    except Exception as e:
+        log.warning(f"RLS migration: {e}")
 
     # ── Sentry (APM / error tracking) ──────────────────────────────────────
     if cfg.has_sentry:
@@ -341,6 +363,13 @@ try:
     log.info("✓ M07 POS")
 except Exception as e:
     log.warning(f"M07: {e}")
+
+try:
+    from routes.m_analytics import router as analytics_router
+    app.include_router(analytics_router)
+    log.info("✓ Analytics cross-module")
+except Exception as e:
+    log.warning(f"Analytics: {e}")
 
 
 # ──────────────────────────────────────────────────────────────
@@ -2498,6 +2527,11 @@ async def client_login(request: Request):
     form = await request.form()
     client_id = str(form.get("client_id", "")).strip()
     password = str(form.get("password", "")).strip()
+
+    # Rate-limit: block IPs that exceed LOGIN_MAX_PER_MINUTE attempts per minute
+    client_ip = (request.client.host if request.client else "?")
+    if not _login_rate_ok(client_ip):
+        return HTMLResponse(_login_page("محاولات تسجيل دخول كثيرة — حاول لاحقاً"), status_code=429)
 
     if not client_id or not password:
         return HTMLResponse(_login_page("معرف المنشأة وكلمة المرور مطلوبان"), status_code=400)

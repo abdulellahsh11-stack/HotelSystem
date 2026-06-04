@@ -41,10 +41,20 @@ async def kpi_dashboard(request: Request, session=Depends(_require_client)):
         occupancy = round((occupied_rooms / max(total_rooms, 1)) * 100, 1)
 
         month_rev = db.execute("""
-            SELECT COALESCE(SUM(total_amount), 0) as s FROM invoices
-            WHERE client_id=%s AND issue_date >= %s
+            SELECT COALESCE(SUM(total_room), 0) as s FROM bookings
+            WHERE client_id=%s AND check_in >= %s AND status NOT IN ('cancelled')
         """, (cid, month_start.isoformat()), fetch="one")
         revenue_month = float(dict(month_rev).get("s", 0)) if month_rev else 0
+
+        # Add POS revenue if available
+        try:
+            pos_rev = db.execute("""
+                SELECT COALESCE(SUM(total), 0) as s FROM pos_sales
+                WHERE client_id=%s AND created_at::date >= %s AND status='completed'
+            """, (cid, month_start.isoformat()), fetch="one")
+            revenue_month += float(dict(pos_rev).get("s", 0)) if pos_rev else 0
+        except Exception:
+            pass
 
         month_bk = db.execute("""
             SELECT COUNT(*) as c FROM bookings
@@ -56,11 +66,11 @@ async def kpi_dashboard(request: Request, session=Depends(_require_client)):
         revpar = round(revenue_month / max(total_rooms * 30, 1), 2)
 
         monthly = db.execute("""
-            SELECT TO_CHAR(issue_date, 'YYYY-MM') as month,
-                   SUM(total_amount) as revenue,
-                   COUNT(*) as invoices
-            FROM invoices WHERE client_id=%s
-            GROUP BY month ORDER BY month DESC LIMIT 12
+            SELECT TO_CHAR(DATE_TRUNC('month', check_in), 'YYYY-MM') as month,
+                   COALESCE(SUM(total_room), 0) as revenue,
+                   COUNT(*) as bookings
+            FROM bookings WHERE client_id=%s AND status NOT IN ('cancelled')
+            GROUP BY DATE_TRUNC('month', check_in) ORDER BY DATE_TRUNC('month', check_in) DESC LIMIT 12
         """, (cid,), fetch="all")
 
         checkins_today = db.execute("""
@@ -71,6 +81,10 @@ async def kpi_dashboard(request: Request, session=Depends(_require_client)):
             SELECT COUNT(*) as c FROM bookings
             WHERE client_id=%s AND check_out=%s AND status='checked_in'
         """, (cid, today.isoformat()), fetch="one")
+
+        staff_count = db.execute(
+            "SELECT COUNT(*) as c FROM employees WHERE client_id=%s AND status='active'",
+            (cid,), fetch="one")
 
         return {
             "success": True,
@@ -85,6 +99,7 @@ async def kpi_dashboard(request: Request, session=Depends(_require_client)):
                 "checkins_today": dict(checkins_today).get("c", 0) if checkins_today else 0,
                 "checkouts_today": dict(checkouts_today).get("c", 0) if checkouts_today else 0,
                 "monthly_revenue": [dict(r) for r in (monthly or [])],
+                "active_staff": dict(staff_count).get("c", 0) if staff_count else 0,
             }
         }
     except HTTPException:

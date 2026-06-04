@@ -608,6 +608,45 @@ def run_sessions_migration(db) -> None:
     log.info("✅ client_sessions table ready")
 
 
+# ── Row Level Security — defense-in-depth for multi-tenant isolation ────────
+
+RLS_POLICIES = """
+-- ================================================================
+-- Row Level Security — enforced at DB layer (defense in depth)
+-- Note: app layer already enforces client_id; RLS adds DB-layer guarantee
+-- ================================================================
+ALTER TABLE guests ENABLE ROW LEVEL SECURITY;
+ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE employees ENABLE ROW LEVEL SECURITY;
+ALTER TABLE rooms ENABLE ROW LEVEL SECURITY;
+ALTER TABLE invoices ENABLE ROW LEVEL SECURITY;
+ALTER TABLE warehouse_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE maintenance_orders ENABLE ROW LEVEL SECURITY;
+
+-- Application role must SET app.current_client_id before queries
+-- CREATE POLICY guest_isolation ON guests USING (client_id = current_setting('app.current_client_id', true));
+-- (Commented: enable when app sets session variable per request)
+
+-- For now, ensure all tables have RLS enabled (blocks direct DB access without policy)
+"""
+
+
+def run_rls_migration(db) -> None:
+    """Enable RLS on all tenant tables (idempotent — ALTER TABLE ... ENABLE is safe to re-run)."""
+    if not db.use_postgres:
+        return
+    for stmt in RLS_POLICIES.strip().split("\n"):
+        stmt = stmt.strip()
+        if stmt and not stmt.startswith("--") and not stmt.startswith("CREATE"):
+            try:
+                db.execute(stmt)
+            except Exception as e:
+                err = str(e).lower()
+                if "does not exist" not in err:
+                    import logging
+                    logging.getLogger("dheuof").warning(f"RLS migration: {e}")
+
+
 def run_v3_migrations(db) -> None:
     import logging
     log = logging.getLogger("dheuof.db.migrations")
