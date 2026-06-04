@@ -604,7 +604,10 @@ def _login_page(error: str = "", ref_code: str = "") -> str:
   .btn:hover{{background:#0F2640}}
   .alert-error{{background:#fef2f2;color:#dc2626;padding:10px 14px;border-radius:8px;font-size:.875rem;margin-bottom:16px}}
   .pane{{display:none}} .pane.active{{display:block}}
-  .footer{{text-align:center;margin-top:24px;color:#9ca3af;font-size:.8rem}}
+  .footer{{text-align:center;margin-top:12px;color:#9ca3af;font-size:.8rem}}
+  .contact-box{{display:flex;flex-direction:column;gap:8px;align-items:center;margin-top:24px;padding-top:20px;border-top:1px solid #e2e8f0}}
+  .contact-box a{{color:#185FA5;text-decoration:none;font-size:.88rem;font-weight:500}}
+  .contact-box a:hover{{text-decoration:underline}}
   .switch-link{{text-align:center;margin-top:16px;font-size:.85rem;color:#64748b}}
   .switch-link a{{color:#185FA5;text-decoration:none}}
 </style>
@@ -642,21 +645,45 @@ def _login_page(error: str = "", ref_code: str = "") -> str:
       <input type="text" id="reg-name" placeholder="فندق الواحة">
     </div>
     <div class="form-group">
+      <label>اسم المالك / المسؤول</label>
+      <input type="text" id="reg-owner" placeholder="محمد الأحمد">
+    </div>
+    <div class="form-group">
       <label>معرّف المنشأة (للدخول لاحقاً)</label>
       <input type="text" id="reg-id" placeholder="hotel-001">
+    </div>
+    <div class="form-group">
+      <label>رقم الجوال</label>
+      <input type="tel" id="reg-phone" dir="ltr" inputmode="numeric" placeholder="05XXXXXXXX">
+    </div>
+    <div class="form-group">
+      <label>المدينة</label>
+      <input type="text" id="reg-city" placeholder="الرياض">
+    </div>
+    <div class="form-group">
+      <label>السجل التجاري <span style="color:#9ca3af;font-weight:400">(اختياري)</span></label>
+      <input type="text" id="reg-cr" dir="ltr" inputmode="numeric" placeholder="1010XXXXXX">
+    </div>
+    <div class="form-group">
+      <label>البريد الإلكتروني</label>
+      <input type="email" id="reg-email" dir="ltr" placeholder="your@email.com">
     </div>
     <div class="form-group">
       <label>كلمة المرور</label>
       <input type="password" id="reg-pass" placeholder="••••••••">
     </div>
     <div class="form-group">
-      <label>مفتاح التفعيل (من الإدارة)</label>
+      <label>مفتاح التفعيل <span style="color:#9ca3af;font-weight:400">(اختياري)</span></label>
       <input type="text" id="reg-key" placeholder="XXXX-XXXX-XXXX-XXXX">
     </div>
-    <button class="btn" onclick="doRegister()">تسجيل وبدء التجربة</button>
+    <button class="btn" onclick="doRegister()">تسجيل وبدء التجربة المجانية</button>
   </div>
 
-  <div class="footer">dheuof.com &copy; 2025 — منصة ضيوف للضيافة الذكية</div>
+  <div class="contact-box">
+    <a href="mailto:info@dheuof.com">&#9993; info@dheuof.com</a>
+    <a href="https://wa.me/966565009696" target="_blank" rel="noopener">&#128241; واتساب: +966 56 500 9696</a>
+  </div>
+  <div class="footer">dheuof.com &copy; 2026 — منصة ضيوف للضيافة الذكية</div>
 </div>
 <script>
 function showTab(t){{
@@ -677,12 +704,18 @@ async function doLogin(){{
 }}
 async function doRegister(){{
   const name=document.getElementById('reg-name').value.trim();
+  const owner=document.getElementById('reg-owner').value.trim();
   const id=document.getElementById('reg-id').value.trim();
+  const phone=document.getElementById('reg-phone').value.trim();
+  const city=document.getElementById('reg-city').value.trim();
+  const cr=document.getElementById('reg-cr').value.trim();
+  const email=document.getElementById('reg-email').value.trim();
   const pass=document.getElementById('reg-pass').value;
   const key=document.getElementById('reg-key').value.trim();
   const ref=document.getElementById('ref-code')?.value||'';
-  if(!name||!id||!pass)return showErr('يرجى ملء جميع الحقول');
-  const r=await fetch('/api/client/register',{{method:'POST',headers:{{'Content-Type':'application/json'}},body:JSON.stringify({{hotel_name:name,client_id:id,password:pass,activation_key:key,ref_code:ref}})}});
+  if(!name||!id||!pass)return showErr('اسم المنشأة والمعرّف وكلمة المرور مطلوبة');
+  if(pass.length<6)return showErr('كلمة المرور ٦ أحرف على الأقل');
+  const r=await fetch('/api/client/register',{{method:'POST',headers:{{'Content-Type':'application/json'}},body:JSON.stringify({{hotel_name:name,name:owner||name,client_id:id,password:pass,phone:phone,city:city,cr_number:cr,email:email,activation_key:key,ref_code:ref}})}});
   const d=await r.json();
   if(d.ok||d.success)location.href='/';else showErr(d.error||'خطأ في التسجيل');
 }}
@@ -2182,12 +2215,12 @@ async def marketing_page(request: Request):
 
 
 @app.get("/login", response_class=HTMLResponse)
-async def login_page():
-    dashboard_path = os.path.join("static", "dashboard.html")
-    if os.path.exists(dashboard_path):
-        with open(dashboard_path, encoding="utf-8") as f:
-            return HTMLResponse(f.read())
-    return HTMLResponse(_login_page())
+async def login_page(request: Request):
+    # Already authenticated → go straight to the app
+    if get_client_session(request) is not None:
+        return RedirectResponse("/", status_code=302)
+    ref = request.query_params.get("ref", "")
+    return HTMLResponse(_login_page(ref_code=ref))
 
 
 @app.get("/admin", response_class=HTMLResponse)
