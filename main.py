@@ -227,6 +227,13 @@ try:
 except Exception as e:
     log.warning(f"M14b: {e}")
 
+try:
+    from routes.channels import router as channels_router
+    app.include_router(channels_router)
+    log.info("✓ Channel Manager (OTA)")
+except Exception as e:
+    log.warning(f"Channels: {e}")
+
 
 # ──────────────────────────────────────────────────────────────
 #  Auth helpers
