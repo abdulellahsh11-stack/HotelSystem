@@ -69,21 +69,34 @@ async def today_departures(request: Request, session=Depends(_require_client)):
 @router.post("/checkin/{booking_id}")
 async def checkin(booking_id: str, request: Request, session=Depends(_require_client)):
     try:
-        from datetime import datetime as dt
         db = request.app.state.db
         cid = session["client_id"]
         data = await request.json()
         if db.use_postgres:
-            db.execute("""
-                UPDATE bookings SET status='checked_in', actual_check_in=NOW()
-                WHERE id=%s AND client_id=%s AND status='confirmed'
-            """, (booking_id, cid))
-            db.execute("""
-                INSERT INTO check_in_log
-                    (client_id,booking_id,room_id,guest_id,checkin_by,id_verified,key_issued)
-                SELECT %s, id, room_id, guest_id, %s, %s, %s FROM bookings
-                WHERE id=%s AND client_id=%s
-            """, (cid, data.get("checkin_by", "استقبال"), True, True, booking_id, cid))
+            with db.transaction() as cur:
+                # Update booking status
+                cur.execute("""
+                    UPDATE bookings SET status='checked_in', actual_check_in=NOW()
+                    WHERE id=%s AND client_id=%s AND status='confirmed'
+                    RETURNING room_id, guest_id
+                """, (booking_id, cid))
+                row = cur.fetchone()
+                if not row:
+                    raise HTTPException(400, "الحجز غير موجود أو لا يمكن تسجيل وصوله (تحقق من الحالة)")
+                room_id = row["room_id"]
+                guest_id = row["guest_id"]
+                # Update room to occupied
+                cur.execute("""
+                    UPDATE rooms SET status='occupied'
+                    WHERE id=%s AND client_id=%s
+                """, (room_id, cid))
+                # Write check-in log
+                cur.execute("""
+                    INSERT INTO check_in_log
+                        (client_id, booking_id, room_id, guest_id, checkin_by, id_verified, key_issued)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """, (cid, booking_id, room_id, guest_id,
+                      data.get("checkin_by", "استقبال"), True, True))
         return {"success": True, "message": "تم تسجيل الوصول بنجاح"}
     except HTTPException:
         raise
@@ -99,17 +112,30 @@ async def checkout(booking_id: str, request: Request, session=Depends(_require_c
         cid = session["client_id"]
         data = await request.json()
         if db.use_postgres:
-            db.execute("""
-                UPDATE bookings SET status='checked_out', actual_check_out=NOW()
-                WHERE id=%s AND client_id=%s AND status='checked_in'
-            """, (booking_id, cid))
-            db.execute("""
-                INSERT INTO check_out_log
-                    (client_id,booking_id,checkout_by,final_amount,payment_method)
-                VALUES (%s,%s,%s,%s,%s)
-            """, (cid, booking_id, data.get("checkout_by", "استقبال"),
-                  float(data.get("final_amount", 0)), data.get("payment_method", "cash")))
-        return {"success": True, "message": "تم تسجيل المغادرة بنجاح"}
+            with db.transaction() as cur:
+                # Update booking status
+                cur.execute("""
+                    UPDATE bookings SET status='checked_out', actual_check_out=NOW()
+                    WHERE id=%s AND client_id=%s AND status='checked_in'
+                    RETURNING room_id
+                """, (booking_id, cid))
+                row = cur.fetchone()
+                if not row:
+                    raise HTTPException(400, "الحجز غير موجود أو الضيف لم يُسجَّل وصوله بعد")
+                room_id = row["room_id"]
+                # Mark room as needs cleaning
+                cur.execute("""
+                    UPDATE rooms SET status='cleaning'
+                    WHERE id=%s AND client_id=%s
+                """, (room_id, cid))
+                # Write check-out log
+                cur.execute("""
+                    INSERT INTO check_out_log
+                        (client_id, booking_id, checkout_by, final_amount, payment_method)
+                    VALUES (%s, %s, %s, %s, %s)
+                """, (cid, booking_id, data.get("checkout_by", "استقبال"),
+                      float(data.get("final_amount", 0)), data.get("payment_method", "cash")))
+        return {"success": True, "message": "تم تسجيل المغادرة بنجاح — الغرفة قيد التنظيف"}
     except HTTPException:
         raise
     except Exception as e:

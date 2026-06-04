@@ -102,6 +102,20 @@ async def create_reservation(request: Request, session=Depends(_require_client))
         if not all([room_id, check_in, check_out]):
             raise HTTPException(400, "room_id و check_in و check_out مطلوبة")
 
+        if db.use_postgres:
+            # Double-booking check: reject if room has an overlapping active booking
+            conflict = db.execute("""
+                SELECT id FROM bookings
+                WHERE client_id = %s
+                  AND room_id = %s
+                  AND status NOT IN ('cancelled', 'checked_out')
+                  AND check_in  < %s::date
+                  AND check_out > %s::date
+                LIMIT 1
+            """, (cid, int(room_id), check_out, check_in), fetch="one")
+            if conflict:
+                raise HTTPException(409, "الغرفة محجوزة في هذه الفترة — يرجى اختيار غرفة أخرى أو تاريخ مختلف")
+
         booking_number = "BK-" + secrets.token_hex(4).upper()
         booking_id = secrets.token_hex(10)
 

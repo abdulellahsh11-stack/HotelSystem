@@ -153,6 +153,20 @@ class DatabasePool:
         loop = asyncio.get_event_loop()
         return await loop.run_in_executor(None, self.execute, query, params, fetch)
 
+    @contextmanager
+    def transaction(self):
+        """Runs multiple execute() calls in a single atomic transaction.
+
+        Usage:
+            with db.transaction() as cur:
+                cur.execute(sql1, params1)
+                cur.execute(sql2, params2)
+        All statements commit together; any exception rolls back all of them.
+        """
+        with self._get_conn() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                yield cur
+
     def execute_many(self, query: str, params_list: list) -> int:
         """تنفيذ batch insert/update بكفاءة"""
         if not self.use_postgres or not params_list:
