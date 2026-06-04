@@ -288,6 +288,8 @@ body { background: var(--paper-tint); }
   transition: transform 140ms;
 }
 .hm-cell:hover { transform: scale(1.05); box-shadow: 0 0 0 2px var(--gold-400); z-index: 1; }
+.hm-cell.is-empty { background: transparent !important; cursor: default; pointer-events: none; }
+.hm-cell.is-empty:hover { transform: none; box-shadow: none; }
 
 /* =========================================================================
    SWOT insight cards (carry-over, enhanced)

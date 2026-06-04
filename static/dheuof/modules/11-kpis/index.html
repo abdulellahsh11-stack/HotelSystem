@@ -1094,18 +1094,28 @@ setTimeout(function(){
 
 // ── Build occupancy bar chart ─────────────────────────────────────────────
 (function buildOccBars(){
-  var months = ['يون','يول','أغ','سبت','أكت','نوف','ديس','يناير','فبراير','مارس','أبريل','مايو'];
-  var values = [72, 68, 65, 81, 84, 88, 79, 83, 86, 82, 90, 87];
+  // Last 12 months ending with the current month (full Arabic month names)
+  var monthNames = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  var now = new Date();
+  var months = [];
+  for (var k = 11; k >= 0; k--){
+    var d = new Date(now.getFullYear(), now.getMonth() - k, 1);
+    months.push(monthNames[d.getMonth()]);
+  }
+  // Occupancy values per month — empty until real data is recorded
+  var values = [];
   var container = document.getElementById('occ-bars-container');
   if (!container) return;
-  var maxV = Math.max.apply(null, values);
+  var hasData = values.length === months.length;
+  var maxV = hasData ? Math.max.apply(null, values) : 0;
   months.forEach(function(m, i){
-    var pct = Math.round(values[i] / maxV * 100);
+    var v = hasData ? values[i] : null;
+    var pct = (hasData && maxV > 0) ? Math.round(v / maxV * 100) : 0;
     var isCurrent = i === months.length - 1;
     var col = document.createElement('div');
     col.className = 'occ-bar-col';
     col.innerHTML =
-      '<div class="occ-bar-pct">' + values[i] + '٪</div>' +
+      '<div class="occ-bar-pct">' + (v == null ? '—' : v + '٪') + '</div>' +
       '<div class="occ-bar-track" style="min-height:100px">' +
         '<div class="occ-bar-fill' + (isCurrent ? ' is-current' : '') + '" style="height:' + pct + '%"></div>' +
       '</div>' +
