@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="96" fill="#143A2E"/>
+  <rect x="41" y="41" width="430" height="430" rx="58" fill="#1B4D3D"/>
+  <text x="256" y="370" text-anchor="middle" font-size="290" fill="#C9A85F" font-family="Arial">ض</text>
+  <circle cx="384" cy="128" r="41" fill="#C9A85F" opacity="0.7"/>
+</svg>
