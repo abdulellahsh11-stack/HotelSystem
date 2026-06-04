@@ -121,113 +121,32 @@
 
       <div class="gl-hero" data-m-rise>
         <div>
-          <div class="lbl">MAY 2025 - OVERALL PROGRESS</div>
+          <div class="lbl">OVERALL PROGRESS</div>
           <h2>أداء هذا الشهر</h2>
-          <p class="sub">٤ أهداف من أصل ٦ تم تحقيقها أو تجاوزت المستهدف. الإيرادات تتقدم على الجدول بنسبة ١٢٪. إقامات الموظفين تحتاج اهتمام.</p>
+          <p class="sub">أضف أهدافك الشهرية والفصلية لتتابع إنجازك بشكل فوري.</p>
         </div>
         <div class="gl-ring">
           <svg width="160" height="160">
             <circle cx="80" cy="80" r="68" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="14"/>
             <circle cx="80" cy="80" r="68" fill="none" stroke="#C9A85F" stroke-width="14"
-                    stroke-dasharray="${0.78 * 2 * Math.PI * 68} ${2 * Math.PI * 68}"
+                    stroke-dasharray="0 427"
                     stroke-linecap="round"/>
           </svg>
-          <div class="center"><div><div class="v">٧٨٪</div><div class="label">إجمالي الأهداف</div></div></div>
+          <div class="center"><div><div class="v">—</div><div class="label">إجمالي الأهداف</div></div></div>
         </div>
       </div>
 
-      <div class="gl-grid" data-m-rise-stagger>
-
-        <div class="gl-card done">
-          <div class="head">
-            <div class="ic">📈</div>
-            <div class="pct">١١٢٪</div>
-          </div>
-          <div class="nm">إيرادات الشهر</div>
-          <div class="target">المستهدف: ٤٢٠ ألف ر.س</div>
-          <div class="bar"><div style="width: 100%"></div></div>
-          <div class="foot-info"><span>محقق:</span><span class="now">٤٧٠٬٢٤٠ ر.س</span></div>
+      <div class="gl-grid" data-m-rise-stagger id="goals-grid">
+        <div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--fg-3);font-family:var(--font-ar)">
+          <div style="font-size:40px;margin-bottom:12px;opacity:.4">🎯</div>
+          <div style="font-size:15px;font-weight:600;margin-bottom:6px">لا توجد أهداف بعد</div>
+          <div style="font-size:13px">اضغط «إضافة هدف جديد» لتحديد أهدافك الشهرية والفصلية</div>
         </div>
-
-        <div class="gl-card done">
-          <div class="head">
-            <div class="ic">🛏</div>
-            <div class="pct">١٠٤٪</div>
-          </div>
-          <div class="nm">معدل الإشغال</div>
-          <div class="target">المستهدف: ٨٣٪</div>
-          <div class="bar"><div style="width: 100%"></div></div>
-          <div class="foot-info"><span>محقق:</span><span class="now">٨٧٪</span></div>
-        </div>
-
-        <div class="gl-card">
-          <div class="head">
-            <div class="ic">💎</div>
-            <div class="pct">٨٦٪</div>
-          </div>
-          <div class="nm">حجوزات الجولات</div>
-          <div class="target">المستهدف: ٢٤ جولة</div>
-          <div class="bar"><div style="width: 86%"></div></div>
-          <div class="foot-info"><span>محقق:</span><span class="now">٢٠ جولة</span></div>
-        </div>
-
-        <div class="gl-card">
-          <div class="head">
-            <div class="ic">⭐</div>
-            <div class="pct">٩٦٪</div>
-          </div>
-          <div class="nm">تقييمات النزلاء</div>
-          <div class="target">المستهدف: ٤٫٧ / ٥</div>
-          <div class="bar"><div style="width: 96%"></div></div>
-          <div class="foot-info"><span>المحقق:</span><span class="now">٤٫٨ / ٥</span></div>
-        </div>
-
-        <div class="gl-card behind">
-          <div class="head">
-            <div class="ic">👥</div>
-            <div class="pct">٤٢٪</div>
-          </div>
-          <div class="nm">تجديد إقامات الموظفين</div>
-          <div class="target">المستهدف: ١٠ تجديدات</div>
-          <div class="bar"><div style="width: 42%"></div></div>
-          <div class="foot-info"><span>محقق:</span><span class="now">٤ / ١٠</span></div>
-        </div>
-
-        <div class="gl-card">
-          <div class="head">
-            <div class="ic">💳</div>
-            <div class="pct">٧٢٪</div>
-          </div>
-          <div class="nm">تقليل التكاليف التشغيلية</div>
-          <div class="target">المستهدف: ٨٪ توفير</div>
-          <div class="bar"><div style="width: 72%"></div></div>
-          <div class="foot-info"><span>محقق:</span><span class="now">٥٫٨٪</span></div>
-        </div>
-
       </div>
 
       <div class="gl-notify" data-m-rise>
         <h4><span class="pulse"></span>تنبيهات الأهداف - مباشر</h4>
-        <div class="item">
-          <div class="ic good">✓</div>
-          <div class="body">تجاوزت هدف الإيرادات الشهري قبل ٣ أيام من النهاية - ١١٢٪<div class="sub">يمكن رفع المستهدف للشهر القادم بنسبة ٨٪</div></div>
-          <div class="when">قبل ساعة</div>
-        </div>
-        <div class="item">
-          <div class="ic warn">!</div>
-          <div class="body">٦ إقامات للموظفين تحتاج تجديد - اضغط لفتح قوى<div class="sub">إذا لم تُجدَّد قبل ١٥ يونيو، توقف العمل ل ٣ موظفين</div></div>
-          <div class="when">قبل ٣ ساعات</div>
-        </div>
-        <div class="item">
-          <div class="ic info">i</div>
-          <div class="body">جولات السياحة متأخرة عن الهدف بنسبة ١٤٪ - راجع الكتالوج<div class="sub">جولة "منطاد العلا" لا تحقق حجوزات - فكر في إيقافها</div></div>
-          <div class="when">أمس</div>
-        </div>
-        <div class="item">
-          <div class="ic good">✓</div>
-          <div class="body">معدل تقييمات النزلاء تخطى ٤٫٨ هذا الأسبوع<div class="sub">السبا والمطعم يحصلان على أعلى التقييمات</div></div>
-          <div class="when">قبل يومين</div>
-        </div>
+        <div style="text-align:center;padding:30px;color:var(--fg-3);font-size:13px">ستظهر التنبيهات هنا عند إضافة الأهداف وبدء تتبّعها</div>
       </div>
 
     </main>
@@ -251,14 +170,7 @@ function toXLS(headers,rows,name){var s='<Styles><Style ss:ID="H"><Font ss:Bold=
 function dlXLS(c,fn){var b=new Blob([c],{type:'application/vnd.ms-excel;charset=utf-8'});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download=fn;a.click();setTimeout(function(){URL.revokeObjectURL(u);},1000);}
 function toast(msg,isErr){var old=document.querySelector('.dh-toast');if(old)old.remove();var t=document.createElement('div');t.className='dh-toast';t.style.cssText='position:fixed;bottom:24px;inset-inline-end:24px;background:'+(isErr?'#b91c1c':'#1B4D3D')+';color:#fff;padding:12px 18px;border-radius:8px;font-family:"Tajawal",sans-serif;font-size:13px;z-index:9999;display:flex;gap:8px';t.innerHTML='<span style="color:'+(isErr?'#fca5a5':'#C9A85F')+'">'+(isErr?'✕':'✓')+'</span>'+msg;document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .4s';setTimeout(function(){if(t.parentNode)t.remove();},400);},3000);}
 
-var GOALS = [
-  {name:'إيرادات الشهر',              pct:112, target:'٤٢٠ ألف ر.س',  achieved:'٤٧٠٬٢٤٠ ر.س'},
-  {name:'معدل الإشغال',               pct:104, target:'٨٣٪',          achieved:'٨٧٪'},
-  {name:'حجوزات الجولات',             pct:86,  target:'٢٤ جولة',      achieved:'٢٠ جولة'},
-  {name:'تقييمات النزلاء',            pct:96,  target:'٤٫٧ / ٥',      achieved:'٤٫٨ / ٥'},
-  {name:'تجديد إقامات الموظفين',      pct:42,  target:'١٠ تجديدات',   achieved:'٤ / ١٠'},
-  {name:'تقليل التكاليف التشغيلية',   pct:72,  target:'٨٪ توفير',     achieved:'٥٫٨٪'},
-];
+var GOALS = [];
 
 window.exportCSV = function(){
   var headers = ['الهدف','نسبة الإنجاز (%)','المستهدف','المحقق','التقييم'];
@@ -346,8 +258,8 @@ window.exportPDF = function(){
 };
 </script>
 <script>
-renderVibrantHero({ icon:'🎯', num:'14', title:'أهداف المدير', en:'Manager Goals · OKRs', sub:'أهداف شهرية وفصلية مع تتبع مباشر وتنبيهات', badges:[{v:'٧٨٪',l:'الإنجاز الكلي'},{v:'١٢',l:'هدف نشط'}] });
-renderTierBar({ exc:6, good:3, low:2, bad:1 });
+renderVibrantHero({ icon:'🎯', num:'14', title:'أهداف المدير', en:'Manager Goals · OKRs', sub:'أضف أهدافك الشهرية والفصلية لتتابع الإنجاز بشكل فوري', badges:[{v:'—',l:'الإنجاز الكلي'},{v:'—',l:'هدف نشط'}] });
+renderTierBar({ exc:0, good:0, low:0, bad:0 });
 </script>
 </body>
 </html>

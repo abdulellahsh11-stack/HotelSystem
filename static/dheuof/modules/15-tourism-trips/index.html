@@ -173,10 +173,10 @@
           <div class="en">Dheuof Destinations — Outdoor &amp; Cultural Experiences · 6 active guides on duty</div>
         </div>
         <div class="meta">
-          <div class="badge"><div class="v">٦</div><div class="l">جولة نشطة</div></div>
-          <div class="badge"><div class="v">٤</div><div class="l">مناطق</div></div>
-          <div class="badge"><div class="v">١٤٨</div><div class="l">حجز مكتمل</div></div>
-          <div class="badge"><div class="v">٦</div><div class="l">مرشدين</div></div>
+          <div class="badge"><div class="v" id="tr-badge-active">—</div><div class="l">جولة نشطة</div></div>
+          <div class="badge"><div class="v" id="tr-badge-regions">—</div><div class="l">مناطق</div></div>
+          <div class="badge"><div class="v" id="tr-badge-bookings">—</div><div class="l">حجز مكتمل</div></div>
+          <div class="badge"><div class="v" id="tr-badge-guides">—</div><div class="l">مرشدين</div></div>
         </div>
       </div>
 
@@ -206,121 +206,11 @@
         <div>
           <!-- Trip Cards -->
           <div class="tr-grid" id="trips-grid">
-
-            <div class="tr-card" data-cat="cultural" data-region="الرياض">
-              <div class="img">🏛
-                <div class="price-tag">١٢٠ ر.س</div>
-                <div class="avail-tag">٢٩/٩٠ متاح</div>
-              </div>
-              <div class="body">
-                <div class="region-pill">📍 الرياض</div>
-                <div class="name">حي الطُّريف بالدرعية</div>
-                <div class="type">جولة تراثية · موقع يونسكو</div>
-                <div class="details">
-                  <div class="dt">المدة<span class="dv">٣ ساعات</span></div>
-                  <div class="dt">المرشد<span class="dv">سعيد محمد</span></div>
-                  <div class="dt">الانطلاق<span class="dv">09:00</span></div>
-                  <div class="dt">اللغة<span class="dv">AR / EN</span></div>
-                </div>
-                <button class="book-btn" onclick="bookTrip('T01')">احجز الآن</button>
-              </div>
+            <div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--fg-3);font-family:var(--font-ar)">
+              <div style="font-size:40px;margin-bottom:12px;opacity:.4">🗺</div>
+              <div style="font-size:15px;font-weight:600;margin-bottom:6px">لا توجد جولات بعد</div>
+              <div style="font-size:13px">اضغط «إضافة جولة» لإضافة أول جولة سياحية</div>
             </div>
-
-            <div class="tr-card" data-cat="adventure" data-region="الرياض">
-              <div class="img">🏜
-                <div class="price-tag">١٨٠ ر.س</div>
-                <div class="avail-tag">١٨/٤٨ متاح</div>
-              </div>
-              <div class="body">
-                <div class="region-pill">📍 الرياض</div>
-                <div class="name">حافة العالم · جبل فِهرين</div>
-                <div class="type">مغامرة جبلية · هضبة طويق</div>
-                <div class="details">
-                  <div class="dt">المدة<span class="dv">٦ ساعات</span></div>
-                  <div class="dt">المرشد<span class="dv">محمد الغامدي</span></div>
-                  <div class="dt">الانطلاق<span class="dv">06:30</span></div>
-                  <div class="dt">اللغة<span class="dv">AR</span></div>
-                </div>
-                <button class="book-btn" onclick="bookTrip('T02')">احجز الآن</button>
-              </div>
-            </div>
-
-            <div class="tr-card" data-cat="cultural" data-region="العلا">
-              <div class="img">🏛
-                <div class="price-tag">٢٥٠ ر.س</div>
-                <div class="avail-tag">٤٨/٦٠ متاح</div>
-              </div>
-              <div class="body">
-                <div class="region-pill">📍 العلا</div>
-                <div class="name">مدائن صالح (الحِجر)</div>
-                <div class="type">موقع الحِجر الأثري · يونسكو</div>
-                <div class="details">
-                  <div class="dt">المدة<span class="dv">٤ ساعات</span></div>
-                  <div class="dt">المرشد<span class="dv">فاطمة الزهراني</span></div>
-                  <div class="dt">الانطلاق<span class="dv">08:00</span></div>
-                  <div class="dt">اللغة<span class="dv">AR / EN / FR</span></div>
-                </div>
-                <button class="book-btn" onclick="bookTrip('T03')">احجز الآن</button>
-              </div>
-            </div>
-
-            <div class="tr-card" data-cat="outdoor" data-region="العلا">
-              <div class="img">🎈
-                <div class="price-tag">٢٠٠ ر.س</div>
-                <div class="avail-tag">٢٠/٣٢ متاح</div>
-              </div>
-              <div class="body">
-                <div class="region-pill">📍 العلا</div>
-                <div class="name">جبل الفيل والمناطيد</div>
-                <div class="type">تكوينات صخرية · مناطيد هوائية</div>
-                <div class="details">
-                  <div class="dt">المدة<span class="dv">٣ ساعات</span></div>
-                  <div class="dt">المرشد<span class="dv">نورا علي</span></div>
-                  <div class="dt">الانطلاق<span class="dv">16:00</span></div>
-                  <div class="dt">اللغة<span class="dv">AR / EN</span></div>
-                </div>
-                <button class="book-btn" onclick="bookTrip('T04')">احجز الآن</button>
-              </div>
-            </div>
-
-            <div class="tr-card" data-cat="cultural" data-region="عسير">
-              <div class="img">🏘
-                <div class="price-tag">٩٠ ر.س</div>
-                <div class="avail-tag">٤٠/٦٠ متاح</div>
-              </div>
-              <div class="body">
-                <div class="region-pill">📍 عسير</div>
-                <div class="name">قرية رجال ألمع التراثية</div>
-                <div class="type">قرية حجرية تراثية · أبها</div>
-                <div class="details">
-                  <div class="dt">المدة<span class="dv">٢ ساعة</span></div>
-                  <div class="dt">المرشد<span class="dv">خالد سعد</span></div>
-                  <div class="dt">الانطلاق<span class="dv">10:00</span></div>
-                  <div class="dt">اللغة<span class="dv">AR / EN</span></div>
-                </div>
-                <button class="book-btn" onclick="bookTrip('T05')">احجز الآن</button>
-              </div>
-            </div>
-
-            <div class="tr-card" data-cat="outdoor" data-region="جدة">
-              <div class="img">🌊
-                <div class="price-tag">١٥٠ ر.س</div>
-                <div class="avail-tag">١٢/٣٢ متاح</div>
-              </div>
-              <div class="body">
-                <div class="region-pill">📍 جدة</div>
-                <div class="name">غوص شعاب البحر الأحمر</div>
-                <div class="type">غوص وسنوركل · البحر الأحمر</div>
-                <div class="details">
-                  <div class="dt">المدة<span class="dv">٤ ساعات</span></div>
-                  <div class="dt">المرشد<span class="dv">أحمد البحري</span></div>
-                  <div class="dt">الانطلاق<span class="dv">08:00</span></div>
-                  <div class="dt">اللغة<span class="dv">AR / EN</span></div>
-                </div>
-                <button class="book-btn" onclick="bookTrip('T06')">احجز الآن</button>
-              </div>
-            </div>
-
           </div>
 
           <!-- Schedule table -->
@@ -343,46 +233,9 @@
                   <th>الحالة</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody id="sched-tbody">
                 <tr>
-                  <td class="time">06:30</td>
-                  <td>حافة العالم · جبل فِهرين</td>
-                  <td>الرياض</td>
-                  <td>محمد الغامدي</td>
-                  <td>٣٠</td>
-                  <td><span class="sched-tag ok">✓ انطلقت</span></td>
-                </tr>
-                <tr>
-                  <td class="time">08:00</td>
-                  <td>مدائن صالح (الحِجر)</td>
-                  <td>العلا</td>
-                  <td>فاطمة الزهراني</td>
-                  <td>٤٨</td>
-                  <td><span class="sched-tag ok">✓ انطلقت</span></td>
-                </tr>
-                <tr>
-                  <td class="time">09:00</td>
-                  <td>حي الطُّريف بالدرعية</td>
-                  <td>الرياض</td>
-                  <td>سعيد محمد</td>
-                  <td>٢٩</td>
-                  <td><span class="sched-tag warn">⏳ قريباً</span></td>
-                </tr>
-                <tr>
-                  <td class="time">10:00</td>
-                  <td>قرية رجال ألمع التراثية</td>
-                  <td>عسير</td>
-                  <td>خالد سعد</td>
-                  <td>٢٠</td>
-                  <td><span class="sched-tag warn">⏳ قريباً</span></td>
-                </tr>
-                <tr>
-                  <td class="time">16:00</td>
-                  <td>جبل الفيل والمناطيد</td>
-                  <td>العلا</td>
-                  <td>نورا علي</td>
-                  <td>٢٠</td>
-                  <td><span class="sched-tag off">– مجدولة</span></td>
+                  <td colspan="6" style="text-align:center;padding:24px;color:var(--fg-3);font-family:var(--font-ar)">لا توجد جولات مجدولة اليوم</td>
                 </tr>
               </tbody>
             </table>
@@ -397,53 +250,19 @@
               <div class="ttl">المرشدون</div>
               <div class="sub">Guide Availability · الشيفت الحالي</div>
             </div>
-            <div class="guide-row">
-              <div class="guide-av">س‬م</div>
-              <div class="guide-info"><div class="name">سعيد محمد</div><div class="lang">AR / EN · تراث الرياض</div></div>
-              <span class="guide-status busy">مشغول</span>
-            </div>
-            <div class="guide-row">
-              <div class="guide-av">ن‬ع</div>
-              <div class="guide-info"><div class="name">نورا علي</div><div class="lang">AR / EN · العلا والمناطيد</div></div>
-              <span class="guide-status free">متاح</span>
-            </div>
-            <div class="guide-row">
-              <div class="guide-av">خ‬س</div>
-              <div class="guide-info"><div class="name">خالد سعد</div><div class="lang">AR / EN · عسير والتراث</div></div>
-              <span class="guide-status free">متاح</span>
-            </div>
-            <div class="guide-row">
-              <div class="guide-av">م‬غ</div>
-              <div class="guide-info"><div class="name">محمد الغامدي</div><div class="lang">AR · مغامرات طويق</div></div>
-              <span class="guide-status busy">مشغول</span>
-            </div>
-            <div class="guide-row">
-              <div class="guide-av">ف‬ز</div>
-              <div class="guide-info"><div class="name">فاطمة الزهراني</div><div class="lang">AR / EN / FR · آثار العلا</div></div>
-              <span class="guide-status busy">مشغول</span>
-            </div>
-            <div class="guide-row">
-              <div class="guide-av">أ‬ب</div>
-              <div class="guide-info"><div class="name">أحمد البحري</div><div class="lang">AR / EN · غوص البحر الأحمر</div></div>
-              <span class="guide-status free">متاح</span>
-            </div>
+            <div style="text-align:center;padding:24px;color:var(--fg-3);font-size:13px;font-family:var(--font-ar)">لا يوجد مرشدون مسجّلون</div>
           </div>
 
           <div class="tr-side-card">
             <div class="tr-side-head">
               <div class="ttl">إيرادات هذا الشهر</div>
-              <div class="sub">Revenue breakdown · May 2025</div>
+              <div class="sub">Revenue breakdown · MTD</div>
             </div>
             <div style="padding:16px 18px">
-              <div style="font-family:var(--font-en);font-size:32px;font-weight:700;color:var(--brand-700)">٨٬٢٤٠ <span style="font-size:14px;color:var(--fg-3)">ر.س</span></div>
-              <div style="font-size:11px;color:var(--fg-3);margin-bottom:14px">من إجمالي مستهدف ١٠٬٠٠٠ ر.س</div>
+              <div style="font-family:var(--font-en);font-size:32px;font-weight:700;color:var(--brand-700)">— <span style="font-size:14px;color:var(--fg-3)">ر.س</span></div>
+              <div style="font-size:11px;color:var(--fg-3);margin-bottom:14px">ستظهر الإيرادات عند إضافة حجوزات</div>
               <div style="background:var(--sand);border-radius:999px;height:8px;overflow:hidden;margin-bottom:14px">
-                <div style="width:82%;background:var(--brand-700);height:8px;border-radius:999px"></div>
-              </div>
-              <div style="display:flex;flex-direction:column;gap:8px;font-size:12px">
-                <div style="display:flex;justify-content:space-between"><span style="color:var(--fg-2)">جولات العلا</span><span style="font-weight:600;font-family:var(--font-en)">٣٬٤٠٠ ر.س</span></div>
-                <div style="display:flex;justify-content:space-between"><span style="color:var(--fg-2)">جولات الرياض</span><span style="font-weight:600;font-family:var(--font-en)">٢٬٨٤٠ ر.س</span></div>
-                <div style="display:flex;justify-content:space-between"><span style="color:var(--fg-2)">عسير وجدة</span><span style="font-weight:600;font-family:var(--font-en)">٢٬٠٠٠ ر.س</span></div>
+                <div style="width:0%;background:var(--brand-700);height:8px;border-radius:999px"></div>
               </div>
             </div>
           </div>
@@ -453,23 +272,7 @@
               <div class="ttl">الحجوزات الأخيرة</div>
               <div class="sub">Recent bookings · linked to guests</div>
             </div>
-            <div style="padding:0">
-              <div style="display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:10px 18px;border-top:1px solid var(--hairline)">
-                <div style="width:30px;height:30px;border-radius:999px;background:var(--brand-100);display:grid;place-items:center;font-size:11px;font-weight:700;color:var(--brand-800)">ر‬ك</div>
-                <div><div style="font-size:13px;font-weight:500">Rajesh Kumar</div><div style="font-size:11px;color:var(--fg-3)">حي الطُّريف بالدرعية · ×٢</div></div>
-                <div style="font-size:12px;font-weight:700;color:var(--gold-700)">٢٤٠ ر.س</div>
-              </div>
-              <div style="display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:10px 18px;border-top:1px solid var(--hairline)">
-                <div style="width:30px;height:30px;border-radius:999px;background:var(--brand-100);display:grid;place-items:center;font-size:11px;font-weight:700;color:var(--brand-800)">M‬a</div>
-                <div><div style="font-size:13px;font-weight:500">Maria Santos</div><div style="font-size:11px;color:var(--fg-3)">مدائن صالح (الحِجر) · ×١</div></div>
-                <div style="font-size:12px;font-weight:700;color:var(--gold-700)">٢٥٠ ر.س</div>
-              </div>
-              <div style="display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:10px 18px;border-top:1px solid var(--hairline)">
-                <div style="width:30px;height:30px;border-radius:999px;background:var(--brand-100);display:grid;place-items:center;font-size:11px;font-weight:700;color:var(--brand-800)">ع‬ح</div>
-                <div><div style="font-size:13px;font-weight:500">علي الحربي</div><div style="font-size:11px;color:var(--fg-3)">حافة العالم · جبل فِهرين · ×٣</div></div>
-                <div style="font-size:12px;font-weight:700;color:var(--gold-700)">٥٤٠ ر.س</div>
-              </div>
-            </div>
+            <div style="text-align:center;padding:24px;color:var(--fg-3);font-size:13px;font-family:var(--font-ar)">لا توجد حجوزات بعد</div>
           </div>
 
         </div>
@@ -519,14 +322,7 @@
         <div><label style="font-size:12px;color:var(--fg-2);display:block;margin-bottom:6px">المدة</label><input id="t-dur" type="text" style="width:100%;padding:10px 12px;border:1px solid var(--hairline);border-radius:8px;font-family:var(--font-ar);font-size:13px;box-sizing:border-box" placeholder="٣ ساعات"/></div>
       </div>
       <div><label style="font-size:12px;color:var(--fg-2);display:block;margin-bottom:6px">المرشد</label>
-        <select id="t-guide" style="width:100%;padding:10px 12px;border:1px solid var(--hairline);border-radius:8px;font-family:var(--font-ar);font-size:13px;box-sizing:border-box">
-          <option>سعيد محمد</option>
-          <option>نورا علي</option>
-          <option>خالد سعد</option>
-          <option>محمد الغامدي</option>
-          <option>فاطمة الزهراني</option>
-          <option>أحمد البحري</option>
-        </select>
+        <input id="t-guide" type="text" style="width:100%;padding:10px 12px;border:1px solid var(--hairline);border-radius:8px;font-family:var(--font-ar);font-size:13px;box-sizing:border-box" placeholder="اسم المرشد"/>
       </div>
       <button onclick="saveTrip()" style="padding:12px;background:var(--brand-700);color:var(--paper);border:none;border-radius:10px;font-family:var(--font-ar);font-size:14px;font-weight:600;cursor:pointer;margin-top:8px">حفظ الجولة</button>
     </div>
@@ -542,14 +338,7 @@ setTimeout(function(){
 }, 80);
 
 // ── Data ──────────────────────────────────────────────────────
-var TRIPS = [
-  {id:'T01', name:'حي الطُّريف بالدرعية',     type:'جولة تراثية · موقع يونسكو',     region:'الرياض', cat:'cultural',   price:120, cap:90,  booked:61, time:'09:00', guide:'سعيد محمد',      emoji:'🏛', dur:'٣ ساعات', lang:'AR / EN'},
-  {id:'T02', name:'حافة العالم · جبل فِهرين',  type:'مغامرة جبلية · هضبة طويق',      region:'الرياض', cat:'adventure',  price:180, cap:48,  booked:30, time:'06:30', guide:'محمد الغامدي',   emoji:'🏜', dur:'٦ ساعات', lang:'AR'},
-  {id:'T03', name:'مدائن صالح (الحِجر)',       type:'موقع الحِجر الأثري · يونسكو',   region:'العلا',  cat:'cultural',   price:250, cap:60,  booked:48, time:'08:00', guide:'فاطمة الزهراني',emoji:'🏛', dur:'٤ ساعات', lang:'AR / EN / FR'},
-  {id:'T04', name:'جبل الفيل والمناطيد',       type:'تكوينات صخرية · مناطيد هوائية', region:'العلا',  cat:'outdoor',    price:200, cap:32,  booked:20, time:'16:00', guide:'نورا علي',        emoji:'🎈', dur:'٣ ساعات', lang:'AR / EN'},
-  {id:'T05', name:'قرية رجال ألمع التراثية',   type:'قرية حجرية تراثية · أبها',      region:'عسير',   cat:'cultural',   price:90,  cap:60,  booked:20, time:'10:00', guide:'خالد سعد',        emoji:'🏘', dur:'٢ ساعة',  lang:'AR / EN'},
-  {id:'T06', name:'غوص شعاب البحر الأحمر',     type:'غوص وسنوركل · البحر الأحمر',    region:'جدة',    cat:'outdoor',    price:150, cap:32,  booked:20, time:'08:00', guide:'أحمد البحري',   emoji:'🌊', dur:'٤ ساعات', lang:'AR / EN'},
-];
+var TRIPS = [];
 
 // ── Filter & Sort ─────────────────────────────────────────────
 window.filterTrips = function(region, btn) {

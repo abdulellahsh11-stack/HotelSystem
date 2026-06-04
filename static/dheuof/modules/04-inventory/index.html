@@ -301,8 +301,8 @@
 </div>
 
 <script>
-renderVibrantHero({ icon:'🛏', num:'04', title:'المخزون والضيافة', en:'Hospitality Inventory', sub:'تجهيز الغرف — لُحف، فوط، أموينيتيز، F&B', badges:[{v:'١٬٢٤٦',l:'صنف مسجّل'},{v:'٩٤٪',l:'متوفر'}] });
-renderTierBar({ exc:820, good:280, low:112, bad:34 });
+renderVibrantHero({ icon:'🛏', num:'04', title:'المخزون والضيافة', en:'Hospitality Inventory', sub:'تجهيز الغرف — لُحف، فوط، أموينيتيز، F&B', badges:[{v:'—',l:'صنف مسجّل'},{v:'—',l:'متوفر'}] });
+renderTierBar({ exc:0, good:0, low:0, bad:0 });
 </script>
 <script src="/static/dheuof/shared/sidebar.js"></script>
 <script>StaticSidebar.mount({ activeId: "04-inventory", placeholder: "بحث في مخزون الضيافة..." });</script>
@@ -314,50 +314,9 @@ renderTierBar({ exc:820, good:280, low:112, bad:34 });
 'use strict';
 
 /* ════ DATA ════════════════════════════════════════════════════════ */
-var ITEMS = [
-  /* لُحف وأغطية */
-  {id:1, ic:'🛏', name:'لحاف قطن مصري — كينج',      cat:'لحف',           loc:'المستودع أ — الطابق ٢', zone:'رف A-12', qty:240, par:360, unit:'قطعة', sku:'LN-2401'},
-  {id:2, ic:'🛏', name:'لحاف صوف — كوين',           cat:'لحف',           loc:'المستودع أ — الطابق ٢', zone:'رف A-13', qty:86,  par:240, unit:'قطعة', sku:'LN-2402'},
-  {id:3, ic:'🛏', name:'لحاف كشمير — أجنحة VIP',    cat:'لحف',           loc:'خزينة الأجنحة',          zone:'S-VIP',   qty:18,  par:40,  unit:'قطعة', sku:'LN-2403'},
-  {id:4, ic:'🛏', name:'غطاء سرير صيفي خفيف',       cat:'لحف',           loc:'المستودع أ — الطابق ٢', zone:'رف A-15', qty:310, par:400, unit:'قطعة', sku:'LN-2410'},
-  /* مفارش */
-  {id:5, ic:'📜', name:'مفرش سرير أبيض كينج',       cat:'مفارش',         loc:'المستودع أ — الطابق ١', zone:'رف B-01', qty:520, par:800, unit:'قطعة', sku:'SH-3001'},
-  {id:6, ic:'📜', name:'مفرش سرير أبيض كوين',       cat:'مفارش',         loc:'المستودع أ — الطابق ١', zone:'رف B-02', qty:380, par:600, unit:'قطعة', sku:'SH-3002'},
-  {id:7, ic:'📜', name:'مفرش سرير مزدوج سينغل',    cat:'مفارش',         loc:'المستودع أ — الطابق ١', zone:'رف B-03', qty:145, par:200, unit:'قطعة', sku:'SH-3003'},
-  /* مخدات */
-  {id:8, ic:'🪶', name:'مخدة ريش البط — ستاندرد',  cat:'مخدات',         loc:'المستودع أ — الطابق ٢', zone:'رف A-20', qty:420, par:600, unit:'قطعة', sku:'PL-4001'},
-  {id:9, ic:'🪶', name:'مخدة أورثوبيدي — كينج',    cat:'مخدات',         loc:'المستودع أ — الطابق ٢', zone:'رف A-21', qty:96,  par:200, unit:'قطعة', sku:'PL-4002'},
-  {id:10,ic:'🪶', name:'مخدة بيضاء ناعمة VIP',      cat:'مخدات',         loc:'خزينة الأجنحة',          zone:'S-VIP',   qty:28,  par:60,  unit:'قطعة', sku:'PL-4003'},
-  /* أغطية مخدات */
-  {id:11,ic:'🧺', name:'غطاء مخدة قطن — أبيض',     cat:'أغطية مخدات',  loc:'المستودع أ — الطابق ١', zone:'رف B-10', qty:1820,par:2400,unit:'قطعة', sku:'PC-5001'},
-  {id:12,ic:'🧺', name:'غطاء مخدة مطرزة VIP',      cat:'أغطية مخدات',  loc:'خزينة الأجنحة',          zone:'S-VIP',   qty:80,  par:120, unit:'قطعة', sku:'PC-5002'},
-  /* عناية شخصية */
-  {id:13,ic:'🧴', name:'شامبو فاخر — Dheuof 30ml',  cat:'عناية شخصية',  loc:'مخزن العناية',           zone:'C-01',    qty:3200,par:5000,unit:'قطعة', sku:'AM-6001'},
-  {id:14,ic:'🧴', name:'بلسم شعر — Dheuof 30ml',    cat:'عناية شخصية',  loc:'مخزن العناية',           zone:'C-02',    qty:2800,par:5000,unit:'قطعة', sku:'AM-6002'},
-  {id:15,ic:'🧴', name:'كريم جسم — Dheuof 50ml',    cat:'عناية شخصية',  loc:'مخزن العناية',           zone:'C-03',    qty:1400,par:3000,unit:'قطعة', sku:'AM-6003'},
-  {id:16,ic:'🪥', name:'فرشاة أسنان مع معجون',      cat:'عناية شخصية',  loc:'مخزن العناية',           zone:'C-06',    qty:940, par:2000,unit:'طقم',  sku:'AM-6010'},
-  /* صابون ونظافة */
-  {id:17,ic:'🧼', name:'صابون بار فاخر — مرسيليا',  cat:'صابون ونظافة', loc:'مخزن العناية',           zone:'C-04',    qty:1840,par:2400,unit:'قطعة', sku:'SP-1102'},
-  {id:18,ic:'🧼', name:'جل استحمام — Dheuof 50ml',   cat:'صابون ونظافة', loc:'مخزن العناية',           zone:'C-05',    qty:2100,par:3000,unit:'قطعة', sku:'SP-1105'},
-  {id:19,ic:'🧼', name:'معقم يد مضخة — 500ml',      cat:'صابون ونظافة', loc:'مخزن العناية',           zone:'C-08',    qty:180, par:400, unit:'قطعة', sku:'SP-1120'},
-  /* عطور */
-  {id:20,ic:'✨', name:'عطر التوقيع — Dheuof 50ml',  cat:'عطور',          loc:'خزينة الأجنحة',          zone:'S-PR',    qty:14,  par:60,  unit:'قطعة', sku:'PR-5081'},
-  {id:21,ic:'✨', name:'عود بخور الاستقبال — 100g', cat:'عطور',          loc:'خزينة الأجنحة',          zone:'S-FR',    qty:48,  par:80,  unit:'قطعة', sku:'PR-5090'},
-  {id:22,ic:'✨', name:'سبراي غرفة — Dheuof 200ml',  cat:'عطور',          loc:'مخزن العناية',           zone:'C-09',    qty:320, par:400, unit:'قطعة', sku:'PR-5095'},
-  /* سكر */
-  {id:23,ic:'🍬', name:'سكر أبيض — أكياس فردية',   cat:'سكر',           loc:'مخزن المشروبات',         zone:'BV-01',   qty:8400,par:12000,unit:'قطعة',sku:'FB-7001'},
-  {id:24,ic:'🍬', name:'سكر بني كعبات فردية',       cat:'سكر',           loc:'مخزن المشروبات',         zone:'BV-02',   qty:3600,par:6000,unit:'قطعة', sku:'FB-7002'},
-  /* نسكافيه */
-  {id:25,ic:'☕', name:'نسكافيه كلاسيك — أكياس 2g', cat:'نسكافيه',       loc:'مخزن المشروبات',         zone:'BV-05',   qty:6200,par:10000,unit:'قطعة',sku:'FB-7010'},
-  {id:26,ic:'☕', name:'نسكافيه 3 في 1 — أكياس',    cat:'نسكافيه',       loc:'مخزن المشروبات',         zone:'BV-06',   qty:2800,par:5000,unit:'قطعة', sku:'FB-7011'},
-  {id:27,ic:'☕', name:'شاي أحمر — أكياس فردية',    cat:'نسكافيه',       loc:'مخزن المشروبات',         zone:'BV-07',   qty:4100,par:6000,unit:'قطعة', sku:'FB-7015'},
-  /* ماء */
-  {id:28,ic:'💧', name:'ماء معدني — زجاجة 500ml',  cat:'ماء',           loc:'مخزن المشروبات',         zone:'BV-10',   qty:2400,par:4000,unit:'قطعة', sku:'FB-8001'},
-  {id:29,ic:'💧', name:'ماء معدني — زجاجة 330ml',  cat:'ماء',           loc:'مخزن المشروبات',         zone:'BV-11',   qty:3600,par:5000,unit:'قطعة', sku:'FB-8002'},
-  {id:30,ic:'💧', name:'ماء غازي — زجاجة 330ml',   cat:'ماء',           loc:'مخزن المشروبات',         zone:'BV-12',   qty:840, par:2000,unit:'قطعة', sku:'FB-8010'},
-];
+var ITEMS = [];
 
-var itemCounter = 31;
+var itemCounter = 1;
 var activeCat = 'all';
 var activeQ   = '';
 var editingId = null;

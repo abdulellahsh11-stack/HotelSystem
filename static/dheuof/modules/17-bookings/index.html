@@ -260,22 +260,22 @@
           <div class="en">OTA Bookings — Agoda · Booking.com · Expedia · Almosafer · Airbnb · Direct · 5% commission auto-deducted</div>
         </div>
         <div class="meta">
-          <div class="badge"><div class="v">٢٢٤</div><div class="l">حجز هذا الشهر</div></div>
-          <div class="badge"><div class="v">٦٨٬٤٠٠</div><div class="l">ر.س إجمالي</div></div>
-          <div class="badge"><div class="v">٣٬٤٢٠</div><div class="l">ر.س عمولة ٥٪</div></div>
-          <div class="badge"><div class="v">٦٤٬٩٨٠</div><div class="l">ر.س صافي</div></div>
+          <div class="badge"><div class="v" id="bk-stat-count">—</div><div class="l">حجز هذا الشهر</div></div>
+          <div class="badge"><div class="v" id="bk-stat-total">—</div><div class="l">ر.س إجمالي</div></div>
+          <div class="badge"><div class="v" id="bk-stat-comm">—</div><div class="l">ر.س عمولة</div></div>
+          <div class="badge"><div class="v" id="bk-stat-net">—</div><div class="l">ر.س صافي</div></div>
         </div>
       </div>
 
       <!-- Channel filter tabs -->
       <div class="bk-tabs" data-m-rise>
-        <button class="bk-tab on" onclick="filterChannel('all',this)"><span class="dot"></span>الكل (٢٢٤)</button>
-        <button class="bk-tab" onclick="filterChannel('agoda',this)" style="color:#e53935"><span class="dot" style="background:#e53935"></span>Agoda (٦٢)</button>
-        <button class="bk-tab" onclick="filterChannel('booking',this)" style="color:#003580"><span class="dot" style="background:#003580"></span>Booking.com (٨٨)</button>
-        <button class="bk-tab" onclick="filterChannel('expedia',this)"><span class="dot" style="background:#FFDD00"></span>Expedia (٢٤)</button>
-        <button class="bk-tab" onclick="filterChannel('almosafer',this)"><span class="dot" style="background:#00897B"></span>الموسافر (٢٩)</button>
-        <button class="bk-tab" onclick="filterChannel('airbnb',this)" style="color:#FF5A5F"><span class="dot" style="background:#FF5A5F"></span>Airbnb (١٣)</button>
-        <button class="bk-tab" onclick="filterChannel('direct',this)"><span class="dot" style="background:var(--brand-700)"></span>مباشر (٨)</button>
+        <button class="bk-tab on" onclick="filterChannel('all',this)"><span class="dot"></span>الكل</button>
+        <button class="bk-tab" onclick="filterChannel('agoda',this)" style="color:#e53935"><span class="dot" style="background:#e53935"></span>Agoda</button>
+        <button class="bk-tab" onclick="filterChannel('booking',this)" style="color:#003580"><span class="dot" style="background:#003580"></span>Booking.com</button>
+        <button class="bk-tab" onclick="filterChannel('expedia',this)"><span class="dot" style="background:#FFDD00"></span>Expedia</button>
+        <button class="bk-tab" onclick="filterChannel('almosafer',this)"><span class="dot" style="background:#00897B"></span>الموسافر</button>
+        <button class="bk-tab" onclick="filterChannel('airbnb',this)" style="color:#FF5A5F"><span class="dot" style="background:#FF5A5F"></span>Airbnb</button>
+        <button class="bk-tab" onclick="filterChannel('direct',this)"><span class="dot" style="background:var(--brand-700)"></span>مباشر</button>
       </div>
 
       <div class="bk-layout" data-m-rise>
@@ -581,17 +581,7 @@ setTimeout(function(){
 }, 80);
 
 // ── Booking data (seed) ───────────────────────────────────────
-var SEED_BOOKINGS = [
-  {id:'B001', guest:'Rajesh Kumar',   ch:'agoda',     room:'غرفة مزدوجة',      nights:3, amount:900,  checkIn:'2026-06-02', status:'conf', phone:'+91 987 654 3210', email:'rajesh@example.com'},
-  {id:'B002', guest:'Wei Zhang',      ch:'agoda',     room:'جناح عائلي',        nights:5, amount:2500, checkIn:'2026-06-03', status:'pend', phone:'+86 138 0013 8000', email:'wei@example.com'},
-  {id:'B003', guest:'Maria Santos',   ch:'booking',   room:'غرفة مفردة',        nights:2, amount:480,  checkIn:'2026-06-04', status:'chk',  phone:'+63 912 345 6789', email:'maria@example.com'},
-  {id:'B004', guest:'Thomas Müller',  ch:'booking',   room:'غرفة Deluxe',       nights:7, amount:4200, checkIn:'2026-06-05', status:'conf', phone:'+49 151 234 5678', email:'thomas@example.com'},
-  {id:'B005', guest:'Emily Johnson',  ch:'expedia',   room:'غرفة مزدوجة',      nights:4, amount:1200, checkIn:'2026-06-06', status:'conf', phone:'+1 310 555 0192', email:'emily@example.com'},
-  {id:'B006', guest:'سعود الموسى',   ch:'almosafer', room:'جناح',              nights:2, amount:1600, checkIn:'2026-06-06', status:'conf', phone:'0501234567', email:'saud@example.com'},
-  {id:'B007', guest:'Layla Al-Ahmad', ch:'airbnb',    room:'غرفة Deluxe',       nights:1, amount:360,  checkIn:'2026-06-07', status:'pend', phone:'0551234567', email:'layla@example.com'},
-  {id:'B008', guest:'محمد الغامدي',  ch:'direct',    room:'غرفة مزدوجة',      nights:3, amount:900,  checkIn:'2026-06-07', status:'conf', phone:'0561234567', email:''},
-  {id:'B009', guest:'Yuki Tanaka',    ch:'agoda',     room:'غرفة مفردة',        nights:2, amount:480,  checkIn:'2026-06-01', status:'canc', phone:'+81 90 1234 5678', email:'yuki@example.com'},
-];
+var SEED_BOOKINGS = [];
 // ── Bookings store: saved direct bookings + seed ─────────────
 function loadBookings(){
   var saved = [];
@@ -640,10 +630,23 @@ function bookingRowHtml(bk){
 window.renderBookingList = function(){
   var el = document.getElementById('bookings-list');
   if (!el) return;
-  el.innerHTML = BOOKINGS.map(bookingRowHtml).join('');
-  if (CURRENT_CH !== 'all') {
-    el.querySelectorAll('.bk-row').forEach(function(r){ r.style.display = r.dataset.ch===CURRENT_CH ? '' : 'none'; });
+  if (!BOOKINGS.length) {
+    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--fg-3);font-family:var(--font-ar)">لا توجد حجوزات بعد — ستظهر هنا عند تفعيل القنوات</div>';
+  } else {
+    el.innerHTML = BOOKINGS.map(bookingRowHtml).join('');
+    if (CURRENT_CH !== 'all') {
+      el.querySelectorAll('.bk-row').forEach(function(r){ r.style.display = r.dataset.ch===CURRENT_CH ? '' : 'none'; });
+    }
   }
+  // Update banner stats dynamically
+  var total = BOOKINGS.reduce(function(s,b){ return s+b.amount; }, 0);
+  var comm = Math.round(total * COMM_RATE);
+  var net = total - comm;
+  function upd(id,v){ var e=document.getElementById(id); if(e) e.textContent=v; }
+  upd('bk-stat-count', BOOKINGS.length || '—');
+  upd('bk-stat-total', BOOKINGS.length ? total.toLocaleString('ar-EG') : '—');
+  upd('bk-stat-comm',  BOOKINGS.length ? comm.toLocaleString('ar-EG') : '—');
+  upd('bk-stat-net',   BOOKINGS.length ? net.toLocaleString('ar-EG') : '—');
 };
 
 // ── Filter ────────────────────────────────────────────────────

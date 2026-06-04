@@ -489,35 +489,35 @@ body { background: var(--paper-tint); }
       <div class="pos-kpis" data-m-rise id="kpiRow">
         <div class="pos-kpi">
           <div class="lbl">REVENUE TODAY</div>
-          <div class="val">٢٣٬٨٤٠<span class="cur">ر.س</span></div>
-          <div class="delta up">▲ ١٢٪ عن أمس</div>
+          <div class="val">—<span class="cur">ر.س</span></div>
+          <div class="delta">—</div>
         </div>
         <div class="pos-kpi">
           <div class="lbl">TRANSACTIONS</div>
-          <div class="val" id="kpiTxns">١٦٢</div>
-          <div class="delta up">▲ ٨ عن المعدل</div>
+          <div class="val" id="kpiTxns">—</div>
+          <div class="delta">—</div>
         </div>
         <div class="pos-kpi">
           <div class="lbl">مدى · فيزا · ماستركارد</div>
-          <div class="val">١٥٬٨٨٠<span class="cur">ر.س</span></div>
-          <div class="delta up">٦٧٪ من الإجمالي</div>
+          <div class="val">—<span class="cur">ر.س</span></div>
+          <div class="delta">—</div>
         </div>
         <div class="pos-kpi">
           <div class="lbl">نقدي · تحويل بنكي</div>
-          <div class="val">٢٬٩٦٠<span class="cur">ر.س</span></div>
-          <div class="delta up">▲ ٢٪ عن أمس</div>
+          <div class="val">—<span class="cur">ر.س</span></div>
+          <div class="delta">—</div>
         </div>
         <div class="pos-kpi">
           <div class="lbl">ابل باي · تخصيص</div>
-          <div class="val">٥٬٠٠٠<span class="cur">ر.س</span></div>
-          <div class="delta up">▲ ٥٪ عن أمس</div>
+          <div class="val">—<span class="cur">ر.س</span></div>
+          <div class="delta">—</div>
         </div>
       </div>
 
       <!-- Tabs -->
       <div class="pos-tabs" data-m-rise>
-        <button class="pos-tab active" onclick="showTab('terminals',this)">🖥️ المنافذ <span class="badge">٦</span></button>
-        <button class="pos-tab" onclick="showTab('transactions',this)">💳 الحركات <span class="badge" id="txBadge">١٥</span></button>
+        <button class="pos-tab active" onclick="showTab('terminals',this)">🖥️ المنافذ <span class="badge" id="pos-badge-terminals">—</span></button>
+        <button class="pos-tab" onclick="showTab('transactions',this)">💳 الحركات <span class="badge" id="txBadge">—</span></button>
         <button class="pos-tab" onclick="showTab('reports',this)">📈 التقارير</button>
         <button class="pos-tab" onclick="showTab('budget',this)">📅 الموازنة</button>
         <button class="pos-tab" onclick="showTab('settings',this)">🔗 الإعدادات</button>
@@ -535,32 +535,32 @@ body { background: var(--paper-tint); }
           <div class="ps-card live">
             <div class="head"><div class="ic">🛎️</div><div><div class="nm">الاستقبال — Front Desk</div><div class="id">OUTLET-RECEPTION · مدمج مع ضيوف</div></div></div>
             <div class="prov"><span class="prov-tag native"><span class="d"></span>مدمج · Dheuof Native</span><span class="prov-meta">٢ شاشات</span></div>
-            <div class="figures"><div class="fig"><span class="l">Today</span><span class="v">٨٬٦٤٠<span class="cur">ر.س</span></span></div><div class="fig"><span class="l">Txns</span><span class="v">١٨</span></div></div>
+            <div class="figures"><div class="fig"><span class="l">Today</span><span class="v">—<span class="cur">ر.س</span></span></div><div class="fig"><span class="l">Txns</span><span class="v">—</span></div></div>
           </div>
           <div class="ps-card live">
             <div class="head"><div class="ic">🍽</div><div><div class="nm">المطعم — مطعم الواحة</div><div class="id">OUTLET-RESTAURANT · Foodics</div></div></div>
             <div class="prov"><span class="prov-tag foodics"><span class="d"></span>Foodics API · v3</span><span class="prov-meta">٢ POS · webhook ✓</span></div>
-            <div class="figures"><div class="fig"><span class="l">Today</span><span class="v">٨٬١٠٠<span class="cur">ر.س</span></span></div><div class="fig"><span class="l">Txns</span><span class="v">٧٠</span></div></div>
+            <div class="figures"><div class="fig"><span class="l">Today</span><span class="v">—<span class="cur">ر.س</span></span></div><div class="fig"><span class="l">Txns</span><span class="v">—</span></div></div>
           </div>
           <div class="ps-card live">
             <div class="head"><div class="ic">☕</div><div><div class="nm">الكافي — مقهى الردهة</div><div class="id">OUTLET-CAFE · Marn</div></div></div>
             <div class="prov"><span class="prov-tag marn"><span class="d"></span>Marn API · v2.1</span><span class="prov-meta">١ POS · webhook ✓</span></div>
-            <div class="figures"><div class="fig"><span class="l">Today</span><span class="v">١٬٢٤٠<span class="cur">ر.س</span></span></div><div class="fig"><span class="l">Txns</span><span class="v">٣٨</span></div></div>
+            <div class="figures"><div class="fig"><span class="l">Today</span><span class="v">—<span class="cur">ر.س</span></span></div><div class="fig"><span class="l">Txns</span><span class="v">—</span></div></div>
           </div>
           <div class="ps-card live">
             <div class="head"><div class="ic">🧖</div><div><div class="nm">السبا — سبا الواحة</div><div class="id">OUTLET-SPA · Book4Time</div></div></div>
             <div class="prov"><span class="prov-tag book4time"><span class="d"></span>Book4Time API</span><span class="prov-meta">١ POS · booking + bill</span></div>
-            <div class="figures"><div class="fig"><span class="l">Today</span><span class="v">٢٬٢٠٠<span class="cur">ر.س</span></span></div><div class="fig"><span class="l">Txns</span><span class="v">١٤</span></div></div>
+            <div class="figures"><div class="fig"><span class="l">Today</span><span class="v">—<span class="cur">ر.س</span></span></div><div class="fig"><span class="l">Txns</span><span class="v">—</span></div></div>
           </div>
           <div class="ps-card live">
             <div class="head"><div class="ic">🌊</div><div><div class="nm">منفذ مخصّص — بار الشاطئ</div><div class="id">OUTLET-CUSTOM-01 · REST API</div></div></div>
             <div class="prov"><span class="prov-tag custom"><span class="d"></span>Custom REST · مفتاح خاص</span><span class="prov-meta">١ POS</span></div>
-            <div class="figures"><div class="fig"><span class="l">Today</span><span class="v">١٬٨٤٠<span class="cur">ر.س</span></span></div><div class="fig"><span class="l">Txns</span><span class="v">٢٢</span></div></div>
+            <div class="figures"><div class="fig"><span class="l">Today</span><span class="v">—<span class="cur">ر.س</span></span></div><div class="fig"><span class="l">Txns</span><span class="v">—</span></div></div>
           </div>
           <div class="ps-card offline">
             <div class="head"><div class="ic">🛍</div><div><div class="nm">متجر الهدايا</div><div class="id">OUTLET-CUSTOM-02 · Oracle MICROS</div></div></div>
-            <div class="prov"><span class="prov-tag oracle"><span class="d err"></span>Oracle MICROS · انقطاع API</span><span class="prov-meta">آخر مزامنة ١١:٠٤</span></div>
-            <div class="figures"><div class="fig"><span class="l">Yesterday</span><span class="v">٤٢٠<span class="cur">ر.س</span></span></div><div class="fig"><span class="l">Status</span><span class="v" style="color:var(--danger-700);font-size:12px">انقطاع</span></div></div>
+            <div class="prov"><span class="prov-tag oracle"><span class="d err"></span>Oracle MICROS · انقطاع API</span><span class="prov-meta">—</span></div>
+            <div class="figures"><div class="fig"><span class="l">Yesterday</span><span class="v">—<span class="cur">ر.س</span></span></div><div class="fig"><span class="l">Status</span><span class="v" style="color:var(--danger-700);font-size:12px">—</span></div></div>
           </div>
           <button class="ps-card add-outlet" onclick="toast('سيتم فتح معالج إضافة المنفذ قريباً','info')">
             <div class="plus">＋</div>
@@ -576,8 +576,8 @@ body { background: var(--paper-tint); }
               <div style="font-size:11px;color:var(--fg-3);margin-top:2px">Table Management — المطعم والكافيه</div>
             </div>
             <div style="display:flex;gap:8px;align-items:center">
-              <span style="background:#DCFCE7;color:#166534;font-size:11px;padding:3px 10px;border-radius:6px">٨ طاولات مشغولة</span>
-              <span style="background:#FEF3C7;color:#92400E;font-size:11px;padding:3px 10px;border-radius:6px">٤ خالية</span>
+              <span style="background:#DCFCE7;color:#166534;font-size:11px;padding:3px 10px;border-radius:6px" id="pos-tbl-occ">— مشغولة</span>
+              <span style="background:#FEF3C7;color:#92400E;font-size:11px;padding:3px 10px;border-radius:6px" id="pos-tbl-free">— خالية</span>
             </div>
           </div>
           <div style="padding:0 16px 20px;display:grid;grid-template-columns:repeat(6,1fr);gap:10px" id="tables-grid">
@@ -658,8 +658,8 @@ body { background: var(--paper-tint); }
             </div>
             <div style="padding:14px;border:1px solid var(--hairline);border-radius:8px;text-align:center">
               <div style="font-size:11px;color:var(--fg-3);margin-bottom:4px">الكاشير</div>
-              <div style="font-size:14px;font-weight:700;color:var(--ink-900)">أحمد محمد</div>
-              <div style="font-size:10px;color:var(--fg-3)">وردية صباحية</div>
+              <div style="font-size:14px;font-weight:700;color:var(--ink-900)">—</div>
+              <div style="font-size:10px;color:var(--fg-3)">—</div>
             </div>
             <div style="padding:14px;border:1px solid var(--hairline);border-radius:8px;text-align:center">
               <div style="font-size:11px;color:var(--fg-3);margin-bottom:4px">الفرق النقدي</div>
@@ -1509,8 +1509,8 @@ setTimeout(function(){
 })();
 </script>
 <script>
-renderVibrantHero({ icon:'🏧', num:'07', title:'نقاط البيع', en:'POS · MADA · Apple Pay', sub:'٦ أجهزة متصلة، إقفال يومي تلقائي', badges:[{v:'٢٤٨',l:'حركة اليوم'},{v:'٦',l:'جهاز نشط'}] });
-renderTierBar({ exc:186, good:42, low:14, bad:6 });
+renderVibrantHero({ icon:'🏧', num:'07', title:'نقاط البيع', en:'POS · MADA · Apple Pay', sub:'أجهزة POS متصلة، إقفال يومي تلقائي', badges:[{v:'—',l:'حركة اليوم'},{v:'—',l:'جهاز نشط'}] });
+renderTierBar({ exc:0, good:0, low:0, bad:0 });
 </script>
 
 <!-- ══ Feature 1-4: Table Management, Split Bill, KDS, Shift Management ══ -->

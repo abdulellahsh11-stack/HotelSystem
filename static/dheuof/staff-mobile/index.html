@@ -451,15 +451,7 @@ function applyI18N(){
 }
 
 /* ============ البيانات ============ */
-var STAFF = [
-  { id:'m1', name:'عبدالله الغامدي', roleKey:'role_mgr_property',    isManager:true,  color:'#143A2E' },
-  { id:'m2', name:'نورة المالكي',    roleKey:'role_mgr_hk',          isManager:true,  color:'#9A7430' },
-  { id:'u1', name:'أحمد الزهراني',   roleKey:'role_sup_reception',   isManager:false, color:'#1B4D3D' },
-  { id:'u2', name:'سارة القحطاني',   roleKey:'role_staff_hk',        isManager:false, color:'#266554' },
-  { id:'u3', name:'خالد العتيبي',    roleKey:'role_tech_maint',      isManager:false, color:'#3B8772' },
-  { id:'u4', name:'منى الشهري',      roleKey:'role_staff_reception', isManager:false, color:'#B68F40' },
-  { id:'u5', name:'فهد الدوسري',     roleKey:'role_security',        isManager:false, color:'#0E2A22' }
-];
+var STAFF = [];
 function roleOf(s){ return t(s.roleKey); }
 var LS={ cur:'dh_sm_cur', msgs:'dh_sm_msgs', tasks:'dh_sm_tasks', house:'dh_sm_house', att:'dh_sm_att' };
 var me=null, activePeer=null, tab='home', taskFilter='all';
@@ -482,13 +474,20 @@ function buildLoginLangBar(){
 
 /* ============ دخول/خروج ============ */
 function buildLogin(){
-  el('loginUser').innerHTML = STAFF.map(function(s){
+  var sel=el('loginUser');
+  if(!STAFF.length){
+    sel.innerHTML='<option value="">-- لا يوجد موظفون مسجّلون --</option>';
+    return;
+  }
+  sel.innerHTML = STAFF.map(function(s){
     return '<option value="'+s.id+'">'+esc(s.name)+' — '+esc(roleOf(s))+(s.isManager?' '+t('mgr_suffix'):'')+'</option>';
   }).join('');
 }
 function doLogin(){
+  if(!STAFF.length){ toast('لا يوجد موظفون — أضف موظفاً أولاً'); return; }
   if(el('loginPin').value!=='0000'){ toast(t('err_pin')); return; }
-  me=byId(el('loginUser').value); save(LS.cur,me.id); enterApp();
+  me=byId(el('loginUser').value); if(!me){ toast(t('err_pin')); return; }
+  save(LS.cur,me.id); enterApp();
 }
 function logout(){
   localStorage.removeItem(LS.cur); me=null; activePeer=null; tab='home';
@@ -575,11 +574,7 @@ function managerOverview(){
 /* ============ المهام ============ */
 function seedTasks(){
   if(load(LS.tasks,null)!==null) return;
-  save(LS.tasks,[
-    { id:'t1', title:'تجهيز جناح 305 لوصول VIP', from:'m1', to:'u2', pri:'high', status:'open', desc:'ضيف يصل 3 عصراً — تجهيز كامل وترتيب الترحيب.', clar:[], at:'09:12' },
-    { id:'t2', title:'إصلاح تكييف غرفة 118', from:'m1', to:'u3', pri:'mid', status:'prog', desc:'النزيل أبلغ عن ضعف التبريد.', clar:[], at:'08:40' },
-    { id:'t3', title:'جرد مستلزمات التدبير', from:'m2', to:'u2', pri:'low', status:'open', desc:'جرد المناشف والمستلزمات قبل نهاية الأسبوع.', clar:[], at:'10:05' }
-  ]);
+  save(LS.tasks,[]);
 }
 function openTaskCount(){
   if(!me) return 0;
@@ -713,12 +708,7 @@ function sendMsg(){
 
 /* ============ السكن ============ */
 var HTOOL_KEYS=['tool_ac','tool_heater','tool_light','tool_fridge','tool_furniture','tool_bathroom'];
-var HROOMS=[
-  {no:'A-101', occ:'أحمد الزهراني · خالد العتيبي'},
-  {no:'A-102', occ:'فهد الدوسري'},
-  {no:'B-201', occ:'سارة القحطاني'},
-  {no:'B-202', occ:'منى الشهري'}
-];
+var HROOMS=[];
 function viewHouse(){
   var state=load(LS.house,{});
   return '<div class="sec-t">'+t('house_title')+'<button class="add" onclick="resetHouse()">'+t('btn_reset')+'</button></div>'+

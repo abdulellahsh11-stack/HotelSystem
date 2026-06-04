@@ -470,18 +470,9 @@ body { background: var(--paper-tint); }
 /* ════════════════════════════════
    STATE
 ════════════════════════════════ */
-var nextId = 20;
+var nextId = 1;
 
-var ALARMS = [
-  {id:1,  sev:'high', status:'active',   title:'نزيل غير مسجّل — دفع POS بدون رقم غرفة',    desc:'دفع ١٬٢٤٠ ر.س في مطعم الواحة ولا يوجد نزيل مسجّل في الغرفة المرتبطة (٢١٨).',    src:'نقاط البيع',  target:'الضيوف · لا تطابق',  program:'07', time:'14:32', minsAgo:14,  rule:'pos_no_room'},
-  {id:2,  sev:'high', status:'active',   title:'دخول جناح ٤١٠ — بدون تسجيل بيانات',         desc:'المفتاح فُتح بهوية لم تمرّ بمكتب الاستقبال. بيانات النزيل مفقودة في برنامج الضيوف.', src:'المفتاح الذكي',target:'الضيوف · مفقود',      program:'01', time:'14:14', minsAgo:32,  rule:'key_no_reg'},
-  {id:3,  sev:'med',  status:'active',   title:'مرافق بدون بيانات كاملة — غرفة ٣٠٧',        desc:'النزيل Layla Karam سجّلت مرافقاً (طفل ١٢ سنة) بدون رقم جوال. نقص في البيانات الإلزامية.', src:'الضيوف', target:'المرافقون · نقص',    program:'01', time:'13:48', minsAgo:58,  rule:'missing_data'},
-  {id:4,  sev:'low',  status:'active',   title:'إقامة قاربت على الانتهاء — تجديد مطلوب',     desc:'Rajesh Kumar — إقامة تنتهي بعد ٦٣ يوماً. يُنصح ببدء إجراءات التجديد عبر قوى.',    src:'الموارد البشرية',target:'إقامة · تنبيه مبكر', program:'09', time:'10:20', minsAgo:240, rule:'residency_expiry'},
-  {id:5,  sev:'med',  status:'snoozed',  title:'فارق سعر الغرفة — مقارنة القنوات',           desc:'سعر غرفة ٣٠١ في Booking.com أعلى بـ ١٢٪ عن سعر النظام الداخلي.',                src:'القنوات',     target:'المحاسبة · فارق سعر', program:'10', time:'09:10', minsAgo:320, rule:'price_gap'},
-  {id:6,  sev:'high', status:'resolved', title:'دفع مكرّر — TX-0199 و TX-0198',             desc:'رصد دفعتان متطابقتان (٤٨٠ ر.س) لنفس النزيل خلال دقيقة واحدة.',                   src:'نقاط البيع',  target:'المحاسبة · تكرار',    program:'07', time:'08:45', minsAgo:390, rule:'duplicate_payment'},
-  {id:7,  sev:'info', status:'resolved', title:'تغيير سعر الوحدة — مطعم الواحة',            desc:'تم تعديل سعر طبق الرئيسي من ٨٥ إلى ٩٥ ر.س خارج ساعات العمل الرسمية.',         src:'نقاط البيع',  target:'التدقيق · تغيير سعر', program:'07', time:'08:00', minsAgo:500, rule:'price_change'},
-  {id:8,  sev:'low',  status:'resolved', title:'تقرير EOD — فارق بسيط في الصندوق',           desc:'صندوق النقدي يُظهر فارق ١٥ ر.س عن تقرير نقاط البيع في نهاية اليوم.',            src:'المحاسبة',   target:'نقاط البيع · صندوق', program:'06', time:'07:30', minsAgo:570, rule:'eod_gap'},
-];
+var ALARMS = [];
 
 var RULES_DEF = [
   {key:'pos_no_room',       icon:'💳', name:'دفع POS بلا غرفة مسجّلة',       sub:'يُنذر عند وجود دفعة POS مرتبطة بغرفة ليس فيها نزيل نشط.', enabled:true,  opts:[{label:'انتظار',field:'delay_min',  val:5,  unit:'دقيقة'}]},
@@ -992,8 +983,8 @@ setTimeout(function(){
 })();
 </script>
 <script>
-renderVibrantHero({ icon:'🔐', num:'08', title:'المفتاح الذكي', en:'Smart Key · Fraud Guard', sub:'يراقب جميع البرامج دفعة واحدة، إنذارات فورية', badges:[{v:'٤',l:'إنذار نشط'},{v:'١٧',l:'برنامج مراقَب'}] });
-renderTierBar({ exc:280, good:95, low:22, bad:4 });
+renderVibrantHero({ icon:'🔐', num:'08', title:'المفتاح الذكي', en:'Smart Key · Fraud Guard', sub:'يراقب جميع البرامج دفعة واحدة، إنذارات فورية', badges:[{v:'—',l:'إنذار نشط'},{v:'—',l:'برنامج مراقَب'}] });
+renderTierBar({ exc:0, good:0, low:0, bad:0 });
 </script>
 </body>
 </html>

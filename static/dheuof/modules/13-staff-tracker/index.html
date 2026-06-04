@@ -72,10 +72,10 @@
       </div>
 
       <div class="mod-stats" style="--cols: 4">
-        <div class="mod-stat"><div class="lbl">حاضرون الآن</div><div class="v is-good">١٨ <span class="cur">من ٢٠</span></div><div class="meta">في الموقع</div></div>
-        <div class="mod-stat"><div class="lbl">متأخرون اليوم</div><div class="v is-warn">٢</div><div class="meta">معدل التأخير ٢١ دقيقة</div></div>
-        <div class="mod-stat"><div class="lbl">في إجازة</div><div class="v">٤</div><div class="meta">يعودون السبت</div></div>
-        <div class="mod-stat"><div class="lbl">حوافز هذا الأسبوع</div><div class="v" style="color: var(--gold-700)">٣٬٢٠٠ <span class="cur">ر.س</span></div><div class="meta">٨ موظفين</div></div>
+        <div class="mod-stat"><div class="lbl">حاضرون الآن</div><div class="v is-good" id="att-stat-present">—</div><div class="meta">في الموقع</div></div>
+        <div class="mod-stat"><div class="lbl">متأخرون اليوم</div><div class="v is-warn" id="att-stat-late">—</div><div class="meta" id="att-stat-late-meta">—</div></div>
+        <div class="mod-stat"><div class="lbl">في إجازة</div><div class="v" id="att-stat-leave">—</div><div class="meta">—</div></div>
+        <div class="mod-stat"><div class="lbl">حوافز هذا الأسبوع</div><div class="v" id="att-stat-bonus" style="color: var(--gold-700)">—</div><div class="meta" id="att-stat-bonus-meta">—</div></div>
       </div>
 
       <div class="st-grid">
@@ -95,76 +95,15 @@
             <span>الحالة</span>
             <span>حافز الأسبوع</span>
           </div>
-          <div class="st-row">
-            <div class="st-av">ر‬ك</div>
-            <div><div class="st-nm">Rajesh Kumar</div><div class="st-sub">رئيس الاستقبال</div></div>
-            <div class="st-time">07:00</div>
-            <div class="st-time ok">06:54</div>
-            <div><span class="mod-tag ok"><span class="d"></span>مبكر</span></div>
-            <div class="st-bonus">٢٤٠<span class="cur">ر.س</span></div>
-          </div>
-          <div class="st-row">
-            <div class="st-av" style="background: var(--gold-200); color: var(--gold-800)">س‬أ</div>
-            <div><div class="st-nm">سارة أحمد</div><div class="st-sub">مدير المنشأة</div></div>
-            <div class="st-time">08:00</div>
-            <div class="st-time ok">07:58</div>
-            <div><span class="mod-tag ok"><span class="d"></span>في الوقت</span></div>
-            <div class="st-bonus">-</div>
-          </div>
-          <div class="st-row">
-            <div class="st-av">M‬a</div>
-            <div><div class="st-nm">Maria Santos</div><div class="st-sub">مشرفة الإسكان</div></div>
-            <div class="st-time">07:00</div>
-            <div class="st-time late">07:24</div>
-            <div><span class="mod-tag warn"><span class="d"></span>تأخر ٢٤ د</span></div>
-            <div class="st-bonus">١٢٠<span class="cur">ر.س</span></div>
-          </div>
-          <div class="st-row">
-            <div class="st-av">م‬ع</div>
-            <div><div class="st-nm">محمد العتيبي</div><div class="st-sub">رئيس الأمن</div></div>
-            <div class="st-time">14:00</div>
-            <div class="st-time ok">13:48</div>
-            <div><span class="mod-tag ok"><span class="d"></span>مبكر</span></div>
-            <div class="st-bonus">٢٠٠<span class="cur">ر.س</span></div>
-          </div>
-          <div class="st-row">
-            <div class="st-av">ج‬م</div>
-            <div><div class="st-nm">جمال المتروك</div><div class="st-sub">فني صيانة</div></div>
-            <div class="st-time">08:00</div>
-            <div class="st-time late">08:42</div>
-            <div><span class="mod-tag err"><span class="d"></span>تأخر ٤٢ د</span></div>
-            <div class="st-bonus">-</div>
-          </div>
-          <div class="st-row">
-            <div class="st-av">ف‬س</div>
-            <div><div class="st-nm">فاطمة السعيدي</div><div class="st-sub">محاسبة</div></div>
-            <div class="st-time">09:00</div>
-            <div class="st-time ok">08:50</div>
-            <div><span class="mod-tag ok"><span class="d"></span>مبكر</span></div>
-            <div class="st-bonus">٢٤٠<span class="cur">ر.س</span></div>
-          </div>
+          <div id="att-rows-container" style="text-align:center;padding:40px;color:var(--fg-3);font-family:var(--font-ar)">لا توجد بيانات حضور — ستظهر هنا عند إضافة الموظفين</div>
         </div>
 
         <div class="st-side">
 
           <div class="st-rest">
-            <div class="lbl">DAY-OFF REMINDER - 2 days ahead</div>
+            <div class="lbl">DAY-OFF REMINDER</div>
             <div class="ttl">تنبيه يوم الراحة</div>
-            <div class="who">
-              <div class="av">ر‬ك</div>
-              <div class="n">Rajesh Kumar<div style="font-size: 11px; opacity: 0.7">يستحق راحة الأربعاء</div></div>
-              <div class="d">بعد يومين</div>
-            </div>
-            <div class="who">
-              <div class="av">س‬أ</div>
-              <div class="n">سارة أحمد<div style="font-size: 11px; opacity: 0.7">يوم الجمعة الراحة</div></div>
-              <div class="d">بعد ٣ أيام</div>
-            </div>
-            <div class="who">
-              <div class="av">م‬ع</div>
-              <div class="n">محمد العتيبي<div style="font-size: 11px; opacity: 0.7">يستحق راحة الأربعاء</div></div>
-              <div class="d">بعد يومين</div>
-            </div>
+            <div style="padding:16px;color:var(--fg-3);font-size:13px;font-family:var(--font-ar)">لا توجد بيانات بعد</div>
           </div>
 
           <div class="st-perf">
@@ -200,14 +139,7 @@ function toXLS(headers,rows,name){var s='<Styles><Style ss:ID="H"><Font ss:Bold=
 function dlXLS(c,fn){var b=new Blob([c],{type:'application/vnd.ms-excel;charset=utf-8'});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download=fn;a.click();setTimeout(function(){URL.revokeObjectURL(u);},1000);}
 function toast(msg,isErr){var old=document.querySelector('.dh-toast');if(old)old.remove();var t=document.createElement('div');t.className='dh-toast';t.style.cssText='position:fixed;bottom:24px;inset-inline-end:24px;background:'+(isErr?'#b91c1c':'#1B4D3D')+';color:#fff;padding:12px 18px;border-radius:8px;font-family:"Tajawal",sans-serif;font-size:13px;z-index:9999;display:flex;gap:8px';t.innerHTML='<span style="color:'+(isErr?'#fca5a5':'#C9A85F')+'">'+(isErr?'✕':'✓')+'</span>'+msg;document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .4s';setTimeout(function(){if(t.parentNode)t.remove();},400);},3000);}
 
-var ATTENDANCE = [
-  {name:'Rajesh Kumar',    role:'رئيس الاستقبال', scheduled:'07:00', actual:'06:54', status:'early',    bonus:240},
-  {name:'سارة أحمد',      role:'مدير المنشأة',    scheduled:'08:00', actual:'07:58', status:'ontime',   bonus:0},
-  {name:'Maria Santos',   role:'مشرفة الإسكان',  scheduled:'07:00', actual:'07:24', status:'late24',   bonus:120},
-  {name:'محمد العتيبي',   role:'رئيس الأمن',      scheduled:'14:00', actual:'13:48', status:'early',    bonus:200},
-  {name:'جمال المتروك',   role:'فني صيانة',       scheduled:'08:00', actual:'08:42', status:'late42',   bonus:0},
-  {name:'فاطمة السعيدي',  role:'محاسبة',          scheduled:'09:00', actual:'08:50', status:'early',    bonus:240},
-];
+var ATTENDANCE = [];
 
 window.exportCSV = function(){
   var stMap = {
@@ -294,8 +226,21 @@ window.exportPDF = function(){
 };
 </script>
 <script>
-renderVibrantHero({ icon:'⏰', num:'13', title:'أداء الموظفين', en:'Staff Performance · Attendance', sub:'تسجيل الحضور والتأخير، حوافز أسبوعية', badges:[{v:'١٨/٢٠',l:'حاضر اليوم'},{v:'٩٠٪',l:'الانضباط'}] });
-renderTierBar({ exc:12, good:4, low:2, bad:2 });
+renderVibrantHero({ icon:'⏰', num:'13', title:'أداء الموظفين', en:'Staff Performance · Attendance', sub:'تسجيل الحضور والتأخير، حوافز أسبوعية', badges:[{v:'—',l:'حاضر اليوم'},{v:'—',l:'الانضباط'}] });
+renderTierBar({ exc:0, good:0, low:0, bad:0 });
+
+(function(){
+  var total = ATTENDANCE.length;
+  var lateCount = ATTENDANCE.filter(function(r){ return r.status && r.status.startsWith('late'); }).length;
+  var totalBonus = ATTENDANCE.reduce(function(s,r){ return s+(r.bonus||0); }, 0);
+  var bonusCount = ATTENDANCE.filter(function(r){ return r.bonus>0; }).length;
+  function upd(id,v){ var e=document.getElementById(id); if(e) e.textContent=v; }
+  upd('att-stat-present', total ? total : '—');
+  upd('att-stat-late', total ? (lateCount||'٠') : '—');
+  upd('att-stat-leave', '—');
+  upd('att-stat-bonus', total && totalBonus ? totalBonus.toLocaleString('ar-EG')+' ر.س' : '—');
+  upd('att-stat-bonus-meta', total && bonusCount ? bonusCount+' موظف' : '—');
+})();
 </script>
 </body>
 </html>

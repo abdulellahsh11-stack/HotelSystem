@@ -542,32 +542,32 @@ body { background: var(--paper-tint); }
           <div class="kpi-card">
             <div class="kc-en">RevPAR</div>
             <div class="kc-ar">الإيراد لكل غرفة متاحة</div>
-            <div class="kc-val">٦٢٦<span class="cur">ر.س</span></div>
-            <div class="kc-change up">▲ +٧٪ <span class="kc-period">شهر/شهر</span></div>
+            <div class="kc-val">—<span class="cur">ر.س</span></div>
+            <div class="kc-change">—</div>
           </div>
           <div class="kpi-card">
             <div class="kc-en">ADR</div>
             <div class="kc-ar">متوسط سعر الغرفة</div>
-            <div class="kc-val">٧٢٠<span class="cur">ر.س</span></div>
-            <div class="kc-change up">▲ +١٢٪ <span class="kc-period">عن العام</span></div>
+            <div class="kc-val">—<span class="cur">ر.س</span></div>
+            <div class="kc-change">—</div>
           </div>
           <div class="kpi-card">
             <div class="kc-en">OCC</div>
             <div class="kc-ar">نسبة الإشغال</div>
-            <div class="kc-val">٨٧<span class="cur">٪</span></div>
-            <div class="kc-change up">▲ +٤٪ <span class="kc-period">عن الموسم</span></div>
+            <div class="kc-val">—<span class="cur">٪</span></div>
+            <div class="kc-change">—</div>
           </div>
           <div class="kpi-card">
             <div class="kc-en">GOPPAR</div>
             <div class="kc-ar">الربح التشغيلي</div>
-            <div class="kc-val">٤٢٤<span class="cur">ر.س</span></div>
-            <div class="kc-change dn">▼ −٢٪ <span class="kc-period">شهر/شهر</span></div>
+            <div class="kc-val">—<span class="cur">ر.س</span></div>
+            <div class="kc-change">—</div>
           </div>
           <div class="kpi-card">
             <div class="kc-en">ALOS</div>
             <div class="kc-ar">متوسط ليالي الإقامة</div>
-            <div class="kc-val">٢<span class="cur">.</span>٤<span class="cur">ليلة</span></div>
-            <div class="kc-change up">▲ +٠.٣ <span class="kc-period">عن أبريل ٢٤</span></div>
+            <div class="kc-val">—<span class="cur">ليلة</span></div>
+            <div class="kc-change">—</div>
           </div>
         </div>
 
@@ -578,7 +578,7 @@ body { background: var(--paper-tint); }
               <div class="ttl">نسبة الإشغال — آخر ١٢ شهراً</div>
               <div class="sub">Monthly occupancy rate · last 12 months</div>
             </div>
-            <span class="mod-tag brand">٨٧٪ المتوسط</span>
+            <span class="mod-tag brand" id="occ-avg-badge">—</span>
           </div>
           <div class="occ-bars" id="occ-bars-container">
             <!-- injected by JS -->
@@ -592,31 +592,7 @@ body { background: var(--paper-tint); }
               <div class="ttl">توزيع الإيراد على القنوات</div>
               <div class="sub">Channel revenue breakdown · this month</div>
             </div>
-            <div class="ch-bar-row">
-              <div class="ch-bar-nm">Booking.com</div>
-              <div class="ch-bar-bg"><div class="ch-bar-fill" style="width:42%;background:linear-gradient(to left,#1B4D3D,#266554)"></div></div>
-              <div class="ch-bar-pct">٤٢٪</div>
-            </div>
-            <div class="ch-bar-row">
-              <div class="ch-bar-nm">حجز مباشر</div>
-              <div class="ch-bar-bg"><div class="ch-bar-fill" style="width:28%;background:linear-gradient(to left,#C9A85F,#DBC084)"></div></div>
-              <div class="ch-bar-pct">٢٨٪</div>
-            </div>
-            <div class="ch-bar-row">
-              <div class="ch-bar-nm">Agoda</div>
-              <div class="ch-bar-bg"><div class="ch-bar-fill" style="width:15%;background:linear-gradient(to left,#266554,#3B8772)"></div></div>
-              <div class="ch-bar-pct">١٥٪</div>
-            </div>
-            <div class="ch-bar-row">
-              <div class="ch-bar-nm">Expedia</div>
-              <div class="ch-bar-bg"><div class="ch-bar-fill" style="width:9%;background:linear-gradient(to left,#6BAB9A,#9CCBBE)"></div></div>
-              <div class="ch-bar-pct">٩٪</div>
-            </div>
-            <div class="ch-bar-row">
-              <div class="ch-bar-nm">أخرى</div>
-              <div class="ch-bar-bg"><div class="ch-bar-fill" style="width:6%;background:linear-gradient(to left,#9A7430,#B68F40)"></div></div>
-              <div class="ch-bar-pct">٦٪</div>
-            </div>
+            <div id="ch-breakdown-empty" style="padding:20px;color:var(--fg-3);font-size:13px;font-family:var(--font-ar)">لا توجد بيانات بعد — ستظهر هنا عند ربط القنوات</div>
           </div>
 
           <div class="origins-wrap">
@@ -624,42 +600,7 @@ body { background: var(--paper-tint); }
               <div class="ttl">أهم المصادر الجغرافية</div>
               <div class="sub">Top guest origins · this month</div>
             </div>
-            <div class="origin-row">
-              <div class="origin-flag">🇸🇦</div>
-              <div class="origin-name">السعودية</div>
-              <div class="origin-bar-bg"><div class="origin-bar-fill" style="width:100%"></div></div>
-              <div class="origin-pct">٤٢٪</div>
-            </div>
-            <div class="origin-row">
-              <div class="origin-flag">🇦🇪</div>
-              <div class="origin-name">الإمارات</div>
-              <div class="origin-bar-bg"><div class="origin-bar-fill" style="width:43%"></div></div>
-              <div class="origin-pct">١٨٪</div>
-            </div>
-            <div class="origin-row">
-              <div class="origin-flag">🇰🇼</div>
-              <div class="origin-name">الكويت</div>
-              <div class="origin-bar-bg"><div class="origin-bar-fill" style="width:29%"></div></div>
-              <div class="origin-pct">١٢٪</div>
-            </div>
-            <div class="origin-row">
-              <div class="origin-flag">🇪🇬</div>
-              <div class="origin-name">مصر</div>
-              <div class="origin-bar-bg"><div class="origin-bar-fill" style="width:21%"></div></div>
-              <div class="origin-pct">٩٪</div>
-            </div>
-            <div class="origin-row">
-              <div class="origin-flag">🇬🇧</div>
-              <div class="origin-name">بريطانيا</div>
-              <div class="origin-bar-bg"><div class="origin-bar-fill" style="width:17%"></div></div>
-              <div class="origin-pct">٧٪</div>
-            </div>
-            <div class="origin-row">
-              <div class="origin-flag">🇫🇷</div>
-              <div class="origin-name">فرنسا</div>
-              <div class="origin-bar-bg"><div class="origin-bar-fill" style="width:12%"></div></div>
-              <div class="origin-pct">٥٪</div>
-            </div>
+            <div id="origins-empty" style="padding:20px;color:var(--fg-3);font-size:13px;font-family:var(--font-ar)">لا توجد بيانات بعد — ستظهر هنا عند وجود حجوزات</div>
           </div>
         </div>
 
@@ -1265,20 +1206,14 @@ function dlXLS(content, filename){
 }
 
 var KPI_DATA = [
-  {en:'RevPAR', ar:'الإيراد لكل غرفة متاحة', val:'٦٢٦', unit:'ر.س', change:'+٧٪', period:'شهر/شهر'},
-  {en:'ADR',    ar:'متوسط سعر الغرفة',        val:'٧٢٠', unit:'ر.س', change:'+١٢٪', period:'عن العام'},
-  {en:'OCC',    ar:'نسبة الإشغال',             val:'٨٧',  unit:'٪',   change:'+٤٪',  period:'عن الموسم'},
-  {en:'GOPPAR', ar:'الربح التشغيلي',           val:'٤٢٤', unit:'ر.س', change:'−٢٪',  period:'شهر/شهر'},
-  {en:'ALOS',   ar:'متوسط ليالي الإقامة',      val:'٢.٤', unit:'ليلة',change:'+٠.٣', period:'عن أبريل ٢٤'},
+  {en:'RevPAR', ar:'الإيراد لكل غرفة متاحة', val:'—', unit:'ر.س', change:'—', period:'—'},
+  {en:'ADR',    ar:'متوسط سعر الغرفة',        val:'—', unit:'ر.س', change:'—', period:'—'},
+  {en:'OCC',    ar:'نسبة الإشغال',             val:'—', unit:'٪',   change:'—', period:'—'},
+  {en:'GOPPAR', ar:'الربح التشغيلي',           val:'—', unit:'ر.س', change:'—', period:'—'},
+  {en:'ALOS',   ar:'متوسط ليالي الإقامة',      val:'—', unit:'ليلة',change:'—', period:'—'},
 ];
 
-var ROOM_DATA = [
-  {type:'غرفة مفردة',  revpar:'٣٤٠', adr:'٣٩٠', occ:'٨٧٪', nights:'٦٢٤',    revenue:'٢٤٣٬٣٦٠'},
-  {type:'غرفة مزدوجة', revpar:'٥٤٠', adr:'٦١٠', occ:'٨٩٪', nights:'٤٨١',    revenue:'٢٩٣٬٤١٠'},
-  {type:'جناح',         revpar:'٩٨٠', adr:'١١٢٠',occ:'٨٨٪', nights:'٢١١',    revenue:'٢٣٦٬٣٢٠'},
-  {type:'غرفة عائلية', revpar:'٧٢٠', adr:'٨٤٠', occ:'٨٦٪', nights:'٣٠٩',    revenue:'٢٥٩٬٥٦٠'},
-  {type:'جناح رئاسي',  revpar:'١٩٤٠',adr:'٢٤٠٠',occ:'٨١٪', nights:'٤٩',     revenue:'١١٧٬٦٠٠'},
-];
+var ROOM_DATA = [];
 
 window.kpiExportExcel = function(){
   var kpiHeaders = ['المؤشر','الوصف','القيمة','الوحدة','التغيير','الفترة'];
