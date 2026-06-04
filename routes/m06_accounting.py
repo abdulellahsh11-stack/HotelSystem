@@ -20,12 +20,16 @@ async def list_invoices(
     request: Request,
     date_from: Optional[str] = None,
     date_to: Optional[str] = None,
+    page: int = 1,
+    per_page: int = 50,
     session=Depends(_require_client),
 ):
     try:
         db = request.app.state.db
         cid = session["client_id"]
         if db.use_postgres:
+            limit = min(per_page, 200)
+            offset = (page - 1) * limit
             q = """
                 SELECT
                     b.id,
@@ -50,10 +54,14 @@ async def list_invoices(
             if date_to:
                 q += " AND b.check_in <= %s"
                 params.append(date_to)
-            q += " ORDER BY b.created_at DESC LIMIT 200"
+            count_q = f"SELECT COUNT(*) FROM ({q}) AS _sub"
+            count_result = db.execute(count_q, params, fetch="one")
+            total = count_result[0] if count_result else 0
+            q += " ORDER BY b.created_at DESC LIMIT %s OFFSET %s"
+            params.extend([limit, offset])
             rows = db.execute(q, params, fetch="all")
-            return {"success": True, "data": [dict(r) for r in (rows or [])]}
-        return {"success": True, "data": []}
+            return {"success": True, "data": [dict(r) for r in (rows or [])], "page": page, "per_page": limit, "total": total}
+        return {"success": True, "data": [], "page": page, "per_page": per_page, "total": 0}
     except HTTPException:
         raise
     except Exception as e:

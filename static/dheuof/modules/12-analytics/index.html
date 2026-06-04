@@ -189,10 +189,10 @@
               <text x="100" y="118" font-size="18" font-weight="700" fill="#8B8175" text-anchor="middle" font-family="IBM Plex Sans">—</text>
             </svg>
             <div class="donut-legend">
-              <div class="li"><span class="sw" style="background:#1B4D3D"></span><span class="ln">الغرف</span><span class="lv">—</span></div>
-              <div class="li"><span class="sw" style="background:#C9A85F"></span><span class="ln"><abbr class="dh-abbr" data-ar="الأطعمة والمشروبات" data-en="Food &amp; Beverage" data-meaning="إيرادات المطاعم والمقهى والبار وخدمة الغرف">F&amp;B</abbr></span><span class="lv">—</span></div>
-              <div class="li"><span class="sw" style="background:#6BAB9A"></span><span class="ln">السبا</span><span class="lv">—</span></div>
-              <div class="li"><span class="sw" style="background:#9A7430"></span><span class="ln">أخرى</span><span class="lv">—</span></div>
+              <div class="li"><span class="sw" style="background:var(--brand-700)"></span><span class="ln">الغرف</span><span class="lv">—</span></div>
+              <div class="li"><span class="sw" style="background:var(--gold-500)"></span><span class="ln"><abbr class="dh-abbr" data-ar="الأطعمة والمشروبات" data-en="Food &amp; Beverage" data-meaning="إيرادات المطاعم والمقهى والبار وخدمة الغرف">F&amp;B</abbr></span><span class="lv">—</span></div>
+              <div class="li"><span class="sw" style="background:var(--brand-400)"></span><span class="ln">السبا</span><span class="lv">—</span></div>
+              <div class="li"><span class="sw" style="background:var(--gold-700)"></span><span class="ln">أخرى</span><span class="lv">—</span></div>
             </div>
           </div>
         </div>
@@ -230,10 +230,10 @@
               <select id="hm-year" style="font-family:var(--font-mono);font-size:12px;padding:6px 10px;border:1px solid var(--hairline);border-radius:8px;background:var(--white);color:var(--ink-800);cursor:pointer"></select>
             </div>
             <div class="hm-legend">
-              <span class="hm-l"><i style="background: #F5F0E6"></i>منخفض</span>
-              <span class="hm-l"><i style="background: #9CCBBE"></i>متوسط</span>
-              <span class="hm-l"><i style="background: #266554"></i>مرتفع</span>
-              <span class="hm-l"><i style="background: #0E2A22"></i>ذروة</span>
+              <span class="hm-l"><i style="background: var(--paper-tint)"></i>منخفض</span>
+              <span class="hm-l"><i style="background: var(--brand-300)"></i>متوسط</span>
+              <span class="hm-l"><i style="background: var(--brand-600)"></i>مرتفع</span>
+              <span class="hm-l"><i style="background: var(--brand-900)"></i>ذروة</span>
             </div>
           </div>
         </div>
@@ -397,7 +397,7 @@
   (function buildHm() {
     var grid = document.getElementById('hm-grid');
     if (!grid) return;
-    var palette = ['#F5F0E6','#E4F0EB','#C7E1D8','#9CCBBE','#6BAB9A','#3B8772','#266554','#1B4D3D','#143A2E','#0E2A22'];
+    var palette = ['var(--paper-tint)','var(--brand-100)','var(--brand-200)','var(--brand-300)','var(--brand-400)','var(--brand-500)','var(--brand-600)','var(--brand-700)','var(--brand-800)','var(--brand-900)'];
     var monthNames = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
     var monthSel = document.getElementById('hm-month');
     var yearSel  = document.getElementById('hm-year');
@@ -440,7 +440,7 @@
             var idx = Math.min(9, Math.max(0, Math.round(occ / 10)));
             c.style.background = palette[idx];
             c.dataset.v = occ + '%';
-            if (idx >= 7) c.style.color = '#F5F0E6';
+            if (idx >= 7) c.style.color = 'var(--paper-tint)';
           }
           c.textContent = arNum(dayNum);
         }
@@ -533,7 +533,7 @@ setTimeout(function(){
   function todayStr(){var d=new Date();return d.getFullYear()+(d.getMonth()+1<10?'0':'')+(d.getMonth()+1)+(d.getDate()<10?'0':'')+d.getDate();}
   function toXLS(headers,rows,name){var s='<Styles><Style ss:ID="H"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1B4D3D" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center"/></Style><Style ss:ID="BAD"><Interior ss:Color="#C0392B" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style><Style ss:ID="WARN"><Interior ss:Color="#D97706" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style><Style ss:ID="OK"><Interior ss:Color="#BBF7D0" ss:Pattern="Solid"/><Font ss:Color="#1B7A56" ss:Bold="1"/></Style><Style ss:ID="EXC"><Interior ss:Color="#1B7A56" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style></Styles>';function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}function cell(v){if(v&&typeof v==='object'&&'s' in v)return '<Cell ss:StyleID="'+v.s+'"><Data ss:Type="String">'+esc(v.v)+'</Data></Cell>';return '<Cell><Data ss:Type="'+(typeof v==='number'?'Number':'String')+'">'+esc(v)+'</Data></Cell>';}var hRow='<Row>'+headers.map(function(h){return '<Cell ss:StyleID="H"><Data ss:Type="String">'+esc(h)+'</Data></Cell>';}).join('')+'</Row>';var dRows=rows.map(function(r){return '<Row>'+r.map(cell).join('')+'</Row>';}).join('');return '<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'+s+'<Worksheet ss:Name="'+esc(name)+'"><Table>'+hRow+dRows+'</Table></Worksheet></Workbook>';}
   function dlXLS(c,fn){var b=new Blob([c],{type:'application/vnd.ms-excel;charset=utf-8'});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download=fn;a.click();setTimeout(function(){URL.revokeObjectURL(u);},1000);}
-  function toast(msg){var old=document.querySelector('.dh-an-toast');if(old)old.remove();var t=document.createElement('div');t.className='dh-an-toast';t.style.cssText='position:fixed;bottom:24px;inset-inline-end:24px;background:#1B4D3D;color:#fff;padding:12px 18px;border-radius:8px;font-family:"Tajawal",sans-serif;font-size:13px;z-index:9999;display:flex;gap:8px';t.innerHTML='<span style="color:#C9A85F">✓</span>'+msg;document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .4s';setTimeout(function(){if(t.parentNode)t.remove();},400);},3000);}
+  function toast(msg){var old=document.querySelector('.dh-an-toast');if(old)old.remove();var t=document.createElement('div');t.className='dh-an-toast';t.style.cssText='position:fixed;bottom:24px;inset-inline-end:24px;background:var(--brand-700);color:var(--white);padding:12px 18px;border-radius:8px;font-family:"Tajawal",sans-serif;font-size:13px;z-index:9999;display:flex;gap:8px';t.innerHTML='<span style="color:var(--gold-500)">✓</span>'+msg;document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .4s';setTimeout(function(){if(t.parentNode)t.remove();},400);},3000);}
 
   window.exportAnalyticsExcel = function(){
     var kpiHeaders = ['المؤشر','الوصف','القيمة','الوحدة','التغيير (%)','الفترة','التقييم'];
@@ -584,7 +584,7 @@ setTimeout(function(){
 
   window.exportAnalyticsPDF = function(){
     var kpiRows = KPI_DATA.map(function(k){
-      var cls = k.change>5?'color:#1B7A56':k.change>0?'color:#22C55E':k.change>-5?'color:#D97706':'color:#C0392B';
+      var cls = k.change>5?'color:#1B7A56':k.change>0?'color:#22C55E':k.change>-5?'color:var(--warning-700)':'color:#C0392B';
       var arrow = k.change>0?'↑':'↓';
       return '<tr><td><strong>'+k.name+'</strong></td><td>'+k.ar+'</td>'
         +'<td style="font-weight:700;font-size:18px">'+k.val+' '+k.unit+'</td>'
@@ -603,35 +603,35 @@ setTimeout(function(){
     var strI2=INSIGHTS.filter(function(i){return i.type==='strength';}).length;
     var tK2=KPI_DATA.length; function _pK2(n){return tK2>0?Math.round(n/tK2*100):0;}
     var statsHtml='<div style="background:linear-gradient(135deg,#f0f7f4,#f8faf9);border:1px solid #c6ddd7;border-radius:12px;padding:18px 20px;margin-bottom:20px">'
-      +'<div style="font-size:14px;font-weight:700;color:#1B4D3D;margin-bottom:14px">📊 ملخص الأداء · '+tK2+' مؤشر رئيسي</div>'
+      +'<div style="font-size:14px;font-weight:700;color:var(--brand-700);margin-bottom:14px">📊 ملخص الأداء · '+tK2+' مؤشر رئيسي</div>'
       +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">'
       +'<div style="flex:1;min-width:80px;text-align:center;background:#f0f0f0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#333">'+tK2+'</div><div style="font-size:10px;color:#666;margin-top:4px">مؤشرات KPI</div></div>'
       +'<div style="flex:1;min-width:80px;text-align:center;background:#D1FAE5;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#1B7A56">'+excK2+'</div><div style="font-size:13px;font-weight:700;color:#1B7A56">'+_pK2(excK2)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">ممتاز >٥٪ ⭐</div></div>'
-      +'<div style="flex:1;min-width:80px;text-align:center;background:#BBF7D0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#059669">'+okK2+'</div><div style="font-size:13px;font-weight:700;color:#059669">'+_pK2(okK2)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">جيد ٠-٥٪ 🟢</div></div>'
-      +'<div style="flex:1;min-width:80px;text-align:center;background:#FEF3C7;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#D97706">'+warnK2+'</div><div style="font-size:13px;font-weight:700;color:#D97706">'+_pK2(warnK2)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">منخفض 🟠</div></div>'
+      +'<div style="flex:1;min-width:80px;text-align:center;background:#BBF7D0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:var(--success-700)">'+okK2+'</div><div style="font-size:13px;font-weight:700;color:var(--success-700)">'+_pK2(okK2)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">جيد ٠-٥٪ 🟢</div></div>'
+      +'<div style="flex:1;min-width:80px;text-align:center;background:#FEF3C7;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:var(--warning-700)">'+warnK2+'</div><div style="font-size:13px;font-weight:700;color:var(--warning-700)">'+_pK2(warnK2)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">منخفض 🟠</div></div>'
       +'<div style="flex:1;min-width:80px;text-align:center;background:#FEE2E2;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#C0392B">'+badK2+'</div><div style="font-size:13px;font-weight:700;color:#C0392B">'+_pK2(badK2)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">تحت الهدف 🔴</div></div>'
       +'<div style="flex:1;min-width:80px;text-align:center;background:#D1FAE5;border-radius:8px;padding:12px 8px"><div style="font-size:22px;font-weight:700;color:#1B7A56">'+strI2+'</div><div style="font-size:10px;color:rgba(0,0,0,0.5);margin-top:4px">نقاط قوة</div></div>'
       +'</div>'
       +'<div style="background:#e8eceb;border-radius:6px;height:12px;overflow:hidden;display:flex">'
       +(excK2>0?'<div style="width:'+_pK2(excK2)+'%;background:#1B7A56;height:100%"></div>':'')
       +(okK2>0?'<div style="width:'+_pK2(okK2)+'%;background:#22C55E;height:100%"></div>':'')
-      +(warnK2>0?'<div style="width:'+_pK2(warnK2)+'%;background:#D97706;height:100%"></div>':'')
+      +(warnK2>0?'<div style="width:'+_pK2(warnK2)+'%;background:var(--warning-700);height:100%"></div>':'')
       +(badK2>0?'<div style="width:'+_pK2(badK2)+'%;background:#C0392B;height:100%"></div>':'')
       +'</div>'
       +'<div style="margin-top:8px;font-size:10px;color:#666;display:flex;gap:14px;flex-wrap:wrap">'
       +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#1B7A56;margin-left:3px"></span>ممتاز '+_pK2(excK2)+'%</span>'
       +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#22C55E;margin-left:3px"></span>جيد '+_pK2(okK2)+'%</span>'
-      +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#D97706;margin-left:3px"></span>منخفض '+_pK2(warnK2)+'%</span>'
+      +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--warning-700);margin-left:3px"></span>منخفض '+_pK2(warnK2)+'%</span>'
       +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#C0392B;margin-left:3px"></span>تحت الهدف '+_pK2(badK2)+'%</span>'
       +'</div>'
       +'</div>';
     var win=window.open('','_blank','width=1020,height=760');
     win.document.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"/><title>تقرير التحليلات</title>'
       +'<style>body{font-family:"Tajawal","Segoe UI",sans-serif;margin:32px;color:#1a1a1a;direction:rtl}'
-      +'h1{font-size:22px;margin:0 0 4px}h2{font-size:16px;margin:22px 0 10px;color:#1B4D3D}'
+      +'h1{font-size:22px;margin:0 0 4px}h2{font-size:16px;margin:22px 0 10px;color:var(--brand-700)}'
       +'.sub{font-size:12px;color:#666;margin:0 0 18px}'
       +'table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:24px}'
-      +'th{background:#1B4D3D;color:#fff;padding:9px 12px;text-align:right}'
+      +'th{background:var(--brand-700);color:var(--white);padding:9px 12px;text-align:right}'
       +'td{padding:8px 12px;border-bottom:1px solid #eee;vertical-align:middle}'
       +'tr:nth-child(even){background:#fafafa}'
       +'.footer{margin-top:18px;font-size:11px;color:#999}@media print{.no-print{display:none}}'
@@ -881,7 +881,7 @@ renderTierBar({ exc:0, good:0, low:0, bad:0 });
           // Draw donut arcs
           var donutSvg = document.querySelector('.donut-wrap svg');
           if (donutSvg && totalRevenue > 0) {
-            var colors = ['#1B4D3D','#C9A85F','#6BAB9A','#9A7430'];
+            var colors = ['var(--brand-700)','var(--gold-500)','var(--brand-400)','var(--gold-700)'];
             var segments = [roomRevenue, fbRevenue, spaRevenue, otherRevenue];
             var cx2 = 100, cy2 = 100, r2 = 74, sw = 22;
             var existing = donutSvg.querySelector('circle');

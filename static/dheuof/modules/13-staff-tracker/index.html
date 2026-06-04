@@ -137,7 +137,7 @@ setTimeout(function(){
 function todayStr(){var d=new Date();return d.getFullYear()+(d.getMonth()+1<10?'0':'')+(d.getMonth()+1)+(d.getDate()<10?'0':'')+d.getDate();}
 function toXLS(headers,rows,name){var s='<Styles><Style ss:ID="H"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1B4D3D" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center"/></Style><Style ss:ID="BAD"><Interior ss:Color="#C0392B" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style><Style ss:ID="WARN"><Interior ss:Color="#D97706" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style><Style ss:ID="OK"><Interior ss:Color="#BBF7D0" ss:Pattern="Solid"/><Font ss:Color="#1B7A56" ss:Bold="1"/></Style><Style ss:ID="EXC"><Interior ss:Color="#1B7A56" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style></Styles>';function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}function cell(v){if(v&&typeof v==='object'&&'s' in v)return '<Cell ss:StyleID="'+v.s+'"><Data ss:Type="String">'+esc(v.v)+'</Data></Cell>';return '<Cell><Data ss:Type="'+(typeof v==='number'?'Number':'String')+'">'+esc(v)+'</Data></Cell>';}var hRow='<Row>'+headers.map(function(h){return '<Cell ss:StyleID="H"><Data ss:Type="String">'+esc(h)+'</Data></Cell>';}).join('')+'</Row>';var dRows=rows.map(function(r){return '<Row>'+r.map(cell).join('')+'</Row>';}).join('');return '<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'+s+'<Worksheet ss:Name="'+esc(name)+'"><Table>'+hRow+dRows+'</Table></Worksheet></Workbook>';}
 function dlXLS(c,fn){var b=new Blob([c],{type:'application/vnd.ms-excel;charset=utf-8'});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download=fn;a.click();setTimeout(function(){URL.revokeObjectURL(u);},1000);}
-function toast(msg,isErr){var old=document.querySelector('.dh-toast');if(old)old.remove();var t=document.createElement('div');t.className='dh-toast';t.style.cssText='position:fixed;bottom:24px;inset-inline-end:24px;background:'+(isErr?'#b91c1c':'#1B4D3D')+';color:#fff;padding:12px 18px;border-radius:8px;font-family:"Tajawal",sans-serif;font-size:13px;z-index:9999;display:flex;gap:8px';t.innerHTML='<span style="color:'+(isErr?'#fca5a5':'#C9A85F')+'">'+(isErr?'✕':'✓')+'</span>'+msg;document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .4s';setTimeout(function(){if(t.parentNode)t.remove();},400);},3000);}
+function toast(msg,isErr){var old=document.querySelector('.dh-toast');if(old)old.remove();var t=document.createElement('div');t.className='dh-toast';t.style.cssText='position:fixed;bottom:24px;inset-inline-end:24px;background:'+(isErr?'#b91c1c':'var(--brand-700)')+';color:var(--white);padding:12px 18px;border-radius:8px;font-family:"Tajawal",sans-serif;font-size:13px;z-index:9999;display:flex;gap:8px';t.innerHTML='<span style="color:'+(isErr?'#fca5a5':'var(--gold-500)')+'">'+(isErr?'✕':'✓')+'</span>'+msg;document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .4s';setTimeout(function(){if(t.parentNode)t.remove();},400);},3000);}
 
 var ATTENDANCE = [];
 
@@ -166,7 +166,7 @@ window.exportCSV = function(){
 };
 
 window.exportPDF = function(){
-  var stStyle = {early:'color:#1B7A56;font-weight:700', ontime:'color:#22C55E;font-weight:700', late24:'color:#D97706;font-weight:700', late42:'color:#C0392B;font-weight:700'};
+  var stStyle = {early:'color:#1B7A56;font-weight:700', ontime:'color:#22C55E;font-weight:700', late24:'color:var(--warning-700);font-weight:700', late42:'color:#C0392B;font-weight:700'};
   var stLabel = {early:'⭐ مبكر', ontime:'✓ في الوقت', late24:'⚠ تأخر ٢٤ د', late42:'✕ تأخر ٤٢ د'};
   var totalBonus = ATTENDANCE.reduce(function(s,r){return s+r.bonus;},0);
   var present = ATTENDANCE.filter(function(r){return r.status!=='absent';}).length;
@@ -176,24 +176,24 @@ window.exportPDF = function(){
   var late422=ATTENDANCE.filter(function(r){return r.status==='late42';}).length;
   var t=ATTENDANCE.length; function _p(n){return t>0?Math.round(n/t*100):0;}
   var statsHtml='<div style="background:linear-gradient(135deg,#f0f7f4,#f8faf9);border:1px solid #c6ddd7;border-radius:12px;padding:18px 20px;margin-bottom:20px">'
-    +'<div style="font-size:14px;font-weight:700;color:#1B4D3D;margin-bottom:14px">📊 ملخص الحضور · الإجمالي: '+t+' موظف</div>'
+    +'<div style="font-size:14px;font-weight:700;color:var(--brand-700);margin-bottom:14px">📊 ملخص الحضور · الإجمالي: '+t+' موظف</div>'
     +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">'
     +'<div style="flex:1;min-width:80px;text-align:center;background:#f0f0f0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#333">'+t+'</div><div style="font-size:10px;color:#666;margin-top:4px">الإجمالي</div></div>'
     +'<div style="flex:1;min-width:80px;text-align:center;background:#D1FAE5;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#1B7A56">'+early2+'</div><div style="font-size:13px;font-weight:700;color:#1B7A56">'+_p(early2)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">مبكر ⭐</div></div>'
-    +'<div style="flex:1;min-width:80px;text-align:center;background:#BBF7D0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#059669">'+ontime2+'</div><div style="font-size:13px;font-weight:700;color:#059669">'+_p(ontime2)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">في الوقت 🟢</div></div>'
-    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEF3C7;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#D97706">'+late242+'</div><div style="font-size:13px;font-weight:700;color:#D97706">'+_p(late242)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">تأخر خفيف 🟠</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#BBF7D0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:var(--success-700)">'+ontime2+'</div><div style="font-size:13px;font-weight:700;color:var(--success-700)">'+_p(ontime2)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">في الوقت 🟢</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEF3C7;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:var(--warning-700)">'+late242+'</div><div style="font-size:13px;font-weight:700;color:var(--warning-700)">'+_p(late242)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">تأخر خفيف 🟠</div></div>'
     +'<div style="flex:1;min-width:80px;text-align:center;background:#FEE2E2;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#C0392B">'+late422+'</div><div style="font-size:13px;font-weight:700;color:#C0392B">'+_p(late422)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">تأخر ملحوظ 🔴</div></div>'
     +'</div>'
     +'<div style="background:#e8eceb;border-radius:6px;height:12px;overflow:hidden;display:flex">'
     +(early2>0?'<div style="width:'+_p(early2)+'%;background:#1B7A56;height:100%"></div>':'')
     +(ontime2>0?'<div style="width:'+_p(ontime2)+'%;background:#22C55E;height:100%"></div>':'')
-    +(late242>0?'<div style="width:'+_p(late242)+'%;background:#D97706;height:100%"></div>':'')
+    +(late242>0?'<div style="width:'+_p(late242)+'%;background:var(--warning-700);height:100%"></div>':'')
     +(late422>0?'<div style="width:'+_p(late422)+'%;background:#C0392B;height:100%"></div>':'')
     +'</div>'
     +'<div style="margin-top:8px;font-size:10px;color:#666;display:flex;gap:14px;flex-wrap:wrap">'
     +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#1B7A56;margin-left:3px"></span>مبكر '+_p(early2)+'%</span>'
     +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#22C55E;margin-left:3px"></span>في الوقت '+_p(ontime2)+'%</span>'
-    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#D97706;margin-left:3px"></span>تأخر خفيف '+_p(late242)+'%</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--warning-700);margin-left:3px"></span>تأخر خفيف '+_p(late242)+'%</span>'
     +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#C0392B;margin-left:3px"></span>تأخر ملحوظ '+_p(late422)+'%</span>'
     +'<span>إجمالي الحوافز: '+totalBonus+' ر.س</span>'
     +'</div>'
@@ -202,7 +202,7 @@ window.exportPDF = function(){
     return '<tr><td>'+r.name+'</td><td>'+r.role+'</td><td style="font-family:monospace">'+r.scheduled+'</td>'
       +'<td style="font-family:monospace">'+r.actual+'</td>'
       +'<td style="'+stStyle[r.status]+'">'+stLabel[r.status]+'</td>'
-      +'<td style="font-weight:600;color:#C9A85F">'+(r.bonus?r.bonus+' ر.س':'-')+'</td></tr>';
+      +'<td style="font-weight:600;color:var(--gold-500)">'+(r.bonus?r.bonus+' ر.س':'-')+'</td></tr>';
   }).join('');
   var win=window.open('','_blank','width=920,height=680');
   win.document.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"/><title>تقرير الحضور</title>'
@@ -210,7 +210,7 @@ window.exportPDF = function(){
     +'h1{font-size:22px;margin:0 0 4px}.sub{font-size:12px;color:#666;margin:0 0 18px}'
     +'.kpis{display:flex;gap:14px;margin-bottom:18px}.kpi{padding:12px 20px;border-radius:10px;min-width:110px}'
     +'.kpi .v{font-size:26px;font-weight:700}.kpi .l{font-size:11px;color:#666}'
-    +'table{width:100%;border-collapse:collapse;font-size:13px}th{background:#1B4D3D;color:#fff;padding:10px 12px;text-align:right}'
+    +'table{width:100%;border-collapse:collapse;font-size:13px}th{background:var(--brand-700);color:var(--white);padding:10px 12px;text-align:right}'
     +'td{padding:9px 12px;border-bottom:1px solid #eee}tr:nth-child(even){background:#fafafa}'
     +'.footer{margin-top:18px;font-size:11px;color:#999}@media print{.no-print{display:none}}'
     +'</style></head><body>'

@@ -19,19 +19,25 @@ def _require_client(request: Request) -> dict:
 
 
 @router.get("/employees")
-async def list_employees(request: Request, status: Optional[str] = None, session=Depends(_require_client)):
+async def list_employees(request: Request, status: Optional[str] = None, page: int = 1, per_page: int = 50, session=Depends(_require_client)):
     try:
         db = request.app.state.db
         cid = session["client_id"]
         if db.use_postgres:
+            limit = min(per_page, 200)
+            offset = (page - 1) * limit
             q = "SELECT * FROM employees WHERE client_id = %s"
             params = [cid]
             if status:
                 q += " AND status = %s"; params.append(status)
-            q += " ORDER BY full_name_ar"
+            count_q = q.replace("SELECT *", "SELECT COUNT(*)", 1)
+            count_result = db.execute(count_q, params, fetch="one")
+            total = count_result[0] if count_result else 0
+            q += " ORDER BY full_name_ar LIMIT %s OFFSET %s"
+            params.extend([limit, offset])
             rows = db.execute(q, params, fetch="all")
-            return {"success": True, "data": [dict(r) for r in (rows or [])]}
-        return {"success": True, "data": []}
+            return {"success": True, "data": [dict(r) for r in (rows or [])], "page": page, "per_page": limit, "total": total}
+        return {"success": True, "data": [], "page": page, "per_page": per_page, "total": 0}
     except HTTPException:
         raise
     except Exception as e:

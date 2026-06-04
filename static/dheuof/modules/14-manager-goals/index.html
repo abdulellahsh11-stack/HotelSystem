@@ -168,7 +168,7 @@ setTimeout(function(){
 function todayStr(){var d=new Date();return d.getFullYear()+(d.getMonth()+1<10?'0':'')+(d.getMonth()+1)+(d.getDate()<10?'0':'')+d.getDate();}
 function toXLS(headers,rows,name){var s='<Styles><Style ss:ID="H"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1B4D3D" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center"/></Style><Style ss:ID="BAD"><Interior ss:Color="#C0392B" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style><Style ss:ID="WARN"><Interior ss:Color="#D97706" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style><Style ss:ID="OK"><Interior ss:Color="#BBF7D0" ss:Pattern="Solid"/><Font ss:Color="#1B7A56" ss:Bold="1"/></Style><Style ss:ID="EXC"><Interior ss:Color="#1B7A56" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style></Styles>';function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}function cell(v){if(v&&typeof v==='object'&&'s' in v)return '<Cell ss:StyleID="'+v.s+'"><Data ss:Type="String">'+esc(v.v)+'</Data></Cell>';return '<Cell><Data ss:Type="'+(typeof v==='number'?'Number':'String')+'">'+esc(v)+'</Data></Cell>';}var hRow='<Row>'+headers.map(function(h){return '<Cell ss:StyleID="H"><Data ss:Type="String">'+esc(h)+'</Data></Cell>';}).join('')+'</Row>';var dRows=rows.map(function(r){return '<Row>'+r.map(cell).join('')+'</Row>';}).join('');return '<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'+s+'<Worksheet ss:Name="'+esc(name)+'"><Table>'+hRow+dRows+'</Table></Worksheet></Workbook>';}
 function dlXLS(c,fn){var b=new Blob([c],{type:'application/vnd.ms-excel;charset=utf-8'});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download=fn;a.click();setTimeout(function(){URL.revokeObjectURL(u);},1000);}
-function toast(msg,isErr){var old=document.querySelector('.dh-toast');if(old)old.remove();var t=document.createElement('div');t.className='dh-toast';t.style.cssText='position:fixed;bottom:24px;inset-inline-end:24px;background:'+(isErr?'#b91c1c':'#1B4D3D')+';color:#fff;padding:12px 18px;border-radius:8px;font-family:"Tajawal",sans-serif;font-size:13px;z-index:9999;display:flex;gap:8px';t.innerHTML='<span style="color:'+(isErr?'#fca5a5':'#C9A85F')+'">'+(isErr?'✕':'✓')+'</span>'+msg;document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .4s';setTimeout(function(){if(t.parentNode)t.remove();},400);},3000);}
+function toast(msg,isErr){var old=document.querySelector('.dh-toast');if(old)old.remove();var t=document.createElement('div');t.className='dh-toast';t.style.cssText='position:fixed;bottom:24px;inset-inline-end:24px;background:'+(isErr?'#b91c1c':'var(--brand-700)')+';color:var(--white);padding:12px 18px;border-radius:8px;font-family:"Tajawal",sans-serif;font-size:13px;z-index:9999;display:flex;gap:8px';t.innerHTML='<span style="color:'+(isErr?'#fca5a5':'var(--gold-500)')+'">'+(isErr?'✕':'✓')+'</span>'+msg;document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .4s';setTimeout(function(){if(t.parentNode)t.remove();},400);},3000);}
 
 // ── Default KPI targets (editable, overridable by API) ─────────
 var KPI_TARGETS = {
@@ -428,34 +428,34 @@ window.exportPDF = function(){
   var warnG2=GOALS.filter(function(g){return g.pct>=50&&g.pct<80;}).length;
   var t=GOALS.length; function _p(n){return t>0?Math.round(n/t*100):0;}
   var overallTier=overall>=100?'EXC':overall>=80?'OK':overall>=50?'WARN':'BAD';
-  var overallColor=overall>=100?'#1B7A56':overall>=80?'#22C55E':overall>=50?'#D97706':'#C0392B';
+  var overallColor=overall>=100?'#1B7A56':overall>=80?'#22C55E':overall>=50?'var(--warning-700)':'#C0392B';
   var overallIcon=overall>=100?'⭐':overall>=80?'🟢':overall>=50?'🟠':'🔴';
   var statsHtml='<div style="background:linear-gradient(135deg,#f0f7f4,#f8faf9);border:1px solid #c6ddd7;border-radius:12px;padding:18px 20px;margin-bottom:20px">'
-    +'<div style="font-size:14px;font-weight:700;color:#1B4D3D;margin-bottom:14px">📊 ملخص الأهداف · الإجمالي: '+t+' هدف · متوسط الإنجاز: '+overall+'٪ '+overallIcon+'</div>'
+    +'<div style="font-size:14px;font-weight:700;color:var(--brand-700);margin-bottom:14px">📊 ملخص الأهداف · الإجمالي: '+t+' هدف · متوسط الإنجاز: '+overall+'٪ '+overallIcon+'</div>'
     +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">'
     +'<div style="flex:1;min-width:80px;text-align:center;background:#f0f0f0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:'+overallColor+'">'+overall+'٪</div><div style="font-size:10px;color:#666;margin-top:4px">متوسط الإنجاز</div></div>'
     +'<div style="flex:1;min-width:80px;text-align:center;background:#D1FAE5;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#1B7A56">'+achieved+'</div><div style="font-size:13px;font-weight:700;color:#1B7A56">'+_p(achieved)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">محقق ≥١٠٠٪ ⭐</div></div>'
-    +'<div style="flex:1;min-width:80px;text-align:center;background:#BBF7D0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#059669">'+ontrack+'</div><div style="font-size:13px;font-weight:700;color:#059669">'+_p(ontrack)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">في المسار 🟢</div></div>'
-    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEF3C7;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#D97706">'+warnG2+'</div><div style="font-size:13px;font-weight:700;color:#D97706">'+_p(warnG2)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">منخفض ٥٠-٨٠٪ 🟠</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#BBF7D0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:var(--success-700)">'+ontrack+'</div><div style="font-size:13px;font-weight:700;color:var(--success-700)">'+_p(ontrack)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">في المسار 🟢</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEF3C7;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:var(--warning-700)">'+warnG2+'</div><div style="font-size:13px;font-weight:700;color:var(--warning-700)">'+_p(warnG2)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">منخفض ٥٠-٨٠٪ 🟠</div></div>'
     +'<div style="flex:1;min-width:80px;text-align:center;background:#FEE2E2;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#C0392B">'+behind+'</div><div style="font-size:13px;font-weight:700;color:#C0392B">'+_p(behind)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">تحت الهدف 🔴</div></div>'
     +'</div>'
     +'<div style="background:#e8eceb;border-radius:6px;height:12px;overflow:hidden;display:flex">'
     +(achieved>0?'<div style="width:'+_p(achieved)+'%;background:#1B7A56;height:100%"></div>':'')
     +(ontrack>0?'<div style="width:'+_p(ontrack)+'%;background:#22C55E;height:100%"></div>':'')
-    +(warnG2>0?'<div style="width:'+_p(warnG2)+'%;background:#D97706;height:100%"></div>':'')
+    +(warnG2>0?'<div style="width:'+_p(warnG2)+'%;background:var(--warning-700);height:100%"></div>':'')
     +(behind>0?'<div style="width:'+_p(behind)+'%;background:#C0392B;height:100%"></div>':'')
     +'</div>'
     +'<div style="margin-top:8px;font-size:10px;color:#666;display:flex;gap:14px;flex-wrap:wrap">'
     +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#1B7A56;margin-left:3px"></span>محقق '+_p(achieved)+'%</span>'
     +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#22C55E;margin-left:3px"></span>في المسار '+_p(ontrack)+'%</span>'
-    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#D97706;margin-left:3px"></span>منخفض '+_p(warnG2)+'%</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--warning-700);margin-left:3px"></span>منخفض '+_p(warnG2)+'%</span>'
     +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#C0392B;margin-left:3px"></span>تحت الهدف '+_p(behind)+'%</span>'
     +'</div>'
     +'</div>';
   var rows = GOALS.map(function(g){
-    var tierCls = g.pct>=100?'color:#1B7A56;font-weight:700':g.pct>=80?'color:#22C55E;font-weight:700':g.pct>=50?'color:#D97706;font-weight:700':'color:#C0392B;font-weight:700';
+    var tierCls = g.pct>=100?'color:#1B7A56;font-weight:700':g.pct>=80?'color:#22C55E;font-weight:700':g.pct>=50?'color:var(--warning-700);font-weight:700':'color:#C0392B;font-weight:700';
     var tierLbl = g.pct>=100?'⭐ ممتاز':g.pct>=80?'✓ جيد':g.pct>=50?'⚠ منخفض':'✕ تحت الهدف';
-    var bar = '<div style="background:#e5e7eb;border-radius:999px;height:8px;width:140px;display:inline-block;vertical-align:middle"><div style="background:'+(g.pct>=100?'#1B7A56':g.pct>=80?'#22C55E':g.pct>=50?'#D97706':'#C0392B')+';height:8px;border-radius:999px;width:'+Math.min(g.pct,100)+'%"></div></div>';
+    var bar = '<div style="background:#e5e7eb;border-radius:999px;height:8px;width:140px;display:inline-block;vertical-align:middle"><div style="background:'+(g.pct>=100?'#1B7A56':g.pct>=80?'#22C55E':g.pct>=50?'var(--warning-700)':'#C0392B')+';height:8px;border-radius:999px;width:'+Math.min(g.pct,100)+'%"></div></div>';
     return '<tr><td>'+g.name+'</td><td style="font-weight:700;text-align:center">'+g.pct+'٪</td>'
       +'<td>'+g.target+'</td><td style="font-weight:600">'+g.achieved+'</td>'
       +'<td style="text-align:center">'+bar+'</td>'
@@ -467,7 +467,7 @@ window.exportPDF = function(){
     +'h1{font-size:22px;margin:0 0 4px}.sub{font-size:12px;color:#666;margin:0 0 18px}'
     +'.kpis{display:flex;gap:14px;margin-bottom:18px}.kpi{padding:12px 20px;border-radius:10px;min-width:100px}'
     +'.kpi .v{font-size:26px;font-weight:700}.kpi .l{font-size:11px;color:#666}'
-    +'table{width:100%;border-collapse:collapse;font-size:13px}th{background:#1B4D3D;color:#fff;padding:10px 12px;text-align:right}'
+    +'table{width:100%;border-collapse:collapse;font-size:13px}th{background:var(--brand-700);color:var(--white);padding:10px 12px;text-align:right}'
     +'td{padding:9px 12px;border-bottom:1px solid #eee;vertical-align:middle}tr:nth-child(even){background:#fafafa}'
     +'.footer{margin-top:18px;font-size:11px;color:#999}@media print{.no-print{display:none}}'
     +'</style></head><body>'

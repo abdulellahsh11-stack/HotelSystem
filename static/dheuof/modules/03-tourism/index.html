@@ -12,16 +12,16 @@
 <script src="/static/dheuof/shared/vibrant.js"></script>
 <style>
 /* ── Alert banner ──────────────────────────────────────────────── */
-.doc-alert{background:linear-gradient(135deg,#C99428,#9A6D14);color:var(--paper);border-radius:14px;padding:22px 26px;margin-bottom:22px;display:grid;grid-template-columns:auto 1fr auto auto;gap:22px;align-items:center;position:relative;overflow:hidden}
+.doc-alert{background:linear-gradient(135deg,var(--warning-500),var(--warning-700));color:var(--paper);border-radius:14px;padding:22px 26px;margin-bottom:22px;display:grid;grid-template-columns:auto 1fr auto auto;gap:22px;align-items:center;position:relative;overflow:hidden}
 .doc-alert::after{content:"";position:absolute;top:-40px;inset-inline-end:-40px;width:200px;height:200px;border-radius:999px;background:radial-gradient(circle,rgba(255,255,255,.18),transparent 60%)}
 .doc-alert>*{position:relative}
-.doc-alert .ic{width:52px;height:52px;background:var(--paper);color:#9A6D14;border-radius:12px;display:grid;place-items:center;font-size:26px}
+.doc-alert .ic{width:52px;height:52px;background:var(--paper);color:var(--warning-700);border-radius:12px;display:grid;place-items:center;font-size:26px}
 .doc-alert .ar{font-family:var(--font-ar-display);font-weight:600;font-size:19px}
 .doc-alert .en{font-family:var(--font-en);font-style:italic;font-size:12px;color:rgba(255,255,255,.75);margin-top:3px}
 .doc-alert .meta{font-size:13px;color:rgba(255,255,255,.9);margin-top:8px}
 .doc-alert .v{font-family:var(--font-en);font-size:38px;font-weight:600;color:var(--paper);line-height:1}
 .doc-alert .v-lbl{font-size:11px;color:rgba(255,255,255,.75);margin-top:4px;font-family:var(--font-en);letter-spacing:.06em;text-transform:uppercase}
-.doc-alert button{background:var(--paper);color:#9A6D14;border:none;padding:10px 18px;border-radius:6px;font-family:var(--font-ar);font-weight:600;font-size:13px;cursor:pointer}
+.doc-alert button{background:var(--paper);color:var(--warning-700);border:none;padding:10px 18px;border-radius:6px;font-family:var(--font-ar);font-weight:600;font-size:13px;cursor:pointer}
 .doc-alert button:hover{background:#f5f5f5}
 
 /* ── Toolbar ───────────────────────────────────────────────────── */
@@ -508,7 +508,7 @@ window.showDocDetail = function(id){
   if(!d) return;
   var days = daysLeft(d.expires);
   var cls  = statusClass(days);
-  var statusColors = {ok:'#16a34a',warn:'#d97706',err:'#dc2626',over:'#6b7280'};
+  var statusColors = {ok:'#16a34a',warn:'var(--warning-700)',err:'var(--danger-700)',over:'var(--ink-400)'};
 
   var html = [
     {l:'اسم المستند', v:d.name},
@@ -844,28 +844,28 @@ window.exportPDF = function(){
   var safeDocs   = DOCS.filter(function(d){return daysLeft(d.expires)>90;});
   var t=DOCS.length; function _p(n){return t>0?Math.round(n/t*100):0;}
   var statsHtml = '<div style="background:linear-gradient(135deg,#fffdf5,#fdf8e1);border:1px solid #e6c98f;border-radius:12px;padding:18px 20px;margin-bottom:20px">'
-    +'<div style="font-size:14px;font-weight:700;color:#9A6D14;margin-bottom:14px">📊 ملخص المستندات · الإجمالي: '+t+' وثيقة</div>'
+    +'<div style="font-size:14px;font-weight:700;color:var(--warning-700);margin-bottom:14px">📊 ملخص المستندات · الإجمالي: '+t+' وثيقة</div>'
     +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">'
     +'<div style="flex:1;min-width:80px;text-align:center;background:#f0f0f0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#333">'+t+'</div><div style="font-size:10px;color:#666;margin-top:4px">إجمالي الوثائق</div></div>'
     +'<div style="flex:1;min-width:80px;text-align:center;background:#D1FAE5;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#1B7A56">'+safeDocs.length+'</div><div style="font-size:13px;font-weight:700;color:#1B7A56">'+_p(safeDocs.length)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">سارية المفعول</div></div>'
-    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEF3C7;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#D97706">'+warnDocs.length+'</div><div style="font-size:13px;font-weight:700;color:#D97706">'+_p(warnDocs.length)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">تنبيه (≤٩٠ يوم)</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEF3C7;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:var(--warning-700)">'+warnDocs.length+'</div><div style="font-size:13px;font-weight:700;color:var(--warning-700)">'+_p(warnDocs.length)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">تنبيه (≤٩٠ يوم)</div></div>'
     +'<div style="flex:1;min-width:80px;text-align:center;background:#FEE2E2;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#C0392B">'+urgentDocs.length+'</div><div style="font-size:13px;font-weight:700;color:#C0392B">'+_p(urgentDocs.length)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">عاجلة / منتهية</div></div>'
     +'</div>'
     +'<div style="background:#e8eceb;border-radius:6px;height:12px;overflow:hidden;display:flex">'
     +(safeDocs.length>0?'<div style="width:'+_p(safeDocs.length)+'%;background:#1B7A56;height:100%"></div>':'')
-    +(warnDocs.length>0?'<div style="width:'+_p(warnDocs.length)+'%;background:#D97706;height:100%"></div>':'')
+    +(warnDocs.length>0?'<div style="width:'+_p(warnDocs.length)+'%;background:var(--warning-700);height:100%"></div>':'')
     +(urgentDocs.length>0?'<div style="width:'+_p(urgentDocs.length)+'%;background:#C0392B;height:100%"></div>':'')
     +'</div>'
     +'<div style="margin-top:8px;font-size:10px;color:#666;display:flex;gap:14px;flex-wrap:wrap">'
     +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#1B7A56;margin-left:3px"></span>سارية المفعول '+_p(safeDocs.length)+'%</span>'
-    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#D97706;margin-left:3px"></span>تنبيه '+_p(warnDocs.length)+'%</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--warning-700);margin-left:3px"></span>تنبيه '+_p(warnDocs.length)+'%</span>'
     +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#C0392B;margin-left:3px"></span>عاجلة/منتهية '+_p(urgentDocs.length)+'%</span>'
     +'</div>'
     +'</div>';
   var rows = DOCS.map(function(d){
     var days = daysLeft(d.expires);
     var sc = statusClass(days);
-    var stStyle = sc==='ok'?'color:#1B7A56;font-weight:700':sc==='warn'?'color:#D97706;font-weight:700':'color:#C0392B;font-weight:700';
+    var stStyle = sc==='ok'?'color:#1B7A56;font-weight:700':sc==='warn'?'color:var(--warning-700);font-weight:700':'color:#C0392B;font-weight:700';
     var stLabel = sc==='ok'?'✓ سارٍ':sc==='warn'?'⚠ قريب':'✕ '+(days<0?'منتهي':'عاجل');
     return '<tr style="background:'+(sc==='warn'?'#FFFBEB':sc!=='ok'?'#FFF1F2':'')+'"><td>'+d.name+'</td>'
       +'<td style="font-family:monospace;font-size:11px">'+d.num+'</td>'
@@ -879,7 +879,7 @@ window.exportPDF = function(){
     +'<style>body{font-family:"Tajawal","Segoe UI",sans-serif;margin:32px;color:#1a1a1a;direction:rtl}'
     +'h1{font-size:22px;margin:0 0 4px}.sub{font-size:12px;color:#666;margin:0 0 18px}'
     +'table{width:100%;border-collapse:collapse;font-size:12px}'
-    +'th{background:#9A6D14;color:#fff;padding:10px 12px;text-align:right}'
+    +'th{background:var(--warning-700);color:var(--white);padding:10px 12px;text-align:right}'
     +'td{padding:9px 12px;border-bottom:1px solid #eee;vertical-align:middle}'
     +'.footer{margin-top:18px;font-size:11px;color:#999}@media print{.no-print{display:none}}'
     +'</style></head><body>'

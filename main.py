@@ -6,6 +6,7 @@ FastAPI application — replaces unified_server.py + old main.py (651KB)
 dheuof.com
 """
 
+import decimal
 import hashlib
 import json
 import logging
@@ -22,6 +23,18 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
+from fastapi.encoders import jsonable_encoder
+
+
+class _SafeEncoder(json.JSONEncoder):
+    """Serialize PostgreSQL Decimal/date/datetime types that json.dumps rejects."""
+    def default(self, obj):
+        if isinstance(obj, decimal.Decimal):
+            return float(obj)
+        if isinstance(obj, (datetime, date)):
+            return obj.isoformat()
+        return super().default(obj)
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -247,15 +260,19 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 @app.middleware("http")
-async def add_cache_headers(request: Request, call_next):
+async def add_security_and_cache_headers(request: Request, call_next):
     response = await call_next(request)
     path = request.url.path
+    # Cache headers
     if path.startswith("/static/") and not path.endswith(".html"):
-        # Cache immutable static assets (CSS, JS, fonts, images) for 7 days
         response.headers["Cache-Control"] = "public, max-age=604800, immutable"
     elif path.startswith("/static/") and path.endswith(".html"):
-        # HTML modules — no-cache so changes deploy immediately
         response.headers["Cache-Control"] = "no-cache, must-revalidate"
+    # Security headers on all responses
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "SAMEORIGIN")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
     return response
 
 # ── Module Routers — جميع الوحدات الـ 15 + وجهات سياحية ─────
@@ -2228,8 +2245,22 @@ async def mod_trips():     return _serve_module("15-tourism-trips")
 #  Health & Status
 # ──────────────────────────────────────────────────────────────
 @app.get("/api/health")
-async def health():
-    return {"ok": True, "status": "healthy"}
+async def health(request: Request):
+    db = getattr(request.app.state, "db", None)
+    db_ok = False
+    try:
+        if db:
+            result = db.health()
+            db_ok = bool(result and result.get("ok"))
+    except Exception:
+        pass
+    return {
+        "ok": True,
+        "status": "healthy",
+        "db": "connected" if db_ok else "unavailable",
+        "time": datetime.now().isoformat(),
+        "version": "3.1.0",
+    }
 
 
 @app.get("/api/status")

@@ -499,7 +499,7 @@ function pct(item){
 }
 function fillColor(item){
   var s=statusOf(item);
-  return s==='bad'?'#C0392B': s==='warn'?'#D97706': s==='ok'?'#22C55E':'#1B7A56';
+  return s==='bad'?'#C0392B': s==='warn'?'var(--warning-700)': s==='ok'?'#22C55E':'#1B7A56';
 }
 
 /* ════════════════════════════════════════
@@ -885,15 +885,15 @@ window.exportCSV = function(){
 function printPDF(title, bodyHTML) {
   var w = window.open('', '_blank');
   if (!w) { toast('تعذّر فتح نافذة الطباعة — تأكد من السماح بالنوافذ المنبثقة', true); return; }
-  var css = 'body{font-family:"Segoe UI",Arial,sans-serif;background:#fff;color:#111;direction:rtl;padding:32px 40px;font-size:13px;line-height:1.6}'
-    +'h1{font-size:20px;color:#1B4D3D;margin:0 0 4px}'
-    +'h2{font-size:15px;color:#1B4D3D;margin:24px 0 10px;border-bottom:2px solid #C9A85F;padding-bottom:4px}'
+  var css = 'body{font-family:"Segoe UI",Arial,sans-serif;background:var(--white);color:#111;direction:rtl;padding:32px 40px;font-size:13px;line-height:1.6}'
+    +'h1{font-size:20px;color:var(--brand-700);margin:0 0 4px}'
+    +'h2{font-size:15px;color:var(--brand-700);margin:24px 0 10px;border-bottom:2px solid var(--gold-500);padding-bottom:4px}'
     +'.meta{font-size:11px;color:#888;margin-bottom:24px}'
     +'table{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:12px}'
-    +'th{background:#1B4D3D;color:#fff;padding:8px 12px;text-align:right;font-weight:600}'
+    +'th{background:var(--brand-700);color:var(--white);padding:8px 12px;text-align:right;font-weight:600}'
     +'td{padding:7px 12px;border-bottom:1px solid #eee;text-align:right}'
     +'tr:nth-child(even) td{background:#f7faf8}'
-    +'.excellent{color:#1B7A56;font-weight:700}.ok{color:#22C55E;font-weight:600}.warn{color:#D97706;font-weight:600}.bad{color:#C0392B;font-weight:700}'
+    +'.excellent{color:#1B7A56;font-weight:700}.ok{color:#22C55E;font-weight:600}.warn{color:var(--warning-700);font-weight:600}.bad{color:#C0392B;font-weight:700}'
     +'.footer{font-size:10px;color:#bbb;margin-top:32px;border-top:1px solid #eee;padding-top:12px;text-align:center}'
     +'@media print{@page{margin:15mm}}';
   w.document.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"/><title>'+title+'</title><style>'+css+'</style></head><body>'
@@ -911,24 +911,24 @@ window.exportPDF = function(){
   ITEMS.forEach(function(it){ var s=statusOf(it); if(s==='excellent')excellent++; else if(s==='ok')ok++; else if(s==='warn')warn++; else bad++; totalVal+=it.qty*(it.cost||0); });
   var t=ITEMS.length; function _p(n){return t>0?Math.round(n/t*100):0;}
   var statsHtml = '<div style="background:linear-gradient(135deg,#f0f7f4,#f8faf9);border:1px solid #c6ddd7;border-radius:12px;padding:18px 20px;margin-bottom:20px">'
-    +'<div style="font-size:14px;font-weight:700;color:#1B4D3D;margin-bottom:14px">📊 ملخص المستودع · الإجمالي: '+t+' صنف · القيمة: '+totalVal.toLocaleString('ar-EG')+' ر.س</div>'
+    +'<div style="font-size:14px;font-weight:700;color:var(--brand-700);margin-bottom:14px">📊 ملخص المستودع · الإجمالي: '+t+' صنف · القيمة: '+totalVal.toLocaleString('ar-EG')+' ر.س</div>'
     +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">'
     +'<div style="flex:1;min-width:80px;text-align:center;background:#f0f0f0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#333">'+t+'</div><div style="font-size:10px;color:#666;margin-top:4px">الإجمالي</div></div>'
     +'<div style="flex:1;min-width:80px;text-align:center;background:#D1FAE5;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#1B7A56">'+excellent+'</div><div style="font-size:13px;font-weight:700;color:#1B7A56">'+_p(excellent)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">ممتاز ⭐</div></div>'
-    +'<div style="flex:1;min-width:80px;text-align:center;background:#BBF7D0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#059669">'+ok+'</div><div style="font-size:13px;font-weight:700;color:#059669">'+_p(ok)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">جيدة 🟢</div></div>'
-    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEF3C7;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#D97706">'+warn+'</div><div style="font-size:13px;font-weight:700;color:#D97706">'+_p(warn)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">منخفض 🟠</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#BBF7D0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:var(--success-700)">'+ok+'</div><div style="font-size:13px;font-weight:700;color:var(--success-700)">'+_p(ok)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">جيدة 🟢</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEF3C7;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:var(--warning-700)">'+warn+'</div><div style="font-size:13px;font-weight:700;color:var(--warning-700)">'+_p(warn)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">منخفض 🟠</div></div>'
     +'<div style="flex:1;min-width:80px;text-align:center;background:#FEE2E2;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#C0392B">'+bad+'</div><div style="font-size:13px;font-weight:700;color:#C0392B">'+_p(bad)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">تحت الحد 🔴</div></div>'
     +'</div>'
     +'<div style="background:#e8eceb;border-radius:6px;height:12px;overflow:hidden;display:flex">'
     +(excellent>0?'<div style="width:'+_p(excellent)+'%;background:#1B7A56;height:100%"></div>':'')
     +(ok>0?'<div style="width:'+_p(ok)+'%;background:#22C55E;height:100%"></div>':'')
-    +(warn>0?'<div style="width:'+_p(warn)+'%;background:#D97706;height:100%"></div>':'')
+    +(warn>0?'<div style="width:'+_p(warn)+'%;background:var(--warning-700);height:100%"></div>':'')
     +(bad>0?'<div style="width:'+_p(bad)+'%;background:#C0392B;height:100%"></div>':'')
     +'</div>'
     +'<div style="margin-top:8px;font-size:10px;color:#666;display:flex;gap:14px;flex-wrap:wrap">'
     +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#1B7A56;margin-left:3px"></span>ممتاز '+_p(excellent)+'%</span>'
     +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#22C55E;margin-left:3px"></span>جيدة '+_p(ok)+'%</span>'
-    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#D97706;margin-left:3px"></span>منخفض '+_p(warn)+'%</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--warning-700);margin-left:3px"></span>منخفض '+_p(warn)+'%</span>'
     +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#C0392B;margin-left:3px"></span>تحت الحد '+_p(bad)+'%</span>'
     +'</div>'
     +'</div>';

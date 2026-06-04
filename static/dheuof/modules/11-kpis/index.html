@@ -284,7 +284,7 @@ body { background: var(--paper-tint); }
 .tog-switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; cursor: pointer; }
 .tog-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
 .tog-track { position: absolute; inset: 0; background: var(--ink-200); border-radius: 999px; transition: background 180ms; }
-.tog-thumb { position: absolute; top: 3px; inset-inline-start: 3px; width: 18px; height: 18px; background: #fff; border-radius: 999px; transition: transform 180ms; box-shadow: 0 1px 3px rgba(0,0,0,0.22); }
+.tog-thumb { position: absolute; top: 3px; inset-inline-start: 3px; width: 18px; height: 18px; background: var(--white); border-radius: 999px; transition: transform 180ms; box-shadow: 0 1px 3px rgba(0,0,0,0.22); }
 .tog-switch input:checked + .tog-track { background: var(--brand-600, #2f7d63); }
 .tog-switch input:checked + .tog-track .tog-thumb { transform: translateX(-20px); }
 
@@ -377,9 +377,9 @@ body { background: var(--paper-tint); }
 .pu-tr .pu-date { font-weight: 500; color: var(--ink-900); }
 .pu-tr .pu-num { font-family: var(--font-en); font-variant-numeric: tabular-nums; font-weight: 600; color: var(--ink-900); }
 .pu-delta { display: inline-flex; align-items: center; gap: 3px; font-family: var(--font-en); font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
-.pu-delta.is-up   { background: #DCEEE6; color: var(--success-700); }
-.pu-delta.is-same { background: #F6E7C2; color: var(--warning-700); }
-.pu-delta.is-dn   { background: #F1D8CF; color: var(--danger-700); }
+.pu-delta.is-up   { background: var(--success-100); color: var(--success-700); }
+.pu-delta.is-same { background: var(--warning-100); color: var(--warning-700); }
+.pu-delta.is-dn   { background: var(--danger-100); color: var(--danger-700); }
 
 /* ── Forecast tab ────────────────────────────────────────────────────────── */
 .forecast-cards-row {
@@ -1111,10 +1111,10 @@ window.kpiExportPDF = function(){
     + '<meta charset="utf-8"/><title>تقرير الإيرادات والمؤشرات</title>'
     + '<style>'
     + 'body{font-family:"Tajawal","Segoe UI",sans-serif;margin:32px;color:#1a1a1a;direction:rtl}'
-    + 'h1{font-size:22px;margin:0 0 4px;color:#1B4D3D}h2{font-size:16px;margin:22px 0 10px;color:#1B4D3D}'
+    + 'h1{font-size:22px;margin:0 0 4px;color:var(--brand-700)}h2{font-size:16px;margin:22px 0 10px;color:var(--brand-700)}'
     + '.sub{font-size:12px;color:#666;margin:0 0 18px}'
     + 'table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:24px}'
-    + 'th{background:#1B4D3D;color:#fff;padding:9px 12px;text-align:right}'
+    + 'th{background:var(--brand-700);color:var(--white);padding:9px 12px;text-align:right}'
     + 'td{padding:8px 12px;border-bottom:1px solid #eee;vertical-align:middle}'
     + 'tr:nth-child(even){background:#fafafa}'
     + '.footer{margin-top:18px;font-size:11px;color:#999}'
