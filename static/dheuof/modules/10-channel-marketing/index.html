@@ -1028,5 +1028,258 @@ window.connectNewChannel = function(key, btn){
   }, 1800);
 };
 </script>
+
+<!-- ═══ API KEY MODAL ═══ -->
+<div id="ch-key-modal" style="display:none;position:fixed;inset:0;background:rgba(10,10,10,.6);z-index:950;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:16px;width:min(460px,95vw);padding:28px;box-shadow:0 24px 60px rgba(0,0,0,.2)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div>
+        <div id="ch-key-ttl" style="font-size:18px;font-weight:700;color:#14110E"></div>
+        <div id="ch-key-sub" style="font-size:12px;color:#8B8175;margin-top:3px"></div>
+      </div>
+      <button onclick="document.getElementById('ch-key-modal').style.display='none'" style="border:none;background:var(--paper-tint);border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:16px">✕</button>
+    </div>
+    <div style="background:var(--brand-50);border:1px solid var(--brand-200);border-radius:10px;padding:13px 16px;margin-bottom:18px;font-size:12.5px;color:var(--brand-800);line-height:1.7">
+      🔒 <b>لا يُخزَّن مفتاحك الخام أبداً</b> — يتم تحويله فوراً إلى قناع آمن (<span style="font-family:monospace">sk_••••••1234</span>) وبصمة SHA-256 فقط.
+    </div>
+    <div style="margin-bottom:14px">
+      <label style="display:block;font-size:12px;color:#4A4137;margin-bottom:6px">مفتاح API الخاص بالقناة</label>
+      <input id="ch-api-key-input" type="password" placeholder="sk_live_..." dir="ltr"
+        style="width:100%;padding:12px 14px;border:1.5px solid var(--hairline);border-radius:10px;font-family:monospace;font-size:14px;outline:none"/>
+    </div>
+    <div style="background:var(--gold-50);border:1px solid var(--gold-200);border-radius:8px;padding:11px 14px;margin-bottom:18px;font-size:11.5px;color:var(--gold-900)">
+      💡 <b>كيف تحصل على المفتاح؟</b> سجّل في <span id="ch-key-where"></span> كشريك/منشأة فندقية، ثم توجّه إلى Extranet → Connectivity → API Key.
+    </div>
+    <div style="display:flex;gap:10px">
+      <button id="ch-key-submit" onclick="submitChannelKey()"
+        style="flex:1;padding:13px;border:none;border-radius:10px;font-size:14px;font-weight:700;background:linear-gradient(135deg,var(--brand-700),var(--brand-900));color:#fff;cursor:pointer">
+        ربط القناة
+      </button>
+      <button onclick="document.getElementById('ch-key-modal').style.display='none'"
+        style="padding:13px 18px;border:1.5px solid var(--hairline);border-radius:10px;font-size:14px;background:#fff;cursor:pointer;font-family:inherit">
+        إلغاء
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ INCOMING RESERVATIONS + SYNC LOG panels (injected below ch-grid) ═══ -->
+<script>
+(function(){
+  var main = document.querySelector('.dh-main') || document.body;
+
+  // ── Incoming Reservations panel ──────────────────────────────
+  var resPanel = document.createElement('div');
+  resPanel.id = 'ch-res-panel';
+  resPanel.style.cssText = 'margin-top:30px';
+  resPanel.innerHTML = [
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">',
+      '<div>',
+        '<div style="font-size:16px;font-weight:700;color:var(--ink-900)">📥 الحجوزات الواردة من القنوات</div>',
+        '<div style="font-size:11px;color:var(--fg-3)">حجوزات وصلت من OTAs تنتظر المعالجة</div>',
+      '</div>',
+      '<button onclick="loadReservations()" style="padding:8px 16px;border:1px solid var(--hairline);border-radius:8px;background:#fff;font-family:var(--font-ar);font-size:12px;cursor:pointer">↻ تحديث</button>',
+    '</div>',
+    '<div id="ch-res-table" style="background:#fff;border:1px solid var(--hairline);border-radius:12px;overflow:hidden">',
+      '<div style="padding:12px 18px;background:var(--surface-2);display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr 1fr 1fr;gap:10px;font-size:11px;color:var(--fg-3);font-weight:600">',
+        '<span>القناة / الضيف</span><span>تسجيل الدخول</span><span>تسجيل الخروج</span>',
+        '<span>نوع الغرفة</span><span>المبلغ</span><span>الحالة</span>',
+      '</div>',
+      '<div id="ch-res-rows"><div style="text-align:center;padding:36px;color:var(--fg-3);font-size:13px">جارٍ التحميل…</div></div>',
+    '</div>'
+  ].join('');
+  main.appendChild(resPanel);
+
+  // ── Sync Log panel ───────────────────────────────────────────
+  var logPanel = document.createElement('div');
+  logPanel.id = 'ch-log-panel';
+  logPanel.style.cssText = 'margin-top:24px;margin-bottom:60px';
+  logPanel.innerHTML = [
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">',
+      '<div>',
+        '<div style="font-size:16px;font-weight:700;color:var(--ink-900)">📋 سجل المزامنة</div>',
+        '<div style="font-size:11px;color:var(--fg-3)">آخر 20 عملية مزامنة / ربط / استقبال حجز</div>',
+      '</div>',
+    '</div>',
+    '<div id="ch-log-rows" style="background:#fff;border:1px solid var(--hairline);border-radius:12px;overflow:hidden">',
+      '<div style="text-align:center;padding:28px;color:var(--fg-3);font-size:13px">جارٍ التحميل…</div>',
+    '</div>'
+  ].join('');
+  main.appendChild(logPanel);
+})();
+
+// ── API helpers ──────────────────────────────────────────────────────────────
+function chApi(path, opts){
+  return fetch('/api/channels/' + path, Object.assign({ credentials:'include' }, opts || {}))
+    .then(function(r){ return r.json(); })
+    .catch(function(){ return { success:false, error:'لا يوجد اتصال بالخادم' }; });
+}
+
+// ── Load incoming reservations ───────────────────────────────────────────────
+window.loadReservations = function(){
+  var box = document.getElementById('ch-res-rows');
+  if(!box) return;
+  box.innerHTML = '<div style="text-align:center;padding:30px;color:var(--fg-3)">جارٍ التحميل…</div>';
+  chApi('reservations').then(function(data){
+    if(!data.success || !data.data || !data.data.length){
+      box.innerHTML = '<div style="text-align:center;padding:36px;color:var(--fg-3);font-size:13px">لا توجد حجوزات واردة حتى الآن — ستظهر هنا عند وصول حجوزات من القنوات</div>';
+      return;
+    }
+    var stColor = {new:'#B45309', confirmed:'#1B7A56', cancelled:'#C0392B'};
+    var stLabel = {new:'جديد', confirmed:'مؤكد', cancelled:'ملغى'};
+    box.innerHTML = data.data.map(function(r){
+      var st = r.status || 'new';
+      return '<div style="display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr 1fr 1fr;gap:10px;padding:12px 18px;border-top:1px solid var(--hairline);font-size:13px;align-items:center">'
+        +'<div><b style="color:var(--ink-900)">'+(r.guest_name||'—')+'</b><div style="font-size:11px;color:var(--fg-3)">'+r.channel_code+' · '+r.external_id+'</div></div>'
+        +'<span>'+(r.check_in||'—')+'</span>'
+        +'<span>'+(r.check_out||'—')+'</span>'
+        +'<span style="font-size:12px">'+(r.room_type||'—')+'</span>'
+        +'<span style="font-weight:700">'+(r.amount?Number(r.amount).toLocaleString('ar-EG')+' '+(r.currency||'SAR'):'—')+'</span>'
+        +'<span style="font-size:11px;font-weight:700;color:'+stColor[st]+'">'+(stLabel[st]||st)+'</span>'
+        +'</div>';
+    }).join('');
+  });
+};
+
+// ── Load sync log ────────────────────────────────────────────────────────────
+function loadSyncLog(){
+  var box = document.getElementById('ch-log-rows');
+  if(!box) return;
+  chApi('log').then(function(data){
+    if(!data.success || !data.data || !data.data.length){
+      box.innerHTML = '<div style="text-align:center;padding:28px;color:var(--fg-3);font-size:13px">لا توجد سجلات — ستُسجَّل كل عمليات الربط والمزامنة واستقبال الحجوزات هنا</div>';
+      return;
+    }
+    var acColor = {connect:'#1B7A56', disconnect:'#C0392B', sync_rates:'#1B4D3D', ingest_reservation:'#9A7430'};
+    var acLabel = {connect:'ربط', disconnect:'فصل', sync_rates:'مزامنة', ingest_reservation:'حجز وارد'};
+    box.innerHTML = data.data.slice(0,20).map(function(r){
+      var ac = r.action || '';
+      var ts = r.created_at ? new Date(r.created_at).toLocaleString('ar-SA') : '—';
+      return '<div style="display:flex;align-items:center;gap:14px;padding:10px 18px;border-top:1px solid var(--hairline);font-size:12.5px">'
+        +'<span style="font-size:10px;font-weight:700;padding:3px 9px;border-radius:999px;background:'+(r.ok?'#DCFCE7':'#FEE2E2')+';color:'+(r.ok?'#166534':'#991B1B')+'">'+(r.ok?'✓ نجاح':'✕ فشل')+'</span>'
+        +'<span style="font-weight:700;color:'+(acColor[ac]||'var(--ink-900)')+'">'+( acLabel[ac]||ac)+'</span>'
+        +'<span style="background:var(--brand-50);color:var(--brand-800);padding:2px 8px;border-radius:6px;font-size:11px">'+r.channel_code+'</span>'
+        +(r.rooms_count?'<span style="color:var(--fg-3)">'+r.rooms_count+' غرفة</span>':'')
+        +(r.detail?'<span style="color:var(--fg-2);font-size:11px">'+r.detail+'</span>':'')
+        +'<span style="margin-inline-start:auto;color:var(--fg-3);font-size:11px">'+ts+'</span>'
+        +'</div>';
+    }).join('');
+  });
+}
+
+// ── Override: connectNewChannel → show API key modal first ───────────────────
+var _pendingConnectKey = null;
+var _pendingConnectBtn = null;
+
+window.connectNewChannel = function(key, btn){
+  var ch = (typeof AVAILABLE_CHANNELS !== 'undefined' ? AVAILABLE_CHANNELS : [])
+    .filter(function(c){ return c.key===key; })[0];
+  if(!ch) return;
+  _pendingConnectKey = key;
+  _pendingConnectBtn = btn;
+
+  document.getElementById('ch-key-ttl').textContent = 'ربط ' + ch.name;
+  document.getElementById('ch-key-sub').textContent = ch.desc + ' · عمولة ' + ch.commission + '%';
+  document.getElementById('ch-key-where').textContent = ch.name;
+  document.getElementById('ch-api-key-input').value = '';
+  document.getElementById('ch-key-modal').style.display = 'flex';
+  setTimeout(function(){ document.getElementById('ch-api-key-input').focus(); }, 80);
+};
+
+window.submitChannelKey = function(){
+  var key  = (_pendingConnectKey || '').trim();
+  var apiKey = (document.getElementById('ch-api-key-input').value || '').trim();
+  var submitBtn = document.getElementById('ch-key-submit');
+  if(!apiKey){ toast('أدخل مفتاح API أولاً'); return; }
+  submitBtn.textContent = '⟳ جارٍ الربط...';
+  submitBtn.disabled = true;
+
+  chApi('connect', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ channel_code: key, api_key: apiKey })
+  }).then(function(data){
+    submitBtn.textContent = 'ربط القناة';
+    submitBtn.disabled = false;
+    document.getElementById('ch-key-modal').style.display = 'none';
+
+    if(data.success){
+      var hint = data.data && data.data.key_hint ? data.data.key_hint : '••••';
+      // Mark in local state
+      if(typeof CONNECTED_KEYS !== 'undefined') CONNECTED_KEYS[key] = true;
+      // Update UI card
+      var ch = (typeof AVAILABLE_CHANNELS !== 'undefined' ? AVAILABLE_CHANNELS : [])
+        .filter(function(c){ return c.key===key; })[0];
+      var grid = document.getElementById('ch-cards-grid');
+      var existingCard = grid && grid.querySelector('.ch-card[data-ch="'+key+'"]');
+      if(existingCard){
+        existingCard.classList.remove('is-off');
+        var tag = existingCard.querySelector('.mod-tag');
+        if(tag){ tag.className='mod-tag ok'; tag.innerHTML='<span class="d"></span>متصل'; }
+        var syncEl = existingCard.querySelector('[data-sync]');
+        if(syncEl) syncEl.textContent = 'ربط جديد · الآن · ' + hint;
+      } else if(grid && ch){
+        var card = document.createElement('div');
+        card.className = 'ch-card'; card.dataset.ch = key;
+        card.innerHTML = '<div class="top">'
+          +'<div class="logo" style="background:'+(ch.logo?ch.logo.bg:'#1B4D3D')+';color:'+(ch.logo?ch.logo.fg:'#fff')+'">'+ch.name.split(' ')[0]+'</div>'
+          +'<span class="mod-tag ok"><span class="d"></span>متصل</span></div>'
+          +'<div class="figures"><div class="fig"><span class="l">Bookings</span><span class="v">٠</span></div>'
+          +'<div class="fig"><span class="l">Revenue</span><span class="v">٠<span class="cur">ر.س</span></span></div></div>'
+          +'<div class="foot-row"><span class="commission">عمولة: '+(ch.commission||0)+'%</span>'
+          +'<span class="sync" data-sync>ربط جديد · '+hint+'</span></div>';
+        grid.appendChild(card);
+      }
+      // Update modal button if still open
+      if(_pendingConnectBtn){
+        _pendingConnectBtn.textContent = '✓ متصل';
+        _pendingConnectBtn.className = 'ch-av-btn done';
+        var item = _pendingConnectBtn.closest('.ch-av-item');
+        if(item) item.classList.add('is-connected');
+      }
+      toast('✓ تم ربط القناة — المفتاح محفوظ كـ ' + hint);
+      loadSyncLog();
+    } else {
+      // API not available (no session or no postgres) — show key hint only
+      if(_pendingConnectBtn){
+        _pendingConnectBtn.textContent = '✓ مُسجَّل';
+        _pendingConnectBtn.className = 'ch-av-btn done';
+      }
+      toast(data.error || 'تم تسجيل الربط محلياً');
+    }
+    _pendingConnectKey = null; _pendingConnectBtn = null;
+  });
+};
+
+// ── Override: syncAllChannels → call real API then animate ───────────────────
+window.syncAllChannels = (function(_orig){
+  return function(){
+    var btn  = document.getElementById('ch-sync-btn');
+    var meta = document.getElementById('ch-sync-meta');
+    if(btn){ btn.textContent='⟳ جارٍ...'; btn.disabled=true; }
+    if(meta) meta.textContent = 'جارٍ الإرسال للقنوات…';
+
+    chApi('sync', { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' })
+      .then(function(data){
+        if(data.success && data.data && data.data.synced){
+          var rooms = data.data.rooms || 0;
+          var synced = data.data.synced;
+          if(btn){ btn.textContent='مزامنة فورية'; btn.disabled=false; }
+          if(meta) meta.textContent = 'آخر مزامنة: الآن · ' + rooms + ' غرفة · ' + synced.length + ' قناة';
+          toast('✓ تمت مزامنة ' + synced.length + ' قنوات · ' + rooms + ' غرفة');
+          loadSyncLog();
+        } else {
+          // Fallback to visual simulation
+          if(btn){ btn.textContent='مزامنة فورية'; btn.disabled=false; }
+          if(meta) meta.textContent = 'مزامنة محلية (الخادم غير متصل)';
+          if(typeof _orig === 'function') _orig();
+        }
+      });
+  };
+})(window.syncAllChannels);
+
+// ── Boot: load data on init ──────────────────────────────────────────────────
+setTimeout(function(){ loadReservations(); loadSyncLog(); }, 400);
+</script>
 </body>
 </html>
