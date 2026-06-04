@@ -122,20 +122,35 @@ async def lifespan(app_: FastAPI):
     except Exception as e:
         log.warning(f"security hardening migrations: {e}")
 
-    # Load optional Month-3 services
+    # Load optional services — each independent so one failure doesn't sink the rest
+    app_.state.pricing = None
+    app_.state.channels = None
+    app_.state.api_keys = None
+    app_.state.zatca = None
     try:
         from services.dynamic_pricing import DynamicPricingEngine
-        from services.channel_manager import ChannelManager
-        from services.api_keys import APIKeyManager
         app_.state.pricing = DynamicPricingEngine(db)
-        app_.state.channels = ChannelManager(db)
-        app_.state.api_keys = APIKeyManager(db)
-        log.info("Month-3 services loaded")
+        log.info("✓ Dynamic Pricing service")
     except Exception as e:
-        log.warning(f"Month-3 services unavailable: {e}")
-        app_.state.pricing = None
-        app_.state.channels = None
-        app_.state.api_keys = None
+        log.warning(f"Dynamic Pricing unavailable: {e}")
+    try:
+        from services.channel_manager import ChannelManager
+        app_.state.channels = ChannelManager(db)
+        log.info("✓ Channel Manager service")
+    except Exception as e:
+        log.warning(f"Channel Manager service unavailable: {e}")
+    try:
+        from services.api_keys import APIKeyManager
+        app_.state.api_keys = APIKeyManager(db)
+        log.info("✓ API Key Manager service")
+    except Exception as e:
+        log.warning(f"API Key Manager unavailable: {e}")
+    try:
+        from services.zatca import ZatcaInvoiceService
+        app_.state.zatca = ZatcaInvoiceService(db)
+        log.info("✓ ZATCA Invoice service")
+    except Exception as e:
+        log.warning(f"ZATCA service unavailable: {e}")
 
     yield
 
@@ -233,6 +248,13 @@ try:
     log.info("✓ Channel Manager (OTA)")
 except Exception as e:
     log.warning(f"Channels: {e}")
+
+try:
+    from routes.open_api import router as open_api_router
+    app.include_router(open_api_router)
+    log.info("✓ Open API (modules + ZATCA accounting)")
+except Exception as e:
+    log.warning(f"Open API: {e}")
 
 
 # ──────────────────────────────────────────────────────────────
@@ -3350,48 +3372,9 @@ async def backup_list(request: Request, session=Depends(require_client)):
 
 
 # ──────────────────────────────────────────────────────────────
-#  Open API (external integrations)
+#  Open API — مُدار بالكامل عبر routes/open_api.py
+#  (الغرف، الحجوزات، الضيوف، الفواتير ZATCA، المحاسبة، القنوات، KPI)
 # ──────────────────────────────────────────────────────────────
-async def _check_api_key(request: Request) -> dict:
-    api_key = request.headers.get("X-API-Key") or request.query_params.get("api_key")
-    if not api_key:
-        raise HTTPException(status_code=401, detail="X-API-Key مطلوب")
-    api_keys = request.app.state.api_keys
-    if api_keys:
-        key_data = api_keys.validate_key(api_key)
-        if not key_data:
-            raise HTTPException(status_code=401, detail="مفتاح API غير صالح")
-        return key_data
-    raise HTTPException(status_code=503, detail="Open API غير مُفعَّل")
-
-
-@app.get("/api/open/v1/rooms")
-async def open_rooms(request: Request, key=Depends(_check_api_key)):
-    db = request.app.state.db
-    cid = key.get("client_id")
-    rows = db.execute("SELECT * FROM rooms WHERE client_id=%s", (cid,), fetch="all")
-    return {"data": [dict(r) for r in (rows or [])]}
-
-
-@app.get("/api/open/v1/availability")
-async def open_availability(
-    request: Request, check_in: str = "", check_out: str = "",
-    key=Depends(_check_api_key)
-):
-    db = request.app.state.db
-    cid = key.get("client_id")
-    rows = db.execute(
-        """SELECT r.* FROM rooms r WHERE r.client_id=%s
-           AND r.id NOT IN (
-             SELECT room_id FROM bookings
-             WHERE client_id=%s AND status NOT IN ('cancelled','checked_out')
-             AND check_in < %s AND check_out > %s
-           )""",
-        (cid, cid, check_out, check_in), fetch="all"
-    ) if check_in and check_out else db.execute(
-        "SELECT * FROM rooms WHERE client_id=%s AND status='available'", (cid,), fetch="all"
-    )
-    return {"data": [dict(r) for r in (rows or [])]}
 
 
 # ──────────────────────────────────────────────────────────────
