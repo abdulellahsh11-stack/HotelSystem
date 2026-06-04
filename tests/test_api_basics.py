@@ -166,9 +166,16 @@ class TestMultiTenantIsolation:
 
     @pytest.fixture(autouse=True)
     def _setup_sessions(self):
-        """Pre-load both fake sessions before each test, clean up after."""
-        _client_sessions[self.TOKEN_A] = {"client_id": self.CID_A, "created_at": "2026-01-01T00:00:00"}
-        _client_sessions[self.TOKEN_B] = {"client_id": self.CID_B, "created_at": "2026-01-01T00:00:00"}
+        """Pre-load both fake sessions before each test, clean up after.
+
+        ``created_at`` must be *now* — the app enforces an 8-hour session TTL
+        (db.security.SESSION_TTL_HOURS), so a stale timestamp would be rejected
+        with 401 before the isolation logic is ever reached.
+        """
+        from datetime import datetime
+        now_iso = datetime.now().isoformat()
+        _client_sessions[self.TOKEN_A] = {"client_id": self.CID_A, "created_at": now_iso}
+        _client_sessions[self.TOKEN_B] = {"client_id": self.CID_B, "created_at": now_iso}
         yield
         _client_sessions.pop(self.TOKEN_A, None)
         _client_sessions.pop(self.TOKEN_B, None)

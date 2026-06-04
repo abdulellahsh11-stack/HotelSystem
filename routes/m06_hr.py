@@ -21,7 +21,6 @@ def _require_client(request: Request) -> dict:
 @router.get("/employees")
 async def list_employees(request: Request, status: Optional[str] = None, session=Depends(_require_client)):
     try:
-        store = request.app.state.store
         db = request.app.state.db
         cid = session["client_id"]
         if db.use_postgres:
