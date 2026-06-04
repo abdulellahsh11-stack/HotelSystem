@@ -317,7 +317,12 @@ function enterApp(){
   byEl('whoAv').textContent=initials(me.name);
   byEl('whoAv').style.background='linear-gradient(135deg,'+me.color+',#0E2A22)';
   byEl('whoName').textContent=me.name;
-  renderRoster(); renderTasks(); renderHousing(); buildTaskTargets();
+  renderRoster();
+  // Load tasks from API (housekeeping) + local storage
+  loadTasksFromAPI();
+  // Load rooms from API then render housing
+  loadRoomsFromAPI();
+  buildTaskTargets();
 }
 
 /* ============ التبويبات ============ */
@@ -446,19 +451,48 @@ function submitClarify(){
 }
 function closeModal(id){ byEl(id).classList.remove('show'); }
 
-/* ============ أدوات السكن ============ */
+/* ============ أدوات السكن — تحميل من API ============ */
 var HOUSE_TOOLS = ['مكيف الهواء','السخان','الإضاءة','الثلاجة','أثاث الغرفة','دورة المياه'];
 var HOUSE_ROOMS = [];
+
+function loadRoomsFromAPI(){
+  var grid = byEl('housingGrid');
+  if (grid) grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="ic">⏳</div>جاري التحميل…</div>';
+  return fetch('/api/m07/rooms/status', { credentials: 'same-origin' })
+    .then(function(r){ return r.ok ? r.json() : Promise.reject(r.status); })
+    .then(function(res){
+      var rooms = (res.data || []);
+      HOUSE_ROOMS = rooms.map(function(r){
+        var statusLabel = r.status === 'occupied'  ? 'مشغولة' :
+                          r.status === 'available' ? 'متاحة'  :
+                          r.status === 'cleaning'  ? 'قيد التنظيف' :
+                          r.status === 'checkout'  ? 'جاهزة للخروج' :
+                          (r.status || 'غير محدد');
+        return {
+          no:     r.room_number || String(r.id),
+          occ:    r.current_guest ? ('الضيف: ' + r.current_guest) : statusLabel,
+          status: r.status || ''
+        };
+      });
+      renderHousing();
+      return HOUSE_ROOMS;
+    })
+    .catch(function(){
+      if (grid) grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="ic">🏠</div>لا توجد غرف مسجّلة — تحقق من الاتصال</div>';
+      return [];
+    });
+}
+
 function renderHousing(){
   if(!HOUSE_ROOMS.length){
     byEl('housingGrid').innerHTML='<div class="empty" style="grid-column:1/-1"><div class="ic">🏠</div>لا توجد غرف سكن مسجّلة</div>';
     return;
   }
   var state=load(LS.house,{});
-  byEl('housingGrid').innerHTML=HOUSE_ROOMS.map(function(r,ri){
+  byEl('housingGrid').innerHTML=HOUSE_ROOMS.map(function(r){
     var rstate=state[r.no]||{};
     var okCount=0;
-    var checks=HOUSE_TOOLS.map(function(tool,ti){
+    var checks=HOUSE_TOOLS.map(function(tool){
       var st=rstate[tool]; // undefined | 'ok' | 'bad'
       if(st==='ok') okCount++;
       var cls=st==='ok'?'ok':(st==='bad'?'bad':'');
@@ -471,28 +505,177 @@ function renderHousing(){
       '<span class="pill '+(okCount===HOUSE_TOOLS.length?'closed':(checked?'prog':'open'))+'">'+okCount+'/'+HOUSE_TOOLS.length+'</span></div>'+
       '<div class="occ">🛏 '+esc(r.occ)+'</div>'+
       '<div class="checks">'+checks+'</div>'+
-      '<div class="room-foot"><span class="score">جاهزية: '+Math.round(okCount/HOUSE_TOOLS.length*100)+'٪</span></div></div>';
+      '<div class="room-foot">'+
+        '<button class="btn sm ghost" onclick="markRoomClean(\''+esc(r.no)+'\')" style="font-size:11px">✓ اكتمل التنظيف</button>'+
+        '<span class="score">جاهزية: '+Math.round(okCount/HOUSE_TOOLS.length*100)+'٪</span>'+
+      '</div></div>';
   }).join('');
 }
+
 function toggleTool(room,tool){
   var state=load(LS.house,{});
   state[room]=state[room]||{};
   var cur=state[room][tool];
-  // دورة: غير محدد → سليم → صيانة → غير محدد
   if(cur===undefined) state[room][tool]='ok';
   else if(cur==='ok') state[room][tool]='bad';
   else delete state[room][tool];
   save(LS.house,state); renderHousing();
 }
+
+function markRoomClean(roomNo){
+  if (!me) { toast('سجّل دخولك أولاً'); return; }
+  fetch('/api/m07/rooms/' + encodeURIComponent(roomNo) + '/clean', {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ staff_name: me.name })
+  }).then(function(r){ return r.json(); })
+    .then(function(res){
+      if (res.success) {
+        toast('تم تسجيل اكتمال التنظيف للغرفة ' + roomNo);
+        // Refresh rooms list
+        loadRoomsFromAPI();
+      } else {
+        toast('خطأ: ' + (res.detail || 'فشل التحديث'));
+      }
+    }).catch(function(){ toast('خطأ في الاتصال بالخادم'); });
+}
+
 function resetHousing(){ localStorage.removeItem(LS.house); renderHousing(); toast('تمت إعادة التعيين'); }
 
+/* ============ تحميل المهام من API (الإشراف الداخلي) ============ */
+var _apiTasksCache = [];
+
+function loadTasksFromAPI(){
+  var el = byEl('taskList');
+  if (el) el.innerHTML = '<div class="empty"><div class="ic">⏳</div>جاري تحميل المهام…</div>';
+
+  return fetch('/api/m07/tasks', { credentials: 'same-origin' })
+    .then(function(r){ return r.ok ? r.json() : Promise.reject(r.status); })
+    .then(function(res){
+      var apiTasks = (res.data || []);
+      _apiTasksCache = apiTasks;
+      renderTasksWithAPI(apiTasks);
+      return apiTasks;
+    })
+    .catch(function(){
+      // Fall back to localStorage tasks only
+      renderTasks();
+    });
+}
+
+function renderTasksWithAPI(apiTasks){
+  seedTasks();
+  var localTasks = load(LS.tasks, []);
+
+  // Build combined list: API tasks shown as read-only housekeeping tasks + local tasks
+  var el = byEl('taskList');
+  if (!me) return;
+
+  var myLocalTasks = localTasks.filter(function(t){ return t.to === me.id || t.from === me.id; });
+
+  // API tasks assigned to current user (match by name since API uses names not IDs)
+  var myApiTasks = apiTasks.filter(function(t){
+    return !t.assigned_to || t.assigned_to === me.name ||
+           t.assigned_to === me.id || t.status === 'pending';
+  });
+
+  var allEmpty = !myLocalTasks.length && !myApiTasks.length;
+  if (allEmpty) {
+    el.innerHTML = '<div class="empty"><div class="ic">✅</div>لا توجد مهام</div>';
+    return;
+  }
+
+  var html = '';
+
+  // Render API (housekeeping) tasks
+  myApiTasks.forEach(function(t){
+    var statusMap = { pending:'open', in_progress:'prog', completed:'closed' };
+    var prioMap   = { high:'high', normal:'mid', low:'low' };
+    var statusCls = statusMap[t.status] || 'open';
+    var statusTxt = statusCls==='open'?'مفتوحة':(statusCls==='prog'?'قيد التنفيذ':'مغلقة');
+    var priCls    = prioMap[t.priority] || 'mid';
+    var priTxt    = priCls==='high'?'عاجلة':(priCls==='mid'?'متوسطة':'عادية');
+    var taskType  = t.task_type === 'cleaning' ? 'تنظيف' : (t.task_type || 'مهمة');
+    var roomNo    = t.room_number || '';
+    var acts = '';
+    if (t.status === 'pending') {
+      acts += '<button class="btn sm" onclick="updateAPITaskStatus(' + t.id + ',\'in_progress\')">بدء التنفيذ</button>';
+    }
+    if (t.status !== 'completed') {
+      acts += '<button class="btn sm gold" onclick="updateAPITaskStatus(' + t.id + ',\'completed\')">إغلاق المهمة</button>';
+    }
+    html += '<div class="task' + (t.status==='completed'?' done':'') + '">' +
+      '<div class="task-top"><div>' +
+        '<div class="tt">🏨 ' + esc(taskType) + (roomNo ? ' — غرفة ' + esc(roomNo) : '') + '</div>' +
+        '<div class="meta"><span>الإشراف الداخلي</span>' +
+          (t.assigned_to ? '<span>المسؤول: ' + esc(t.assigned_to) + '</span>' : '') +
+        '</div></div>' +
+        '<div style="display:flex;gap:6px;flex-direction:column;align-items:flex-end">' +
+          '<span class="pill ' + statusCls + '">' + statusTxt + '</span>' +
+          '<span class="pri ' + priCls + '">' + priTxt + '</span>' +
+        '</div></div>' +
+      (t.notes ? '<div class="desc">' + esc(t.notes) + '</div>' : '') +
+      '<div class="task-acts">' + acts + '</div></div>';
+  });
+
+  // Render local tasks (unchanged logic from original renderTasks)
+  myLocalTasks.forEach(function(t){
+    var inbound = t.to === me.id;
+    var statusTxt = t.status==='open'?'مفتوحة':(t.status==='prog'?'قيد التنفيذ':'مغلقة');
+    var statusCls = t.status==='open'?'open':(t.status==='prog'?'prog':'closed');
+    var priTxt = t.pri==='high'?'عاجلة':(t.pri==='mid'?'متوسطة':'عادية');
+    var fromN = byId(t.from)? byId(t.from).name : t.from;
+    var toN   = byId(t.to)?   byId(t.to).name   : t.to;
+    var acts='';
+    if(t.status!=='closed'){
+      if(inbound && t.status==='open') acts+='<button class="btn sm" onclick="setStatus(\''+t.id+'\',\'prog\')">بدء التنفيذ</button>';
+      if(inbound) acts+='<button class="btn sm ghost" onclick="askClarify(\''+t.id+'\')">طلب إيضاح</button>';
+      acts+='<button class="btn sm gold" onclick="setStatus(\''+t.id+'\',\'closed\')">إغلاق المهمة</button>';
+    } else {
+      acts+='<button class="btn sm ghost" onclick="setStatus(\''+t.id+'\',\'open\')">إعادة فتح</button>';
+    }
+    var clarHtml='';
+    if(t.clar && t.clar.length){
+      clarHtml='<div class="clarify">'+t.clar.map(function(c){
+        return '<div class="clar-item"><b>'+esc(byId(c.by)?byId(c.by).name:c.by)+':</b> '+esc(c.q)+'</div>';
+      }).join('')+'</div>';
+    }
+    html += '<div class="task'+(t.status==='closed'?' done':'')+'">'+
+      '<div class="task-top"><div><div class="tt">'+esc(t.title)+'</div>'+
+        '<div class="meta"><span>من: '+esc(fromN)+'</span><span>إلى: '+esc(toN)+'</span><span>'+esc(t.at)+'</span></div></div>'+
+        '<div style="display:flex;gap:6px;flex-direction:column;align-items:flex-end">'+
+          '<span class="pill '+statusCls+'">'+statusTxt+'</span>'+
+          '<span class="pri '+t.pri+'">'+priTxt+'</span></div></div>'+
+      '<div class="desc">'+esc(t.desc)+'</div>'+
+      clarHtml+
+      '<div class="task-acts">'+acts+'</div></div>';
+  });
+
+  el.innerHTML = html;
+}
+
+function updateAPITaskStatus(taskId, newStatus){
+  if (!me) { toast('سجّل دخولك أولاً'); return; }
+  fetch('/api/m07/tasks/' + taskId + '/status', {
+    method: 'PUT',
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status: newStatus, staff_name: me.name })
+  }).then(function(r){ return r.json(); })
+    .then(function(res){
+      if (res.success) {
+        toast(newStatus === 'completed' ? 'تم إغلاق المهمة' : 'بدأ التنفيذ');
+        loadTasksFromAPI();
+      } else {
+        toast('خطأ: ' + (res.detail || 'فشل التحديث'));
+      }
+    }).catch(function(){ toast('خطأ في الاتصال'); });
+}
+
 /* ============ إقلاع ============ */
-buildLoginOptions();
-(function(){
-  if(!STAFF.length) return;
-  var cur=load(LS.cur,null);
-  if(cur && byId(cur)){ me=byId(cur); enterApp(); }
-})();
+// Load staff list from API first, then auto-resume session if stored
+loadStaffFromAPI();
 </script>
 </body>
 </html>
