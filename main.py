@@ -50,6 +50,13 @@ _admin_sessions: dict = {}   # token → {"created_at": ...}
 _client_sessions: dict = {}  # token → {"client_id": ..., "created_at": ...}
 _lock = threading.Lock()
 
+# Secure cookies in production (HTTPS). Railway/most PaaS set these env vars.
+_COOKIE_SECURE = bool(
+    os.environ.get("RAILWAY_ENVIRONMENT")
+    or os.environ.get("RAILWAY_STATIC_URL")
+    or os.environ.get("COOKIE_SECURE", "").lower() in ("1", "true", "yes")
+)
+
 # M3 mitigation: حدّ بسيط لمعدّل التسجيل لكل IP (ضد إنشاء حسابات بالجملة)
 _reg_attempts: dict = {}     # ip → [timestamps]
 _REG_MAX_PER_HOUR = int(os.environ.get("REG_MAX_PER_HOUR", "5"))
@@ -162,6 +169,12 @@ async def lifespan(app_: FastAPI):
         run_rls_migration(db)
     except Exception as e:
         log.warning(f"RLS migration: {e}")
+    try:
+        from db.schema_v3 import run_perf_indexes
+        run_perf_indexes(db)
+        log.info("✓ Performance indexes ready")
+    except Exception as e:
+        log.warning(f"perf indexes: {e}")
 
     # ── Sentry (APM / error tracking) ──────────────────────────────────────
     if cfg.has_sentry:
@@ -2679,7 +2692,7 @@ async def client_login(request: Request):
         log.debug(f"session persist skipped: {_e}")
 
     response = RedirectResponse("/", status_code=303)
-    response.set_cookie("client_token", token, httponly=True, samesite="lax", max_age=86400 * 7)
+    response.set_cookie("client_token", token, httponly=True, samesite="lax", secure=_COOKIE_SECURE, max_age=86400 * 7)
     return response
 
 
@@ -3672,7 +3685,7 @@ async def client_register(request: Request):
         _client_sessions[token] = {"client_id": client_id, "created_at": datetime.now().isoformat()}
 
     response = JSONResponse({"success": True, "ok": True, "client_id": client_id})
-    response.set_cookie("client_token", token, httponly=True, samesite="lax", max_age=86400 * 7)
+    response.set_cookie("client_token", token, httponly=True, samesite="lax", secure=_COOKIE_SECURE, max_age=86400 * 7)
     return response
 
 

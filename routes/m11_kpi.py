@@ -19,72 +19,57 @@ def _require_client(request: Request) -> dict:
 @router.get("/dashboard")
 async def kpi_dashboard(request: Request, session=Depends(_require_client)):
     try:
+        import asyncio
         db = request.app.state.db
         cid = session["client_id"]
         today = date.today()
         month_start = today.replace(day=1)
+        ti = today.isoformat()
+        ms = month_start.isoformat()
 
         if not db.use_postgres:
             return {"success": True, "data": {}}
 
-        rooms_total = db.execute(
-            "SELECT COUNT(*) as c FROM rooms WHERE client_id=%s", (cid,), fetch="one")
+        async def _safe(coro):
+            try:
+                return await coro
+            except Exception:
+                return None
+
+        # All 9 independent reads fire concurrently instead of sequentially
+        (rooms_total, occupied, month_rev, pos_rev, month_bk,
+         monthly, checkins_today, checkouts_today, staff_count) = await asyncio.gather(
+            _safe(db.async_execute("SELECT COUNT(*) as c FROM rooms WHERE client_id=%s", (cid,), fetch="one")),
+            _safe(db.async_execute(
+                "SELECT COUNT(*) as c FROM bookings WHERE client_id=%s AND status IN ('confirmed','checked_in') AND check_in <= %s AND check_out > %s",
+                (cid, ti, ti), fetch="one")),
+            _safe(db.async_execute(
+                "SELECT COALESCE(SUM(total_room), 0) as s FROM bookings WHERE client_id=%s AND check_in >= %s AND status NOT IN ('cancelled')",
+                (cid, ms), fetch="one")),
+            _safe(db.async_execute(
+                "SELECT COALESCE(SUM(total), 0) as s FROM pos_sales WHERE client_id=%s AND created_at::date >= %s AND status='completed'",
+                (cid, ms), fetch="one")),
+            _safe(db.async_execute(
+                "SELECT COUNT(*) as c FROM bookings WHERE client_id=%s AND check_in >= %s", (cid, ms), fetch="one")),
+            _safe(db.async_execute(
+                "SELECT TO_CHAR(DATE_TRUNC('month', check_in), 'YYYY-MM') as month, COALESCE(SUM(total_room), 0) as revenue, COUNT(*) as bookings FROM bookings WHERE client_id=%s AND status NOT IN ('cancelled') GROUP BY DATE_TRUNC('month', check_in) ORDER BY DATE_TRUNC('month', check_in) DESC LIMIT 12",
+                (cid,), fetch="all")),
+            _safe(db.async_execute(
+                "SELECT COUNT(*) as c FROM bookings WHERE client_id=%s AND check_in=%s AND status='confirmed'", (cid, ti), fetch="one")),
+            _safe(db.async_execute(
+                "SELECT COUNT(*) as c FROM bookings WHERE client_id=%s AND check_out=%s AND status='checked_in'", (cid, ti), fetch="one")),
+            _safe(db.async_execute(
+                "SELECT COUNT(*) as c FROM employees WHERE client_id=%s AND status='active'", (cid,), fetch="one")),
+        )
+
         total_rooms = dict(rooms_total).get("c", 1) if rooms_total else 1
-
-        occupied = db.execute("""
-            SELECT COUNT(*) as c FROM bookings
-            WHERE client_id=%s AND status IN ('confirmed','checked_in')
-            AND check_in <= %s AND check_out > %s
-        """, (cid, today.isoformat(), today.isoformat()), fetch="one")
         occupied_rooms = dict(occupied).get("c", 0) if occupied else 0
-
         occupancy = round((occupied_rooms / max(total_rooms, 1)) * 100, 1)
-
-        month_rev = db.execute("""
-            SELECT COALESCE(SUM(total_room), 0) as s FROM bookings
-            WHERE client_id=%s AND check_in >= %s AND status NOT IN ('cancelled')
-        """, (cid, month_start.isoformat()), fetch="one")
         revenue_month = float(dict(month_rev).get("s", 0)) if month_rev else 0
-
-        # Add POS revenue if available
-        try:
-            pos_rev = db.execute("""
-                SELECT COALESCE(SUM(total), 0) as s FROM pos_sales
-                WHERE client_id=%s AND created_at::date >= %s AND status='completed'
-            """, (cid, month_start.isoformat()), fetch="one")
-            revenue_month += float(dict(pos_rev).get("s", 0)) if pos_rev else 0
-        except Exception:
-            pass
-
-        month_bk = db.execute("""
-            SELECT COUNT(*) as c FROM bookings
-            WHERE client_id=%s AND check_in >= %s
-        """, (cid, month_start.isoformat()), fetch="one")
+        revenue_month += float(dict(pos_rev).get("s", 0)) if pos_rev else 0
         bookings_month = dict(month_bk).get("c", 0) if month_bk else 0
-
         adr = round(revenue_month / max(occupied_rooms * 30, 1), 2)
         revpar = round(revenue_month / max(total_rooms * 30, 1), 2)
-
-        monthly = db.execute("""
-            SELECT TO_CHAR(DATE_TRUNC('month', check_in), 'YYYY-MM') as month,
-                   COALESCE(SUM(total_room), 0) as revenue,
-                   COUNT(*) as bookings
-            FROM bookings WHERE client_id=%s AND status NOT IN ('cancelled')
-            GROUP BY DATE_TRUNC('month', check_in) ORDER BY DATE_TRUNC('month', check_in) DESC LIMIT 12
-        """, (cid,), fetch="all")
-
-        checkins_today = db.execute("""
-            SELECT COUNT(*) as c FROM bookings
-            WHERE client_id=%s AND check_in=%s AND status='confirmed'
-        """, (cid, today.isoformat()), fetch="one")
-        checkouts_today = db.execute("""
-            SELECT COUNT(*) as c FROM bookings
-            WHERE client_id=%s AND check_out=%s AND status='checked_in'
-        """, (cid, today.isoformat()), fetch="one")
-
-        staff_count = db.execute(
-            "SELECT COUNT(*) as c FROM employees WHERE client_id=%s AND status='active'",
-            (cid,), fetch="one")
 
         return {
             "success": True,

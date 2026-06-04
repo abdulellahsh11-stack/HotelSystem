@@ -647,6 +647,42 @@ def run_rls_migration(db) -> None:
                     logging.getLogger("dheuof").warning(f"RLS migration: {e}")
 
 
+# ── Performance indexes for hot multi-tenant query paths ────────────────────
+PERF_INDEXES = """
+CREATE INDEX IF NOT EXISTS idx_bookings_client_status   ON bookings(client_id, status);
+CREATE INDEX IF NOT EXISTS idx_bookings_client_checkin  ON bookings(client_id, check_in);
+CREATE INDEX IF NOT EXISTS idx_bookings_client_checkout ON bookings(client_id, check_out);
+CREATE INDEX IF NOT EXISTS idx_bookings_client_room     ON bookings(client_id, room_id);
+CREATE INDEX IF NOT EXISTS idx_rooms_client_status      ON rooms(client_id, status);
+CREATE INDEX IF NOT EXISTS idx_guests_client_created    ON guests(client_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_employees_client_status  ON employees(client_id, status);
+CREATE INDEX IF NOT EXISTS idx_maint_client_status      ON maintenance_orders(client_id, status);
+CREATE INDEX IF NOT EXISTS idx_checkin_client_date      ON check_in_log(client_id, checked_in_at);
+CREATE INDEX IF NOT EXISTS idx_wmov_client              ON warehouse_movements(client_id, created_at);
+"""
+
+
+def run_perf_indexes(db) -> None:
+    """Create composite indexes on (client_id, hot_column) for fast tenant queries.
+
+    Idempotent — every statement is CREATE INDEX IF NOT EXISTS. Failures on a
+    not-yet-created table are ignored (the table's own migration runs elsewhere).
+    """
+    if not db.use_postgres:
+        return
+    import logging
+    log = logging.getLogger("dheuof")
+    for stmt in PERF_INDEXES.strip().split(";"):
+        s = stmt.strip()
+        if s and not s.startswith("--"):
+            try:
+                db.execute(s)
+            except Exception as e:
+                err = str(e).lower()
+                if "does not exist" not in err and "already exists" not in err:
+                    log.warning(f"perf index: {e}")
+
+
 def run_v3_migrations(db) -> None:
     import logging
     log = logging.getLogger("dheuof.db.migrations")
