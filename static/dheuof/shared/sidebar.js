@@ -34,6 +34,17 @@
     localStorage.removeItem('dheuof_session');
   }
 
+  /* ── Toast helper ──────────────────────────────────────────────────────── */
+  function showToast(msg, type) {
+    var t = document.createElement('div');
+    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:' +
+      (type === 'err' ? '#C0392B' : '#1B4D3D') +
+      ';color:#fff;padding:12px 24px;border-radius:10px;font-family:"Tajawal","Segoe UI",sans-serif;font-size:14px;z-index:999999;box-shadow:0 4px 20px rgba(0,0,0,.3);direction:rtl;transition:opacity .3s';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(function(){ t.style.opacity = '0'; setTimeout(function(){ if(t.parentNode) t.remove(); }, 320); }, 2600);
+  }
+
   /* ── Auth overlay (blocks page until logged in) ────────────────────────── */
   function injectAuthStyles() {
     if (document.getElementById('dh-auth-styles')) return;
@@ -68,6 +79,10 @@
       '#dh-auth-wall .aw-demo-hint strong{font-weight:700}',
       '#dh-auth-wall .aw-trial-badge{display:inline-block;background:#FEF3C7;color:#92400E;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;margin-bottom:14px}',
       '#dh-auth-wall .aw-grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}',
+      /* 2FA styles */
+      '#dh-auth-wall .aw-2fa-code{font-size:36px;letter-spacing:0.3em;text-align:center;width:200px;margin:0 auto;display:block;border:2px solid #1B4D3D;border-radius:10px;padding:12px;font-family:monospace}',
+      '#dh-auth-wall .aw-2fa-hint{font-size:12px;color:#666;text-align:center;margin:10px 0 20px}',
+      '#dh-auth-wall .aw-resend{font-size:12px;color:#1B4D3D;cursor:pointer;text-decoration:underline;text-align:center;display:block;margin-top:10px}',
     ].join('');
     document.head.appendChild(s);
   }
@@ -82,7 +97,7 @@
           '<div class="mark">🌿</div>',
           '<div><div class="brand-ar">ضيوف</div><div class="brand-en">Dheuof · Hotel Management</div></div>',
         '</div>',
-        '<div class="aw-tabs">',
+        '<div class="aw-tabs" id="aw-tabs-bar">',
           '<div class="aw-tab on" onclick="dhAuthTab(\'login\',this)">دخول المشترك</div>',
           '<div class="aw-tab" onclick="dhAuthTab(\'trial\',this)">تسجيل · تجربة مجانية</div>',
         '</div>',
@@ -103,6 +118,19 @@
             '<strong>حساب تجريبي:</strong> أي بريد إلكتروني + كلمة مرور (٦ أحرف على الأقل)<br/>',
             'أو جرّب: <strong>demo@dheuof.com</strong> / <strong>demo123</strong>',
           '</div>',
+        '</div>',
+
+        /* ── 2FA pane ── */
+        '<div class="aw-pane" id="aw-pane-2fa">',
+          '<div class="aw-title">التحقق بخطوتين</div>',
+          '<div class="aw-sub">أدخل رمز التحقق المرسل على جوالك (XXXXXX)</div>',
+          '<div class="aw-field">',
+            '<input id="aw-2fa-code" class="aw-2fa-code" type="text" inputmode="numeric" maxlength="6" placeholder="------" dir="ltr" autocomplete="one-time-code"/>',
+            '<div class="aw-2fa-hint">رمز مكوّن من ٦ أرقام</div>',
+            '<div class="aw-err" id="aw-2fa-err">الرمز غير صحيح. حاول مجدداً.</div>',
+          '</div>',
+          '<button class="aw-btn-primary" onclick="dhAuth2FAVerify()">تحقق</button>',
+          '<span class="aw-resend" onclick="dhAuth2FAResend()">إعادة إرسال الرمز</span>',
         '</div>',
 
         /* ── Trial / Register pane ── */
@@ -146,6 +174,9 @@
     ].join('');
     document.body.appendChild(wall);
 
+    /* pending session used during 2FA step */
+    var _pendingSession = null;
+
     /* ── Auth functions on window ── */
     window.dhAuthTab = function(pane, btn) {
       document.querySelectorAll('#dh-auth-wall .aw-tab').forEach(function(t){ t.classList.remove('on'); });
@@ -159,17 +190,65 @@
       if (w) { w.style.opacity='0'; w.style.transition='opacity .3s'; setTimeout(function(){ if(w.parentNode) w.remove(); }, 320); }
     }
 
+    function completeLogin(session) {
+      saveSession(session);
+      removeWall();
+      if (onSuccess) onSuccess(session);
+      updateTopbarUser(session);
+    }
+
+    function show2FAPane(session) {
+      _pendingSession = session;
+      /* hide the tabs bar so user can't navigate away */
+      var tabsBar = document.getElementById('aw-tabs-bar');
+      if (tabsBar) tabsBar.style.display = 'none';
+      /* show only 2FA pane */
+      document.querySelectorAll('#dh-auth-wall .aw-pane').forEach(function(p){ p.classList.remove('on'); });
+      document.getElementById('aw-pane-2fa').classList.add('on');
+      /* clear previous input */
+      var codeEl = document.getElementById('aw-2fa-code');
+      if (codeEl) { codeEl.value = ''; codeEl.focus(); }
+    }
+
     window.dhAuthLogin = function() {
       var email = (document.getElementById('aw-login-email').value || '').trim();
       var pass  = document.getElementById('aw-login-pass').value || '';
       var err   = document.getElementById('aw-login-err');
       err.style.display = 'none';
       if (!email || pass.length < 6) { err.style.display = 'block'; return; }
+
       var session = { email: email, name: email.split('@')[0], plan: 'trial', ts: Date.now() };
-      saveSession(session);
-      removeWall();
-      if (onSuccess) onSuccess(session);
-      updateTopbarUser(session);
+
+      /* Check if 2FA is enabled for this account (read from localStorage flag set by security page) */
+      var twofaEnabled = localStorage.getItem('dheuof_2fa_enabled') === '1';
+      session.twofa = twofaEnabled;
+
+      if (twofaEnabled) {
+        /* Hold off saving until 2FA verified */
+        show2FAPane(session);
+      } else {
+        completeLogin(session);
+      }
+    };
+
+    window.dhAuth2FAVerify = function() {
+      var codeEl = document.getElementById('aw-2fa-code');
+      var errEl  = document.getElementById('aw-2fa-err');
+      var code   = (codeEl ? codeEl.value : '').trim();
+      errEl.style.display = 'none';
+
+      /* Accept any 6-digit code OR the hardcoded demo "123456" */
+      var valid = /^\d{6}$/.test(code);
+      if (!valid) { errEl.style.display = 'block'; return; }
+
+      if (_pendingSession) {
+        completeLogin(_pendingSession);
+        _pendingSession = null;
+      }
+    };
+
+    window.dhAuth2FAResend = function() {
+      showToast('تم إرسال رمز جديد');
     };
 
     window.dhAuthRegister = function() {
@@ -187,11 +266,9 @@
       var phoneOk = /^05\d{8}$/.test(phoneDigits) || /^9665\d{8}$/.test(phoneDigits);
       if (!fname || !email || !phoneOk || pass.length < 6) { err.style.display = 'block'; return; }
       var propName = prop || (fname + ' ' + lname);
-      var session = { email: email, phone: phoneDigits, name: fname + (lname ? ' ' + lname : ''), plan: 'trial', property: propName, propType: type, ts: Date.now(), trialStart: Date.now() };
-      saveSession(session);
-      removeWall();
-      if (onSuccess) onSuccess(session);
-      updateTopbarUser(session);
+      /* New registrations: 2FA off by default */
+      var session = { email: email, phone: phoneDigits, name: fname + (lname ? ' ' + lname : ''), plan: 'trial', property: propName, propType: type, ts: Date.now(), trialStart: Date.now(), twofa: false };
+      completeLogin(session);
     };
 
     /* Enter key support */
@@ -199,6 +276,8 @@
       var el = document.getElementById(id);
       if (el) el.addEventListener('keydown', function(e){ if(e.key==='Enter') window.dhAuthLogin(); });
     });
+    var codeInput = document.getElementById('aw-2fa-code');
+    if (codeInput) codeInput.addEventListener('keydown', function(e){ if(e.key==='Enter') window.dhAuth2FAVerify(); });
   }
 
   /* ── Update topbar with real session info ──────────────────────────────── */
@@ -329,6 +408,23 @@
     setTimeout(function(){ b.classList.add('dh-ftrial-in'); }, 100);
   }
 
+  /* ── Session timeout: 8 hours ─────────────────────────────────────────── */
+  var SESSION_TIMEOUT_MS = 8 * 3600 * 1000; // 8 hours
+
+  function checkSessionTimeout(opts) {
+    var session = getSession();
+    if (!session) return;
+    if (Date.now() - session.ts > SESSION_TIMEOUT_MS) {
+      clearSession();
+      /* Re-render as guest and show auth wall */
+      var sb = document.querySelector('.dh-sidebar');
+      var tb = document.querySelector('.dh-topbar');
+      if (sb) sb.outerHTML = renderSidebar(opts ? opts.activeId : undefined, opts);
+      if (tb) tb.outerHTML = renderTopBar(opts);
+      window.dhShowAuth && window.dhShowAuth();
+    }
+  }
+
   /* ── Mount — checks auth FIRST, blocks page if not logged in ─────────── */
   function mount(opts) {
     opts = opts || {};
@@ -361,6 +457,12 @@
     };
 
     var session = getSession();
+
+    /* Check for session timeout before rendering */
+    if (session && Date.now() - session.ts > SESSION_TIMEOUT_MS) {
+      clearSession();
+      session = null;
+    }
 
     if (!session) {
       // Render shell first so page is not blank behind the overlay

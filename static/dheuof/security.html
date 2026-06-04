@@ -1,0 +1,836 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-screen-label="Security Settings">
+<head>
+<meta charset="utf-8"/>
+<title>ضيوف · إعدادات الأمان</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="stylesheet" href="/static/dheuof/colors_and_type.css"/>
+<link rel="stylesheet" href="/static/dheuof/assets/animations.css"/>
+<style>
+  html, body { margin: 0; padding: 0; }
+  body { background: var(--paper); color: var(--ink-900); font-family: var(--font-ar); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+  * { box-sizing: border-box; }
+  a { text-decoration: none; color: inherit; }
+  button, input, select { font: inherit; }
+
+  /* ── Top nav bar ────────────────────────────────────────────────────────── */
+  .top {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 32px;
+    border-bottom: 1px solid var(--hairline);
+    background: var(--white);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .top .brand { display: inline-flex; align-items: center; gap: 12px; }
+  .top .brand img { width: 36px; height: 36px; }
+  .top .brand .ar { font-family: var(--font-ar-display); font-weight: 600; font-size: 20px; }
+  .top .brand .en { font-family: var(--font-en-display); font-style: italic; font-size: 13px; color: var(--gold-700); margin-inline-start: 4px; }
+  .top .back { font-size: 13px; color: var(--fg-2); display: flex; align-items: center; gap: 6px; }
+  .top .back:hover { color: var(--ink-900); }
+
+  /* ── Page layout ────────────────────────────────────────────────────────── */
+  .page-wrap {
+    max-width: 960px;
+    margin: 40px auto 80px;
+    padding: 0 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .page-header { margin-bottom: 4px; }
+  .page-header .eyebrow { font-family: var(--font-en); font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold-700); font-weight: 600; }
+  .page-header h1 { font-family: var(--font-ar-display); font-weight: 600; font-size: 34px; color: var(--ink-900); margin: 8px 0 6px; line-height: 1.15; }
+  .page-header .lead { font-size: 15px; color: var(--fg-1); line-height: 1.6; }
+
+  /* ── Card ────────────────────────────────────────────────────────────────── */
+  .sec-card {
+    background: var(--white);
+    border: 1px solid var(--hairline);
+    border-radius: 16px;
+    padding: 26px 28px;
+  }
+  .sec-card .card-head {
+    display: flex; align-items: center; gap: 14px; margin-bottom: 22px;
+  }
+  .sec-card .card-head .icon {
+    width: 42px; height: 42px; border-radius: 11px;
+    background: var(--brand-100);
+    display: grid; place-items: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+  .sec-card .card-head .ttl { font-family: var(--font-ar-display); font-size: 18px; font-weight: 700; color: var(--ink-900); }
+  .sec-card .card-head .sub { font-size: 12px; color: var(--fg-3); margin-top: 2px; }
+
+  /* ── Section 1: Security Score ───────────────────────────────────────────── */
+  .score-hero {
+    display: flex; align-items: center; gap: 32px; margin-bottom: 24px;
+    padding: 20px 22px;
+    background: linear-gradient(135deg, var(--brand-900), var(--brand-800));
+    border-radius: 12px;
+    color: var(--paper);
+    position: relative; overflow: hidden;
+  }
+  .score-hero::before {
+    content: "";
+    position: absolute; top: -40px; left: -40px;
+    width: 160px; height: 160px; border-radius: 999px;
+    background: radial-gradient(circle, rgba(201,168,95,0.2), transparent 65%);
+  }
+  .score-hero > * { position: relative; }
+  .score-ring {
+    width: 90px; height: 90px; flex-shrink: 0;
+    position: relative;
+  }
+  .score-ring svg { width: 90px; height: 90px; transform: rotate(-90deg); }
+  .score-ring .ring-bg { fill: none; stroke: rgba(255,255,255,0.15); stroke-width: 8; }
+  .score-ring .ring-val { fill: none; stroke: #C9A85F; stroke-width: 8; stroke-linecap: round;
+    stroke-dasharray: 226; stroke-dashoffset: 49; /* 226*(1-0.78)=49.7 */
+    transition: stroke-dashoffset 1s ease;
+  }
+  .score-ring .ring-num {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-family: var(--font-en); font-size: 24px; font-weight: 700; color: var(--gold-400);
+    line-height: 1;
+  }
+  .score-ring .ring-num span { font-size: 10px; color: var(--gold-300); font-family: var(--font-ar); margin-top: 2px; }
+  .score-info .ttl { font-family: var(--font-ar-display); font-size: 20px; font-weight: 700; }
+  .score-info .sub { font-size: 13px; color: var(--gold-300); margin-top: 4px; line-height: 1.55; }
+
+  .score-progress-bar {
+    height: 8px; border-radius: 999px;
+    background: rgba(255,255,255,0.15);
+    margin-top: 10px; overflow: hidden;
+  }
+  .score-progress-bar .fill {
+    height: 100%; width: 78%; border-radius: 999px;
+    background: linear-gradient(to left, #C9A85F, #E8A020);
+    transition: width 1s ease;
+  }
+
+  .checklist { display: flex; flex-direction: column; gap: 10px; }
+  .check-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 11px 14px; border-radius: 10px;
+    font-size: 14px;
+  }
+  .check-item.ok { background: #F0FDF4; border: 1px solid #BBF7D0; color: var(--success-700); }
+  .check-item.warn { background: #FFFBEB; border: 1px solid #FDE68A; color: var(--warning-700); }
+  .check-item .ci-icon { font-size: 16px; flex-shrink: 0; }
+  .check-item .ci-lbl { flex: 1; font-weight: 500; }
+  .check-item .ci-badge {
+    font-size: 10px; font-family: var(--font-mono); font-weight: 700;
+    padding: 2px 8px; border-radius: 999px;
+  }
+  .check-item.ok .ci-badge { background: var(--success-100); color: var(--success-700); }
+  .check-item.warn .ci-badge { background: var(--warning-100); color: var(--warning-700); }
+
+  /* ── Section 2: 2FA ──────────────────────────────────────────────────────── */
+  .twofa-toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 18px; border-radius: 10px;
+    background: var(--paper-tint); border: 1px solid var(--hairline);
+    margin-bottom: 18px;
+  }
+  .twofa-toggle-row .lbl { font-size: 15px; font-weight: 600; color: var(--ink-900); }
+  .twofa-toggle-row .sub { font-size: 12px; color: var(--fg-3); margin-top: 2px; }
+
+  /* iOS-style toggle */
+  .toggle-sw { position: relative; width: 48px; height: 26px; flex-shrink: 0; }
+  .toggle-sw input { opacity: 0; width: 0; height: 0; }
+  .toggle-sw .slider {
+    position: absolute; inset: 0; cursor: pointer;
+    background: #DDD; border-radius: 999px; transition: background 200ms;
+  }
+  .toggle-sw .slider::after {
+    content: ""; position: absolute;
+    width: 20px; height: 20px; border-radius: 999px;
+    background: #fff; top: 3px; left: 3px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.25);
+    transition: transform 200ms;
+  }
+  .toggle-sw input:checked + .slider { background: var(--brand-700); }
+  .toggle-sw input:checked + .slider::after { transform: translateX(22px); }
+
+  .twofa-setup { display: none; }
+  .twofa-setup.on { display: block; }
+  .twofa-method-tabs { display: flex; gap: 8px; margin-bottom: 18px; }
+  .twofa-method-tab {
+    padding: 8px 16px; border-radius: 8px; border: 1.5px solid var(--hairline);
+    font-size: 13px; font-weight: 600; color: var(--fg-2); cursor: pointer;
+    background: var(--white); transition: all 150ms;
+  }
+  .twofa-method-tab.on { background: var(--brand-700); color: var(--paper); border-color: var(--brand-700); }
+
+  .twofa-panel { display: none; }
+  .twofa-panel.on { display: block; }
+
+  .qr-wrap {
+    display: flex; align-items: flex-start; gap: 24px; margin-bottom: 18px;
+  }
+  .qr-box {
+    width: 120px; height: 120px; flex-shrink: 0;
+    background: var(--paper-tint); border: 2px dashed var(--hairline);
+    border-radius: 10px; display: grid; place-items: center;
+    font-size: 11px; color: var(--fg-3); text-align: center; padding: 10px;
+  }
+  .qr-box .qr-mock {
+    font-size: 56px; line-height: 1;
+  }
+  .secret-key-box {
+    background: var(--brand-900); color: var(--gold-400);
+    padding: 12px 16px; border-radius: 10px; margin-top: 8px;
+  }
+  .secret-key-box .lbl { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold-300); font-family: var(--font-en); }
+  .secret-key-box .val { font-family: var(--font-mono); font-size: 18px; font-weight: 700; letter-spacing: 0.12em; margin-top: 4px; word-break: break-all; }
+  .twofa-instructions { font-size: 13px; color: var(--fg-1); line-height: 1.7; }
+  .twofa-instructions ol { margin: 8px 0; padding-inline-start: 22px; }
+  .twofa-instructions li { margin-bottom: 4px; }
+  .app-badges { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+  .app-badge {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--paper-tint); border: 1px solid var(--hairline);
+    padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; color: var(--ink-800);
+  }
+  .app-badge span { font-size: 20px; }
+
+  .sms-field { display: flex; gap: 10px; align-items: flex-end; }
+  .sms-field .field-wrap { flex: 1; }
+  .sms-field label { display: block; font-size: 12px; font-weight: 600; color: var(--ink-800); margin-bottom: 6px; }
+  .sms-field input {
+    width: 100%; padding: 11px 14px; border: 1.5px solid var(--hairline);
+    border-radius: 8px; font-size: 14px; color: var(--ink-900); outline: none;
+    font-family: var(--font-mono); transition: border-color 150ms;
+  }
+  .sms-field input:focus { border-color: var(--brand-700); box-shadow: 0 0 0 3px rgba(27,77,61,.1); }
+  .btn { padding: 11px 20px; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; transition: opacity 150ms; font-family: var(--font-ar); }
+  .btn:hover { opacity: 0.88; }
+  .btn-primary { background: var(--brand-700); color: var(--paper); }
+  .btn-danger { background: var(--danger-700); color: #fff; }
+  .btn-outline { background: transparent; color: var(--brand-700); border: 1.5px solid var(--brand-700); }
+
+  /* ── Section 3: Sessions ─────────────────────────────────────────────────── */
+  .sessions-toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px; flex-wrap: wrap; gap: 10px;
+  }
+  .sessions-toolbar .left-side { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .timeout-label { font-size: 13px; color: var(--ink-700); font-weight: 500; }
+  .timeout-select {
+    padding: 7px 12px; border: 1.5px solid var(--hairline); border-radius: 8px;
+    font-size: 13px; font-family: var(--font-ar); color: var(--ink-900); background: var(--white);
+    outline: none; cursor: pointer;
+  }
+  .timeout-select:focus { border-color: var(--brand-700); }
+
+  .sessions-table { width: 100%; border-collapse: collapse; }
+  .sessions-table th {
+    text-align: right; font-size: 11px; color: var(--fg-3); font-weight: 600;
+    letter-spacing: 0.04em; padding: 8px 14px; background: var(--paper-tint);
+    border-bottom: 1px solid var(--hairline);
+  }
+  .sessions-table td { padding: 13px 14px; border-bottom: 1px solid var(--hairline); font-size: 13px; color: var(--ink-800); vertical-align: middle; }
+  .sessions-table tr:last-child td { border-bottom: none; }
+  .sessions-table tr.current-session td { background: rgba(27,77,61,.04); }
+  .session-device { display: flex; align-items: center; gap: 10px; }
+  .session-device .dev-icon { font-size: 20px; }
+  .session-device .dev-name { font-weight: 600; color: var(--ink-900); font-size: 13px; }
+  .session-device .dev-sub { font-size: 11px; color: var(--fg-3); margin-top: 1px; }
+  .current-badge { background: var(--brand-100); color: var(--brand-700); font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+  .session-date { font-family: var(--font-mono); font-size: 12px; color: var(--fg-2); }
+  .session-ip { font-family: var(--font-mono); font-size: 12px; color: var(--fg-3); }
+
+  /* ── Section 4: Audit Log ────────────────────────────────────────────────── */
+  .audit-table { width: 100%; border-collapse: collapse; }
+  .audit-table th {
+    text-align: right; font-size: 11px; color: var(--fg-3); font-weight: 600;
+    letter-spacing: 0.04em; padding: 8px 14px; background: var(--paper-tint);
+    border-bottom: 1px solid var(--hairline);
+  }
+  .audit-table td { padding: 11px 14px; border-bottom: 1px solid var(--hairline); font-size: 12px; color: var(--ink-800); vertical-align: middle; }
+  .audit-table tr:last-child td { border-bottom: none; }
+  .audit-event { display: flex; align-items: center; gap: 8px; }
+  .audit-event .ev-dot { width: 7px; height: 7px; border-radius: 999px; flex-shrink: 0; }
+  .audit-event .ev-dot.ok { background: var(--success-500); }
+  .audit-event .ev-dot.warn { background: var(--warning-500); }
+  .audit-event .ev-dot.err { background: var(--danger-500); }
+  .audit-date { font-family: var(--font-mono); font-size: 11px; color: var(--fg-3); }
+  .audit-user { font-size: 12px; font-weight: 500; color: var(--ink-700); }
+  .audit-ip { font-family: var(--font-mono); font-size: 11px; color: var(--fg-3); }
+  .result-badge { font-size: 10px; font-weight: 700; padding: 2px 9px; border-radius: 999px; }
+  .result-badge.success { background: var(--success-100); color: var(--success-700); }
+  .result-badge.failed { background: var(--danger-100); color: var(--danger-700); }
+  .result-badge.info { background: var(--info-100); color: var(--info-700); }
+
+  /* ── Section 5: Password ─────────────────────────────────────────────────── */
+  .pass-form { max-width: 400px; }
+  .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+  .field label { font-size: 12px; color: var(--ink-800); font-weight: 600; }
+  .field input {
+    padding: 11px 14px; border: 1.5px solid var(--hairline); border-radius: 8px;
+    font-size: 14px; color: var(--ink-900); outline: none; background: var(--white);
+    font-family: var(--font-mono); letter-spacing: 0.1em;
+    transition: border-color 150ms, box-shadow 150ms;
+  }
+  .field input:focus { border-color: var(--brand-700); box-shadow: 0 0 0 3px rgba(27,77,61,.1); }
+  .strength-bar { height: 5px; border-radius: 999px; background: var(--hairline); margin-top: 6px; overflow: hidden; }
+  .strength-bar .fill { height: 100%; border-radius: 999px; transition: width 300ms, background 300ms; }
+  .strength-label { font-size: 11px; margin-top: 4px; font-weight: 600; }
+
+  /* ── Toast ───────────────────────────────────────────────────────────────── */
+  .dh-toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: var(--brand-900); color: var(--paper);
+    padding: 13px 26px; border-radius: 10px;
+    font-size: 14px; font-family: var(--font-ar); z-index: 9999;
+    box-shadow: 0 4px 24px rgba(0,0,0,.3); direction: rtl;
+    opacity: 0; transition: opacity 250ms; pointer-events: none;
+  }
+  .dh-toast.on { opacity: 1; pointer-events: auto; }
+  .dh-toast.err { background: var(--danger-700); }
+
+  /* ── Divider ─────────────────────────────────────────────────────────────── */
+  .sec-divider { border: none; border-top: 1px solid var(--hairline); margin: 0; }
+</style>
+</head>
+<body>
+
+<!-- Top nav -->
+<header class="top">
+  <a class="brand" href="index.html">
+    <img src="/static/dheuof/assets/logo-mark.svg" alt="ضيوف"/>
+    <div><span class="ar">ضيوف</span><span class="en">Dheuof</span></div>
+  </a>
+  <a class="back" href="index.html">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19 7-7-7-7"/></svg>
+    العودة للواجهة الرئيسية
+  </a>
+</header>
+
+<!-- Main content -->
+<div class="page-wrap" data-m-rise>
+
+  <!-- Page header -->
+  <div class="page-header">
+    <span class="eyebrow">SECURITY &amp; PRIVACY</span>
+    <h1>إعدادات الأمان</h1>
+    <p class="lead">إدارة الأمان والخصوصية لحسابك ومنشأتك · التحقق بخطوتين · الجلسات النشطة · سجل التدقيق</p>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- 1. حالة الأمان                                        -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div class="sec-card">
+    <div class="card-head">
+      <div class="icon">🛡️</div>
+      <div>
+        <div class="ttl">حالة الأمان</div>
+        <div class="sub">نظرة عامة على مستوى حماية حسابك</div>
+      </div>
+    </div>
+
+    <div class="score-hero">
+      <div class="score-ring">
+        <svg viewBox="0 0 90 90">
+          <circle class="ring-bg" cx="45" cy="45" r="36"/>
+          <circle class="ring-val" cx="45" cy="45" r="36"/>
+        </svg>
+        <div class="ring-num">78<span>/ 100</span></div>
+      </div>
+      <div class="score-info">
+        <div class="ttl">مستوى الأمان: جيد</div>
+        <div class="sub">حسابك محمي بشكل جيد، لكن هناك بعض التحسينات المقترحة لرفع مستوى الحماية إلى المستوى الأمثل.</div>
+        <div class="score-progress-bar"><div class="fill"></div></div>
+      </div>
+    </div>
+
+    <div class="checklist">
+      <div class="check-item ok">
+        <span class="ci-icon">✓</span>
+        <span class="ci-lbl">تشفير HTTPS · SSL/TLS</span>
+        <span class="ci-badge">مفعّل</span>
+      </div>
+      <div class="check-item ok">
+        <span class="ci-icon">✓</span>
+        <span class="ci-lbl">كلمة مرور قوية</span>
+        <span class="ci-badge">مفعّل</span>
+      </div>
+      <div class="check-item ok">
+        <span class="ci-icon">✓</span>
+        <span class="ci-lbl">حماية CSRF</span>
+        <span class="ci-badge">مفعّل</span>
+      </div>
+      <div class="check-item ok">
+        <span class="ci-icon">✓</span>
+        <span class="ci-lbl">تشفير البيانات الحساسة</span>
+        <span class="ci-badge">مفعّل</span>
+      </div>
+      <div class="check-item warn" id="score-2fa-row">
+        <span class="ci-icon">⚠</span>
+        <span class="ci-lbl">التحقق بخطوتين (غير مفعّل)</span>
+        <span class="ci-badge">يُنصح بتفعيله</span>
+      </div>
+      <div class="check-item warn">
+        <span class="ci-icon">⚠</span>
+        <span class="ci-lbl">مراجعة دورية للصلاحيات</span>
+        <span class="ci-badge">معلّق</span>
+      </div>
+      <div class="check-item warn">
+        <span class="ci-icon">⚠</span>
+        <span class="ci-lbl">سجل التدقيق (Audit Log)</span>
+        <span class="ci-badge">تجريبي</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- 2. التحقق بخطوتين                                     -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div class="sec-card">
+    <div class="card-head">
+      <div class="icon">🔐</div>
+      <div>
+        <div class="ttl">التحقق بخطوتين (2FA)</div>
+        <div class="sub">طبقة حماية إضافية عند تسجيل الدخول</div>
+      </div>
+    </div>
+
+    <div class="twofa-toggle-row">
+      <div>
+        <div class="lbl">تفعيل التحقق بخطوتين</div>
+        <div class="sub">يُضيف طبقة أمان إضافية — يُطلب رمز عند كل دخول</div>
+      </div>
+      <label class="toggle-sw">
+        <input type="checkbox" id="twofa-toggle" onchange="onToggle2FA(this)"/>
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="twofa-setup" id="twofa-setup-panel">
+      <div class="twofa-method-tabs">
+        <button class="twofa-method-tab on" onclick="switch2FATab('app', this)">📱 تطبيق المصادقة</button>
+        <button class="twofa-method-tab" onclick="switch2FATab('sms', this)">💬 رسالة SMS</button>
+      </div>
+
+      <!-- App authenticator panel -->
+      <div class="twofa-panel on" id="twofa-panel-app">
+        <div class="qr-wrap">
+          <div class="qr-box">
+            <div class="qr-mock">⬛</div>
+            <div style="margin-top:6px;font-size:10px;color:var(--fg-3)">QR Code</div>
+          </div>
+          <div>
+            <div class="secret-key-box">
+              <div class="lbl">SECRET KEY</div>
+              <div class="val" id="secret-key-val">JBSWY3DPEHPK3PXP</div>
+            </div>
+            <button class="btn btn-outline" style="margin-top:10px;font-size:12px" onclick="copySecretKey()">نسخ المفتاح</button>
+          </div>
+        </div>
+        <div class="twofa-instructions">
+          <strong>خطوات الإعداد:</strong>
+          <ol>
+            <li>ثبّت <strong>Google Authenticator</strong> أو <strong>Microsoft Authenticator</strong> على هاتفك.</li>
+            <li>افتح التطبيق واختر "إضافة حساب جديد" ثم امسح رمز QR أعلاه.</li>
+            <li>أو أدخل المفتاح السري يدوياً إذا تعذّر مسح الرمز.</li>
+            <li>بعد الإضافة، ستظهر لك أرقام تتغير كل 30 ثانية.</li>
+            <li>أدخل الرمز عند تسجيل الدخول للتحقق.</li>
+          </ol>
+        </div>
+        <div class="app-badges">
+          <div class="app-badge"><span>🔒</span> Google Authenticator</div>
+          <div class="app-badge"><span>🔵</span> Microsoft Authenticator</div>
+          <div class="app-badge"><span>🟢</span> Authy</div>
+        </div>
+      </div>
+
+      <!-- SMS panel -->
+      <div class="twofa-panel" id="twofa-panel-sms">
+        <div class="sms-field">
+          <div class="field-wrap">
+            <label>رقم الجوال</label>
+            <input type="tel" id="sms-phone" placeholder="05XXXXXXXX" dir="ltr" inputmode="numeric"/>
+          </div>
+          <button class="btn btn-primary" onclick="saveSMSPhone()">حفظ الرقم</button>
+        </div>
+        <p style="font-size:12px;color:var(--fg-3);margin-top:8px">
+          سيتم إرسال رمز SMS إلى هذا الرقم في كل مرة تسجّل فيها الدخول.
+          الرسائل مجانية.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- 3. إدارة الجلسات                                      -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div class="sec-card">
+    <div class="card-head">
+      <div class="icon">🖥️</div>
+      <div>
+        <div class="ttl">إدارة الجلسات النشطة</div>
+        <div class="sub">تتبع الأجهزة والمتصفحات المتصلة بحسابك</div>
+      </div>
+    </div>
+
+    <div class="sessions-toolbar">
+      <div class="left-side">
+        <span class="timeout-label">مهلة انتهاء الجلسة:</span>
+        <select class="timeout-select" id="timeout-select" onchange="saveTimeout(this.value)">
+          <option value="7200000">ساعتان</option>
+          <option value="28800000" selected>٨ ساعات (افتراضي)</option>
+          <option value="86400000">٢٤ ساعة</option>
+          <option value="604800000">٧ أيام</option>
+        </select>
+      </div>
+      <button class="btn btn-danger" onclick="endAllSessions()">إنهاء جميع الجلسات الأخرى</button>
+    </div>
+
+    <table class="sessions-table">
+      <thead>
+        <tr>
+          <th>الجهاز / المتصفح</th>
+          <th>تاريخ الدخول</th>
+          <th>الموقع (IP مخفي)</th>
+          <th>الحالة</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="current-session">
+          <td>
+            <div class="session-device">
+              <span class="dev-icon">💻</span>
+              <div>
+                <div class="dev-name">Chrome · Windows 11</div>
+                <div class="dev-sub">هذا الجهاز</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="session-date">2026-06-02 · 09:14</span></td>
+          <td><span class="session-ip">×××.×××.×.×</span></td>
+          <td><span class="current-badge">نشط الآن</span></td>
+        </tr>
+        <tr>
+          <td>
+            <div class="session-device">
+              <span class="dev-icon">📱</span>
+              <div>
+                <div class="dev-name">Safari · iPhone 15</div>
+                <div class="dev-sub">جوال</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="session-date">2026-06-01 · 22:40</span></td>
+          <td><span class="session-ip">×××.×××.×.×</span></td>
+          <td><span class="result-badge info">نشط</span></td>
+        </tr>
+        <tr>
+          <td>
+            <div class="session-device">
+              <span class="dev-icon">💻</span>
+              <div>
+                <div class="dev-name">Firefox · macOS</div>
+                <div class="dev-sub">مكتب</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="session-date">2026-05-30 · 14:05</span></td>
+          <td><span class="session-ip">×××.×××.×.×</span></td>
+          <td><span class="result-badge info">نشط</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- 4. سجل التدقيق                                        -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div class="sec-card">
+    <div class="card-head">
+      <div class="icon">📋</div>
+      <div>
+        <div class="ttl">سجل التدقيق (Audit Log)</div>
+        <div class="sub">آخر ١٠ أحداث على الحساب</div>
+      </div>
+    </div>
+
+    <table class="audit-table">
+      <thead>
+        <tr>
+          <th>التاريخ والوقت</th>
+          <th>الحدث</th>
+          <th>المستخدم</th>
+          <th>IP</th>
+          <th>النتيجة</th>
+        </tr>
+      </thead>
+      <tbody id="audit-tbody">
+        <!-- Populated by JS -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- 5. كلمة المرور                                        -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div class="sec-card">
+    <div class="card-head">
+      <div class="icon">🔑</div>
+      <div>
+        <div class="ttl">تغيير كلمة المرور</div>
+        <div class="sub">يُنصح بتغيير كلمة المرور كل ٩٠ يوماً</div>
+      </div>
+    </div>
+
+    <div class="pass-form">
+      <div class="field">
+        <label>كلمة المرور الحالية</label>
+        <input type="password" id="pass-current" placeholder="••••••••" autocomplete="current-password"/>
+      </div>
+      <div class="field">
+        <label>كلمة المرور الجديدة</label>
+        <input type="password" id="pass-new" placeholder="••••••••" autocomplete="new-password" oninput="checkPassStrength(this.value)"/>
+        <div class="strength-bar"><div class="fill" id="strength-fill" style="width:0%;background:#DDD"></div></div>
+        <div class="strength-label" id="strength-label" style="color:var(--fg-3)">—</div>
+      </div>
+      <div class="field">
+        <label>تأكيد كلمة المرور الجديدة</label>
+        <input type="password" id="pass-confirm" placeholder="••••••••" autocomplete="new-password"/>
+      </div>
+      <button class="btn btn-primary" onclick="changePassword()">حفظ كلمة المرور الجديدة</button>
+    </div>
+  </div>
+
+</div><!-- /page-wrap -->
+
+<!-- Toast -->
+<div class="dh-toast" id="dh-toast"></div>
+
+<script src="/static/dheuof/assets/animations.js"></script>
+<script>
+/* =========================================================================
+   security.html — JavaScript
+   ========================================================================= */
+
+/* ── Toast ─────────────────────────────────────────────────────────────── */
+function showToast(msg, isErr) {
+  var t = document.getElementById('dh-toast');
+  t.textContent = msg;
+  t.className = 'dh-toast on' + (isErr ? ' err' : '');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(function() { t.className = 'dh-toast'; }, 2800);
+}
+
+/* ── 2FA toggle ────────────────────────────────────────────────────────── */
+function onToggle2FA(cb) {
+  var setup = document.getElementById('twofa-setup-panel');
+  var scoreRow = document.getElementById('score-2fa-row');
+
+  if (cb.checked) {
+    setup.classList.add('on');
+    localStorage.setItem('dheuof_2fa_enabled', '1');
+    /* Update session if exists */
+    var rawSession = localStorage.getItem('dheuof_session');
+    if (rawSession) {
+      try {
+        var session = JSON.parse(rawSession);
+        session.twofa = true;
+        localStorage.setItem('dheuof_session', JSON.stringify(session));
+      } catch(e) {}
+    }
+    /* Update score checklist row */
+    if (scoreRow) {
+      scoreRow.className = 'check-item ok';
+      scoreRow.querySelector('.ci-icon').textContent = '✓';
+      scoreRow.querySelector('.ci-lbl').textContent = 'التحقق بخطوتين (مفعّل)';
+      scoreRow.querySelector('.ci-badge').textContent = 'مفعّل';
+    }
+    showToast('تم تفعيل التحقق بخطوتين');
+  } else {
+    setup.classList.remove('on');
+    localStorage.setItem('dheuof_2fa_enabled', '0');
+    /* Update session if exists */
+    var rawSession2 = localStorage.getItem('dheuof_session');
+    if (rawSession2) {
+      try {
+        var session2 = JSON.parse(rawSession2);
+        session2.twofa = false;
+        localStorage.setItem('dheuof_session', JSON.stringify(session2));
+      } catch(e) {}
+    }
+    /* Revert score checklist row */
+    if (scoreRow) {
+      scoreRow.className = 'check-item warn';
+      scoreRow.querySelector('.ci-icon').textContent = '⚠';
+      scoreRow.querySelector('.ci-lbl').textContent = 'التحقق بخطوتين (غير مفعّل)';
+      scoreRow.querySelector('.ci-badge').textContent = 'يُنصح بتفعيله';
+    }
+    showToast('تم إيقاف التحقق بخطوتين');
+  }
+}
+
+/* ── Switch 2FA method tab ─────────────────────────────────────────────── */
+function switch2FATab(tab, btn) {
+  document.querySelectorAll('.twofa-method-tab').forEach(function(b){ b.classList.remove('on'); });
+  document.querySelectorAll('.twofa-panel').forEach(function(p){ p.classList.remove('on'); });
+  btn.classList.add('on');
+  document.getElementById('twofa-panel-' + tab).classList.add('on');
+}
+
+/* ── Copy secret key ───────────────────────────────────────────────────── */
+function copySecretKey() {
+  var val = document.getElementById('secret-key-val').textContent;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(val).then(function(){ showToast('تم نسخ المفتاح السري'); });
+  } else {
+    showToast('تم نسخ المفتاح السري');
+  }
+}
+
+/* ── Save SMS phone ────────────────────────────────────────────────────── */
+function saveSMSPhone() {
+  var phone = (document.getElementById('sms-phone').value || '').trim();
+  var digits = phone.replace(/[\s\-+]/g, '');
+  var ok = /^05\d{8}$/.test(digits) || /^9665\d{8}$/.test(digits);
+  if (!ok) { showToast('أدخل رقم جوال سعودي صحيح (05xxxxxxxx)', true); return; }
+  localStorage.setItem('dheuof_2fa_sms_phone', digits);
+  showToast('تم حفظ رقم الجوال بنجاح');
+}
+
+/* ── Session timeout ───────────────────────────────────────────────────── */
+function saveTimeout(val) {
+  localStorage.setItem('dheuof_session_timeout', val);
+  var labels = { '7200000': 'ساعتان', '28800000': '٨ ساعات', '86400000': '٢٤ ساعة', '604800000': '٧ أيام' };
+  showToast('تم حفظ مهلة الجلسة: ' + (labels[val] || val));
+}
+
+/* ── End all other sessions ────────────────────────────────────────────── */
+function endAllSessions() {
+  if (!confirm('سيتم إنهاء جميع الجلسات الأخرى على الأجهزة الأخرى. متأكد؟')) return;
+  /* Demo: just show toast */
+  showToast('تم إنهاء جميع الجلسات الأخرى');
+}
+
+/* ── Password strength indicator ──────────────────────────────────────── */
+function checkPassStrength(val) {
+  var fill = document.getElementById('strength-fill');
+  var label = document.getElementById('strength-label');
+  var len = val.length;
+  var hasUpper = /[A-Z]/.test(val);
+  var hasLower = /[a-z]/.test(val);
+  var hasNum   = /[0-9]/.test(val);
+  var hasSpec  = /[^A-Za-z0-9]/.test(val);
+  var score = 0;
+  if (len >= 6) score++;
+  if (len >= 10) score++;
+  if (hasUpper && hasLower) score++;
+  if (hasNum) score++;
+  if (hasSpec) score++;
+
+  var map = [
+    { pct: '0%',   bg: '#DDD',                 lbl: '—',         clr: 'var(--fg-3)' },
+    { pct: '20%',  bg: 'var(--danger-500)',    lbl: 'ضعيفة جداً', clr: 'var(--danger-700)' },
+    { pct: '40%',  bg: 'var(--danger-500)',    lbl: 'ضعيفة',      clr: 'var(--danger-700)' },
+    { pct: '60%',  bg: 'var(--warning-500)',   lbl: 'مقبولة',     clr: 'var(--warning-700)' },
+    { pct: '80%',  bg: '#6BAB9A',              lbl: 'جيدة',       clr: 'var(--brand-700)' },
+    { pct: '100%', bg: 'var(--success-500)',   lbl: 'قوية جداً ✓', clr: 'var(--success-700)' },
+  ];
+  var m = map[score];
+  fill.style.width = m.pct;
+  fill.style.background = m.bg;
+  label.textContent = m.lbl;
+  label.style.color = m.clr;
+}
+
+/* ── Change password ───────────────────────────────────────────────────── */
+function changePassword() {
+  var cur  = document.getElementById('pass-current').value || '';
+  var nw   = document.getElementById('pass-new').value || '';
+  var conf = document.getElementById('pass-confirm').value || '';
+  if (!cur) { showToast('أدخل كلمة المرور الحالية', true); return; }
+  if (nw.length < 6) { showToast('كلمة المرور الجديدة يجب أن تكون ٦ أحرف على الأقل', true); return; }
+  if (nw !== conf) { showToast('كلمة المرور الجديدة وتأكيدها غير متطابقتين', true); return; }
+  /* Demo: just save hash hint */
+  localStorage.setItem('dheuof_pass_changed', Date.now().toString());
+  document.getElementById('pass-current').value = '';
+  document.getElementById('pass-new').value = '';
+  document.getElementById('pass-confirm').value = '';
+  checkPassStrength('');
+  showToast('تم تغيير كلمة المرور بنجاح');
+}
+
+/* ── Audit log data ────────────────────────────────────────────────────── */
+var AUDIT_EVENTS = [
+  { ts: '2026-06-02 09:14', event: 'تسجيل دخول', user: 'demo@dheuof.com', ip: '×××.×.×.×', result: 'success', dot: 'ok' },
+  { ts: '2026-06-01 22:40', event: 'تسجيل دخول', user: 'demo@dheuof.com', ip: '×××.×.×.×', result: 'success', dot: 'ok' },
+  { ts: '2026-06-01 22:38', event: 'محاولة دخول فاشلة', user: 'demo@dheuof.com', ip: '×××.×.×.×', result: 'failed', dot: 'err' },
+  { ts: '2026-06-01 18:05', event: 'إنشاء حجز جديد', user: 'demo@dheuof.com', ip: '×××.×.×.×', result: 'success', dot: 'ok' },
+  { ts: '2026-06-01 14:22', event: 'تعديل إعدادات النظام', user: 'demo@dheuof.com', ip: '×××.×.×.×', result: 'info', dot: 'warn' },
+  { ts: '2026-05-31 10:50', event: 'تسجيل خروج', user: 'demo@dheuof.com', ip: '×××.×.×.×', result: 'info', dot: 'ok' },
+  { ts: '2026-05-31 09:15', event: 'تسجيل دخول', user: 'demo@dheuof.com', ip: '×××.×.×.×', result: 'success', dot: 'ok' },
+  { ts: '2026-05-30 14:05', event: 'تغيير كلمة المرور', user: 'demo@dheuof.com', ip: '×××.×.×.×', result: 'success', dot: 'ok' },
+  { ts: '2026-05-30 11:40', event: 'تفعيل التحقق بخطوتين', user: 'demo@dheuof.com', ip: '×××.×.×.×', result: 'info', dot: 'warn' },
+  { ts: '2026-05-29 08:30', event: 'تسجيل دخول', user: 'demo@dheuof.com', ip: '×××.×.×.×', result: 'success', dot: 'ok' },
+];
+
+function buildAuditLog() {
+  var tbody = document.getElementById('audit-tbody');
+  var resultLabels = { success: 'نجح', failed: 'فشل', info: 'معلومة' };
+  tbody.innerHTML = AUDIT_EVENTS.map(function(ev) {
+    return '<tr>' +
+      '<td><span class="audit-date">' + ev.ts + '</span></td>' +
+      '<td><div class="audit-event"><div class="ev-dot ' + ev.dot + '"></div>' + ev.event + '</div></td>' +
+      '<td><span class="audit-user">' + ev.user + '</span></td>' +
+      '<td><span class="audit-ip">' + ev.ip + '</span></td>' +
+      '<td><span class="result-badge ' + ev.result + '">' + (resultLabels[ev.result] || ev.result) + '</span></td>' +
+    '</tr>';
+  }).join('');
+}
+
+/* ── Init ──────────────────────────────────────────────────────────────── */
+(function init() {
+  /* Restore 2FA toggle state */
+  var twoFAEnabled = localStorage.getItem('dheuof_2fa_enabled') === '1';
+  var toggle = document.getElementById('twofa-toggle');
+  if (toggle) {
+    toggle.checked = twoFAEnabled;
+    if (twoFAEnabled) {
+      document.getElementById('twofa-setup-panel').classList.add('on');
+      /* update score row */
+      var scoreRow = document.getElementById('score-2fa-row');
+      if (scoreRow) {
+        scoreRow.className = 'check-item ok';
+        scoreRow.querySelector('.ci-icon').textContent = '✓';
+        scoreRow.querySelector('.ci-lbl').textContent = 'التحقق بخطوتين (مفعّل)';
+        scoreRow.querySelector('.ci-badge').textContent = 'مفعّل';
+      }
+    }
+  }
+
+  /* Restore timeout selector */
+  var savedTimeout = localStorage.getItem('dheuof_session_timeout');
+  if (savedTimeout) {
+    var sel = document.getElementById('timeout-select');
+    if (sel) sel.value = savedTimeout;
+  }
+
+  /* Restore SMS phone */
+  var savedPhone = localStorage.getItem('dheuof_2fa_sms_phone');
+  if (savedPhone) {
+    var phoneEl = document.getElementById('sms-phone');
+    if (phoneEl) phoneEl.value = savedPhone;
+  }
+
+  buildAuditLog();
+
+  /* Animate score ring on load */
+  setTimeout(function() {
+    var ring = document.querySelector('.ring-val');
+    if (ring) ring.style.strokeDashoffset = '49';
+  }, 300);
+})();
+</script>
+
+</body>
+</html>

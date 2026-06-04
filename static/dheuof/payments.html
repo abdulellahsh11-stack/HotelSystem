@@ -1,0 +1,801 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-screen-label="Payment Gateway Settings">
+<head>
+<meta charset="utf-8"/>
+<title>ضيوف · إعدادات بوابات الدفع</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="stylesheet" href="/static/dheuof/colors_and_type.css"/>
+<link rel="stylesheet" href="/static/dheuof/assets/animations.css"/>
+<style>
+  html, body { margin: 0; padding: 0; }
+  body { background: var(--paper); color: var(--ink-900); font-family: var(--font-ar); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+  * { box-sizing: border-box; }
+  a { text-decoration: none; color: inherit; }
+  button, input, select { font: inherit; }
+
+  /* ── Top bar ─────────────────────────────────────────────────────────── */
+  .top {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 32px;
+    border-bottom: 1px solid var(--hairline);
+    background: var(--white);
+    position: sticky; top: 0; z-index: var(--z-sticky);
+  }
+  .top .brand { display: inline-flex; align-items: center; gap: 12px; }
+  .top .brand img { width: 36px; height: 36px; }
+  .top .brand .ar { font-family: var(--font-ar-display); font-weight: 600; font-size: 20px; }
+  .top .brand .en { font-family: var(--font-en-display); font-style: italic; font-size: 13px; color: var(--gold-700); margin-inline-start: 4px; }
+  .top .back { font-size: 13px; color: var(--fg-2); display: flex; align-items: center; gap: 6px; transition: color 140ms; }
+  .top .back:hover { color: var(--ink-900); }
+
+  /* ── Page hero ───────────────────────────────────────────────────────── */
+  .hero {
+    max-width: 1080px; margin: 44px auto 36px; padding: 0 32px;
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 24px;
+    flex-wrap: wrap;
+  }
+  .hero-text .eyebrow {
+    font-family: var(--font-en); font-size: 11px; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--gold-700); font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .hero-text h1 {
+    font-family: var(--font-ar-display); font-weight: 600; font-size: 38px;
+    color: var(--ink-900); margin: 0 0 8px; line-height: 1.15;
+  }
+  .hero-text .lead { font-size: 15px; color: var(--fg-2); line-height: 1.6; margin: 0; }
+  .hero-badges { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+
+  /* PCI Badge */
+  .pci-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, #1a3a2a, #0e2a1e);
+    border: 1px solid var(--gold-500);
+    border-radius: 10px; padding: 10px 16px;
+    color: var(--gold-400);
+  }
+  .pci-badge .icon {
+    width: 32px; height: 32px; background: var(--gold-500); border-radius: 6px;
+    display: grid; place-items: center; font-size: 15px; color: var(--brand-900);
+    font-weight: 700; flex-shrink: 0;
+  }
+  .pci-badge .txt .l1 { font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: var(--gold-400); }
+  .pci-badge .txt .l2 { font-size: 11px; color: var(--gold-300); margin-top: 2px; }
+
+  /* ── Content wrapper ─────────────────────────────────────────────────── */
+  .page-body { max-width: 1080px; margin: 0 auto 80px; padding: 0 32px; display: flex; flex-direction: column; gap: 36px; }
+
+  /* ── Section block ───────────────────────────────────────────────────── */
+  .section-block {
+    background: var(--white);
+    border: 1px solid var(--hairline);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .section-head {
+    padding: 20px 28px 16px;
+    border-bottom: 1px solid var(--hairline);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .section-head .stitle {
+    font-family: var(--font-ar-display); font-weight: 600; font-size: 19px; color: var(--ink-900);
+  }
+  .section-head .ssub { font-size: 13px; color: var(--fg-2); margin-top: 3px; }
+  .section-body { padding: 24px 28px; }
+
+  /* ── Gateway 2×2 grid ────────────────────────────────────────────────── */
+  .gw-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+  .gw-card {
+    border: 1.5px solid var(--hairline);
+    border-radius: 12px;
+    padding: 22px 22px 20px;
+    background: var(--paper);
+    display: flex; flex-direction: column; gap: 16px;
+    transition: border-color 180ms, box-shadow 180ms;
+  }
+  .gw-card:hover { border-color: var(--gold-300); box-shadow: var(--shadow-2); }
+  .gw-card.active { border-color: var(--brand-400); background: var(--brand-50); }
+
+  .gw-header { display: flex; align-items: center; justify-content: space-between; }
+  .gw-logo {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 56px; height: 36px; border-radius: 8px;
+    font-family: var(--font-en); font-weight: 700; font-size: 13px; letter-spacing: 0.02em;
+  }
+  .gw-logo.tap { background: #0070BA; color: #fff; }
+  .gw-logo.moyasar { background: #7A26C2; color: #fff; font-size: 11px; }
+  .gw-logo.stripe { background: linear-gradient(135deg, #635BFF, #A162FF); color: #fff; font-style: italic; }
+  .gw-logo.paytabs { background: #1E88E5; color: #fff; font-size: 10px; }
+
+  .gw-status-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 600;
+  }
+  .gw-status-badge.on { background: var(--success-100); color: var(--success-700); }
+  .gw-status-badge.off { background: var(--ink-50); color: var(--ink-400); }
+  .gw-status-badge .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+  }
+  .gw-status-badge.on .dot { background: var(--success-500); }
+  .gw-status-badge.off .dot { background: var(--ink-300); }
+
+  .gw-name { font-weight: 600; font-size: 15px; color: var(--ink-900); }
+  .gw-desc { font-size: 12px; color: var(--fg-3); margin-top: 2px; }
+
+  .gw-fields { display: flex; flex-direction: column; gap: 10px; }
+  .gw-field { display: flex; flex-direction: column; gap: 5px; }
+  .gw-field label { font-size: 12px; color: var(--ink-700); font-weight: 500; }
+  .gw-field input {
+    font-family: var(--font-mono); font-size: 13px;
+    padding: 9px 12px; border-radius: 7px;
+    border: 1px solid var(--ink-100); background: var(--white);
+    color: var(--ink-900); outline: none;
+    transition: border-color 160ms, box-shadow 160ms;
+  }
+  .gw-field input:focus { border-color: var(--brand-700); box-shadow: var(--shadow-focus); }
+  .gw-field input:disabled { background: var(--sand); color: var(--fg-3); }
+
+  /* Mode toggle row */
+  .mode-row {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--sand); border-radius: 8px; padding: 10px 14px;
+    font-size: 13px;
+  }
+  .mode-row .mode-label { color: var(--ink-700); font-weight: 500; }
+  .mode-row .mode-chips {
+    display: flex; gap: 4px;
+  }
+  .mode-chip {
+    padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: 600;
+    border: none; cursor: pointer; transition: background 160ms, color 160ms;
+  }
+  .mode-chip.active.test { background: var(--warning-700); color: #fff; }
+  .mode-chip.active.live { background: var(--success-700); color: #fff; }
+  .mode-chip:not(.active) { background: transparent; color: var(--fg-3); }
+
+  .gw-actions { display: flex; gap: 8px; }
+  .btn-save {
+    flex: 1; padding: 10px 0; border-radius: 8px;
+    background: var(--brand-700); color: var(--paper); border: none;
+    font-weight: 600; font-size: 13px; cursor: pointer;
+    transition: background 160ms;
+  }
+  .btn-save:hover { background: var(--brand-800); }
+  .btn-enable {
+    flex: 1; padding: 10px 0; border-radius: 8px;
+    background: transparent; color: var(--brand-700);
+    border: 1.5px solid var(--brand-700);
+    font-weight: 600; font-size: 13px; cursor: pointer;
+    transition: background 160ms, color 160ms;
+  }
+  .btn-enable:hover { background: var(--brand-700); color: var(--paper); }
+
+  /* ── Payment method chips ────────────────────────────────────────────── */
+  .method-chips { display: flex; flex-wrap: wrap; gap: 10px; }
+  .method-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px; border-radius: 999px; border: 1.5px solid var(--hairline);
+    font-size: 13px; font-weight: 500; cursor: pointer;
+    transition: border-color 160ms, background 160ms, color 160ms;
+    user-select: none;
+    background: var(--white); color: var(--ink-700);
+  }
+  .method-chip.selected {
+    background: var(--brand-700); color: var(--paper); border-color: var(--brand-700);
+  }
+  .method-chip .check { font-size: 11px; opacity: 0; transition: opacity 140ms; }
+  .method-chip.selected .check { opacity: 1; }
+
+  /* ── Billing toggles ─────────────────────────────────────────────────── */
+  .billing-rows { display: flex; flex-direction: column; gap: 0; }
+  .billing-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 0; border-bottom: 1px solid var(--hairline);
+  }
+  .billing-row:last-child { border-bottom: none; }
+  .billing-row .br-text .br-title { font-size: 14px; font-weight: 500; color: var(--ink-900); }
+  .billing-row .br-text .br-sub { font-size: 12px; color: var(--fg-3); margin-top: 3px; }
+  .billing-row .br-end { display: flex; align-items: center; gap: 12px; }
+
+  /* iOS-style toggle */
+  .toggle-wrap { display: flex; align-items: center; gap: 0; }
+  .toggle-input { display: none; }
+  .toggle-label {
+    width: 44px; height: 24px; background: var(--ink-200); border-radius: 999px;
+    position: relative; cursor: pointer; transition: background 180ms;
+    display: block;
+  }
+  .toggle-label::after {
+    content: ""; position: absolute; top: 3px; inset-inline-start: 3px;
+    width: 18px; height: 18px; background: var(--white);
+    border-radius: 50%; transition: inset-inline-start 180ms, transform 180ms;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .toggle-input:checked + .toggle-label { background: var(--brand-700); }
+  .toggle-input:checked + .toggle-label::after {
+    inset-inline-start: calc(100% - 21px);
+  }
+
+  .zatca-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--success-100); color: var(--success-700);
+    padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 600;
+  }
+  .zatca-badge::before { content: "✓"; font-size: 10px; }
+
+  .wa-number {
+    font-family: var(--font-mono); font-size: 13px;
+    padding: 7px 10px; border-radius: 6px;
+    border: 1px solid var(--ink-100); background: var(--white);
+    color: var(--ink-900); outline: none; width: 160px;
+    transition: border-color 160ms;
+  }
+  .wa-number:focus { border-color: var(--brand-700); box-shadow: var(--shadow-focus); }
+
+  /* ── Recent transactions table ───────────────────────────────────────── */
+  .txn-table { width: 100%; border-collapse: collapse; }
+  .txn-table th {
+    font-size: 11px; font-weight: 600; color: var(--fg-3);
+    text-align: right; padding: 0 14px 12px; letter-spacing: 0.04em;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .txn-table td {
+    padding: 13px 14px; font-size: 13px; color: var(--ink-700);
+    border-bottom: 1px solid var(--hairline);
+  }
+  .txn-table tr:last-child td { border-bottom: none; }
+  .txn-table tr:hover td { background: var(--paper); }
+  .txn-amount { font-family: var(--font-mono); font-weight: 600; color: var(--ink-900); }
+  .txn-ref { font-family: var(--font-mono); font-size: 11px; color: var(--fg-3); }
+  .txn-status {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 600;
+  }
+  .txn-status.success { background: var(--success-100); color: var(--success-700); }
+  .txn-status.pending { background: var(--warning-100); color: var(--warning-700); }
+  .txn-status.failed  { background: var(--danger-100);  color: var(--danger-700);  }
+
+  /* ── Toast ───────────────────────────────────────────────────────────── */
+  .toast {
+    position: fixed; bottom: 28px; inset-inline-start: 50%; transform: translateX(-50%);
+    background: var(--ink-900); color: var(--paper);
+    padding: 12px 22px; border-radius: 10px;
+    font-size: 14px; font-weight: 500;
+    box-shadow: var(--shadow-4);
+    opacity: 0; pointer-events: none;
+    transition: opacity 220ms, bottom 220ms;
+    z-index: var(--z-toast);
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; bottom: 36px; pointer-events: auto; }
+  .toast .toast-icon { color: var(--gold-400); margin-inline-end: 8px; }
+
+  /* ── Responsive ──────────────────────────────────────────────────────── */
+  @media (max-width: 780px) {
+    .gw-grid { grid-template-columns: 1fr; }
+    .hero { flex-direction: column; gap: 16px; }
+    .hero-text h1 { font-size: 28px; }
+    .top { padding: 14px 20px; }
+    .section-body { padding: 18px 20px; }
+    .page-body { padding: 0 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Top bar ─────────────────────────────────────────────────────────── -->
+<header class="top">
+  <a class="brand" href="/static/dheuof/index.html">
+    <img src="/static/dheuof/assets/logo-mark.svg" alt="ضيوف"/>
+    <div><span class="ar">ضيوف</span><span class="en">Dheuof</span></div>
+  </a>
+  <a class="back" href="/static/dheuof/index.html">← العودة</a>
+</header>
+
+<!-- ── Hero ───────────────────────────────────────────────────────────── -->
+<div class="hero" data-m-rise>
+  <div class="hero-text">
+    <div class="eyebrow">PAYMENT GATEWAY SETTINGS</div>
+    <h1>إعدادات بوابات الدفع</h1>
+    <p class="lead">ربط وإدارة بوابات الدفع الإلكتروني · PCI-DSS متوافق</p>
+  </div>
+  <div class="hero-badges">
+    <div class="pci-badge">
+      <div class="icon">🔒</div>
+      <div class="txt">
+        <div class="l1">PCI-DSS COMPLIANT</div>
+        <div class="l2">معيار أمان بيانات بطاقات الدفع</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Page body ──────────────────────────────────────────────────────── -->
+<div class="page-body">
+
+  <!-- Section 1: بوابات الدفع المتاحة -->
+  <div class="section-block" data-m-rise>
+    <div class="section-head">
+      <div>
+        <div class="stitle">بوابات الدفع المتاحة</div>
+        <div class="ssub">اربط بوابة أو أكثر لاستقبال مدفوعات الضيوف</div>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="gw-grid">
+
+        <!-- Tap Payment -->
+        <div class="gw-card active" id="card-tap">
+          <div class="gw-header">
+            <div class="gw-logo tap">Tap</div>
+            <span class="gw-status-badge on"><span class="dot"></span>مفعّل</span>
+          </div>
+          <div>
+            <div class="gw-name">Tap Payment</div>
+            <div class="gw-desc">الأكثر انتشاراً في الخليج</div>
+          </div>
+          <div class="gw-fields">
+            <div class="gw-field">
+              <label>مفتاح API الحي</label>
+              <input type="password" id="tap-live-key" placeholder="sk_live_••••••••••••••••" autocomplete="off"/>
+            </div>
+            <div class="gw-field">
+              <label>مفتاح API التجريبي</label>
+              <input type="password" id="tap-test-key" placeholder="sk_test_••••••••••••••••" autocomplete="off"/>
+            </div>
+          </div>
+          <div class="mode-row">
+            <span class="mode-label">الوضع الحالي</span>
+            <div class="mode-chips">
+              <button class="mode-chip test" data-gw="tap" data-mode="test" onclick="setMode('tap','test',this)">اختبار</button>
+              <button class="mode-chip live active" data-gw="tap" data-mode="live" onclick="setMode('tap','live',this)">حي</button>
+            </div>
+          </div>
+          <div class="gw-actions">
+            <button class="btn-save" onclick="saveGateway('tap')">حفظ الإعدادات</button>
+          </div>
+        </div>
+
+        <!-- Moyasar -->
+        <div class="gw-card" id="card-moyasar">
+          <div class="gw-header">
+            <div class="gw-logo moyasar">Moyasar</div>
+            <span class="gw-status-badge off"><span class="dot"></span>غير مفعّل</span>
+          </div>
+          <div>
+            <div class="gw-name">Moyasar</div>
+            <div class="gw-desc">بوابة سعودية محلية</div>
+          </div>
+          <div class="gw-fields">
+            <div class="gw-field">
+              <label>مفتاح API الحي</label>
+              <input type="password" id="moyasar-live-key" placeholder="pk_live_••••••••••••••••" autocomplete="off"/>
+            </div>
+            <div class="gw-field">
+              <label>مفتاح API التجريبي</label>
+              <input type="password" id="moyasar-test-key" placeholder="pk_test_••••••••••••••••" autocomplete="off"/>
+            </div>
+          </div>
+          <div class="mode-row">
+            <span class="mode-label">الوضع الحالي</span>
+            <div class="mode-chips">
+              <button class="mode-chip test active" data-gw="moyasar" data-mode="test" onclick="setMode('moyasar','test',this)">اختبار</button>
+              <button class="mode-chip live" data-gw="moyasar" data-mode="live" onclick="setMode('moyasar','live',this)">حي</button>
+            </div>
+          </div>
+          <div class="gw-actions">
+            <button class="btn-enable" onclick="enableGateway('moyasar')">تفعيل</button>
+          </div>
+        </div>
+
+        <!-- Stripe -->
+        <div class="gw-card" id="card-stripe">
+          <div class="gw-header">
+            <div class="gw-logo stripe">stripe</div>
+            <span class="gw-status-badge off"><span class="dot"></span>غير مفعّل</span>
+          </div>
+          <div>
+            <div class="gw-name">Stripe</div>
+            <div class="gw-desc">للمدفوعات الدولية</div>
+          </div>
+          <div class="gw-fields">
+            <div class="gw-field">
+              <label>مفتاح API الحي</label>
+              <input type="password" id="stripe-live-key" placeholder="sk_live_••••••••••••••••" autocomplete="off"/>
+            </div>
+            <div class="gw-field">
+              <label>مفتاح API التجريبي</label>
+              <input type="password" id="stripe-test-key" placeholder="sk_test_••••••••••••••••" autocomplete="off"/>
+            </div>
+          </div>
+          <div class="mode-row">
+            <span class="mode-label">الوضع الحالي</span>
+            <div class="mode-chips">
+              <button class="mode-chip test active" data-gw="stripe" data-mode="test" onclick="setMode('stripe','test',this)">اختبار</button>
+              <button class="mode-chip live" data-gw="stripe" data-mode="live" onclick="setMode('stripe','live',this)">حي</button>
+            </div>
+          </div>
+          <div class="gw-actions">
+            <button class="btn-enable" onclick="enableGateway('stripe')">تفعيل</button>
+          </div>
+        </div>
+
+        <!-- PayTabs -->
+        <div class="gw-card" id="card-paytabs">
+          <div class="gw-header">
+            <div class="gw-logo paytabs">#PayTabs</div>
+            <span class="gw-status-badge off"><span class="dot"></span>غير مفعّل</span>
+          </div>
+          <div>
+            <div class="gw-name">PayTabs</div>
+            <div class="gw-desc">الأكثر في السعودية</div>
+          </div>
+          <div class="gw-fields">
+            <div class="gw-field">
+              <label>مفتاح API الحي</label>
+              <input type="password" id="paytabs-live-key" placeholder="live_••••••••••••••••" autocomplete="off"/>
+            </div>
+            <div class="gw-field">
+              <label>مفتاح API التجريبي</label>
+              <input type="password" id="paytabs-test-key" placeholder="test_••••••••••••••••" autocomplete="off"/>
+            </div>
+          </div>
+          <div class="mode-row">
+            <span class="mode-label">الوضع الحالي</span>
+            <div class="mode-chips">
+              <button class="mode-chip test active" data-gw="paytabs" data-mode="test" onclick="setMode('paytabs','test',this)">اختبار</button>
+              <button class="mode-chip live" data-gw="paytabs" data-mode="live" onclick="setMode('paytabs','live',this)">حي</button>
+            </div>
+          </div>
+          <div class="gw-actions">
+            <button class="btn-enable" onclick="enableGateway('paytabs')">تفعيل</button>
+          </div>
+        </div>
+
+      </div><!-- /gw-grid -->
+    </div><!-- /section-body -->
+  </div><!-- /section-block -->
+
+  <!-- Section 2: طرق الدفع المقبولة -->
+  <div class="section-block" data-m-rise>
+    <div class="section-head">
+      <div>
+        <div class="stitle">طرق الدفع المقبولة</div>
+        <div class="ssub">اختر وسائل الدفع التي تريد تفعيلها للضيوف</div>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="method-chips" id="method-chips">
+        <div class="method-chip selected" data-method="mada" onclick="toggleMethod(this)">
+          <span class="check">✓</span> مدى
+        </div>
+        <div class="method-chip selected" data-method="visa" onclick="toggleMethod(this)">
+          <span class="check">✓</span> Visa
+        </div>
+        <div class="method-chip selected" data-method="mastercard" onclick="toggleMethod(this)">
+          <span class="check">✓</span> Mastercard
+        </div>
+        <div class="method-chip selected" data-method="applepay" onclick="toggleMethod(this)">
+          <span class="check">✓</span> Apple Pay
+        </div>
+        <div class="method-chip" data-method="stcpay" onclick="toggleMethod(this)">
+          <span class="check">✓</span> STC Pay
+        </div>
+        <div class="method-chip" data-method="tabby" onclick="toggleMethod(this)">
+          <span class="check">✓</span> Tabby تقسيط
+        </div>
+        <div class="method-chip" data-method="tamara" onclick="toggleMethod(this)">
+          <span class="check">✓</span> Tamara تقسيط
+        </div>
+        <div class="method-chip" data-method="applecash" onclick="toggleMethod(this)">
+          <span class="check">✓</span> آبل كاش
+        </div>
+      </div>
+      <div style="margin-top: 16px; text-align: end;">
+        <button class="btn-save" style="width: auto; padding: 10px 24px;" onclick="saveMethods()">حفظ طرق الدفع</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 3: إعدادات الفوترة -->
+  <div class="section-block" data-m-rise>
+    <div class="section-head">
+      <div>
+        <div class="stitle">إعدادات الفوترة</div>
+        <div class="ssub">إدارة الفواتير الإلكترونية وتكامل زاتكا</div>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="billing-rows">
+
+        <div class="billing-row">
+          <div class="br-text">
+            <div class="br-title">فاتورة إلكترونية تلقائية</div>
+            <div class="br-sub">إنشاء فاتورة PDF عند كل عملية دفع مكتملة</div>
+          </div>
+          <div class="br-end">
+            <input type="checkbox" class="toggle-input" id="tog-autoinvoice" checked onchange="saveBilling()"/>
+            <label class="toggle-label" for="tog-autoinvoice"></label>
+          </div>
+        </div>
+
+        <div class="billing-row">
+          <div class="br-text">
+            <div class="br-title">إرسال الفاتورة بالبريد</div>
+            <div class="br-sub">إرسال نسخة PDF للضيف عبر البريد الإلكتروني تلقائياً</div>
+          </div>
+          <div class="br-end">
+            <input type="checkbox" class="toggle-input" id="tog-emailinvoice" checked onchange="saveBilling()"/>
+            <label class="toggle-label" for="tog-emailinvoice"></label>
+          </div>
+        </div>
+
+        <div class="billing-row">
+          <div class="br-text">
+            <div class="br-title">إرسال بالواتساب</div>
+            <div class="br-sub">رقم الواتساب لإرسال الفواتير والإشعارات</div>
+          </div>
+          <div class="br-end">
+            <input type="text" class="wa-number" id="wa-number" placeholder="+966 5x xxx xxxx" dir="ltr" value="" oninput="saveBilling()"/>
+            <input type="checkbox" class="toggle-input" id="tog-wainvoice" onchange="saveBilling()"/>
+            <label class="toggle-label" for="tog-wainvoice"></label>
+          </div>
+        </div>
+
+        <div class="billing-row">
+          <div class="br-text">
+            <div class="br-title">تكامل زاتكا (الفوترة الإلكترونية)</div>
+            <div class="br-sub">الفواتير الإلكترونية المتوافقة مع اشتراطات هيئة الزكاة والضريبة</div>
+          </div>
+          <div class="br-end">
+            <span class="zatca-badge">مفعّل · المرحلة الثانية</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 4: معاملات الدفع الأخيرة -->
+  <div class="section-block" data-m-rise>
+    <div class="section-head">
+      <div>
+        <div class="stitle">معاملات الدفع الأخيرة</div>
+        <div class="ssub">آخر ٥ معاملات مسجّلة عبر البوابة</div>
+      </div>
+    </div>
+    <div class="section-body" style="padding: 0;">
+      <table class="txn-table">
+        <thead>
+          <tr>
+            <th>التاريخ</th>
+            <th>المبلغ</th>
+            <th>الطريقة</th>
+            <th>الحالة</th>
+            <th>المرجع</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>2026-06-01 14:22</td>
+            <td class="txn-amount">٧٥٠.٠٠ ر.س</td>
+            <td>Visa · 4532</td>
+            <td><span class="txn-status success">ناجح</span></td>
+            <td class="txn-ref">TXN-2026060001</td>
+          </tr>
+          <tr>
+            <td>2026-06-01 11:05</td>
+            <td class="txn-amount">١٢٠٠.٠٠ ر.س</td>
+            <td>مدى · 6011</td>
+            <td><span class="txn-status success">ناجح</span></td>
+            <td class="txn-ref">TXN-2026060002</td>
+          </tr>
+          <tr>
+            <td>2026-05-31 19:48</td>
+            <td class="txn-amount">٤٥٠.٠٠ ر.س</td>
+            <td>Apple Pay</td>
+            <td><span class="txn-status pending">معلّق</span></td>
+            <td class="txn-ref">TXN-2026053101</td>
+          </tr>
+          <tr>
+            <td>2026-05-31 09:33</td>
+            <td class="txn-amount">٩٨٠.٠٠ ر.س</td>
+            <td>Mastercard · 5200</td>
+            <td><span class="txn-status failed">مرفوض</span></td>
+            <td class="txn-ref">TXN-2026053102</td>
+          </tr>
+          <tr>
+            <td>2026-05-30 16:17</td>
+            <td class="txn-amount">٣٣٠.٠٠ ر.س</td>
+            <td>مدى · 4010</td>
+            <td><span class="txn-status success">ناجح</span></td>
+            <td class="txn-ref">TXN-2026053001</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /page-body -->
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <span class="toast-icon">✓</span><span id="toast-msg">تم الحفظ بنجاح</span>
+</div>
+
+<script src="/static/dheuof/assets/animations.js"></script>
+<script>
+// ── Fallback visibility ────────────────────────────────────────────────
+setTimeout(function(){
+  document.querySelectorAll('[data-m-rise],[data-m-rise-stagger]').forEach(function(el){
+    el.classList.add('is-in');
+  });
+}, 80);
+
+// ── Storage key ────────────────────────────────────────────────────────
+var STORE_KEY = 'dheuof_payment_settings';
+
+function loadSettings() {
+  try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; } catch(e) { return {}; }
+}
+function saveSettings(data) {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch(e) {}
+}
+
+// ── Toast ──────────────────────────────────────────────────────────────
+var toastTimer;
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg || 'تم الحفظ بنجاح';
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 2400);
+}
+
+// ── Mode chips ─────────────────────────────────────────────────────────
+function setMode(gw, mode, btn) {
+  var parent = btn.closest('.mode-chips');
+  parent.querySelectorAll('.mode-chip').forEach(function(c){ c.classList.remove('active'); });
+  btn.classList.add('active');
+  var s = loadSettings();
+  if (!s.gateways) s.gateways = {};
+  if (!s.gateways[gw]) s.gateways[gw] = {};
+  s.gateways[gw].mode = mode;
+  saveSettings(s);
+}
+
+// ── Save gateway keys ──────────────────────────────────────────────────
+function saveGateway(gw) {
+  var liveKey  = document.getElementById(gw + '-live-key').value;
+  var testKey  = document.getElementById(gw + '-test-key').value;
+  var modeChip = document.querySelector('[data-gw="' + gw + '"].mode-chip.active');
+  var mode     = modeChip ? modeChip.dataset.mode : 'test';
+
+  var s = loadSettings();
+  if (!s.gateways) s.gateways = {};
+  s.gateways[gw] = { liveKey: liveKey, testKey: testKey, mode: mode, active: true };
+  saveSettings(s);
+  showToast('تم حفظ إعدادات ' + gw);
+}
+
+// ── Enable gateway ─────────────────────────────────────────────────────
+function enableGateway(gw) {
+  var liveKey = document.getElementById(gw + '-live-key').value;
+  var testKey = document.getElementById(gw + '-test-key').value;
+  if (!liveKey && !testKey) {
+    showToast('الرجاء إدخال مفتاح API أولاً');
+    document.getElementById(gw + '-live-key').focus();
+    return;
+  }
+  var s = loadSettings();
+  if (!s.gateways) s.gateways = {};
+  var modeChip = document.querySelector('[data-gw="' + gw + '"].mode-chip.active');
+  s.gateways[gw] = { liveKey: liveKey, testKey: testKey, mode: modeChip ? modeChip.dataset.mode : 'test', active: true };
+  saveSettings(s);
+
+  // Update badge in card
+  var card = document.getElementById('card-' + gw);
+  var badge = card.querySelector('.gw-status-badge');
+  badge.className = 'gw-status-badge on';
+  badge.innerHTML = '<span class="dot"></span>مفعّل';
+  card.classList.add('active');
+
+  // Swap button to save
+  var btn = card.querySelector('.btn-enable');
+  btn.className = 'btn-save';
+  btn.textContent = 'حفظ الإعدادات';
+  btn.setAttribute('onclick', "saveGateway('" + gw + "')");
+
+  showToast('تم تفعيل ' + gw + ' بنجاح');
+}
+
+// ── Method chips ───────────────────────────────────────────────────────
+function toggleMethod(chip) {
+  chip.classList.toggle('selected');
+}
+
+function saveMethods() {
+  var selected = [];
+  document.querySelectorAll('#method-chips .method-chip.selected').forEach(function(c){
+    selected.push(c.dataset.method);
+  });
+  var s = loadSettings();
+  s.methods = selected;
+  saveSettings(s);
+  showToast('تم حفظ طرق الدفع');
+}
+
+// ── Billing toggles ────────────────────────────────────────────────────
+function saveBilling() {
+  var s = loadSettings();
+  s.billing = {
+    autoInvoice:  document.getElementById('tog-autoinvoice').checked,
+    emailInvoice: document.getElementById('tog-emailinvoice').checked,
+    waInvoice:    document.getElementById('tog-wainvoice').checked,
+    waNumber:     document.getElementById('wa-number').value
+  };
+  saveSettings(s);
+}
+
+// ── Restore saved state ────────────────────────────────────────────────
+(function restoreState() {
+  var s = loadSettings();
+
+  // Gateways
+  if (s.gateways) {
+    ['tap','moyasar','stripe','paytabs'].forEach(function(gw) {
+      var g = s.gateways[gw];
+      if (!g) return;
+      var lk = document.getElementById(gw + '-live-key');
+      var tk = document.getElementById(gw + '-test-key');
+      if (lk && g.liveKey) lk.value = g.liveKey;
+      if (tk && g.testKey) tk.value = g.testKey;
+      if (g.mode) {
+        var parent = document.querySelector('[data-gw="' + gw + '"][data-mode="' + g.mode + '"]');
+        if (parent) {
+          parent.closest('.mode-chips').querySelectorAll('.mode-chip').forEach(function(c){ c.classList.remove('active'); });
+          parent.classList.add('active');
+        }
+      }
+      if (g.active && gw !== 'tap') {
+        var card = document.getElementById('card-' + gw);
+        if (card) {
+          var badge = card.querySelector('.gw-status-badge');
+          badge.className = 'gw-status-badge on';
+          badge.innerHTML = '<span class="dot"></span>مفعّل';
+          card.classList.add('active');
+          var btn = card.querySelector('.btn-enable');
+          if (btn) {
+            btn.className = 'btn-save';
+            btn.textContent = 'حفظ الإعدادات';
+            btn.setAttribute('onclick', "saveGateway('" + gw + "')");
+          }
+        }
+      }
+    });
+  }
+
+  // Methods
+  if (s.methods) {
+    document.querySelectorAll('#method-chips .method-chip').forEach(function(c){
+      if (s.methods.indexOf(c.dataset.method) !== -1) {
+        c.classList.add('selected');
+      } else {
+        c.classList.remove('selected');
+      }
+    });
+  }
+
+  // Billing
+  if (s.billing) {
+    var b = s.billing;
+    document.getElementById('tog-autoinvoice').checked  = !!b.autoInvoice;
+    document.getElementById('tog-emailinvoice').checked = !!b.emailInvoice;
+    document.getElementById('tog-wainvoice').checked    = !!b.waInvoice;
+    document.getElementById('wa-number').value          = b.waNumber || '';
+  }
+})();
+</script>
+</body>
+</html>
