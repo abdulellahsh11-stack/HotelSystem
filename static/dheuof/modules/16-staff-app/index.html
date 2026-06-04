@@ -231,13 +231,7 @@
 
 <script>
 /* ============ بيانات الموظفين ============ */
-var STAFF = [
-  { id:'u1', name:'أحمد الزهراني', role:'مشرف استقبال',  color:'#1B4D3D' },
-  { id:'u2', name:'سارة القحطاني', role:'مديرة تدبير',    color:'#9A7430' },
-  { id:'u3', name:'خالد العتيبي',  role:'فني صيانة',      color:'#266554' },
-  { id:'u4', name:'منى الشهري',    role:'موظفة استقبال',  color:'#B68F40' },
-  { id:'u5', name:'فهد الدوسري',   role:'أمن وسلامة',     color:'#143A2E' }
-];
+var STAFF = [];
 var LS = {
   cur:   'dh_staff_cur',
   msgs:  'dh_staff_msgs',
@@ -258,13 +252,19 @@ function byEl(id){ return document.getElementById(id); }
 /* ============ تسجيل الدخول / الخروج ============ */
 function buildLoginOptions(){
   var sel=byEl('loginUser');
+  if(!STAFF.length){
+    sel.innerHTML='<option value="">لا يوجد موظفون مسجّلون</option>';
+    return;
+  }
   sel.innerHTML = STAFF.map(function(s){ return '<option value="'+s.id+'">'+esc(s.name)+' — '+esc(s.role)+'</option>'; }).join('');
 }
 function doLogin(){
+  if(!STAFF.length){ toast('لا يوجد موظفون — أضف موظفاً أولاً'); return; }
   var uid=byEl('loginUser').value;
   var pin=byEl('loginPin').value;
   if(pin!=='0000'){ toast('الرمز السري غير صحيح'); return; }
   me = byId(uid);
+  if(!me){ toast('الرمز السري غير صحيح'); return; }
   save(LS.cur, me.id);
   enterApp();
 }
@@ -344,10 +344,7 @@ function buildTaskTargets(){
 }
 function seedTasks(){
   if(load(LS.tasks,null)!==null) return;
-  save(LS.tasks,[
-    { id:'t1', title:'تجهيز جناح 305 لوصول VIP', from:'u1', to:'u2', pri:'high', status:'open', desc:'ضيف وصول 3 عصراً — تجهيز كامل + ترتيب الترحيب.', clar:[], at:'09:12' },
-    { id:'t2', title:'إصلاح تكييف غرفة 118', from:'u1', to:'u3', pri:'mid', status:'prog', desc:'النزيل أبلغ عن ضعف التبريد.', clar:[], at:'08:40' }
-  ]);
+  save(LS.tasks,[]);
 }
 function renderTasks(){
   seedTasks();
@@ -417,13 +414,12 @@ function closeModal(id){ byEl(id).classList.remove('show'); }
 
 /* ============ أدوات السكن ============ */
 var HOUSE_TOOLS = ['مكيف الهواء','السخان','الإضاءة','الثلاجة','أثاث الغرفة','دورة المياه'];
-var HOUSE_ROOMS = [
-  { no:'سكن A-101', occ:'أحمد الزهراني · خالد العتيبي' },
-  { no:'سكن A-102', occ:'فهد الدوسري' },
-  { no:'سكن B-201', occ:'سارة القحطاني' },
-  { no:'سكن B-202', occ:'منى الشهري' }
-];
+var HOUSE_ROOMS = [];
 function renderHousing(){
+  if(!HOUSE_ROOMS.length){
+    byEl('housingGrid').innerHTML='<div class="empty" style="grid-column:1/-1"><div class="ic">🏠</div>لا توجد غرف سكن مسجّلة</div>';
+    return;
+  }
   var state=load(LS.house,{});
   byEl('housingGrid').innerHTML=HOUSE_ROOMS.map(function(r,ri){
     var rstate=state[r.no]||{};
@@ -459,6 +455,7 @@ function resetHousing(){ localStorage.removeItem(LS.house); renderHousing(); toa
 /* ============ إقلاع ============ */
 buildLoginOptions();
 (function(){
+  if(!STAFF.length) return;
   var cur=load(LS.cur,null);
   if(cur && byId(cur)){ me=byId(cur); enterApp(); }
 })();

@@ -34,7 +34,7 @@
     <!-- Page head -->
     <div class="dh-page-head">
       <div>
-        <div class="dh-page-eyebrow">الموارد البشرية · ٨٤ موظف نشط</div>
+        <div class="dh-page-eyebrow">الموارد البشرية</div>
         <h1 class="dh-page-title">الموظفون والإقامات</h1>
         <div class="dh-page-sub">مزامنة قوى آخر مرة قبل ٧ دقائق · GOSI متصل</div>
       </div>
@@ -58,11 +58,11 @@
 
     <!-- KPI strip -->
     <div class="hr-kpi">
-      <div class="card"><div class="lbl">إجمالي الموظفين</div><div class="v">٨٤</div><div class="sub">٤٢ سعودي · ٥٠٪ توطين</div></div>
-      <div class="card"><div class="lbl">رواتب أبريل</div><div class="v">٤٨٦٬٢٠٠ <span style="font-size:13px;color:var(--fg-3)">ر.س</span></div><div class="sub">سُلِّمت ٢٥ أبريل</div></div>
-      <div class="card"><div class="lbl">إقامات تنتهي ≤ ٣٠ يوم</div><div class="v" style="color:var(--danger-700)">٣</div><div class="sub">تتطلب تجديد</div></div>
-      <div class="card"><div class="lbl">إقامات تنتهي ≤ ٩٠ يوم</div><div class="v" style="color:var(--warning-700)">٧</div><div class="sub">تنبيه مبكر</div></div>
-      <div class="card"><div class="lbl">سُلَف نشطة</div><div class="v">٥</div><div class="sub">١٢٬٤٠٠ ر.س قائمة</div></div>
+      <div class="card"><div class="lbl">إجمالي الموظفين</div><div class="v" id="hr-kpi-total">—</div><div class="sub" id="hr-kpi-saudization">أضف موظفاً للبدء</div></div>
+      <div class="card"><div class="lbl">الرواتب الشهرية</div><div class="v" id="hr-kpi-salary">—</div><div class="sub">ر.س / شهر</div></div>
+      <div class="card"><div class="lbl">إقامات تنتهي ≤ ٣٠ يوم</div><div class="v" id="hr-kpi-urgent" style="color:var(--danger-700)">—</div><div class="sub">تتطلب تجديد</div></div>
+      <div class="card"><div class="lbl">إقامات تنتهي ≤ ٩٠ يوم</div><div class="v" id="hr-kpi-warn" style="color:var(--warning-700)">—</div><div class="sub">تنبيه مبكر</div></div>
+      <div class="card"><div class="lbl">سُلَف نشطة</div><div class="v">—</div><div class="sub">—</div></div>
     </div>
 
     <!-- Tabs -->
@@ -197,16 +197,7 @@
 if(window.StaticSidebar) StaticSidebar.mount({ activeId:'09-hr', placeholder:'بحث عن موظف، رقم إقامة، قسم...' });
 
 // ── Staff data ──────────────────────────────────────────────────
-var STAFF = [
-  {id:1, initials:'س‬أ', name:'سارة أحمد المالكي',   role:'مدير المنشأة',     dept:'إدارة',       flag:'🇸🇦', nat:'السعودية', nationality:'SA', iqama:'1098273461', iqamaSub:'هوية وطنية', expires:'2027-04-12', daysLeft:730,  salary:18500, qiwa:true},
-  {id:2, initials:'ر‬ك', name:'Rajesh Kumar',         role:'رئيس الاستقبال',   dept:'الاستقبال',   flag:'🇮🇳', nat:'الهند',    nationality:'IN', iqama:'2354281903', iqamaSub:'إقامة',       expires:'2025-06-14', daysLeft:63,   salary:6800,  qiwa:true},
-  {id:3, initials:'م‬ع', name:'محمد العتيبي',         role:'رئيس الأمن',       dept:'الأمن',       flag:'🇸🇦', nat:'السعودية', nationality:'SA', iqama:'1067392841', iqamaSub:'هوية وطنية', expires:'2028-01-22', daysLeft:1018, salary:9200,  qiwa:true},
-  {id:4, initials:'Ng',  name:'Maria Santos',         role:'مشرفة الإسكان',    dept:'التدبير',     flag:'🇵🇭', nat:'الفلبين',  nationality:'PH', iqama:'2841029384', iqamaSub:'إقامة',       expires:'2025-04-28', daysLeft:16,   salary:4200,  qiwa:false},
-  {id:5, initials:'أ‬ح', name:'أحمد حسن إبراهيم',     role:'شيف تنفيذي',       dept:'المطبخ',      flag:'🇪🇬', nat:'مصر',      nationality:'EG', iqama:'2738492810', iqamaSub:'إقامة',       expires:'2026-09-08', daysLeft:514,  salary:11800, qiwa:true},
-  {id:6, initials:'B‬T',  name:'Boris Petrov',         role:'مدير المطعم',      dept:'الأغذية',     flag:'🇷🇺', nat:'روسيا',    nationality:'RU', iqama:'2920381746', iqamaSub:'إقامة',       expires:'2025-07-30', daysLeft:109,  salary:9600,  qiwa:true},
-  {id:7, initials:'K‬n',  name:'Kanya Sripa',          role:'معالجة سبا',       dept:'السبا',       flag:'🇹🇭', nat:'تايلاند',  nationality:'TH', iqama:'2918374650', iqamaSub:'إقامة',       expires:'2025-12-04', daysLeft:236,  salary:5400,  qiwa:true},
-  {id:8, initials:'ف‬س', name:'فاطمة السعيدي',        role:'محاسبة',           dept:'المالية',     flag:'🇸🇦', nat:'السعودية', nationality:'SA', iqama:'1089467238', iqamaSub:'هوية وطنية', expires:'2029-03-15', daysLeft:1437, salary:14000, qiwa:true},
-];
+var STAFF = [];
 
 // ── Render helpers ───────────────────────────────────────────────
 function iqamaTimeline(s) {
@@ -249,6 +240,22 @@ renderRows('staff-rows', STAFF);
 // Iqama tab: sort by daysLeft ascending
 var sortedByIqama = STAFF.slice().sort(function(a,b){ return a.daysLeft - b.daysLeft; });
 renderRows('iqama-rows', sortedByIqama);
+
+// ── Dynamic KPIs ─────────────────────────────────────────────────
+(function(){
+  var total = STAFF.length;
+  var sa = STAFF.filter(function(s){ return s.nationality==='SA'; }).length;
+  var salary = STAFF.reduce(function(sum,s){ return sum+(s.salary||0); }, 0);
+  var urgent = STAFF.filter(function(s){ return s.daysLeft>=0 && s.daysLeft<=30; }).length;
+  var warn = STAFF.filter(function(s){ return s.daysLeft>30 && s.daysLeft<=90; }).length;
+  var pct = total>0 ? Math.round(sa/total*100) : 0;
+  function upd(id, v){ var el=document.getElementById(id); if(el) el.textContent=v; }
+  upd('hr-kpi-total', total || '—');
+  upd('hr-kpi-saudization', total>0 ? sa+' سعودي · '+pct+'٪ توطين' : 'أضف موظفاً للبدء');
+  upd('hr-kpi-salary', total>0 ? salary.toLocaleString('ar-EG') : '—');
+  upd('hr-kpi-urgent', total>0 ? (urgent||'٠') : '—');
+  upd('hr-kpi-warn', total>0 ? (warn||'٠') : '—');
+})();
 
 // ── Tab switching ────────────────────────────────────────────────
 document.getElementById('hr-tabs').addEventListener('click', function(e) {

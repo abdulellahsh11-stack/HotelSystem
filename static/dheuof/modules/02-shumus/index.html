@@ -301,13 +301,7 @@ function toXLS(headers,rows,name){var s='<Styles><Style ss:ID="H"><Font ss:Bold=
 function dlXLS(c,fn){var b=new Blob([c],{type:'application/vnd.ms-excel;charset=utf-8'});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download=fn;a.click();setTimeout(function(){URL.revokeObjectURL(u);},1000);}
 function toast(msg,isErr){var old=document.querySelector('.dh-toast');if(old)old.remove();var t=document.createElement('div');t.className='dh-toast';t.style.cssText='position:fixed;bottom:24px;inset-inline-end:24px;background:'+(isErr?'#b91c1c':'#1B4D3D')+';color:#fff;padding:12px 18px;border-radius:8px;font-family:"Tajawal",sans-serif;font-size:13px;z-index:9999;display:flex;gap:8px';t.innerHTML='<span style="color:'+(isErr?'#fca5a5':'#C9A85F')+'">'+(isErr?'✕':'✓')+'</span>'+msg;document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .4s';setTimeout(function(){if(t.parentNode)t.remove();},400);},3000);}
 
-var LOG_DATA = [
-  {name:'أحمد الفهد',         nat:'سعودي',   type:'هوية وطنية',  id:'1028456789',       status:'verified', time:'14:32'},
-  {name:'نورة المنصور',       nat:'سعودية',  type:'هوية وطنية',  id:'1099287461',       status:'verified', time:'14:18'},
-  {name:'Layla Karam',        nat:'لبنانية', type:'جواز سفر',    id:'LB-K829142',       status:'verified', time:'14:05'},
-  {name:'عبدالعزيز الرشيد',   nat:'إماراتي', type:'هوية خليجية', id:'784-1985-7461328-4',status:'review',  time:'13:48'},
-  {name:'Rajesh Kumar',       nat:'هندي',    type:'إقامة',       id:'2354281903',       status:'verified', time:'13:32'},
-];
+var LOG_DATA = [];
 
 window.exportCSV = function(){
   var stMap = {verified:{v:'متحقّق',s:'EXC'}, review:{v:'مراجعة يدوية',s:'WARN'}, failed:{v:'فشل',s:'BAD'}};

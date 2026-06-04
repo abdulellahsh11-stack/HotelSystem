@@ -216,7 +216,7 @@
         <div class="kpi-card accent">
           <div class="lbl">إشغال الليلة · Occupancy</div>
           <div class="val" id="kpi-occ">—<span class="sfx">٪</span></div>
-          <div class="delta up" id="kpi-occ-delta">▲ +٤٪ عن أمس</div>
+          <div class="delta" id="kpi-occ-delta">—</div>
         </div>
         <div class="kpi-card">
           <div class="lbl">نزلاء حاليون · In-house</div>
@@ -235,13 +235,13 @@
         </div>
         <div class="kpi-card">
           <div class="lbl">إيراد اليوم · Revenue</div>
-          <div class="val">٢٤٬٨٦٠<span class="sfx" style="font-size:12px">ر.س</span></div>
-          <div class="delta up">▲ +١٨٪ مقابل المتوقع</div>
+          <div class="val">—<span class="sfx" style="font-size:12px">ر.س</span></div>
+          <div class="delta">—</div>
         </div>
         <div class="kpi-card">
           <div class="lbl">أعضاء الولاء · Loyalty</div>
-          <div class="val">٢٣<span class="sfx">عضو</span></div>
-          <div class="delta up">▲ +٣ هذا الشهر</div>
+          <div class="val">—<span class="sfx">عضو</span></div>
+          <div class="delta">—</div>
         </div>
       </div>
 
@@ -542,89 +542,13 @@ setTimeout(function(){
    DATA — all dates relative to today 2026-05-30
 ═══════════════════════════════════════════════ */
 
-var RESERVATIONS = [
-  {id:"RES-١٨٢٤",initials:"نم",name:"نورة المنصور",nationality:"🇸🇦 سعودية",idType:"هوية وطنية",idNum:"1082334412",room:"٢١٨",roomType:"ديلوكس",    checkin:"2026-05-31",checkout:"2026-06-01",nights:1,channel:"Booking.com",payment:"مدفوع",   payClass:"ok",   amt:"٨٤٠",   phone:"+966 55 441 2201",vip:false},
-  {id:"RES-١٨٢٥",initials:"LK",name:"Layla Karam",  nationality:"🇱🇧 لبنانية",idType:"جواز سفر",  idNum:"LB8823411", room:"٣٠٧",roomType:"ديلوكس",    checkin:"2026-05-31",checkout:"2026-06-04",nights:4,channel:"Agoda",      payment:"عربون",   payClass:"warn", amt:"٣٬١٢٠",phone:"+961 70 882 341", vip:false},
-  {id:"RES-١٨٢٨",initials:"فز",name:"فاطمة الزهراني",nationality:"🇸🇦 سعودية",idType:"هوية وطنية",idNum:"1091238844",room:"٤١٠",roomType:"جناح ملكي",checkin:"2026-06-01",checkout:"2026-06-05",nights:4,channel:"مباشر",      payment:"مدفوع",   payClass:"ok",   amt:"٣٬٢٠٠",phone:"+966 50 991 3344",vip:true},
-  {id:"RES-١٨٢٩",initials:"عر",name:"عبدالعزيز الرشيد",nationality:"🇸🇦 سعودي",idType:"هوية وطنية",idNum:"1034882201",room:"١٠٦",roomType:"ستاندرد",  checkin:"2026-06-01",checkout:"2026-06-03",nights:2,channel:"مباشر",      payment:"لم يدفع", payClass:"danger",amt:"٦٤٠",  phone:"+966 55 338 8821",vip:false},
-  {id:"RES-١٨٣٠",initials:"مب",name:"محمد البقمي",  nationality:"🇸🇦 سعودي",idType:"هوية وطنية",idNum:"1056123490",room:"٣١٢",roomType:"ديلوكس",    checkin:"2026-06-02",checkout:"2026-06-07",nights:5,channel:"Booking.com",payment:"عربون",   payClass:"warn", amt:"٢٬٨٠٠",phone:"+966 50 612 3490",vip:false},
-  {id:"RES-١٨٣١",initials:"سح",name:"سلطان الحربي", nationality:"🇸🇦 سعودي",idType:"هوية وطنية",idNum:"1072245512",room:"٤٠١",roomType:"جناح ملكي",checkin:"2026-06-03",checkout:"2026-06-06",nights:3,channel:"مباشر",      payment:"مدفوع",   payClass:"ok",   amt:"٧٬٢٠٠",phone:"+966 55 224 5512",vip:true},
-  {id:"RES-١٨٣٢",initials:"KJ",name:"Khalid Jassim",nationality:"🇦🇪 إماراتي",idType:"هوية خليجية",idNum:"AE77223314",room:"٢٢٥",roomType:"ديلوكس",   checkin:"2026-06-04",checkout:"2026-06-06",nights:2,channel:"Expedia",    payment:"مدفوع",   payClass:"ok",   amt:"١٬٦٨٠",phone:"+971 50 772 3314",vip:false},
-  {id:"RES-١٨٣٣",initials:"هق",name:"هند القرني",   nationality:"🇸🇦 سعودية",idType:"هوية وطنية",idNum:"1023344812",room:"٣٠٩",roomType:"جناح",       checkin:"2026-06-05",checkout:"2026-06-08",nights:3,channel:"Almosafer", payment:"عربون",   payClass:"warn", amt:"٢٬١٠٠",phone:"+966 55 334 4812",vip:false},
-];
+var RESERVATIONS = [];
 
-var GUESTS = [
-  {id:"G-٠٠١",initials:"أف",name:"أحمد الفهد",      nationality:"🇸🇦 سعودي",  room:"٤٠٢",roomType:"جناح ملكي",checkin:"2026-05-27",checkout:"2026-05-31",phone:"+966 50 482 1108",balanceLeft:"٦٬٠٩٤",vip:true, status:"departing",alerts:[{text:"قهوة عربية صباحاً",color:"gold",id:1},{text:"حساسية جلوتين",color:"red",id:2}]},
-  {id:"G-٠٠٢",initials:"مع",name:"محمد العتيبي",     nationality:"🇸🇦 سعودي",  room:"١٠٤",roomType:"ستاندرد",  checkin:"2026-05-30",checkout:"2026-05-31",phone:"+966 55 338 8821",balanceLeft:"٠",    vip:false,status:"departing",alerts:[]},
-  {id:"G-٠٠٣",initials:"رع",name:"ريم العنزي",       nationality:"🇸🇦 سعودية", room:"٣٠٥",roomType:"جناح",      checkin:"2026-05-29",checkout:"2026-06-02",phone:"+966 50 223 9912",balanceLeft:"١٬٢٤٠",vip:false,status:"ok",      alerts:[{text:"مكيف يحتاج صيانة",color:"red",id:3}]},
-  {id:"G-٠٠٤",initials:"عغ",name:"عبدالله الغامدي", nationality:"🇸🇦 سعودي",  room:"٢١٢",roomType:"ديلوكس",   checkin:"2026-05-30",checkout:"2026-06-03",phone:"+966 55 112 4490",balanceLeft:"٢٬٤٠٠",vip:false,status:"ok",      alerts:[]},
-  {id:"G-٠٠٥",initials:"MH",name:"Mohammed Hassan",  nationality:"🇪🇬 مصري",   room:"١٠٨",roomType:"ستاندرد",  checkin:"2026-05-30",checkout:"2026-06-01",phone:"+20 100 882 3310",balanceLeft:"٥٢٠",  vip:false,status:"ok",      alerts:[{text:"عيد ميلاد اليوم 🎂",color:"amber",id:4}]},
-  {id:"G-٠٠٦",initials:"سع",name:"سارة العمري",      nationality:"🇸🇦 سعودية", room:"٤٠٣",roomType:"جناح ملكي",checkin:"2026-05-27",checkout:"2026-06-01",phone:"+966 50 774 2231",balanceLeft:"٣٬٦٠٠",vip:true, status:"ok",      alerts:[{text:"VIP — بتلر مطلوب",color:"gold",id:5},{text:"طفلان — كرسي أطفال",color:"blue",id:6}]},
-];
+var GUESTS = [];
 
-var FLOORS = [
-  {label:"الدور الأول — ستاندرد",num:"F1",rooms:[
-    {num:"١٠١",type:"ستاندرد",status:"occupied", guest:"عبدالرحمن م.",checkout:"2026-06-02"},
-    {num:"١٠٢",type:"ستاندرد",status:"available"},
-    {num:"١٠٣",type:"ستاندرد",status:"hk-needed"},
-    {num:"١٠٤",type:"ستاندرد",status:"occupied", guest:"محمد العتيبي",checkout:"2026-05-31"},
-    {num:"١٠٥",type:"ستاندرد",status:"available"},
-    {num:"١٠٦",type:"ستاندرد",status:"reserved",  guest:"عبدالعزيز الرشيد",checkin:"2026-06-01"},
-    {num:"١٠٧",type:"ستاندرد",status:"hk-needed"},
-    {num:"١٠٨",type:"ستاندرد",status:"occupied", guest:"Mohammed H.",checkout:"2026-06-01"},
-    {num:"١٠٩",type:"ستاندرد",status:"available"},
-    {num:"١١٠",type:"ستاندرد",status:"maintenance"},
-    {num:"١١١",type:"ستاندرد",status:"available"},
-    {num:"١١٢",type:"ستاندرد",status:"hk-needed"},
-    {num:"١١٣",type:"ستاندرد",status:"available"},
-    {num:"١١٤",type:"ستاندرد",status:"occupied", guest:"نزيل — ١١٤",checkout:"2026-06-03"},
-    {num:"١١٥",type:"ستاندرد",status:"available"},
-  ]},
-  {label:"الدور الثاني — ديلوكس",num:"F2",rooms:[
-    {num:"٢٠١",type:"ديلوكس",status:"hk-needed"},
-    {num:"٢٠٢",type:"ديلوكس",status:"occupied", guest:"نزيل — ٢٠٢",checkout:"2026-06-02"},
-    {num:"٢٠٣",type:"ديلوكس",status:"available"},
-    {num:"٢٠٤",type:"ديلوكس",status:"occupied", guest:"نزيل — ٢٠٤",checkout:"2026-06-04"},
-    {num:"٢٠٥",type:"ديلوكس",status:"available"},
-    {num:"٢٠٦",type:"ديلوكس",status:"available"},
-    {num:"٢٠٧",type:"ديلوكس",status:"hk-needed"},
-    {num:"٢٠٨",type:"ديلوكس",status:"occupied", guest:"نزيل — ٢٠٨",checkout:"2026-06-01"},
-    {num:"٢٠٩",type:"ديلوكس",status:"maintenance"},
-    {num:"٢١٠",type:"ديلوكس",status:"available"},
-    {num:"٢١١",type:"ديلوكس",status:"available"},
-    {num:"٢١٢",type:"ديلوكس",status:"occupied", guest:"عبدالله الغامدي",checkout:"2026-06-03"},
-    {num:"٢١٣",type:"ديلوكس",status:"available"},
-    {num:"٢١٨",type:"ديلوكس",status:"reserved",  guest:"نورة المنصور",checkin:"2026-05-31"},
-    {num:"٢٢٥",type:"ديلوكس",status:"reserved",  guest:"Khalid Jassim",checkin:"2026-06-04"},
-  ]},
-  {label:"الدور الثالث — أجنحة",num:"F3",rooms:[
-    {num:"٣٠١",type:"جناح",status:"hk-needed"},
-    {num:"٣٠٢",type:"جناح",status:"available"},
-    {num:"٣٠٣",type:"جناح",status:"occupied", guest:"نزيل — ٣٠٣",checkout:"2026-06-02"},
-    {num:"٣٠٤",type:"جناح",status:"available"},
-    {num:"٣٠٥",type:"جناح",status:"occupied", guest:"ريم العنزي",checkout:"2026-06-02"},
-    {num:"٣٠٦",type:"جناح",status:"hk-needed"},
-    {num:"٣٠٧",type:"جناح",status:"reserved",  guest:"Layla Karam",checkin:"2026-05-31"},
-    {num:"٣٠٨",type:"جناح",status:"available"},
-    {num:"٣٠٩",type:"جناح",status:"reserved",  guest:"هند القرني",checkin:"2026-06-05"},
-    {num:"٣١٢",type:"جناح",status:"reserved",  guest:"محمد البقمي",checkin:"2026-06-02"},
-  ]},
-  {label:"الدور الرابع — الأجنحة الملكية",num:"F4",rooms:[
-    {num:"٤٠١",type:"جناح ملكي",status:"reserved",  guest:"سلطان الحربي",checkin:"2026-06-03"},
-    {num:"٤٠٢",type:"جناح ملكي",status:"occupied", guest:"أحمد الفهد",checkout:"2026-05-31"},
-    {num:"٤٠٣",type:"جناح ملكي",status:"occupied", guest:"سارة العمري",checkout:"2026-06-01"},
-    {num:"٤١٠",type:"جناح ملكي",status:"reserved",  guest:"فاطمة الزهراني",checkin:"2026-06-01"},
-  ]},
-];
+var FLOORS = [];
 
-var STAFF = [
-  {id:1,initials:"سأ",name:"سارة أحمد المالكي", email:"manager@hotel.sa",  role:"مدير",   roleKey:"manager",     dept:"الإدارة",   shift:"مرنة",              active:true,  lastLogin:"قبل ٤ د",  perms:["01","02","03","04","05","06","07","08","09","10","11","12","13","14","15","16"]},
-  {id:2,initials:"رك",name:"Rajesh Kumar",        email:"rajesh@hotel.sa",   role:"استقبال",roleKey:"reception",   dept:"الاستقبال",shift:"صباحية ٧:٠٠—١٥:٠٠",active:true,  lastLogin:"قبل ٢٢ د", perms:["01","02","06","08"]},
-  {id:3,initials:"بع",name:"بشير العامري",        email:"basheer@hotel.sa",  role:"استقبال",roleKey:"reception",   dept:"الاستقبال",shift:"مسائية ١٥:٠٠—٢٣:٠٠",active:true,  lastLogin:"قبل ١ س",  perms:["01","06","08"]},
-  {id:4,initials:"Ma",name:"Maria Santos",         email:"maria@hotel.sa",    role:"تدبير",  roleKey:"housekeeping",dept:"التدبير",  shift:"صباحية ٧:٠٠—١٥:٠٠",active:true,  lastLogin:"قبل ١٥ د", perms:["01","04"]},
-  {id:5,initials:"مع",name:"محمد العتيبي",        email:"m.otaibi@hotel.sa", role:"صيانة",  roleKey:"maintenance", dept:"الصيانة",  shift:"مرنة",              active:true,  lastLogin:"قبل ٣٢ د", perms:["04","05"]},
-  {id:6,initials:"فس",name:"فاطمة السعيدي",       email:"accountant@hotel.sa",role:"محاسبة",roleKey:"accounting",  dept:"المحاسبة", shift:"صباحية ٧:٠٠—١٥:٠٠",active:false, lastLogin:"قبل ٢ س",  perms:["06","07","11"]},
-];
+var STAFF = [];
 
 var staffCounter = 7;
 var alertCounter = 100;
