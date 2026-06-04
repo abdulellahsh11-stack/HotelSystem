@@ -422,6 +422,13 @@ try:
 except Exception as e:
     log.warning(f"Analytics: {e}")
 
+try:
+    from routes.integration import router as integration_router
+    app.include_router(integration_router)
+    log.info("✓ Integration (cross-module orchestration)")
+except Exception as e:
+    log.warning(f"Integration: {e}")
+
 
 # ──────────────────────────────────────────────────────────────
 #  Auth helpers
