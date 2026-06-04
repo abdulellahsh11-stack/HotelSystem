@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """M06 Accounting — المحاسبة والفواتير"""
+import json
 import logging
 from typing import Optional
 from fastapi import APIRouter, Request, Depends, HTTPException
@@ -13,6 +14,75 @@ logger = logging.getLogger("dheuof")
 def _require_client(request: Request) -> dict:
     from main import require_client
     return require_client(request)
+
+
+# ── Company tax profile — all fields OPTIONAL ────────────────────────────────
+# الرقم المميز (VAT) + السجل التجاري (CR) + العنوان الوطني — كلها اختيارية
+_TAX_FIELDS = ("vat_number", "cr_number", "national_address", "company_name")
+
+
+@router.get("/company-profile")
+async def get_company_profile(request: Request, session=Depends(_require_client)):
+    """يُعيد بيانات المنشأة الضريبية (اختيارية) المخزّنة في invoice_settings."""
+    try:
+        db = request.app.state.db
+        cid = session["client_id"]
+        profile = {k: "" for k in _TAX_FIELDS}
+        if db.use_postgres:
+            row = db.execute(
+                "SELECT invoice_settings FROM clients WHERE id=%s", (cid,), fetch="one")
+            if row:
+                settings = dict(row).get("invoice_settings") or {}
+                if isinstance(settings, str):
+                    try:
+                        settings = json.loads(settings)
+                    except Exception:
+                        settings = {}
+                for k in _TAX_FIELDS:
+                    profile[k] = settings.get(k, "")
+        return {"success": True, "data": profile}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in get_company_profile: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"خطأ في الخادم: {str(e)}")
+
+
+@router.post("/company-profile")
+async def set_company_profile(request: Request, session=Depends(_require_client)):
+    """يحفظ بيانات المنشأة الضريبية — كل الحقول اختيارية، يُدمج مع الموجود.
+
+    Body (كله اختياري): { vat_number?, cr_number?, national_address?, company_name? }
+    """
+    try:
+        data = await request.json()
+        db = request.app.state.db
+        cid = session["client_id"]
+        if db.use_postgres:
+            row = db.execute(
+                "SELECT invoice_settings FROM clients WHERE id=%s", (cid,), fetch="one")
+            settings = {}
+            if row:
+                existing = dict(row).get("invoice_settings") or {}
+                if isinstance(existing, str):
+                    try:
+                        existing = json.loads(existing)
+                    except Exception:
+                        existing = {}
+                settings = dict(existing)
+            # Merge only the optional tax fields that were actually provided
+            for k in _TAX_FIELDS:
+                if k in data:
+                    settings[k] = (data.get(k) or "").strip()
+            db.execute(
+                "UPDATE clients SET invoice_settings=%s, updated_at=NOW() WHERE id=%s",
+                (json.dumps(settings, ensure_ascii=False), cid))
+        return {"success": True, "message": "تم حفظ بيانات المنشأة الضريبية"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in set_company_profile: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"خطأ في الخادم: {str(e)}")
 
 
 @router.get("/invoices")
