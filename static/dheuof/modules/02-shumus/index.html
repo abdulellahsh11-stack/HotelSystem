@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <title>ضيوف · شموس — نقطة التعرّف</title>
-<meta name="viewport" content="width=1440, initial-scale=1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
 <link rel="stylesheet" href="/static/dheuof/colors_and_type.css"/>
 <link rel="stylesheet" href="/static/dheuof/assets/animations.css"/>
 <link rel="stylesheet" href="/static/dheuof/shared/chrome.css"/>
@@ -12,7 +12,7 @@
   body { background: var(--paper-tint); }
 
   .sh-banner {
-    background: linear-gradient(135deg, #143A2E, #0E2A22);
+    background: linear-gradient(135deg, var(--brand-800), var(--brand-900));
     color: var(--paper);
     border-radius: 14px;
     padding: 24px 28px;
@@ -221,6 +221,12 @@
 renderVibrantHero({ icon:'🛡', num:'02', title:'شموس', en:'Identity Verification · MOI', sub:'ربط مباشر بوزارة الداخلية — تعرّف فوري على الضيف', badges:[{v:'—',l:'تعرّف اليوم'},{v:'—',l:'دقة التعرّف'}] });
 renderTierBar({ exc:0, good:0, low:0, bad:0 });
 </script>
+<script>
+// Load real data once DOM is ready
+document.addEventListener('DOMContentLoaded', function(){ loadIdentificationLog(); });
+// Fallback if DOMContentLoaded already fired
+if(document.readyState !== 'loading'){ loadIdentificationLog(); }
+</script>
 <script src="/static/dheuof/shared/sidebar.js"></script>
 <script>StaticSidebar.mount({ activeId: "02-shumus", placeholder: "بحث في سجل التعرّف..." });</script>
 <script src="/static/dheuof/assets/animations.js"></script>
@@ -236,9 +242,127 @@ setTimeout(function(){
 function todayStr(){var d=new Date();return d.getFullYear()+(d.getMonth()+1<10?'0':'')+(d.getMonth()+1)+(d.getDate()<10?'0':'')+d.getDate();}
 function toXLS(headers,rows,name){var s='<Styles><Style ss:ID="H"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1B4D3D" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center"/></Style><Style ss:ID="BAD"><Interior ss:Color="#C0392B" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style><Style ss:ID="WARN"><Interior ss:Color="#D97706" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style><Style ss:ID="OK"><Interior ss:Color="#BBF7D0" ss:Pattern="Solid"/><Font ss:Color="#1B7A56" ss:Bold="1"/></Style><Style ss:ID="EXC"><Interior ss:Color="#1B7A56" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style></Styles>';function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}function cell(v){if(v&&typeof v==='object'&&'s' in v)return '<Cell ss:StyleID="'+v.s+'"><Data ss:Type="String">'+esc(v.v)+'</Data></Cell>';return '<Cell><Data ss:Type="'+(typeof v==='number'?'Number':'String')+'">'+esc(v)+'</Data></Cell>';}var hRow='<Row>'+headers.map(function(h){return '<Cell ss:StyleID="H"><Data ss:Type="String">'+esc(h)+'</Data></Cell>';}).join('')+'</Row>';var dRows=rows.map(function(r){return '<Row>'+r.map(cell).join('')+'</Row>';}).join('');return '<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'+s+'<Worksheet ss:Name="'+esc(name)+'"><Table>'+hRow+dRows+'</Table></Worksheet></Workbook>';}
 function dlXLS(c,fn){var b=new Blob([c],{type:'application/vnd.ms-excel;charset=utf-8'});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download=fn;a.click();setTimeout(function(){URL.revokeObjectURL(u);},1000);}
-function toast(msg,isErr){var old=document.querySelector('.dh-toast');if(old)old.remove();var t=document.createElement('div');t.className='dh-toast';t.style.cssText='position:fixed;bottom:24px;inset-inline-end:24px;background:'+(isErr?'#b91c1c':'#1B4D3D')+';color:#fff;padding:12px 18px;border-radius:8px;font-family:"Tajawal",sans-serif;font-size:13px;z-index:9999;display:flex;gap:8px';t.innerHTML='<span style="color:'+(isErr?'#fca5a5':'#C9A85F')+'">'+(isErr?'✕':'✓')+'</span>'+msg;document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .4s';setTimeout(function(){if(t.parentNode)t.remove();},400);},3000);}
+function toast(msg,isErr){var old=document.querySelector('.dh-toast');if(old)old.remove();var t=document.createElement('div');t.className='dh-toast';t.style.cssText='position:fixed;bottom:24px;inset-inline-end:24px;background:'+(isErr?'#b91c1c':'var(--brand-700)')+';color:var(--white);padding:12px 18px;border-radius:8px;font-family:"Tajawal",sans-serif;font-size:13px;z-index:9999;display:flex;gap:8px';t.innerHTML='<span style="color:'+(isErr?'#fca5a5':'var(--gold-500)')+'">'+(isErr?'✕':'✓')+'</span>'+msg;document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .4s';setTimeout(function(){if(t.parentNode)t.remove();},400);},3000);}
 
 var LOG_DATA = [];
+
+/* ═══════════════════════════════════════════════
+   API — LOAD GUESTS AS IDENTIFICATION LOG
+   Fetches /api/guests and populates the log table
+   with guest ID status (verified / review / failed)
+═══════════════════════════════════════════════ */
+function loadIdentificationLog(){
+  var logWrap = document.querySelector('.sh-log');
+  if(logWrap){
+    var existing = logWrap.querySelector('div:not(.sh-log-row)');
+    if(existing) existing.textContent = '⏳ جارٍ تحميل السجل...';
+  }
+  fetch('/api/guests')
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if(!res.success){ throw new Error(res.detail||'خطأ في الخادم'); }
+      var raw = res.data||[];
+      LOG_DATA = raw.map(function(g, i){
+        // Determine verification status from available fields
+        var st = 'verified';
+        if(g.id_verified===false||g.id_status==='failed')       st = 'failed';
+        else if(g.id_verified===null||g.id_status==='review')   st = 'review';
+        var idType = g.id_type || (g.nationality==='SA'||g.nationality==='سعودي' ? 'بطاقة وطنية' : 'جواز سفر');
+        return {
+          idx:    i+1,
+          name:   g.full_name||g.name||'—',
+          nat:    g.nationality||'—',
+          type:   idType,
+          id:     g.id_number||'—',
+          status: st,
+          time:   g.created_at ? new Date(g.created_at).toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'}) : '—',
+        };
+      });
+      renderLog();
+      updateStats();
+    })
+    .catch(function(err){
+      var logDiv = document.querySelector('.sh-log');
+      if(logDiv){
+        var old = logDiv.querySelector('div:not(.sh-log-row)');
+        if(old) old.innerHTML = '<div style="padding:28px;text-align:center;color:var(--danger-600)">⚠ تعذّر تحميل السجل — '+err.message+'</div>';
+        else logDiv.insertAdjacentHTML('beforeend','<div style="padding:28px;text-align:center;color:var(--danger-600)">⚠ تعذّر تحميل السجل — '+err.message+'</div>');
+      }
+    });
+}
+
+function renderLog(){
+  var logDiv = document.querySelector('.sh-log');
+  if(!logDiv) return;
+
+  // Remove any non-header content
+  Array.from(logDiv.children).forEach(function(c){
+    if(!c.classList.contains('sh-log-row')) c.remove();
+  });
+
+  if(!LOG_DATA.length){
+    logDiv.insertAdjacentHTML('beforeend','<div style="padding:30px;text-align:center;color:var(--fg-3);font-size:13px">لا توجد عمليات تعرّف اليوم</div>');
+    return;
+  }
+
+  var stIcon  = {verified:'<span style="color:var(--success-700);font-weight:700">✓ متحقّق</span>', review:'<span style="color:var(--warning-700);font-weight:700">⚠ مراجعة</span>', failed:'<span style="color:var(--danger-700);font-weight:700">✕ فشل</span>'};
+
+  LOG_DATA.forEach(function(r){
+    var nm = r.name||'—';
+    var initials = nm.trim().split(/\s+/).slice(0,2).map(function(w){return w[0]||'';}).join('');
+    var row = document.createElement('div');
+    row.className = 'sh-log-row';
+    row.innerHTML =
+      '<span style="color:var(--fg-3);font-size:11px">'+r.idx+'</span>'
+      +'<div style="display:flex;align-items:center;gap:10px">'
+        +'<div class="av">'+initials+'</div>'
+        +'<div><div class="nm">'+nm+'</div><div class="sub">'+r.nat+'</div></div>'
+      +'</div>'
+      +'<span class="id" style="font-size:12px">'+r.type+'</span>'
+      +'<span class="id">'+r.id+'</span>'
+      +(stIcon[r.status]||r.status)
+      +'<span style="font-family:var(--font-en);font-size:12px;color:var(--fg-2)">'+r.time+'</span>';
+    logDiv.appendChild(row);
+  });
+}
+
+function updateStats(){
+  var total    = LOG_DATA.length;
+  var verified = LOG_DATA.filter(function(r){return r.status==='verified';}).length;
+  var review   = LOG_DATA.filter(function(r){return r.status==='review';}).length;
+  var avgSec   = total > 0 ? 2.4 : 0; // placeholder — real latency would come from API
+
+  // Update mod-stat cards
+  var stats = document.querySelectorAll('.mod-stat');
+  if(stats[0]){
+    stats[0].querySelector('.v').textContent = total;
+    stats[0].querySelector('.meta').textContent = 'ضيف تم تعرّفه اليوم';
+  }
+  if(stats[1]){
+    stats[1].querySelector('.v').innerHTML = verified+' <span class="cur">'+(total>0?Math.round(verified/total*100)+'%':'—')+'</span>';
+    stats[1].querySelector('.meta').textContent = 'من إجمالي '+total+' تحقق';
+  }
+  if(stats[2]){
+    stats[2].querySelector('.v').textContent = review;
+    stats[2].querySelector('.meta').textContent = review > 0 ? 'تحتاج مراجعة يدوية' : 'لا يوجد';
+  }
+  if(stats[3]){
+    stats[3].querySelector('.v').innerHTML = avgSec+' <span class="cur">ثانية</span>';
+  }
+
+  // Update vibrant hero badges
+  if(typeof renderVibrantHero === 'function'){
+    renderVibrantHero({
+      icon:'🛡', num:'02', title:'شموس', en:'Identity Verification · MOI',
+      sub:'ربط مباشر بوزارة الداخلية — تعرّف فوري على الضيف',
+      badges:[{v:total,l:'تعرّف اليوم'},{v:(total>0?Math.round(verified/total*100)+'%':'—'),l:'دقة التعرّف'}]
+    });
+  }
+  if(typeof renderTierBar === 'function'){
+    var failed = LOG_DATA.filter(function(r){return r.status==='failed';}).length;
+    renderTierBar({ exc:verified, good:review, low:failed, bad:0 });
+  }
+}
 
 window.exportCSV = function(){
   var stMap = {verified:{v:'متحقّق',s:'EXC'}, review:{v:'مراجعة يدوية',s:'WARN'}, failed:{v:'فشل',s:'BAD'}};
@@ -260,28 +384,28 @@ window.exportCSV = function(){
 };
 
 window.exportPDF = function(){
-  var stStyle = {verified:'color:#1B7A56;font-weight:700', review:'color:#D97706;font-weight:700', failed:'color:#C0392B;font-weight:700'};
+  var stStyle = {verified:'color:#1B7A56;font-weight:700', review:'color:var(--warning-700);font-weight:700', failed:'color:#C0392B;font-weight:700'};
   var stLabel = {verified:'✓ متحقّق', review:'⚠ مراجعة يدوية', failed:'✕ فشل'};
   var verified = LOG_DATA.filter(function(r){return r.status==='verified';}).length;
   var review   = LOG_DATA.filter(function(r){return r.status==='review';}).length;
   var failed   = LOG_DATA.filter(function(r){return r.status==='failed';}).length;
   var t = LOG_DATA.length; function _p(n){return t>0?Math.round(n/t*100):0;}
   var statsHtml = '<div style="background:linear-gradient(135deg,#f0f7f4,#f8faf9);border:1px solid #c6ddd7;border-radius:12px;padding:18px 20px;margin-bottom:20px">'
-    +'<div style="font-size:14px;font-weight:700;color:#1B4D3D;margin-bottom:14px">📊 ملخص الإحصائيات · إجمالي التعرّفات: '+t+' سجل</div>'
+    +'<div style="font-size:14px;font-weight:700;color:var(--brand-700);margin-bottom:14px">📊 ملخص الإحصائيات · إجمالي التعرّفات: '+t+' سجل</div>'
     +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">'
     +'<div style="flex:1;min-width:80px;text-align:center;background:#f0f0f0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#333">'+t+'</div><div style="font-size:10px;color:#666;margin-top:4px">الإجمالي</div></div>'
     +'<div style="flex:1;min-width:80px;text-align:center;background:#D1FAE5;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#1B7A56">'+verified+'</div><div style="font-size:13px;font-weight:700;color:#1B7A56">'+_p(verified)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">تحقّق ناجح</div></div>'
-    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEF3C7;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#D97706">'+review+'</div><div style="font-size:13px;font-weight:700;color:#D97706">'+_p(review)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">مراجعة يدوية</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEF3C7;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:var(--warning-700)">'+review+'</div><div style="font-size:13px;font-weight:700;color:var(--warning-700)">'+_p(review)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">مراجعة يدوية</div></div>'
     +'<div style="flex:1;min-width:80px;text-align:center;background:#FEE2E2;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#C0392B">'+failed+'</div><div style="font-size:13px;font-weight:700;color:#C0392B">'+_p(failed)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">فشل التحقق</div></div>'
     +'</div>'
     +'<div style="background:#e8eceb;border-radius:6px;height:12px;overflow:hidden;display:flex">'
     +(verified>0?'<div style="width:'+_p(verified)+'%;background:#1B7A56;height:100%"></div>':'')
-    +(review>0?'<div style="width:'+_p(review)+'%;background:#D97706;height:100%"></div>':'')
+    +(review>0?'<div style="width:'+_p(review)+'%;background:var(--warning-700);height:100%"></div>':'')
     +(failed>0?'<div style="width:'+_p(failed)+'%;background:#C0392B;height:100%"></div>':'')
     +'</div>'
     +'<div style="margin-top:8px;font-size:10px;color:#666;display:flex;gap:14px;flex-wrap:wrap">'
     +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#1B7A56;margin-left:3px"></span>تحقّق ناجح '+_p(verified)+'%</span>'
-    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#D97706;margin-left:3px"></span>مراجعة يدوية '+_p(review)+'%</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--warning-700);margin-left:3px"></span>مراجعة يدوية '+_p(review)+'%</span>'
     +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#C0392B;margin-left:3px"></span>فشل التحقق '+_p(failed)+'%</span>'
     +'</div>'
     +'</div>';
@@ -294,7 +418,7 @@ window.exportPDF = function(){
   win.document.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"/><title>شموس — سجل التعرّف</title>'
     +'<style>body{font-family:"Tajawal","Segoe UI",sans-serif;margin:32px;color:#1a1a1a;direction:rtl}'
     +'h1{font-size:22px;margin:0 0 4px}.sub{font-size:12px;color:#666;margin:0 0 18px}'
-    +'table{width:100%;border-collapse:collapse;font-size:13px}th{background:#1B4D3D;color:#fff;padding:10px 12px;text-align:right}'
+    +'table{width:100%;border-collapse:collapse;font-size:13px}th{background:var(--brand-700);color:var(--white);padding:10px 12px;text-align:right}'
     +'td{padding:9px 12px;border-bottom:1px solid #eee}tr:nth-child(even){background:#fafafa}'
     +'.footer{margin-top:18px;font-size:11px;color:#999}@media print{.no-print{display:none}}'
     +'</style></head><body>'

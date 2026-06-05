@@ -16,7 +16,7 @@
   .ttl{font-family:var(--font-ar-display);font-size:18px;font-weight:600}
   .sub{font-family:var(--font-en);font-style:italic;font-size:12px;color:var(--gold-700);margin-inline-start:6px}
   .who{margin-inline-start:auto;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink-600)}
-  .who .av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--brand-700),var(--brand-900));color:#fff;display:grid;place-items:center;font-size:13px;font-weight:700}
+  .who .av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--brand-700),var(--brand-900));color:var(--white);display:grid;place-items:center;font-size:13px;font-weight:700}
 
   .wrap{max-width:760px;margin:0 auto;padding:18px 20px 90px}
 
@@ -29,7 +29,7 @@
   .fld label{display:block;font-size:12px;color:var(--ink-600);margin-bottom:6px}
   .fld select,.fld input,.fld textarea{width:100%;padding:11px 13px;border:1px solid var(--ink-200);border-radius:10px;font-family:inherit;font-size:14px;background:var(--white);color:var(--ink-900)}
   .fld textarea{resize:vertical;min-height:64px}
-  .btn{width:100%;padding:12px;border:none;border-radius:10px;font-size:15px;font-weight:700;background:linear-gradient(135deg,var(--brand-700),var(--brand-900));color:#fff;transition:opacity .15s}
+  .btn{width:100%;padding:12px;border:none;border-radius:10px;font-size:15px;font-weight:700;background:linear-gradient(135deg,var(--brand-700),var(--brand-900));color:var(--white);transition:opacity .15s}
   .btn:hover{opacity:.92}
   .btn.gold{background:linear-gradient(135deg,var(--gold-500),var(--gold-700));color:var(--brand-900)}
   .btn.ghost{background:var(--surface-2);color:var(--ink-700)}
@@ -54,17 +54,17 @@
   .rost-item{display:flex;align-items:center;gap:9px;padding:11px 12px;border-bottom:1px solid var(--surface-3);cursor:pointer}
   .rost-item:hover{background:var(--surface-3)}
   .rost-item.on{background:var(--brand-50)}
-  .rost-item .av{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:13px;font-weight:700;flex-shrink:0}
+  .rost-item .av{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:var(--white);font-size:13px;font-weight:700;flex-shrink:0}
   .rost-item .nm{font-size:13px;font-weight:600}
   .rost-item .rl{font-size:11px;color:var(--fg-2)}
-  .dot-on{width:8px;height:8px;border-radius:50%;background:#3B8772;margin-inline-start:auto}
+  .dot-on{width:8px;height:8px;border-radius:50%;background:var(--brand-500);margin-inline-start:auto}
   .dot-off{width:8px;height:8px;border-radius:50%;background:var(--ink-200);margin-inline-start:auto}
   .convo{background:var(--white);border:1px solid var(--hairline);border-radius:14px;display:flex;flex-direction:column}
   .convo-head{padding:12px 16px;border-bottom:1px solid var(--surface-3);font-weight:600;font-size:14px}
   .msgs{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
   .msg{max-width:74%;padding:9px 13px;border-radius:14px;font-size:13px;line-height:1.5}
   .msg.them{align-self:flex-start;background:var(--surface-2);border-bottom-right-radius:4px}
-  .msg.me{align-self:flex-end;background:linear-gradient(135deg,var(--brand-700),var(--brand-800));color:#fff;border-bottom-left-radius:4px}
+  .msg.me{align-self:flex-end;background:linear-gradient(135deg,var(--brand-700),var(--brand-800));color:var(--white);border-bottom-left-radius:4px}
   .msg .t{font-size:10px;opacity:.6;margin-top:3px}
   .compose{display:flex;gap:8px;padding:11px;border-top:1px solid var(--surface-3)}
   .compose input{flex:1;padding:10px 13px;border:1px solid var(--ink-200);border-radius:999px;font-family:inherit;font-size:13px}
@@ -101,15 +101,15 @@
   .chk.ok{background:#eef7f1;border-color:#cce8d6}
   .chk.bad{background:#fdeeec;border-color:#f3cfc9}
   .chk .box{width:20px;height:20px;border-radius:6px;border:2px solid var(--ink-300);display:grid;place-items:center;font-size:12px;flex-shrink:0}
-  .chk.ok .box{background:#2f9d63;border-color:#2f9d63;color:#fff}
-  .chk.bad .box{background:#d65745;border-color:#d65745;color:#fff}
+  .chk.ok .box{background:#2f9d63;border-color:#2f9d63;color:var(--white)}
+  .chk.bad .box{background:#d65745;border-color:#d65745;color:var(--white)}
   .room-foot{margin-top:11px;display:flex;gap:8px;align-items:center}
   .room-foot .score{font-size:12px;color:var(--fg-2);margin-inline-start:auto}
 
   .empty{text-align:center;padding:50px 20px;color:var(--fg-2)}
   .empty .ic{font-size:42px;margin-bottom:10px;opacity:.5}
 
-  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink-900);color:#fff;padding:11px 22px;border-radius:999px;font-size:13px;z-index:200;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink-900);color:var(--white);padding:11px 22px;border-radius:999px;font-size:13px;z-index:200;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(-4px)}
 
   /* modal */
@@ -232,6 +232,10 @@
 <script>
 /* ============ بيانات الموظفين ============ */
 var STAFF = [];
+// STAFF is populated from /api/m06/employees on boot.
+// Tasks tab is augmented with real /api/m07/tasks (housekeeping) entries.
+// Housing tab is populated from /api/m07/rooms/status.
+
 var LS = {
   cur:   'dh_staff_cur',
   msgs:  'dh_staff_msgs',
@@ -241,13 +245,43 @@ var LS = {
 var me = null, activePeer = null;
 
 function byId(id){ return STAFF.filter(function(s){return s.id===id})[0]; }
-function initials(n){ var p=n.trim().split(/\s+/); return (p[0][0]||'')+(p[1]?p[1][0]:''); }
+function initials(n){ var p=(n||'').trim().split(/\s+/); return (p[0]?p[0][0]:'')+(p[1]?p[1][0]:''); }
 function esc(v){ return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 function load(k,d){ try{ var v=JSON.parse(localStorage.getItem(k)); return v==null?d:v; }catch(e){ return d; } }
 function save(k,v){ localStorage.setItem(k, JSON.stringify(v)); }
 function now(){ var d=new Date(); return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0'); }
 function toast(t){ var el=byEl('toast'); el.textContent=t; el.classList.add('show'); setTimeout(function(){el.classList.remove('show')},2200); }
 function byEl(id){ return document.getElementById(id); }
+
+/* ============ تحميل الموظفين من API ============ */
+function loadStaffFromAPI(){
+  return fetch('/api/m06/employees', { credentials: 'same-origin' })
+    .then(function(r){ return r.ok ? r.json() : Promise.reject(r.status); })
+    .then(function(res){
+      var employees = (res.data || res.employees || []);
+      STAFF = employees.map(function(emp){
+        // Normalise fields to match app expectations
+        var colors = ['var(--brand-700)','var(--brand-500)','var(--gold-700)','var(--gold-500)','var(--brand-400)','var(--brand-600)','var(--gold-400)'];
+        var colorIdx = Math.abs((emp.id || 0)) % colors.length;
+        return {
+          id:    String(emp.id || emp.employee_id),
+          name:  emp.name || emp.full_name || ('موظف #' + emp.id),
+          role:  emp.position || emp.role || emp.department || '',
+          color: emp.color || colors[colorIdx]
+        };
+      });
+      buildLoginOptions();
+      // Auto-resume session if stored
+      var cur = load(LS.cur, null);
+      if (cur && byId(cur)) { me = byId(cur); enterApp(); }
+      return STAFF;
+    })
+    .catch(function(){
+      // Fallback: keep empty STAFF — login screen will show "no staff"
+      buildLoginOptions();
+      return [];
+    });
+}
 
 /* ============ تسجيل الدخول / الخروج ============ */
 function buildLoginOptions(){
@@ -281,9 +315,14 @@ function enterApp(){
   byEl('appView').style.display='block';
   byEl('whoBox').style.display='flex';
   byEl('whoAv').textContent=initials(me.name);
-  byEl('whoAv').style.background='linear-gradient(135deg,'+me.color+',#0E2A22)';
+  byEl('whoAv').style.background='linear-gradient(135deg,'+me.color+',var(--brand-900))';
   byEl('whoName').textContent=me.name;
-  renderRoster(); renderTasks(); renderHousing(); buildTaskTargets();
+  renderRoster();
+  // Load tasks from API (housekeeping) + local storage
+  loadTasksFromAPI();
+  // Load rooms from API then render housing
+  loadRoomsFromAPI();
+  buildTaskTargets();
 }
 
 /* ============ التبويبات ============ */
@@ -303,7 +342,7 @@ function renderRoster(){
   el.innerHTML = STAFF.filter(function(s){return s.id!==me.id}).map(function(s){
     var online = (s.id.charCodeAt(1)%2)===0; // عرض توضيحي للحالة
     return '<div class="rost-item'+(activePeer===s.id?' on':'')+'" onclick="openConv(\''+s.id+'\')">'+
-      '<div class="av" style="background:linear-gradient(135deg,'+s.color+',#0E2A22)">'+esc(initials(s.name))+'</div>'+
+      '<div class="av" style="background:linear-gradient(135deg,'+s.color+',var(--brand-900))">'+esc(initials(s.name))+'</div>'+
       '<div><div class="nm">'+esc(s.name)+'</div><div class="rl">'+esc(s.role)+'</div></div>'+
       '<div class="'+(online?'dot-on':'dot-off')+'"></div></div>';
   }).join('');
@@ -412,19 +451,48 @@ function submitClarify(){
 }
 function closeModal(id){ byEl(id).classList.remove('show'); }
 
-/* ============ أدوات السكن ============ */
+/* ============ أدوات السكن — تحميل من API ============ */
 var HOUSE_TOOLS = ['مكيف الهواء','السخان','الإضاءة','الثلاجة','أثاث الغرفة','دورة المياه'];
 var HOUSE_ROOMS = [];
+
+function loadRoomsFromAPI(){
+  var grid = byEl('housingGrid');
+  if (grid) grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="ic">⏳</div>جاري التحميل…</div>';
+  return fetch('/api/m07/rooms/status', { credentials: 'same-origin' })
+    .then(function(r){ return r.ok ? r.json() : Promise.reject(r.status); })
+    .then(function(res){
+      var rooms = (res.data || []);
+      HOUSE_ROOMS = rooms.map(function(r){
+        var statusLabel = r.status === 'occupied'  ? 'مشغولة' :
+                          r.status === 'available' ? 'متاحة'  :
+                          r.status === 'cleaning'  ? 'قيد التنظيف' :
+                          r.status === 'checkout'  ? 'جاهزة للخروج' :
+                          (r.status || 'غير محدد');
+        return {
+          no:     r.room_number || String(r.id),
+          occ:    r.current_guest ? ('الضيف: ' + r.current_guest) : statusLabel,
+          status: r.status || ''
+        };
+      });
+      renderHousing();
+      return HOUSE_ROOMS;
+    })
+    .catch(function(){
+      if (grid) grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="ic">🏠</div>لا توجد غرف مسجّلة — تحقق من الاتصال</div>';
+      return [];
+    });
+}
+
 function renderHousing(){
   if(!HOUSE_ROOMS.length){
     byEl('housingGrid').innerHTML='<div class="empty" style="grid-column:1/-1"><div class="ic">🏠</div>لا توجد غرف سكن مسجّلة</div>';
     return;
   }
   var state=load(LS.house,{});
-  byEl('housingGrid').innerHTML=HOUSE_ROOMS.map(function(r,ri){
+  byEl('housingGrid').innerHTML=HOUSE_ROOMS.map(function(r){
     var rstate=state[r.no]||{};
     var okCount=0;
-    var checks=HOUSE_TOOLS.map(function(tool,ti){
+    var checks=HOUSE_TOOLS.map(function(tool){
       var st=rstate[tool]; // undefined | 'ok' | 'bad'
       if(st==='ok') okCount++;
       var cls=st==='ok'?'ok':(st==='bad'?'bad':'');
@@ -437,28 +505,177 @@ function renderHousing(){
       '<span class="pill '+(okCount===HOUSE_TOOLS.length?'closed':(checked?'prog':'open'))+'">'+okCount+'/'+HOUSE_TOOLS.length+'</span></div>'+
       '<div class="occ">🛏 '+esc(r.occ)+'</div>'+
       '<div class="checks">'+checks+'</div>'+
-      '<div class="room-foot"><span class="score">جاهزية: '+Math.round(okCount/HOUSE_TOOLS.length*100)+'٪</span></div></div>';
+      '<div class="room-foot">'+
+        '<button class="btn sm ghost" onclick="markRoomClean(\''+esc(r.no)+'\')" style="font-size:11px">✓ اكتمل التنظيف</button>'+
+        '<span class="score">جاهزية: '+Math.round(okCount/HOUSE_TOOLS.length*100)+'٪</span>'+
+      '</div></div>';
   }).join('');
 }
+
 function toggleTool(room,tool){
   var state=load(LS.house,{});
   state[room]=state[room]||{};
   var cur=state[room][tool];
-  // دورة: غير محدد → سليم → صيانة → غير محدد
   if(cur===undefined) state[room][tool]='ok';
   else if(cur==='ok') state[room][tool]='bad';
   else delete state[room][tool];
   save(LS.house,state); renderHousing();
 }
+
+function markRoomClean(roomNo){
+  if (!me) { toast('سجّل دخولك أولاً'); return; }
+  fetch('/api/m07/rooms/' + encodeURIComponent(roomNo) + '/clean', {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ staff_name: me.name })
+  }).then(function(r){ return r.json(); })
+    .then(function(res){
+      if (res.success) {
+        toast('تم تسجيل اكتمال التنظيف للغرفة ' + roomNo);
+        // Refresh rooms list
+        loadRoomsFromAPI();
+      } else {
+        toast('خطأ: ' + (res.detail || 'فشل التحديث'));
+      }
+    }).catch(function(){ toast('خطأ في الاتصال بالخادم'); });
+}
+
 function resetHousing(){ localStorage.removeItem(LS.house); renderHousing(); toast('تمت إعادة التعيين'); }
 
+/* ============ تحميل المهام من API (الإشراف الداخلي) ============ */
+var _apiTasksCache = [];
+
+function loadTasksFromAPI(){
+  var el = byEl('taskList');
+  if (el) el.innerHTML = '<div class="empty"><div class="ic">⏳</div>جاري تحميل المهام…</div>';
+
+  return fetch('/api/m07/tasks', { credentials: 'same-origin' })
+    .then(function(r){ return r.ok ? r.json() : Promise.reject(r.status); })
+    .then(function(res){
+      var apiTasks = (res.data || []);
+      _apiTasksCache = apiTasks;
+      renderTasksWithAPI(apiTasks);
+      return apiTasks;
+    })
+    .catch(function(){
+      // Fall back to localStorage tasks only
+      renderTasks();
+    });
+}
+
+function renderTasksWithAPI(apiTasks){
+  seedTasks();
+  var localTasks = load(LS.tasks, []);
+
+  // Build combined list: API tasks shown as read-only housekeeping tasks + local tasks
+  var el = byEl('taskList');
+  if (!me) return;
+
+  var myLocalTasks = localTasks.filter(function(t){ return t.to === me.id || t.from === me.id; });
+
+  // API tasks assigned to current user (match by name since API uses names not IDs)
+  var myApiTasks = apiTasks.filter(function(t){
+    return !t.assigned_to || t.assigned_to === me.name ||
+           t.assigned_to === me.id || t.status === 'pending';
+  });
+
+  var allEmpty = !myLocalTasks.length && !myApiTasks.length;
+  if (allEmpty) {
+    el.innerHTML = '<div class="empty"><div class="ic">✅</div>لا توجد مهام</div>';
+    return;
+  }
+
+  var html = '';
+
+  // Render API (housekeeping) tasks
+  myApiTasks.forEach(function(t){
+    var statusMap = { pending:'open', in_progress:'prog', completed:'closed' };
+    var prioMap   = { high:'high', normal:'mid', low:'low' };
+    var statusCls = statusMap[t.status] || 'open';
+    var statusTxt = statusCls==='open'?'مفتوحة':(statusCls==='prog'?'قيد التنفيذ':'مغلقة');
+    var priCls    = prioMap[t.priority] || 'mid';
+    var priTxt    = priCls==='high'?'عاجلة':(priCls==='mid'?'متوسطة':'عادية');
+    var taskType  = t.task_type === 'cleaning' ? 'تنظيف' : (t.task_type || 'مهمة');
+    var roomNo    = t.room_number || '';
+    var acts = '';
+    if (t.status === 'pending') {
+      acts += '<button class="btn sm" onclick="updateAPITaskStatus(' + t.id + ',\'in_progress\')">بدء التنفيذ</button>';
+    }
+    if (t.status !== 'completed') {
+      acts += '<button class="btn sm gold" onclick="updateAPITaskStatus(' + t.id + ',\'completed\')">إغلاق المهمة</button>';
+    }
+    html += '<div class="task' + (t.status==='completed'?' done':'') + '">' +
+      '<div class="task-top"><div>' +
+        '<div class="tt">🏨 ' + esc(taskType) + (roomNo ? ' — غرفة ' + esc(roomNo) : '') + '</div>' +
+        '<div class="meta"><span>الإشراف الداخلي</span>' +
+          (t.assigned_to ? '<span>المسؤول: ' + esc(t.assigned_to) + '</span>' : '') +
+        '</div></div>' +
+        '<div style="display:flex;gap:6px;flex-direction:column;align-items:flex-end">' +
+          '<span class="pill ' + statusCls + '">' + statusTxt + '</span>' +
+          '<span class="pri ' + priCls + '">' + priTxt + '</span>' +
+        '</div></div>' +
+      (t.notes ? '<div class="desc">' + esc(t.notes) + '</div>' : '') +
+      '<div class="task-acts">' + acts + '</div></div>';
+  });
+
+  // Render local tasks (unchanged logic from original renderTasks)
+  myLocalTasks.forEach(function(t){
+    var inbound = t.to === me.id;
+    var statusTxt = t.status==='open'?'مفتوحة':(t.status==='prog'?'قيد التنفيذ':'مغلقة');
+    var statusCls = t.status==='open'?'open':(t.status==='prog'?'prog':'closed');
+    var priTxt = t.pri==='high'?'عاجلة':(t.pri==='mid'?'متوسطة':'عادية');
+    var fromN = byId(t.from)? byId(t.from).name : t.from;
+    var toN   = byId(t.to)?   byId(t.to).name   : t.to;
+    var acts='';
+    if(t.status!=='closed'){
+      if(inbound && t.status==='open') acts+='<button class="btn sm" onclick="setStatus(\''+t.id+'\',\'prog\')">بدء التنفيذ</button>';
+      if(inbound) acts+='<button class="btn sm ghost" onclick="askClarify(\''+t.id+'\')">طلب إيضاح</button>';
+      acts+='<button class="btn sm gold" onclick="setStatus(\''+t.id+'\',\'closed\')">إغلاق المهمة</button>';
+    } else {
+      acts+='<button class="btn sm ghost" onclick="setStatus(\''+t.id+'\',\'open\')">إعادة فتح</button>';
+    }
+    var clarHtml='';
+    if(t.clar && t.clar.length){
+      clarHtml='<div class="clarify">'+t.clar.map(function(c){
+        return '<div class="clar-item"><b>'+esc(byId(c.by)?byId(c.by).name:c.by)+':</b> '+esc(c.q)+'</div>';
+      }).join('')+'</div>';
+    }
+    html += '<div class="task'+(t.status==='closed'?' done':'')+'">'+
+      '<div class="task-top"><div><div class="tt">'+esc(t.title)+'</div>'+
+        '<div class="meta"><span>من: '+esc(fromN)+'</span><span>إلى: '+esc(toN)+'</span><span>'+esc(t.at)+'</span></div></div>'+
+        '<div style="display:flex;gap:6px;flex-direction:column;align-items:flex-end">'+
+          '<span class="pill '+statusCls+'">'+statusTxt+'</span>'+
+          '<span class="pri '+t.pri+'">'+priTxt+'</span></div></div>'+
+      '<div class="desc">'+esc(t.desc)+'</div>'+
+      clarHtml+
+      '<div class="task-acts">'+acts+'</div></div>';
+  });
+
+  el.innerHTML = html;
+}
+
+function updateAPITaskStatus(taskId, newStatus){
+  if (!me) { toast('سجّل دخولك أولاً'); return; }
+  fetch('/api/m07/tasks/' + taskId + '/status', {
+    method: 'PUT',
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status: newStatus, staff_name: me.name })
+  }).then(function(r){ return r.json(); })
+    .then(function(res){
+      if (res.success) {
+        toast(newStatus === 'completed' ? 'تم إغلاق المهمة' : 'بدأ التنفيذ');
+        loadTasksFromAPI();
+      } else {
+        toast('خطأ: ' + (res.detail || 'فشل التحديث'));
+      }
+    }).catch(function(){ toast('خطأ في الاتصال'); });
+}
+
 /* ============ إقلاع ============ */
-buildLoginOptions();
-(function(){
-  if(!STAFF.length) return;
-  var cur=load(LS.cur,null);
-  if(cur && byId(cur)){ me=byId(cur); enterApp(); }
-})();
+// Load staff list from API first, then auto-resume session if stored
+loadStaffFromAPI();
 </script>
 </body>
 </html>

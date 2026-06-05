@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <title>ضيوف · تسويق القنوات</title>
-<meta name="viewport" content="width=1440, initial-scale=1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
 <link rel="stylesheet" href="/static/dheuof/colors_and_type.css"/>
 <link rel="stylesheet" href="/static/dheuof/assets/animations.css"/>
 <link rel="stylesheet" href="/static/dheuof/shared/chrome.css"/>
@@ -51,12 +51,12 @@
   .ch-card.is-off { opacity: 0.6; }
   .ch-card .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
   .ch-card .logo { font-family: var(--font-en); font-weight: 700; font-size: 18px; padding: 8px 14px; border-radius: 8px; }
-  .ch-card .logo.booking { background: #003580; color: #FFFFFF; }
-  .ch-card .logo.agoda { background: #D72481; color: #FFFFFF; }
+  .ch-card .logo.booking { background: #003580; color: var(--white); }
+  .ch-card .logo.agoda { background: #D72481; color: var(--white); }
   .ch-card .logo.expedia { background: #FECB00; color: #003463; }
-  .ch-card .logo.airbnb { background: #FF5A5F; color: #FFFFFF; }
-  .ch-card .logo.almosafer { background: #002B5C; color: #C9A85F; }
-  .ch-card .logo.tripcom { background: #2577E3; color: #FFFFFF; }
+  .ch-card .logo.airbnb { background: #FF5A5F; color: var(--white); }
+  .ch-card .logo.almosafer { background: #002B5C; color: var(--gold-500); }
+  .ch-card .logo.tripcom { background: #2577E3; color: var(--white); }
   .ch-card .logo.direct { background: var(--gold-500); color: var(--brand-900); }
   .ch-card .figures { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 14px 0; border-top: 1px solid var(--hairline); border-bottom: 1px solid var(--hairline); margin: 6px 0; }
   .ch-card .fig { display: flex; flex-direction: column; gap: 2px; }
@@ -91,8 +91,8 @@
     padding: 4px 0; border-radius: 4px;
   }
   .ch-pr-row .rate.match  { color: var(--ink-900); }
-  .ch-pr-row .rate.lower  { color: var(--success-700); background: #DCEEE6; }
-  .ch-pr-row .rate.higher { color: var(--danger-700); background: #F1D8CF; }
+  .ch-pr-row .rate.lower  { color: var(--success-700); background: var(--success-100); }
+  .ch-pr-row .rate.higher { color: var(--danger-700); background: var(--danger-100); }
   .ch-pr-row .rate.na     { color: var(--ink-200); }
   .ch-pr-row .rate small  { font-size: 10px; opacity: 0.7; font-family: var(--font-ar); }
   .ch-pr-row .status { text-align: end; }
@@ -113,7 +113,7 @@
   .ci-switch { position: relative; width: 42px; height: 24px; flex-shrink: 0; cursor: pointer; }
   .ci-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
   .ci-track { position: absolute; inset: 0; background: var(--ink-200, #cbd5e1); border-radius: 999px; transition: background 180ms; }
-  .ci-thumb { position: absolute; top: 3px; inset-inline-start: 3px; width: 18px; height: 18px; background: #fff; border-radius: 999px; transition: transform 180ms; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+  .ci-thumb { position: absolute; top: 3px; inset-inline-start: 3px; width: 18px; height: 18px; background: var(--white); border-radius: 999px; transition: transform 180ms; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
   .ci-switch input:checked + .ci-track { background: var(--brand-600, #2f7d63); }
   .ci-switch input:checked + .ci-track .ci-thumb { transform: translateX(-18px); }
 
@@ -429,7 +429,7 @@
                 <td style="padding:10px 12px;font-weight:600">Agoda</td>
                 <td style="padding:10px 12px;text-align:center;font-family:var(--font-mono)">510 ر.س</td>
                 <td style="padding:10px 12px;text-align:center;font-family:var(--font-mono)">480 ر.س</td>
-                <td style="padding:10px 12px;text-align:center;color:#D97706;font-weight:600">+30 ر.س ⚠</td>
+                <td style="padding:10px 12px;text-align:center;color:var(--warning-700);font-weight:600">+30 ر.س ⚠</td>
                 <td style="padding:10px 12px;text-align:center"><span style="background:#FEF3C7;color:#92400E;padding:2px 8px;border-radius:4px;font-size:11px">⚠ فجوة</span></td>
                 <td style="padding:10px 12px;text-align:center"><button onclick="syncRate(this,'Agoda')" style="padding:4px 10px;background:var(--brand-700);color:var(--paper);border:none;border-radius:4px;font-family:var(--font-ar);font-size:11px;cursor:pointer">تصحيح</button></td>
               </tr>
@@ -445,9 +445,9 @@
                 <td style="padding:10px 12px;font-weight:600">Almosafer</td>
                 <td style="padding:10px 12px;text-align:center;font-family:var(--font-mono)">540 ر.س</td>
                 <td style="padding:10px 12px;text-align:center;font-family:var(--font-mono)">480 ر.س</td>
-                <td style="padding:10px 12px;text-align:center;color:#DC2626;font-weight:600">+60 ر.س ✗</td>
+                <td style="padding:10px 12px;text-align:center;color:var(--danger-700);font-weight:600">+60 ر.س ✗</td>
                 <td style="padding:10px 12px;text-align:center"><span style="background:#FEE2E2;color:#991B1B;padding:2px 8px;border-radius:4px;font-size:11px">✗ كسر</span></td>
-                <td style="padding:10px 12px;text-align:center"><button onclick="syncRate(this,'Almosafer')" style="padding:4px 10px;background:#DC2626;color:var(--paper);border:none;border-radius:4px;font-family:var(--font-ar);font-size:11px;cursor:pointer">إصلاح عاجل</button></td>
+                <td style="padding:10px 12px;text-align:center"><button onclick="syncRate(this,'Almosafer')" style="padding:4px 10px;background:var(--danger-700);color:var(--paper);border:none;border-radius:4px;font-family:var(--font-ar);font-size:11px;cursor:pointer">إصلاح عاجل</button></td>
               </tr>
               <tr style="border-bottom:1px solid var(--hairline)">
                 <td style="padding:10px 12px;font-weight:600">Airbnb</td>
@@ -518,7 +518,7 @@
             <div style="font-size:22px;font-weight:700;color:var(--brand-700);font-family:var(--font-en)">10,260</div>
             <div style="font-size:10px;color:var(--fg-3)">ر.س · هذا الشهر · ٢١ ليلة</div>
             <div style="margin-top:8px;height:4px;background:var(--hairline);border-radius:2px">
-              <div style="width:9%;height:100%;background:#D97706;border-radius:2px"></div>
+              <div style="width:9%;height:100%;background:var(--warning-700);border-radius:2px"></div>
             </div>
           </div>
           <div style="padding:14px;border:1px solid var(--hairline);border-radius:10px">
@@ -529,10 +529,10 @@
             <div style="font-size:22px;font-weight:700;color:var(--brand-700);font-family:var(--font-en)">5,700</div>
             <div style="font-size:10px;color:var(--fg-3)">ر.س · هذا الشهر · ١٢ ليلة</div>
             <div style="margin-top:8px;height:4px;background:var(--hairline);border-radius:2px">
-              <div style="width:5%;height:100%;background:#DC2626;border-radius:2px"></div>
+              <div style="width:5%;height:100%;background:var(--danger-700);border-radius:2px"></div>
             </div>
           </div>
-          <div style="padding:14px;border:1.5px solid var(--gold-300,#C9A85F);border-radius:10px;background:linear-gradient(135deg,var(--brand-50),white)">
+          <div style="padding:14px;border:1.5px solid var(--gold-300,var(--gold-500));border-radius:10px;background:linear-gradient(135deg,var(--brand-50),white)">
             <div style="font-size:12px;font-weight:700;color:var(--brand-700);margin-bottom:6px">الإجمالي الشهري</div>
             <div style="font-size:24px;font-weight:700;color:var(--brand-900);font-family:var(--font-en)">111,200</div>
             <div style="font-size:10px;color:var(--fg-3)">ر.س من ٥ قنوات · ٢٣١ ليلة</div>
@@ -623,7 +623,7 @@ setTimeout(function(){
 function todayStr(){var d=new Date();return d.getFullYear()+(d.getMonth()+1<10?'0':'')+(d.getMonth()+1)+(d.getDate()<10?'0':'')+d.getDate();}
 function toXLS(headers,rows,name){var s='<Styles><Style ss:ID="H"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1B4D3D" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center"/></Style><Style ss:ID="BAD"><Interior ss:Color="#C0392B" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style><Style ss:ID="WARN"><Interior ss:Color="#D97706" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style><Style ss:ID="OK"><Interior ss:Color="#BBF7D0" ss:Pattern="Solid"/><Font ss:Color="#1B7A56" ss:Bold="1"/></Style><Style ss:ID="EXC"><Interior ss:Color="#1B7A56" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style></Styles>';function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}function cell(v){if(v&&typeof v==='object'&&'s' in v)return '<Cell ss:StyleID="'+v.s+'"><Data ss:Type="String">'+esc(v.v)+'</Data></Cell>';return '<Cell><Data ss:Type="'+(typeof v==='number'?'Number':'String')+'">'+esc(v)+'</Data></Cell>';}var hRow='<Row>'+headers.map(function(h){return '<Cell ss:StyleID="H"><Data ss:Type="String">'+esc(h)+'</Data></Cell>';}).join('')+'</Row>';var dRows=rows.map(function(r){return '<Row>'+r.map(cell).join('')+'</Row>';}).join('');return '<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'+s+'<Worksheet ss:Name="'+esc(name)+'"><Table>'+hRow+dRows+'</Table></Worksheet></Workbook>';}
 function dlXLS(c,fn){var b=new Blob([c],{type:'application/vnd.ms-excel;charset=utf-8'});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download=fn;a.click();setTimeout(function(){URL.revokeObjectURL(u);},1000);}
-function toast(msg,isErr){var old=document.querySelector('.dh-toast');if(old)old.remove();var t=document.createElement('div');t.className='dh-toast';t.style.cssText='position:fixed;bottom:24px;inset-inline-end:24px;background:'+(isErr?'#b91c1c':'#1B4D3D')+';color:#fff;padding:12px 18px;border-radius:8px;font-family:"Tajawal",sans-serif;font-size:13px;z-index:9999;display:flex;gap:8px';t.innerHTML='<span style="color:'+(isErr?'#fca5a5':'#C9A85F')+'">'+(isErr?'✕':'✓')+'</span>'+msg;document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .4s';setTimeout(function(){if(t.parentNode)t.remove();},400);},3000);}
+function toast(msg,isErr){var old=document.querySelector('.dh-toast');if(old)old.remove();var t=document.createElement('div');t.className='dh-toast';t.style.cssText='position:fixed;bottom:24px;inset-inline-end:24px;background:'+(isErr?'#b91c1c':'var(--brand-700)')+';color:var(--white);padding:12px 18px;border-radius:8px;font-family:"Tajawal",sans-serif;font-size:13px;z-index:9999;display:flex;gap:8px';t.innerHTML='<span style="color:'+(isErr?'#fca5a5':'var(--gold-500)')+'">'+(isErr?'✕':'✓')+'</span>'+msg;document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .4s';setTimeout(function(){if(t.parentNode)t.remove();},400);},3000);}
 
 var CHANNELS = [
   {name:'Booking.com', status:'connected', bookings:0, revenue:0, commission:15},
@@ -679,29 +679,29 @@ window.exportPDF = function(){
   var inactive=CHANNELS.filter(function(c){return c.status==='inactive';}).length;
   var t=CHANNELS.length; function _p(n){return t>0?Math.round(n/t*100):0;}
   var statsHtml='<div style="background:linear-gradient(135deg,#f0f7f4,#f8faf9);border:1px solid #c6ddd7;border-radius:12px;padding:18px 20px;margin-bottom:20px">'
-    +'<div style="font-size:14px;font-weight:700;color:#1B4D3D;margin-bottom:14px">📊 ملخص القنوات · الإجمالي: '+t+' قناة · إيرادات: '+totalRev.toLocaleString('ar-EG')+' ر.س</div>'
+    +'<div style="font-size:14px;font-weight:700;color:var(--brand-700);margin-bottom:14px">📊 ملخص القنوات · الإجمالي: '+t+' قناة · إيرادات: '+totalRev.toLocaleString('ar-EG')+' ر.س</div>'
     +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">'
     +'<div style="flex:1;min-width:80px;text-align:center;background:#f0f0f0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#333">'+t+'</div><div style="font-size:10px;color:#666;margin-top:4px">إجمالي القنوات</div></div>'
     +'<div style="flex:1;min-width:80px;text-align:center;background:#D1FAE5;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#1B7A56">'+excC+'</div><div style="font-size:13px;font-weight:700;color:#1B7A56">'+_p(excC)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">ممتاز ≥٨٠٪ ⭐</div></div>'
-    +'<div style="flex:1;min-width:80px;text-align:center;background:#BBF7D0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#059669">'+okC+'</div><div style="font-size:13px;font-weight:700;color:#059669">'+_p(okC)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">جيد ٥٠-٨٠٪ 🟢</div></div>'
-    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEF3C7;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#D97706">'+warnC+'</div><div style="font-size:13px;font-weight:700;color:#D97706">'+_p(warnC)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">منخفض ٢٥-٥٠٪ 🟠</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#BBF7D0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:var(--success-700)">'+okC+'</div><div style="font-size:13px;font-weight:700;color:var(--success-700)">'+_p(okC)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">جيد ٥٠-٨٠٪ 🟢</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEF3C7;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:var(--warning-700)">'+warnC+'</div><div style="font-size:13px;font-weight:700;color:var(--warning-700)">'+_p(warnC)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">منخفض ٢٥-٥٠٪ 🟠</div></div>'
     +'<div style="flex:1;min-width:80px;text-align:center;background:#FEE2E2;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#C0392B">'+badC+'</div><div style="font-size:13px;font-weight:700;color:#C0392B">'+_p(badC)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">تحت الحد <٢٥٪ 🔴</div></div>'
     +'</div>'
     +'<div style="background:#e8eceb;border-radius:6px;height:12px;overflow:hidden;display:flex">'
     +(excC>0?'<div style="width:'+_p(excC)+'%;background:#1B7A56;height:100%"></div>':'')
     +(okC>0?'<div style="width:'+_p(okC)+'%;background:#22C55E;height:100%"></div>':'')
-    +(warnC>0?'<div style="width:'+_p(warnC)+'%;background:#D97706;height:100%"></div>':'')
+    +(warnC>0?'<div style="width:'+_p(warnC)+'%;background:var(--warning-700);height:100%"></div>':'')
     +(badC>0?'<div style="width:'+_p(badC)+'%;background:#C0392B;height:100%"></div>':'')
     +'</div>'
     +'<div style="margin-top:8px;font-size:10px;color:#666;display:flex;gap:14px;flex-wrap:wrap">'
     +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#1B7A56;margin-left:3px"></span>ممتاز '+_p(excC)+'%</span>'
     +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#22C55E;margin-left:3px"></span>جيد '+_p(okC)+'%</span>'
-    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#D97706;margin-left:3px"></span>منخفض '+_p(warnC)+'%</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--warning-700);margin-left:3px"></span>منخفض '+_p(warnC)+'%</span>'
     +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#C0392B;margin-left:3px"></span>تحت الحد '+_p(badC)+'%</span>'
     +'<span> · متصل: '+connected+'/'+t+' · غير مفعّل: '+inactive+'</span>'
     +'</div>'
     +'</div>';
-  var stStyle = {connected:'color:#1B7A56;font-weight:700', slow:'color:#D97706;font-weight:700', inactive:'color:#C0392B;font-weight:600'};
+  var stStyle = {connected:'color:#1B7A56;font-weight:700', slow:'color:var(--warning-700);font-weight:700', inactive:'color:#C0392B;font-weight:600'};
   var stLabel = {connected:'✓ متصل', slow:'⚠ بطيء', inactive:'✕ غير مفعّل'};
   var rows = CHANNELS.map(function(c){
     return '<tr><td><strong>'+c.name+'</strong></td>'
@@ -718,7 +718,7 @@ window.exportPDF = function(){
     +'h1{font-size:22px;margin:0 0 4px}.sub{font-size:12px;color:#666;margin:0 0 18px}'
     +'.kpis{display:flex;gap:14px;margin-bottom:18px}.kpi{padding:12px 20px;border-radius:10px;min-width:110px}'
     +'.kpi .v{font-size:24px;font-weight:700}.kpi .l{font-size:11px;color:#666}'
-    +'table{width:100%;border-collapse:collapse;font-size:13px}th{background:#1B4D3D;color:#fff;padding:10px 12px;text-align:right}'
+    +'table{width:100%;border-collapse:collapse;font-size:13px}th{background:var(--brand-700);color:var(--white);padding:10px 12px;text-align:right}'
     +'td{padding:9px 12px;border-bottom:1px solid #eee}tr:nth-child(even){background:#fafafa}'
     +'.footer{margin-top:18px;font-size:11px;color:#999}@media print{.no-print{display:none}}'
     +'</style></head><body>'
@@ -914,32 +914,32 @@ window.syncAllChannels = function(){
 // ════════════════════════════════════════════════════════════════
 var AVAILABLE_CHANNELS = [
   // OTA
-  {key:'hotels',    name:'Hotels.com',    cat:'ota',   logo:{bg:'#C0392B',fg:'#fff'},  commission:16, desc:'شبكة فنادق عالمية'},
-  {key:'airbnb',    name:'Airbnb',        cat:'ota',   logo:{bg:'#FF5A5F',fg:'#fff'},  commission:14, desc:'منازل وشقق فندقية', existing:true},
-  {key:'hrs',       name:'HRS',           cat:'ota',   logo:{bg:'#003366',fg:'#fff'},  commission:13, desc:'حجوزات الأعمال'},
-  {key:'hotelbeds', name:'Hotelbeds',     cat:'ota',   logo:{bg:'#E67E22',fg:'#fff'},  commission:15, desc:'موزّع فنادق B2B'},
-  {key:'wego',      name:'Wego',          cat:'ota',   logo:{bg:'#00A86B',fg:'#fff'},  commission:12, desc:'محرك سفر شرق أوسطي'},
-  {key:'musafir',   name:'Musafir',       cat:'ota',   logo:{bg:'#8E44AD',fg:'#fff'},  commission:14, desc:'منصة سفر إماراتية'},
-  {key:'cleartrip', name:'Cleartrip',     cat:'ota',   logo:{bg:'#2ECC71',fg:'#fff'},  commission:13, desc:'منصة سفر هندية'},
-  {key:'makemytrip',name:'MakeMyTrip',    cat:'ota',   logo:{bg:'#E74C3C',fg:'#fff'},  commission:15, desc:'أكبر OTA في آسيا'},
-  {key:'hostelworld',name:'Hostelworld',  cat:'ota',   logo:{bg:'#F39C12',fg:'#fff'},  commission:12, desc:'حجوزات الأسعار الاقتصادية'},
-  {key:'goldenkey', name:'Golden Key',    cat:'ota',   logo:{bg:'#B8860B',fg:'#fff'},  commission:10, desc:'سياحة فاخرة'},
+  {key:'hotels',    name:'Hotels.com',    cat:'ota',   logo:{bg:'#C0392B',fg:'var(--white)'},  commission:16, desc:'شبكة فنادق عالمية'},
+  {key:'airbnb',    name:'Airbnb',        cat:'ota',   logo:{bg:'#FF5A5F',fg:'var(--white)'},  commission:14, desc:'منازل وشقق فندقية', existing:true},
+  {key:'hrs',       name:'HRS',           cat:'ota',   logo:{bg:'#003366',fg:'var(--white)'},  commission:13, desc:'حجوزات الأعمال'},
+  {key:'hotelbeds', name:'Hotelbeds',     cat:'ota',   logo:{bg:'#E67E22',fg:'var(--white)'},  commission:15, desc:'موزّع فنادق B2B'},
+  {key:'wego',      name:'Wego',          cat:'ota',   logo:{bg:'#00A86B',fg:'var(--white)'},  commission:12, desc:'محرك سفر شرق أوسطي'},
+  {key:'musafir',   name:'Musafir',       cat:'ota',   logo:{bg:'#8E44AD',fg:'var(--white)'},  commission:14, desc:'منصة سفر إماراتية'},
+  {key:'cleartrip', name:'Cleartrip',     cat:'ota',   logo:{bg:'#2ECC71',fg:'var(--white)'},  commission:13, desc:'منصة سفر هندية'},
+  {key:'makemytrip',name:'MakeMyTrip',    cat:'ota',   logo:{bg:'#E74C3C',fg:'var(--white)'},  commission:15, desc:'أكبر OTA في آسيا'},
+  {key:'hostelworld',name:'Hostelworld',  cat:'ota',   logo:{bg:'#F39C12',fg:'var(--white)'},  commission:12, desc:'حجوزات الأسعار الاقتصادية'},
+  {key:'goldenkey', name:'Golden Key',    cat:'ota',   logo:{bg:'#B8860B',fg:'var(--white)'},  commission:10, desc:'سياحة فاخرة'},
   // Meta-search
-  {key:'trivago',   name:'Trivago',       cat:'meta',  logo:{bg:'#3498DB',fg:'#fff'},  commission:0,  desc:'مقارنة الأسعار — عمولة CPC'},
-  {key:'google',    name:'Google Hotels', cat:'meta',  logo:{bg:'#4285F4',fg:'#fff'},  commission:0,  desc:'ظهور مجاني في نتائج Google'},
-  {key:'tripadvisor',name:'TripAdvisor',  cat:'meta',  logo:{bg:'#00AF87',fg:'#fff'},  commission:0,  desc:'تقييمات وحجوزات'},
-  {key:'kayak',     name:'Kayak',         cat:'meta',  logo:{bg:'#FF690F',fg:'#fff'},  commission:0,  desc:'محرك بحث سفر'},
-  {key:'skyscanner',name:'Skyscanner',    cat:'meta',  logo:{bg:'#0770E3',fg:'#fff'},  commission:0,  desc:'مقارنة أسعار الفنادق'},
+  {key:'trivago',   name:'Trivago',       cat:'meta',  logo:{bg:'#3498DB',fg:'var(--white)'},  commission:0,  desc:'مقارنة الأسعار — عمولة CPC'},
+  {key:'google',    name:'Google Hotels', cat:'meta',  logo:{bg:'#4285F4',fg:'var(--white)'},  commission:0,  desc:'ظهور مجاني في نتائج Google'},
+  {key:'tripadvisor',name:'TripAdvisor',  cat:'meta',  logo:{bg:'#00AF87',fg:'var(--white)'},  commission:0,  desc:'تقييمات وحجوزات'},
+  {key:'kayak',     name:'Kayak',         cat:'meta',  logo:{bg:'#FF690F',fg:'var(--white)'},  commission:0,  desc:'محرك بحث سفر'},
+  {key:'skyscanner',name:'Skyscanner',    cat:'meta',  logo:{bg:'#0770E3',fg:'var(--white)'},  commission:0,  desc:'مقارنة أسعار الفنادق'},
   // Local / Arab
-  {key:'jahez',     name:'Jahez Stays',   cat:'local', logo:{bg:'#1ABC9C',fg:'#fff'},  commission:10, desc:'منصة سعودية محلية'},
-  {key:'tajawal',   name:'Tajawal',       cat:'local', logo:{bg:'#16213E',fg:'#C9A85F'},commission:13, desc:'منصة سفر إماراتية — Tajawal'},
-  {key:'rehlat',    name:'Rehlat',        cat:'local', logo:{bg:'#27AE60',fg:'#fff'},  commission:11, desc:'حجوزات خليجية'},
-  {key:'arzak',     name:'Arzak',         cat:'local', logo:{bg:'#2C3E50',fg:'#C9A85F'},commission:9,  desc:'منصة سعودية ناشئة'},
-  {key:'seera',     name:'Seera',         cat:'local', logo:{bg:'#0D3349',fg:'#C9A85F'},commission:12, desc:'مجموعة السفر السعودية'},
+  {key:'jahez',     name:'Jahez Stays',   cat:'local', logo:{bg:'#1ABC9C',fg:'var(--white)'},  commission:10, desc:'منصة سعودية محلية'},
+  {key:'tajawal',   name:'Tajawal',       cat:'local', logo:{bg:'#16213E',fg:'var(--gold-500)'},commission:13, desc:'منصة سفر إماراتية — Tajawal'},
+  {key:'rehlat',    name:'Rehlat',        cat:'local', logo:{bg:'#27AE60',fg:'var(--white)'},  commission:11, desc:'حجوزات خليجية'},
+  {key:'arzak',     name:'Arzak',         cat:'local', logo:{bg:'#2C3E50',fg:'var(--gold-500)'},commission:9,  desc:'منصة سعودية ناشئة'},
+  {key:'seera',     name:'Seera',         cat:'local', logo:{bg:'#0D3349',fg:'var(--gold-500)'},commission:12, desc:'مجموعة السفر السعودية'},
   // GDS
-  {key:'sabre',     name:'Sabre GDS',     cat:'gds',   logo:{bg:'#003580',fg:'#fff'},  commission:8,  desc:'٤٠٠+ شركة طيران عالمية'},
-  {key:'galileo',   name:'Galileo',       cat:'gds',   logo:{bg:'#1B2A4A',fg:'#fff'},  commission:8,  desc:'Travelport — ٢٠٠+ دولة'},
-  {key:'worldspan', name:'Worldspan',     cat:'gds',   logo:{bg:'#2C3E50',fg:'#fff'},  commission:8,  desc:'وكالات السفر الأمريكية'},
+  {key:'sabre',     name:'Sabre GDS',     cat:'gds',   logo:{bg:'#003580',fg:'var(--white)'},  commission:8,  desc:'٤٠٠+ شركة طيران عالمية'},
+  {key:'galileo',   name:'Galileo',       cat:'gds',   logo:{bg:'#1B2A4A',fg:'var(--white)'},  commission:8,  desc:'Travelport — ٢٠٠+ دولة'},
+  {key:'worldspan', name:'Worldspan',     cat:'gds',   logo:{bg:'#2C3E50',fg:'var(--white)'},  commission:8,  desc:'وكالات السفر الأمريكية'},
 ];
 
 // Keys already connected (static + any added this session)
@@ -1061,11 +1061,11 @@ window.connectNewChannel = function(key, btn){
 
 <!-- ═══ API KEY MODAL ═══ -->
 <div id="ch-key-modal" style="display:none;position:fixed;inset:0;background:rgba(10,10,10,.6);z-index:950;align-items:center;justify-content:center">
-  <div style="background:#fff;border-radius:16px;width:min(460px,95vw);padding:28px;box-shadow:0 24px 60px rgba(0,0,0,.2)">
+  <div style="background:var(--white);border-radius:16px;width:min(460px,95vw);padding:28px;box-shadow:0 24px 60px rgba(0,0,0,.2)">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
       <div>
-        <div id="ch-key-ttl" style="font-size:18px;font-weight:700;color:#14110E"></div>
-        <div id="ch-key-sub" style="font-size:12px;color:#8B8175;margin-top:3px"></div>
+        <div id="ch-key-ttl" style="font-size:18px;font-weight:700;color:var(--ink-900)"></div>
+        <div id="ch-key-sub" style="font-size:12px;color:var(--ink-400);margin-top:3px"></div>
       </div>
       <button onclick="document.getElementById('ch-key-modal').style.display='none'" style="border:none;background:var(--paper-tint);border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:16px">✕</button>
     </div>
@@ -1073,7 +1073,7 @@ window.connectNewChannel = function(key, btn){
       🔒 <b>لا يُخزَّن مفتاحك الخام أبداً</b> — يتم تحويله فوراً إلى قناع آمن (<span style="font-family:monospace">sk_••••••1234</span>) وبصمة SHA-256 فقط.
     </div>
     <div style="margin-bottom:14px">
-      <label style="display:block;font-size:12px;color:#4A4137;margin-bottom:6px">مفتاح API الخاص بالقناة</label>
+      <label style="display:block;font-size:12px;color:var(--ink-600);margin-bottom:6px">مفتاح API الخاص بالقناة</label>
       <input id="ch-api-key-input" type="password" placeholder="sk_live_..." dir="ltr"
         style="width:100%;padding:12px 14px;border:1.5px solid var(--hairline);border-radius:10px;font-family:monospace;font-size:14px;outline:none"/>
     </div>
@@ -1082,11 +1082,11 @@ window.connectNewChannel = function(key, btn){
     </div>
     <div style="display:flex;gap:10px">
       <button id="ch-key-submit" onclick="submitChannelKey()"
-        style="flex:1;padding:13px;border:none;border-radius:10px;font-size:14px;font-weight:700;background:linear-gradient(135deg,var(--brand-700),var(--brand-900));color:#fff;cursor:pointer">
+        style="flex:1;padding:13px;border:none;border-radius:10px;font-size:14px;font-weight:700;background:linear-gradient(135deg,var(--brand-700),var(--brand-900));color:var(--white);cursor:pointer">
         ربط القناة
       </button>
       <button onclick="document.getElementById('ch-key-modal').style.display='none'"
-        style="padding:13px 18px;border:1.5px solid var(--hairline);border-radius:10px;font-size:14px;background:#fff;cursor:pointer;font-family:inherit">
+        style="padding:13px 18px;border:1.5px solid var(--hairline);border-radius:10px;font-size:14px;background:var(--white);cursor:pointer;font-family:inherit">
         إلغاء
       </button>
     </div>
@@ -1108,9 +1108,9 @@ window.connectNewChannel = function(key, btn){
         '<div style="font-size:16px;font-weight:700;color:var(--ink-900)">📥 الحجوزات الواردة من القنوات</div>',
         '<div style="font-size:11px;color:var(--fg-3)">حجوزات وصلت من OTAs تنتظر المعالجة</div>',
       '</div>',
-      '<button onclick="loadReservations()" style="padding:8px 16px;border:1px solid var(--hairline);border-radius:8px;background:#fff;font-family:var(--font-ar);font-size:12px;cursor:pointer">↻ تحديث</button>',
+      '<button onclick="loadReservations()" style="padding:8px 16px;border:1px solid var(--hairline);border-radius:8px;background:var(--white);font-family:var(--font-ar);font-size:12px;cursor:pointer">↻ تحديث</button>',
     '</div>',
-    '<div id="ch-res-table" style="background:#fff;border:1px solid var(--hairline);border-radius:12px;overflow:hidden">',
+    '<div id="ch-res-table" style="background:var(--white);border:1px solid var(--hairline);border-radius:12px;overflow:hidden">',
       '<div style="padding:12px 18px;background:var(--surface-2);display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr 1fr 1fr;gap:10px;font-size:11px;color:var(--fg-3);font-weight:600">',
         '<span>القناة / الضيف</span><span>تسجيل الدخول</span><span>تسجيل الخروج</span>',
         '<span>نوع الغرفة</span><span>المبلغ</span><span>الحالة</span>',
@@ -1131,7 +1131,7 @@ window.connectNewChannel = function(key, btn){
         '<div style="font-size:11px;color:var(--fg-3)">آخر 20 عملية مزامنة / ربط / استقبال حجز</div>',
       '</div>',
     '</div>',
-    '<div id="ch-log-rows" style="background:#fff;border:1px solid var(--hairline);border-radius:12px;overflow:hidden">',
+    '<div id="ch-log-rows" style="background:var(--white);border:1px solid var(--hairline);border-radius:12px;overflow:hidden">',
       '<div style="text-align:center;padding:28px;color:var(--fg-3);font-size:13px">جارٍ التحميل…</div>',
     '</div>'
   ].join('');
@@ -1180,7 +1180,7 @@ function loadSyncLog(){
       box.innerHTML = '<div style="text-align:center;padding:28px;color:var(--fg-3);font-size:13px">لا توجد سجلات — ستُسجَّل كل عمليات الربط والمزامنة واستقبال الحجوزات هنا</div>';
       return;
     }
-    var acColor = {connect:'#1B7A56', disconnect:'#C0392B', sync_rates:'#1B4D3D', ingest_reservation:'#9A7430'};
+    var acColor = {connect:'#1B7A56', disconnect:'#C0392B', sync_rates:'var(--brand-700)', ingest_reservation:'var(--gold-700)'};
     var acLabel = {connect:'ربط', disconnect:'فصل', sync_rates:'مزامنة', ingest_reservation:'حجز وارد'};
     box.innerHTML = data.data.slice(0,20).map(function(r){
       var ac = r.action || '';
@@ -1252,7 +1252,7 @@ window.submitChannelKey = function(){
         var card = document.createElement('div');
         card.className = 'ch-card'; card.dataset.ch = key;
         card.innerHTML = '<div class="top">'
-          +'<div class="logo" style="background:'+(ch.logo?ch.logo.bg:'#1B4D3D')+';color:'+(ch.logo?ch.logo.fg:'#fff')+'">'+ch.name.split(' ')[0]+'</div>'
+          +'<div class="logo" style="background:'+(ch.logo?ch.logo.bg:'var(--brand-700)')+';color:'+(ch.logo?ch.logo.fg:'var(--white)')+'">'+ch.name.split(' ')[0]+'</div>'
           +'<span class="mod-tag ok"><span class="d"></span>متصل</span></div>'
           +'<div class="figures"><div class="fig"><span class="l">Bookings</span><span class="v">٠</span></div>'
           +'<div class="fig"><span class="l">Revenue</span><span class="v">٠<span class="cur">ر.س</span></span></div></div>'
@@ -1319,8 +1319,65 @@ window.copyDirectLink = function(){
   }
 };
 
+// ── Load channel connections → update banner + cards ────────────────────────
+function loadChannelConnections(){
+  chApi('connections').then(function(data){
+    if(!data.success || !data.data) return;
+    var list = Array.isArray(data.data) ? data.data : [];
+
+    // Update CHANNELS array with real status
+    list.forEach(function(conn){
+      var ch = CHANNELS.filter(function(c){ return c.name.toLowerCase().replace(/[^a-z0-9]/g,'') === (conn.channel_code||'').toLowerCase().replace(/[^a-z0-9]/g,''); })[0];
+      if(ch){
+        ch.status   = conn.status === 'active' ? 'connected' : conn.status || 'inactive';
+        ch.bookings = conn.bookings_month || 0;
+        ch.revenue  = conn.revenue_month  || 0;
+      }
+      // Mark in CONNECTED_KEYS
+      if(conn.status === 'active' && conn.channel_code){
+        CONNECTED_KEYS[conn.channel_code] = true;
+      }
+    });
+
+    // Update banner
+    var connectedCount = list.filter(function(c){ return c.status === 'active'; }).length;
+    var totalBookings  = list.reduce(function(s,c){ return s + (c.bookings_month||0); }, 0);
+    var bannerTxt = document.getElementById('ch-banner-txt');
+    if(bannerTxt && connectedCount > 0){
+      bannerTxt.textContent = connectedCount + ' قنوات متصلة · ٤٢ قناة متاحة';
+    }
+    var bookingsV = document.getElementById('ch-bookings-v');
+    if(bookingsV && totalBookings > 0){
+      bookingsV.textContent = totalBookings;
+    }
+
+    // Update channel cards with real bookings/revenue
+    list.forEach(function(conn){
+      var code = (conn.channel_code||'').toLowerCase();
+      var card = document.querySelector('#ch-cards-grid .ch-card[data-ch="'+code+'"]');
+      if(!card) return;
+      var figs = card.querySelectorAll('.fig .v');
+      if(figs.length >= 2){
+        figs[0].textContent = conn.bookings_month || 0;
+        figs[1].innerHTML = (conn.revenue_month ? Number(conn.revenue_month).toLocaleString('ar-EG') : '٠') + '<span class="cur">ر.س</span>';
+      }
+      var tag = card.querySelector('.mod-tag');
+      if(tag && conn.status === 'active'){
+        tag.className = 'mod-tag ok';
+        tag.innerHTML = '<span class="d"></span>متصل';
+      } else if(tag && conn.status === 'inactive'){
+        card.classList.add('is-off');
+        tag.className = 'mod-tag neu';
+        tag.innerHTML = '<span class="d"></span>غير مفعّل';
+      }
+    });
+  }).catch(function(){
+    /* silent — keep static display */
+  });
+}
+
 // ── Boot: load data on init ──────────────────────────────────────────────────
-setTimeout(function(){ loadReservations(); loadSyncLog(); }, 400);
+setTimeout(function(){ loadReservations(); loadSyncLog(); loadChannelConnections(); }, 400);
 </script>
 </body>
 </html>

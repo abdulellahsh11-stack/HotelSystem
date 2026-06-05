@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <title>ضيوف · الموارد البشرية</title>
-<meta name="viewport" content="width=1440, initial-scale=1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
 <link rel="stylesheet" href="/static/dheuof/colors_and_type.css"/>
 <link rel="stylesheet" href="/static/dheuof/shared/chrome.css"/>
 <link rel="stylesheet" href="/static/dheuof/shared/module.css"/>
@@ -49,7 +49,7 @@
         </button>
         <button class="dh-btn is-secondary" onclick="hrExportCSV()">📊 Excel</button>
         <button class="dh-btn is-secondary" onclick="hrExportPDF()">🖨 تقرير PDF</button>
-        <button class="dh-btn is-primary">
+        <button class="dh-btn is-primary" onclick="openNewEmployeeModal()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           توظيف جديد
         </button>
@@ -104,17 +104,34 @@
             <span>قوى</span>
             <span></span>
           </div>
-          <div id="staff-rows"></div>
+          <div id="staff-rows"><div class="hr-loading" style="padding:32px;text-align:center;color:var(--fg-2);font-size:13px">جارٍ التحميل…</div></div>
         </div>
       </div>
     </div>
 
     <!-- ── TAB: الرواتب ── -->
     <div class="tab-pane" id="tab-payroll">
-      <div class="pane-placeholder">
-        <div class="ico">💰</div>
-        <div class="ttl">كشف الرواتب</div>
-        <div class="sub">إدارة رواتب الموظفين، المكافآت، والخصومات</div>
+      <div class="hr-card">
+        <div class="dh-card-head">
+          <div>
+            <div class="ttl">كشف الرواتب</div>
+            <div class="sub">إدارة رواتب الموظفين، المكافآت، والخصومات</div>
+          </div>
+          <div class="dh-card-actions">
+            <button class="dh-btn is-secondary" onclick="generatePayroll()">توليد كشف الشهر</button>
+          </div>
+        </div>
+        <div class="hr-tbl">
+          <div class="hr-tr hr-th">
+            <span>الموظف</span>
+            <span>الفترة</span>
+            <span>الراتب الأساسي</span>
+            <span>البدلات</span>
+            <span>صافي الراتب</span>
+            <span>الحالة</span>
+          </div>
+          <div id="payroll-rows"><div class="hr-loading" style="padding:32px;text-align:center;color:var(--fg-2);font-size:13px">جارٍ التحميل…</div></div>
+        </div>
       </div>
     </div>
 
@@ -137,7 +154,7 @@
             <span>قوى</span>
             <span></span>
           </div>
-          <div id="iqama-rows"></div>
+          <div id="iqama-rows"><div class="hr-loading" style="padding:32px;text-align:center;color:var(--fg-2);font-size:13px">جارٍ التحميل…</div></div>
         </div>
       </div>
     </div>
@@ -191,19 +208,120 @@
 </div>
 </div>
 
+<!-- ── New Employee Modal ─────────────────────────────────────── -->
+<div id="new-emp-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:8000;align-items:center;justify-content:center">
+  <div style="background:var(--white);border-radius:16px;padding:32px;width:520px;max-width:calc(100vw - 32px);max-height:90vh;overflow-y:auto;direction:rtl">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+      <div style="font-family:var(--font-ar-display);font-size:18px;font-weight:700;color:var(--ink-700)">توظيف جديد</div>
+      <button onclick="closeNewEmployeeModal()" style="background:none;border:none;font-size:20px;color:var(--fg-2);cursor:pointer;line-height:1">×</button>
+    </div>
+    <form id="new-emp-form" onsubmit="submitNewEmployee(event)">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label style="font-size:12px;color:var(--fg-2);font-family:var(--font-ar)">الاسم الكامل بالعربية *</label>
+          <input name="full_name_ar" required placeholder="مثال: محمد عبدالله" style="padding:9px 12px;border:1px solid var(--hairline);border-radius:8px;font-family:var(--font-ar);font-size:13px;color:var(--ink-700);background:var(--white);outline:none"/>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label style="font-size:12px;color:var(--fg-2);font-family:var(--font-ar)">الاسم الكامل بالإنجليزية</label>
+          <input name="full_name_en" placeholder="Mohammed Abdullah" style="padding:9px 12px;border:1px solid var(--hairline);border-radius:8px;font-size:13px;color:var(--ink-700);background:var(--white);outline:none;direction:ltr"/>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label style="font-size:12px;color:var(--fg-2);font-family:var(--font-ar)">المنصب الوظيفي</label>
+          <input name="position" placeholder="موظف استقبال" style="padding:9px 12px;border:1px solid var(--hairline);border-radius:8px;font-family:var(--font-ar);font-size:13px;color:var(--ink-700);background:var(--white);outline:none"/>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label style="font-size:12px;color:var(--fg-2);font-family:var(--font-ar)">القسم</label>
+          <input name="department" placeholder="الاستقبال" style="padding:9px 12px;border:1px solid var(--hairline);border-radius:8px;font-family:var(--font-ar);font-size:13px;color:var(--ink-700);background:var(--white);outline:none"/>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label style="font-size:12px;color:var(--fg-2);font-family:var(--font-ar)">الجنسية</label>
+          <input name="nationality" placeholder="سعودي" value="سعودي" style="padding:9px 12px;border:1px solid var(--hairline);border-radius:8px;font-family:var(--font-ar);font-size:13px;color:var(--ink-700);background:var(--white);outline:none"/>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label style="font-size:12px;color:var(--fg-2);font-family:var(--font-ar)">رقم الإقامة / الهوية</label>
+          <input name="iqama_number" placeholder="2xxxxxxxxx" style="padding:9px 12px;border:1px solid var(--hairline);border-radius:8px;font-size:13px;color:var(--ink-700);background:var(--white);outline:none;direction:ltr"/>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label style="font-size:12px;color:var(--fg-2);font-family:var(--font-ar)">الراتب الأساسي (ر.س)</label>
+          <input name="basic_salary" type="number" min="0" step="0.01" placeholder="3000" style="padding:9px 12px;border:1px solid var(--hairline);border-radius:8px;font-size:13px;color:var(--ink-700);background:var(--white);outline:none;direction:ltr"/>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label style="font-size:12px;color:var(--fg-2);font-family:var(--font-ar)">بدل السكن (ر.س)</label>
+          <input name="housing_allow" type="number" min="0" step="0.01" placeholder="0" style="padding:9px 12px;border:1px solid var(--hairline);border-radius:8px;font-size:13px;color:var(--ink-700);background:var(--white);outline:none;direction:ltr"/>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label style="font-size:12px;color:var(--fg-2);font-family:var(--font-ar)">بدل المواصلات (ر.س)</label>
+          <input name="transport_allow" type="number" min="0" step="0.01" placeholder="0" style="padding:9px 12px;border:1px solid var(--hairline);border-radius:8px;font-size:13px;color:var(--ink-700);background:var(--white);outline:none;direction:ltr"/>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label style="font-size:12px;color:var(--fg-2);font-family:var(--font-ar)">تاريخ التعيين</label>
+          <input name="hire_date" type="date" style="padding:9px 12px;border:1px solid var(--hairline);border-radius:8px;font-size:13px;color:var(--ink-700);background:var(--white);outline:none;direction:ltr"/>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label style="font-size:12px;color:var(--fg-2);font-family:var(--font-ar)">رقم الجوال</label>
+          <input name="phone" placeholder="05xxxxxxxx" style="padding:9px 12px;border:1px solid var(--hairline);border-radius:8px;font-size:13px;color:var(--ink-700);background:var(--white);outline:none;direction:ltr"/>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label style="font-size:12px;color:var(--fg-2);font-family:var(--font-ar)">البريد الإلكتروني</label>
+          <input name="email" type="email" placeholder="name@hotel.com" style="padding:9px 12px;border:1px solid var(--hairline);border-radius:8px;font-size:13px;color:var(--ink-700);background:var(--white);outline:none;direction:ltr"/>
+        </div>
+      </div>
+      <div id="new-emp-err" style="display:none;margin-top:14px;padding:10px 14px;background:#FEE2E2;border-radius:8px;color:#991B1B;font-family:var(--font-ar);font-size:13px"></div>
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:24px">
+        <button type="button" onclick="closeNewEmployeeModal()" class="dh-btn is-secondary">إلغاء</button>
+        <button type="submit" id="new-emp-submit" class="dh-btn is-primary">حفظ الموظف</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script src="/static/dheuof/shared/sidebar.js"></script>
 <script>
 // ── Mount chrome ────────────────────────────────────────────────
 if(window.StaticSidebar) StaticSidebar.mount({ activeId:'09-hr', placeholder:'بحث عن موظف، رقم إقامة، قسم...' });
 
-// ── Staff data ──────────────────────────────────────────────────
+// ── Staff data (populated from API) ─────────────────────────────
 var STAFF = [];
+
+// ── Map API DB row → internal render shape ───────────────────────
+function _apiRowToStaff(r) {
+  var name = r.full_name_ar || r.full_name_en || '—';
+  var words = name.trim().split(/\s+/);
+  var initials = words.slice(0,2).map(function(w){ return w[0]||''; }).join('');
+  var nat = r.nationality || '—';
+  var natCode = (nat === 'سعودي' || nat === 'SA' || nat === 'سعودية') ? 'SA' : nat;
+  var flag = natCode === 'SA' ? '🇸🇦' : '🌍';
+  var expires = r.iqama_expiry_date || r.iqama_expiry || '';
+  var daysLeft = 9999;
+  if(expires) {
+    var exp = new Date(expires);
+    var now = new Date(); now.setHours(0,0,0,0);
+    daysLeft = Math.round((exp - now) / 864e5);
+  }
+  return {
+    id:        r.id,
+    name:      name,
+    initials:  initials || name.slice(0,2),
+    role:      r.position || '—',
+    dept:      r.department || '—',
+    nationality: natCode,
+    nat:       nat,
+    flag:      flag,
+    iqama:     r.iqama_number || r.national_id || '—',
+    iqamaSub:  r.employee_id || '',
+    expires:   expires || '—',
+    daysLeft:  daysLeft,
+    salary:    parseFloat(r.basic_salary) || 0,
+    qiwa:      r.qiwa_status === 'connected' || !!r.qiwa_linked,
+    status:    r.status || 'active',
+  };
+}
 
 // ── Render helpers ───────────────────────────────────────────────
 function iqamaTimeline(s) {
   var status = s.daysLeft <= 30 ? 'err' : s.daysLeft <= 90 ? 'warn' : 'ok';
   var pct = Math.min(100, Math.max(0, ((365 - s.daysLeft) / 365) * 100));
-  var dlText = s.daysLeft <= 0 ? 'منتهية' : s.daysLeft + ' يوم';
+  var dlText = s.daysLeft <= 0 ? 'منتهية' : s.daysLeft >= 9999 ? '—' : s.daysLeft + ' يوم';
   return '<div class="hr-iq '+status+'">'
     +'<div class="bar"><div class="fill" style="width:'+pct+'%"></div></div>'
     +'<div class="lbl"><span class="dt">'+s.expires+'</span><span class="sep">·</span><span class="dl">'+dlText+'</span></div>'
@@ -212,7 +330,7 @@ function iqamaTimeline(s) {
 
 function staffRowHtml(s) {
   var isSA = s.nationality === 'SA';
-  return '<div class="hr-tr" data-nat="'+s.nationality+'" data-days="'+s.daysLeft+'">'
+  return '<div class="hr-tr" data-nat="'+s.nationality+'" data-days="'+s.daysLeft+'" data-id="'+s.id+'">'
     +'<div class="hr-emp">'
       +'<div class="av'+(isSA?' is-sa':'')+'">'+s.initials+'</div>'
       +'<div><div class="nm">'+s.name+'</div><div class="sub">'+s.role+' · '+s.dept+'</div></div>'
@@ -232,22 +350,21 @@ function staffRowHtml(s) {
 
 function renderRows(containerId, list) {
   var el = document.getElementById(containerId);
-  if(el) el.innerHTML = list.map(staffRowHtml).join('');
+  if(!el) return;
+  if(!list || list.length === 0) {
+    el.innerHTML = '<div style="padding:48px 24px;text-align:center;color:var(--fg-2);font-family:var(--font-ar);font-size:13px">لا توجد بيانات للعرض</div>';
+    return;
+  }
+  el.innerHTML = list.map(staffRowHtml).join('');
 }
 
-// Render on load
-renderRows('staff-rows', STAFF);
-// Iqama tab: sort by daysLeft ascending
-var sortedByIqama = STAFF.slice().sort(function(a,b){ return a.daysLeft - b.daysLeft; });
-renderRows('iqama-rows', sortedByIqama);
-
-// ── Dynamic KPIs ─────────────────────────────────────────────────
-(function(){
-  var total = STAFF.length;
-  var sa = STAFF.filter(function(s){ return s.nationality==='SA'; }).length;
-  var salary = STAFF.reduce(function(sum,s){ return sum+(s.salary||0); }, 0);
-  var urgent = STAFF.filter(function(s){ return s.daysLeft>=0 && s.daysLeft<=30; }).length;
-  var warn = STAFF.filter(function(s){ return s.daysLeft>30 && s.daysLeft<=90; }).length;
+// ── KPI updater ──────────────────────────────────────────────────
+function updateKPIs(staffList) {
+  var total = staffList.length;
+  var sa = staffList.filter(function(s){ return s.nationality==='SA'; }).length;
+  var salary = staffList.reduce(function(sum,s){ return sum+(s.salary||0); }, 0);
+  var urgent = staffList.filter(function(s){ return s.daysLeft>=0 && s.daysLeft<=30; }).length;
+  var warn = staffList.filter(function(s){ return s.daysLeft>30 && s.daysLeft<=90; }).length;
   var pct = total>0 ? Math.round(sa/total*100) : 0;
   function upd(id, v){ var el=document.getElementById(id); if(el) el.textContent=v; }
   upd('hr-kpi-total', total || '—');
@@ -255,20 +372,137 @@ renderRows('iqama-rows', sortedByIqama);
   upd('hr-kpi-salary', total>0 ? salary.toLocaleString('ar-EG') : '—');
   upd('hr-kpi-urgent', total>0 ? (urgent||'٠') : '—');
   upd('hr-kpi-warn', total>0 ? (warn||'٠') : '—');
-})();
+  var ct = document.querySelector('.hr-tab[data-tab="staff"] .ct');
+  if(ct) ct.textContent = total;
+}
+
+// ── Loading state helper ─────────────────────────────────────────
+function setLoading(containerId) {
+  var el = document.getElementById(containerId);
+  if(el) el.innerHTML = '<div class="hr-loading" style="padding:32px;text-align:center;color:var(--fg-2);font-family:var(--font-ar);font-size:13px">جارٍ التحميل…</div>';
+}
+
+// ── API: Load employees ──────────────────────────────────────────
+async function loadHRData() {
+  setLoading('staff-rows');
+  setLoading('iqama-rows');
+  try {
+    var res = await fetch('/api/m06/employees');
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    var json = await res.json();
+    if(!json.success) throw new Error(json.detail || 'خطأ في استجابة الخادم');
+    STAFF = (json.data || []).map(_apiRowToStaff);
+    renderRows('staff-rows', STAFF);
+    var byIqama = STAFF.slice().sort(function(a,b){ return a.daysLeft - b.daysLeft; });
+    renderRows('iqama-rows', byIqama);
+    updateKPIs(STAFF);
+  } catch(err) {
+    console.error('loadHRData:', err);
+    var msg = 'تعذّر تحميل بيانات الموظفين: ' + (err.message || 'خطأ غير معروف');
+    toast(msg, true);
+    var errHtml = '<div style="padding:32px 24px;text-align:center;color:var(--danger-700);font-family:var(--font-ar);font-size:13px">'+msg+'</div>';
+    ['staff-rows','iqama-rows'].forEach(function(id){ var el=document.getElementById(id); if(el) el.innerHTML=errHtml; });
+  }
+}
+
+// ── API: Load attendance ─────────────────────────────────────────
+async function loadAttendance() {
+  try {
+    var res = await fetch('/api/m06/attendance');
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    var json = await res.json();
+    if(!json.success) throw new Error(json.detail || 'خطأ في استجابة الخادم');
+    return json.data || [];
+  } catch(err) {
+    console.error('loadAttendance:', err);
+    toast('تعذّر تحميل سجلات الحضور: ' + (err.message || 'خطأ غير معروف'), true);
+    return [];
+  }
+}
+
+// ── API: Load payroll ────────────────────────────────────────────
+async function loadPayroll() {
+  setLoading('payroll-rows');
+  try {
+    var res = await fetch('/api/m06/payroll');
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    var json = await res.json();
+    if(!json.success) throw new Error(json.detail || 'خطأ في استجابة الخادم');
+    renderPayrollRows(json.data || []);
+  } catch(err) {
+    console.error('loadPayroll:', err);
+    var msg = 'تعذّر تحميل كشف الرواتب: ' + (err.message || 'خطأ غير معروف');
+    toast(msg, true);
+    var el = document.getElementById('payroll-rows');
+    if(el) el.innerHTML = '<div style="padding:32px 24px;text-align:center;color:var(--danger-700);font-family:var(--font-ar);font-size:13px">'+msg+'</div>';
+  }
+}
+
+// ── Payroll render ───────────────────────────────────────────────
+function payrollStatusBadge(st) {
+  if(st === 'paid')    return '<span class="dh-pill ok"><span class="d"></span>مدفوع</span>';
+  if(st === 'pending') return '<span class="dh-pill warn"><span class="d"></span>بانتظار الصرف</span>';
+  return '<span class="dh-pill"><span class="d"></span>'+(st||'—')+'</span>';
+}
+
+function renderPayrollRows(rows) {
+  var el = document.getElementById('payroll-rows');
+  if(!el) return;
+  if(!rows || rows.length === 0) {
+    el.innerHTML = '<div style="padding:48px 24px;text-align:center;color:var(--fg-2);font-family:var(--font-ar);font-size:13px">لا توجد رواتب. استخدم «توليد كشف الشهر» لإنشاء الرواتب.</div>';
+    return;
+  }
+  var MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  el.innerHTML = rows.map(function(r) {
+    var period = (MONTHS[(r.period_month||1)-1]||'—') + ' ' + (r.period_year||'');
+    return '<div class="hr-tr">'
+      +'<div class="hr-emp">'
+        +'<div class="av">'+((r.full_name_ar||'?').slice(0,2))+'</div>'
+        +'<div><div class="nm">'+(r.full_name_ar||'—')+'</div><div class="sub">'+(r.employee_id||'')+'</div></div>'
+      +'</div>'
+      +'<div>'+period+'</div>'
+      +'<div class="sal"><div class="v">'+parseFloat(r.basic_salary||0).toLocaleString('ar-EG')+'</div><div class="cur">ر.س</div></div>'
+      +'<div class="sal"><div class="v">'+parseFloat(r.allowances||0).toLocaleString('ar-EG')+'</div><div class="cur">ر.س</div></div>'
+      +'<div class="sal"><div class="v" style="color:var(--brand-700);font-weight:600">'+parseFloat(r.net_salary||0).toLocaleString('ar-EG')+'</div><div class="cur">ر.س</div></div>'
+      +'<div>'+payrollStatusBadge(r.status)+'</div>'
+      +'</div>';
+  }).join('');
+}
+
+// ── Generate payroll ─────────────────────────────────────────────
+window.generatePayroll = async function() {
+  var now = new Date();
+  try {
+    var res = await fetch('/api/m06/payroll/generate', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({year: now.getFullYear(), month: now.getMonth()+1})
+    });
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    var json = await res.json();
+    if(!json.success) throw new Error(json.detail || 'خطأ في الخادم');
+    toast('تم توليد رواتب ' + (json.generated||0) + ' موظف بنجاح');
+    loadPayroll();
+  } catch(err) {
+    toast('تعذّر توليد كشف الرواتب: ' + (err.message||'خطأ غير معروف'), true);
+  }
+};
 
 // ── Tab switching ────────────────────────────────────────────────
 document.getElementById('hr-tabs').addEventListener('click', function(e) {
   var btn = e.target.closest('.hr-tab');
   if(!btn) return;
   var tabId = btn.dataset.tab;
-  // toggle buttons
   document.querySelectorAll('.hr-tab').forEach(function(b){ b.classList.remove('is-on'); });
   btn.classList.add('is-on');
-  // toggle panes
   document.querySelectorAll('.tab-pane').forEach(function(p){ p.classList.remove('is-on'); });
   var pane = document.getElementById('tab-'+tabId);
   if(pane) pane.classList.add('is-on');
+  // Lazy-load payroll tab on first open
+  if(tabId === 'payroll') {
+    var pr = document.getElementById('payroll-rows');
+    if(pr && pr.querySelector('.hr-loading')) loadPayroll();
+  }
 });
 
 // ── Staff filter chips ───────────────────────────────────────────
@@ -276,20 +510,69 @@ window.filterStaff = function(mode, chipEl) {
   document.querySelectorAll('.chip-row .dh-chip').forEach(function(c){ c.classList.remove('is-on'); });
   chipEl.classList.add('is-on');
   var filtered;
-  if(mode === 'sa')       filtered = STAFF.filter(function(s){ return s.nationality === 'SA'; });
+  if(mode === 'sa')          filtered = STAFF.filter(function(s){ return s.nationality === 'SA'; });
   else if(mode==='expiring') filtered = STAFF.filter(function(s){ return s.daysLeft <= 90; });
-  else                    filtered = STAFF;
+  else                       filtered = STAFF;
   renderRows('staff-rows', filtered);
 };
 
+// ── New Employee Modal ───────────────────────────────────────────
+window.openNewEmployeeModal = function() {
+  var m = document.getElementById('new-emp-modal');
+  if(m) m.style.display = 'flex';
+};
+window.closeNewEmployeeModal = function() {
+  var m = document.getElementById('new-emp-modal');
+  if(m) m.style.display = 'none';
+  var errEl = document.getElementById('new-emp-err');
+  if(errEl) errEl.style.display = 'none';
+  var form = document.getElementById('new-emp-form');
+  if(form) form.reset();
+};
+document.getElementById('new-emp-modal').addEventListener('click', function(e){
+  if(e.target === this) window.closeNewEmployeeModal();
+});
+
+window.submitNewEmployee = async function(event) {
+  event.preventDefault();
+  var form = event.target;
+  var errEl = document.getElementById('new-emp-err');
+  var submitBtn = document.getElementById('new-emp-submit');
+  errEl.style.display = 'none';
+  var data = {};
+  new FormData(form).forEach(function(v, k){ if(v !== '') data[k] = v; });
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'جارٍ الحفظ…';
+  try {
+    var res = await fetch('/api/m06/employees', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(data)
+    });
+    var json = await res.json();
+    if(!res.ok || !json.success) throw new Error(json.detail || json.message || 'خطأ في الخادم');
+    toast('تم إضافة الموظف بنجاح');
+    window.closeNewEmployeeModal();
+    loadHRData();
+  } catch(err) {
+    errEl.textContent = 'حدث خطأ: ' + (err.message || 'تعذّر الحفظ، يرجى المحاولة مجدداً');
+    errEl.style.display = 'block';
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'حفظ الموظف';
+  }
+};
+
 // ── Toast helper ─────────────────────────────────────────────────
-function toast(msg){
+function toast(msg, isErr){
   var old=document.querySelector('.dh-hr-toast'); if(old) old.remove();
   var t=document.createElement('div'); t.className='dh-hr-toast';
-  t.style.cssText='position:fixed;bottom:24px;inset-inline-end:24px;background:#1B4D3D;color:#fff;padding:12px 18px;border-radius:8px;font-family:"Tajawal",sans-serif;font-size:13px;z-index:9999;display:flex;gap:8px';
-  t.innerHTML='<span style="color:#C9A85F">✓</span>'+msg;
+  var bg = isErr ? '#991B1B' : 'var(--brand-700)';
+  var icon = isErr ? '<span style="color:#FCA5A5">✕</span>' : '<span style="color:var(--gold-500)">✓</span>';
+  t.style.cssText='position:fixed;bottom:24px;inset-inline-end:24px;background:'+bg+';color:var(--white);padding:12px 18px;border-radius:8px;font-family:"Tajawal",sans-serif;font-size:13px;z-index:9999;display:flex;gap:8px';
+  t.innerHTML=icon+msg;
   document.body.appendChild(t);
-  setTimeout(function(){ t.style.opacity='0'; t.style.transition='opacity .4s'; setTimeout(function(){ if(t.parentNode) t.remove(); },400); },3000);
+  setTimeout(function(){ t.style.opacity='0'; t.style.transition='opacity .4s'; setTimeout(function(){ if(t.parentNode) t.remove(); },400); },3500);
 }
 
 // ── Export ────────────────────────────────────────────────────────
@@ -333,25 +616,30 @@ window.hrExportPDF = function(){
   var qiwaOk=STAFF.filter(function(s){return s.qiwa;}).length;
   var t=STAFF.length; function _p(n){return t>0?Math.round(n/t*100):0;}
   var statsHtml='<div style="background:linear-gradient(135deg,#f0f7f4,#f8faf9);border:1px solid #c6ddd7;border-radius:12px;padding:18px 20px;margin-bottom:20px">'
-    +'<div style="font-size:14px;font-weight:700;color:#1B4D3D;margin-bottom:14px">📊 ملخص الموارد البشرية · الإجمالي: '+t+' موظف</div>'
+    +'<div style="font-size:14px;font-weight:700;color:var(--brand-700);margin-bottom:14px">📊 ملخص الموارد البشرية · الإجمالي: '+t+' موظف</div>'
     +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">'
     +'<div style="flex:1;min-width:80px;text-align:center;background:#f0f0f0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#333">'+t+'</div><div style="font-size:10px;color:#666;margin-top:4px">إجمالي الموظفين</div></div>'
     +'<div style="flex:1;min-width:80px;text-align:center;background:#D1FAE5;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#1B7A56">'+excIq+'</div><div style="font-size:13px;font-weight:700;color:#1B7A56">'+_p(excIq)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">ممتاز >١ سنة</div></div>'
-    +'<div style="flex:1;min-width:80px;text-align:center;background:#BBF7D0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#059669">'+okIq+'</div><div style="font-size:13px;font-weight:700;color:#059669">'+_p(okIq)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">جيد ٣-١٢ شهر</div></div>'
-    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEF3C7;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#D97706">'+warnIq+'</div><div style="font-size:13px;font-weight:700;color:#D97706">'+_p(warnIq)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">قريب ≤٩٠ يوم</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#BBF7D0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:var(--success-700)">'+okIq+'</div><div style="font-size:13px;font-weight:700;color:var(--success-700)">'+_p(okIq)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">جيد ٣-١٢ شهر</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEF3C7;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:var(--warning-700)">'+warnIq+'</div><div style="font-size:13px;font-weight:700;color:var(--warning-700)">'+_p(warnIq)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">قريب ≤٩٠ يوم</div></div>'
     +'<div style="flex:1;min-width:80px;text-align:center;background:#FEE2E2;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#C0392B">'+urgent+'</div><div style="font-size:13px;font-weight:700;color:#C0392B">'+_p(urgent)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">عاجل ≤٣٠ يوم</div></div>'
     +'</div></div>';
   var rows=STAFF.map(function(s){
     var iqTag=s.daysLeft<=30?'<span class="tag-bad">✕ عاجل ('+s.daysLeft+' يوم)</span>':s.daysLeft<=90?'<span class="tag-warn">⚠ '+s.daysLeft+' يوم</span>':s.daysLeft<=365?'<span class="tag-ok">✓ '+s.daysLeft+' يوم</span>':'<span class="tag-ok cr">✓ '+s.daysLeft+' يوم</span>';
     var qiwaTag=s.qiwa?'<span class="tag-ok">✓ متوافق</span>':'<span class="tag-bad">✕ غير متوافق</span>';
-    return '<tr><td style="font-weight:500">'+s.name+'</td><td>'+s.role+'</td><td>'+s.dept+'</td><td>'+s.nat+'</td><td style="font-family:monospace;font-size:10.5px;letter-spacing:.04em">'+s.iqama+'</td><td>'+iqTag+'<div style="font-size:9.5px;color:#888;margin-top:2px">'+s.expires+'</div></td><td style="font-weight:600;color:#1B4D3D">'+s.salary.toLocaleString('ar-EG')+' <span style="font-size:10px;font-weight:400;color:#888">ر.س</span></td><td>'+qiwaTag+'</td></tr>';
+    return '<tr><td style="font-weight:500">'+s.name+'</td><td>'+s.role+'</td><td>'+s.dept+'</td><td>'+s.nat+'</td><td style="font-family:monospace;font-size:10.5px;letter-spacing:.04em">'+s.iqama+'</td><td>'+iqTag+'<div style="font-size:9.5px;color:#888;margin-top:2px">'+s.expires+'</div></td><td style="font-weight:600;color:var(--brand-700)">'+s.salary.toLocaleString('ar-EG')+' <span style="font-size:10px;font-weight:400;color:#888">ر.س</span></td><td>'+qiwaTag+'</td></tr>';
   }).join('');
   var win=window.open('','_blank','width=1100,height=820');
-  var printCss='*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}@page{size:A4 landscape;margin:12mm 10mm}body{margin:0;padding:20px 24px;font-family:"Segoe UI","Tajawal",Arial,sans-serif;color:#111;direction:rtl;font-size:12px;line-height:1.45}h1{font-size:20px;color:#1B4D3D;margin:0 0 3px;font-weight:700}.meta{font-size:11px;color:#666;margin:0 0 16px}table{width:100%;border-collapse:collapse;margin-top:16px;font-size:11.5px}th{background:#1B4D3D;color:#fff;padding:8px 11px;text-align:right;font-weight:600;font-size:11px}td{padding:7px 11px;border-bottom:1px solid #e8e8e8;vertical-align:middle}tr:nth-child(even) td{background:#f7faf8}tr{break-inside:avoid;page-break-inside:avoid}.cr{color:#1B7A56;font-weight:600}.dr{color:#C0392B;font-weight:600}.tag-ok{background:#D1FAE5;color:#065F46;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600}.tag-warn{background:#FEF3C7;color:#92400E;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600}.tag-bad{background:#FEE2E2;color:#991B1B;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600}.footer{font-size:10px;color:#aaa;margin-top:20px;border-top:1px solid #eee;padding-top:10px;text-align:center}';
+  var printCss='*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}@page{size:A4 landscape;margin:12mm 10mm}body{margin:0;padding:20px 24px;font-family:"Segoe UI","Tajawal",Arial,sans-serif;color:#111;direction:rtl;font-size:12px;line-height:1.45}h1{font-size:20px;color:var(--brand-700);margin:0 0 3px;font-weight:700}.meta{font-size:11px;color:#666;margin:0 0 16px}table{width:100%;border-collapse:collapse;margin-top:16px;font-size:11.5px}th{background:var(--brand-700);color:var(--white);padding:8px 11px;text-align:right;font-weight:600;font-size:11px}td{padding:7px 11px;border-bottom:1px solid #e8e8e8;vertical-align:middle}tr:nth-child(even) td{background:#f7faf8}tr{break-inside:avoid;page-break-inside:avoid}.cr{color:#1B7A56;font-weight:600}.dr{color:#C0392B;font-weight:600}.tag-ok{background:#D1FAE5;color:#065F46;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600}.tag-warn{background:#FEF3C7;color:#92400E;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600}.tag-bad{background:#FEE2E2;color:#991B1B;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600}.footer{font-size:10px;color:#aaa;margin-top:20px;border-top:1px solid #eee;padding-top:10px;text-align:center}';
   win.document.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"/><title>تقرير الموارد البشرية</title><style>'+printCss+'</style></head><body><h1>👥 تقرير الموارد البشرية — الموظفون والإقامات</h1><p class="meta">تاريخ الإصدار: '+new Date().toLocaleDateString('ar-SA',{year:'numeric',month:'long',day:'numeric'})+' · نظام ضيوف — Dheuof Hotel · إجمالي الموظفين: '+t+' موظف</p>'+statsHtml+'<table><thead><tr><th>الاسم</th><th>المنصب</th><th>القسم</th><th>الجنسية</th><th>رقم الإقامة</th><th>حالة الإقامة</th><th>الراتب (ر.س)</th><th>قوى</th></tr></thead><tbody>'+rows+'</tbody></table><div class="footer">نظام ضيوف · الموارد البشرية · '+new Date().toLocaleString('ar-SA')+'</div></body></html>');
   win.document.close();
   setTimeout(function(){ win.print(); },700);
 };
+
+// ── Bootstrap: kick off data load ───────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  loadHRData();
+});
 </script>
 </body>
 </html>

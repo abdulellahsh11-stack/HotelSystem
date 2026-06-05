@@ -6,6 +6,7 @@ FastAPI application — replaces unified_server.py + old main.py (651KB)
 dheuof.com
 """
 
+import decimal
 import hashlib
 import json
 import logging
@@ -19,8 +20,21 @@ from typing import Optional
 import uvicorn
 from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
+from fastapi.encoders import jsonable_encoder
+
+
+class _SafeEncoder(json.JSONEncoder):
+    """Serialize PostgreSQL Decimal/date/datetime types that json.dumps rejects."""
+    def default(self, obj):
+        if isinstance(obj, decimal.Decimal):
+            return float(obj)
+        if isinstance(obj, (datetime, date)):
+            return obj.isoformat()
+        return super().default(obj)
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -36,9 +50,20 @@ _admin_sessions: dict = {}   # token → {"created_at": ...}
 _client_sessions: dict = {}  # token → {"client_id": ..., "created_at": ...}
 _lock = threading.Lock()
 
+# Secure cookies in production (HTTPS). Railway/most PaaS set these env vars.
+_COOKIE_SECURE = bool(
+    os.environ.get("RAILWAY_ENVIRONMENT")
+    or os.environ.get("RAILWAY_STATIC_URL")
+    or os.environ.get("COOKIE_SECURE", "").lower() in ("1", "true", "yes")
+)
+
 # M3 mitigation: حدّ بسيط لمعدّل التسجيل لكل IP (ضد إنشاء حسابات بالجملة)
 _reg_attempts: dict = {}     # ip → [timestamps]
 _REG_MAX_PER_HOUR = int(os.environ.get("REG_MAX_PER_HOUR", "5"))
+
+# Login rate limiting: protect /api/login against brute-force attacks
+_login_attempts: dict = {}   # ip → [timestamps]
+_LOGIN_MAX_PER_MINUTE = int(os.environ.get("LOGIN_MAX_PER_MINUTE", "10"))
 
 
 def _reg_rate_ok(ip: str) -> bool:
@@ -51,6 +76,19 @@ def _reg_rate_ok(ip: str) -> bool:
             return False
         hits.append(now)
         _reg_attempts[ip] = hits
+        return True
+
+
+def _login_rate_ok(ip: str) -> bool:
+    """Allow at most LOGIN_MAX_PER_MINUTE login attempts per IP per minute (brute-force guard)."""
+    now = datetime.now().timestamp()
+    with _lock:
+        hits = [t for t in _login_attempts.get(ip, []) if now - t < 60]
+        if len(hits) >= _LOGIN_MAX_PER_MINUTE:
+            _login_attempts[ip] = hits
+            return False
+        hits.append(now)
+        _login_attempts[ip] = hits
         return True
 
 
@@ -121,6 +159,35 @@ async def lifespan(app_: FastAPI):
         run_security_hardening(db)
     except Exception as e:
         log.warning(f"security hardening migrations: {e}")
+    try:
+        from db.schema_v3 import run_sessions_migration
+        run_sessions_migration(db)
+    except Exception as e:
+        log.warning(f"sessions migration: {e}")
+    try:
+        from db.schema_v3 import run_rls_migration
+        run_rls_migration(db)
+    except Exception as e:
+        log.warning(f"RLS migration: {e}")
+    try:
+        from db.schema_v3 import run_perf_indexes
+        run_perf_indexes(db)
+        log.info("✓ Performance indexes ready")
+    except Exception as e:
+        log.warning(f"perf indexes: {e}")
+
+    # ── Sentry (APM / error tracking) ──────────────────────────────────────
+    if cfg.has_sentry:
+        try:
+            import sentry_sdk
+            sentry_sdk.init(
+                dsn=cfg.sentry_dsn,
+                traces_sample_rate=0.1,
+                environment="production" if not cfg.debug else "development",
+            )
+            log.info("✓ Sentry initialized")
+        except Exception as e:
+            log.warning(f"Sentry init failed: {e}")
 
     # Load optional services — each independent so one failure doesn't sink the rest
     app_.state.pricing = None
@@ -152,8 +219,31 @@ async def lifespan(app_: FastAPI):
     except Exception as e:
         log.warning(f"ZATCA service unavailable: {e}")
 
+    # ── Background session cleanup (every 6 hours) ─────────────────────────
+    import asyncio
+
+    async def _session_cleanup():
+        while True:
+            await asyncio.sleep(6 * 3600)
+            try:
+                if db.use_postgres:
+                    db.execute("DELETE FROM client_sessions WHERE expires_at < NOW()")
+                    # Also clear expired from in-memory dict
+                    now_ts = datetime.now().isoformat()
+                    with _lock:
+                        stale = [t for t, s in list(_client_sessions.items())
+                                 if s.get("created_at", "9999") < (datetime.now() - timedelta(days=8)).isoformat()]
+                        for t in stale:
+                            _client_sessions.pop(t, None)
+                    log.info("✅ Session cleanup completed")
+            except Exception as e:
+                log.warning(f"Session cleanup error: {e}")
+
+    _cleanup_task = asyncio.create_task(_session_cleanup())
+
     yield
 
+    _cleanup_task.cancel()
     db.close()
 
 
@@ -161,6 +251,9 @@ async def lifespan(app_: FastAPI):
 #  App
 # ──────────────────────────────────────────────────────────────
 app = FastAPI(title="ضيوف — Dheuof Hotel SaaS", version="3.0.0", lifespan=lifespan, docs_url=None, redoc_url=None)
+
+# GZip compression for all text responses ≥ 1 KB
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 # M4 fix: قصر CORS على نطاقات ضيوف المعروفة بدل "*" مع بقاء credentials
 _ALLOWED_ORIGINS = [o.strip() for o in os.environ.get(
@@ -177,6 +270,57 @@ app.add_middleware(
 
 os.makedirs("static", exist_ok=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+
+@app.middleware("http")
+async def add_security_and_cache_headers(request: Request, call_next):
+    response = await call_next(request)
+    path = request.url.path
+    # Cache headers
+    if path.startswith("/static/") and not path.endswith(".html"):
+        response.headers["Cache-Control"] = "public, max-age=604800, immutable"
+    elif path.startswith("/static/") and path.endswith(".html"):
+        response.headers["Cache-Control"] = "no-cache, must-revalidate"
+    # Security headers on all responses
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "SAMEORIGIN")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+    return response
+
+
+# Module shortcut paths that must be locked behind login (server-side gate)
+_PROTECTED_PAGE_PREFIXES = (
+    "/dheuof", "/guests-module", "/shumus", "/tourism", "/inventory",
+    "/warehouse", "/account", "/accounting", "/pos", "/smart-key", "/hr",
+    "/channels", "/marketing-channels", "/analytics", "/staff",
+    "/ota-bookings", "/trips", "/tourism-trips", "/guests", "/bookings",
+)
+
+
+@app.middleware("http")
+async def server_side_auth_gate(request: Request, call_next):
+    """Real lock: serve program pages only to authenticated clients.
+
+    Without a valid session, any direct navigation to a module page (either the
+    pretty shortcut like /pos or the raw /static/dheuof/modules/<m>/index.html)
+    is redirected to /login. This closes the gap where the client-side JS auth
+    wall could be bypassed by disabling JavaScript or hitting the static file.
+    """
+    path = request.url.path
+    is_module_html = (
+        path.startswith("/static/dheuof/modules/") and path.endswith("/index.html")
+    )
+    is_shortcut = path in _PROTECTED_PAGE_PREFIXES
+    if is_module_html or is_shortcut:
+        if get_client_session(request) is None:
+            # Browsers navigating get a redirect; programmatic/XHR get 401
+            accept = request.headers.get("accept", "")
+            if "text/html" in accept:
+                return RedirectResponse("/login", status_code=302)
+            return JSONResponse({"detail": "غير مصرح — يلزم تسجيل الدخول"}, status_code=401)
+    return await call_next(request)
+
 
 # ── Module Routers — جميع الوحدات الـ 15 + وجهات سياحية ─────
 try:
@@ -256,6 +400,48 @@ try:
 except Exception as e:
     log.warning(f"Open API: {e}")
 
+try:
+    from routes.m04_inventory import router as m04_router
+    app.include_router(m04_router)
+    log.info("✓ M04 Inventory")
+except Exception as e:
+    log.warning(f"M04: {e}")
+
+try:
+    from routes.m17_bookings import router as m17_router
+    app.include_router(m17_router)
+    log.info("✓ M17 Bookings")
+except Exception as e:
+    log.warning(f"M17: {e}")
+
+try:
+    from routes.m06_accounting import router as m06acc_router
+    app.include_router(m06acc_router)
+    log.info("✓ M06acc Accounting")
+except Exception as e:
+    log.warning(f"M06acc: {e}")
+
+try:
+    from routes.m07_pos import router as m07_router
+    app.include_router(m07_router)
+    log.info("✓ M07 POS")
+except Exception as e:
+    log.warning(f"M07: {e}")
+
+try:
+    from routes.m_analytics import router as analytics_router
+    app.include_router(analytics_router)
+    log.info("✓ Analytics cross-module")
+except Exception as e:
+    log.warning(f"Analytics: {e}")
+
+try:
+    from routes.integration import router as integration_router
+    app.include_router(integration_router)
+    log.info("✓ Integration (cross-module orchestration)")
+except Exception as e:
+    log.warning(f"Integration: {e}")
+
 
 # ──────────────────────────────────────────────────────────────
 #  Auth helpers
@@ -294,6 +480,23 @@ def get_client_session(request: Request) -> Optional[dict]:
         return None
     with _lock:
         session = _client_sessions.get(token)
+    # If not in memory (e.g. after restart), try PostgreSQL
+    if session is None:
+        try:
+            db = getattr(request.app.state, "db", None)
+            if db and db.use_postgres:
+                row = db.execute(
+                    """SELECT client_id, created_at FROM client_sessions
+                       WHERE token=%s AND expires_at > NOW()""",
+                    (token,), fetch="one"
+                )
+                if row:
+                    session = {"client_id": row["client_id"],
+                               "created_at": str(row["created_at"])}
+                    with _lock:
+                        _client_sessions[token] = session
+        except Exception:
+            pass
     if session is None:
         return None
     # Finding #8: enforce server-side session TTL (8 hours)
@@ -414,7 +617,10 @@ def _login_page(error: str = "", ref_code: str = "") -> str:
   .btn:hover{{background:#0F2640}}
   .alert-error{{background:#fef2f2;color:#dc2626;padding:10px 14px;border-radius:8px;font-size:.875rem;margin-bottom:16px}}
   .pane{{display:none}} .pane.active{{display:block}}
-  .footer{{text-align:center;margin-top:24px;color:#9ca3af;font-size:.8rem}}
+  .footer{{text-align:center;margin-top:12px;color:#9ca3af;font-size:.8rem}}
+  .contact-box{{display:flex;flex-direction:column;gap:8px;align-items:center;margin-top:24px;padding-top:20px;border-top:1px solid #e2e8f0}}
+  .contact-box a{{color:#185FA5;text-decoration:none;font-size:.88rem;font-weight:500}}
+  .contact-box a:hover{{text-decoration:underline}}
   .switch-link{{text-align:center;margin-top:16px;font-size:.85rem;color:#64748b}}
   .switch-link a{{color:#185FA5;text-decoration:none}}
 </style>
@@ -452,21 +658,45 @@ def _login_page(error: str = "", ref_code: str = "") -> str:
       <input type="text" id="reg-name" placeholder="فندق الواحة">
     </div>
     <div class="form-group">
+      <label>اسم المالك / المسؤول</label>
+      <input type="text" id="reg-owner" placeholder="محمد الأحمد">
+    </div>
+    <div class="form-group">
       <label>معرّف المنشأة (للدخول لاحقاً)</label>
       <input type="text" id="reg-id" placeholder="hotel-001">
+    </div>
+    <div class="form-group">
+      <label>رقم الجوال</label>
+      <input type="tel" id="reg-phone" dir="ltr" inputmode="numeric" placeholder="05XXXXXXXX">
+    </div>
+    <div class="form-group">
+      <label>المدينة</label>
+      <input type="text" id="reg-city" placeholder="الرياض">
+    </div>
+    <div class="form-group">
+      <label>السجل التجاري <span style="color:#9ca3af;font-weight:400">(اختياري)</span></label>
+      <input type="text" id="reg-cr" dir="ltr" inputmode="numeric" placeholder="1010XXXXXX">
+    </div>
+    <div class="form-group">
+      <label>البريد الإلكتروني</label>
+      <input type="email" id="reg-email" dir="ltr" placeholder="your@email.com">
     </div>
     <div class="form-group">
       <label>كلمة المرور</label>
       <input type="password" id="reg-pass" placeholder="••••••••">
     </div>
     <div class="form-group">
-      <label>مفتاح التفعيل (من الإدارة)</label>
+      <label>مفتاح التفعيل <span style="color:#9ca3af;font-weight:400">(اختياري)</span></label>
       <input type="text" id="reg-key" placeholder="XXXX-XXXX-XXXX-XXXX">
     </div>
-    <button class="btn" onclick="doRegister()">تسجيل وبدء التجربة</button>
+    <button class="btn" onclick="doRegister()">تسجيل وبدء التجربة المجانية</button>
   </div>
 
-  <div class="footer">dheuof.com &copy; 2025 — منصة ضيوف للضيافة الذكية</div>
+  <div class="contact-box">
+    <a href="mailto:info@dheuof.com">&#9993; info@dheuof.com</a>
+    <a href="https://wa.me/966565009696" target="_blank" rel="noopener">&#128241; واتساب: +966 56 500 9696</a>
+  </div>
+  <div class="footer">dheuof.com &copy; 2026 — منصة ضيوف للضيافة الذكية</div>
 </div>
 <script>
 function showTab(t){{
@@ -487,12 +717,18 @@ async function doLogin(){{
 }}
 async function doRegister(){{
   const name=document.getElementById('reg-name').value.trim();
+  const owner=document.getElementById('reg-owner').value.trim();
   const id=document.getElementById('reg-id').value.trim();
+  const phone=document.getElementById('reg-phone').value.trim();
+  const city=document.getElementById('reg-city').value.trim();
+  const cr=document.getElementById('reg-cr').value.trim();
+  const email=document.getElementById('reg-email').value.trim();
   const pass=document.getElementById('reg-pass').value;
   const key=document.getElementById('reg-key').value.trim();
   const ref=document.getElementById('ref-code')?.value||'';
-  if(!name||!id||!pass)return showErr('يرجى ملء جميع الحقول');
-  const r=await fetch('/api/client/register',{{method:'POST',headers:{{'Content-Type':'application/json'}},body:JSON.stringify({{hotel_name:name,client_id:id,password:pass,activation_key:key,ref_code:ref}})}});
+  if(!name||!id||!pass)return showErr('اسم المنشأة والمعرّف وكلمة المرور مطلوبة');
+  if(pass.length<6)return showErr('كلمة المرور ٦ أحرف على الأقل');
+  const r=await fetch('/api/client/register',{{method:'POST',headers:{{'Content-Type':'application/json'}},body:JSON.stringify({{hotel_name:name,name:owner||name,client_id:id,password:pass,phone:phone,city:city,cr_number:cr,email:email,activation_key:key,ref_code:ref}})}});
   const d=await r.json();
   if(d.ok||d.success)location.href='/';else showErr(d.error||'خطأ في التسجيل');
 }}
@@ -1195,8 +1431,12 @@ async function loadPackages(){
         <div class="fg"><label>السعر</label><input data-pk="${i}" data-pf="price" value="${esc(p.price)}" placeholder="٢٬٤٠٠ أو حسب الطلب"></div>
         <div class="fg"><label>العملة</label><input data-pk="${i}" data-pf="currency" value="${esc(p.currency)}" placeholder="ر.س"></div>
       </div>
-      <div class="fg"><label>المدة</label><input data-pk="${i}" data-pf="period" value="${esc(p.period)}" placeholder="/شهر"></div>
-      <div class="fg"><label>ملاحظة التوفير (اختياري)</label><input data-pk="${i}" data-pf="save_note" value="${esc(p.save_note)}" placeholder="توفير ١٬٢٠٠ ر.س شهرياً"></div>
+      <div class="fg-row">
+        <div class="fg"><label>المدة</label><input data-pk="${i}" data-pf="period" value="${esc(p.period)}" placeholder="/شهر"></div>
+        <div class="fg"><label>الخصم ٪ (اختياري)</label><input data-pk="${i}" data-pf="discount_percent" type="number" min="0" max="100" value="${esc(p.discount_percent||0)}" placeholder="0"></div>
+      </div>
+      ${p.price_after && p.discount_percent>0?`<div style="font-size:.78rem;color:#10b981;margin:-4px 0 8px">السعر بعد الخصم: <strong>${esc(p.price_after)} ${esc(p.currency)}</strong> <span style="color:#94a3b8;text-decoration:line-through">${esc(p.price_original)}</span></div>`:''}
+      <div class="fg"><label>ملاحظة التوفير (اختياري)</label><input data-pk="${i}" data-pf="save_note" value="${esc(p.save_note)}" placeholder="يُحسب تلقائياً عند وضع خصم"></div>
       <div class="fg"><label>نص الزر</label><input data-pk="${i}" data-pf="cta" value="${esc(p.cta)}" placeholder="ابدأ التجربة"></div>
     </div>`).join('');
   document.getElementById('pkg-saved').style.display='none';
@@ -1988,12 +2228,12 @@ async def marketing_page(request: Request):
 
 
 @app.get("/login", response_class=HTMLResponse)
-async def login_page():
-    dashboard_path = os.path.join("static", "dashboard.html")
-    if os.path.exists(dashboard_path):
-        with open(dashboard_path, encoding="utf-8") as f:
-            return HTMLResponse(f.read())
-    return HTMLResponse(_login_page())
+async def login_page(request: Request):
+    # Already authenticated → go straight to the app
+    if get_client_session(request) is not None:
+        return RedirectResponse("/", status_code=302)
+    ref = request.query_params.get("ref", "")
+    return HTMLResponse(_login_page(ref_code=ref))
 
 
 @app.get("/admin", response_class=HTMLResponse)
@@ -2096,19 +2336,132 @@ async def mod_trips():     return _serve_module("15-tourism-trips")
 #  Health & Status
 # ──────────────────────────────────────────────────────────────
 @app.get("/api/health")
-async def health():
-    return {"ok": True}
+async def health(request: Request):
+    db = getattr(request.app.state, "db", None)
+    db_ok = False
+    try:
+        if db:
+            result = db.health()
+            db_ok = bool(result and result.get("ok"))
+    except Exception:
+        pass
+    return {
+        "ok": True,
+        "status": "healthy",
+        "db": "connected" if db_ok else "unavailable",
+        "time": datetime.now().isoformat(),
+        "version": "3.1.0",
+    }
 
 
 @app.get("/api/status")
 async def status(request: Request):
     db = request.app.state.db
+    sessions_count = 0
+    try:
+        with _lock:
+            sessions_count = len(_client_sessions)
+    except Exception:
+        pass
     return {
         "ok": True,
         "version": "3.0.0",
         "db": db.health(),
+        "active_sessions": sessions_count,
         "time": datetime.now().isoformat(),
     }
+
+
+@app.get("/api/analytics/overview")
+async def analytics_overview(request: Request, session=Depends(require_client)):
+    """Aggregated cross-module overview for the analytics dashboard (M12)."""
+    try:
+        db = request.app.state.db
+        cid = session["client_id"]
+        result = {
+            "employees": {"total": 0, "active": 0},
+            "bookings": {"this_month": 0, "revenue_this_month": 0, "occupancy_rate": 0},
+            "inventory": {"total_items": 0, "low_stock": 0, "total_value": 0},
+            "maintenance": {"open_orders": 0, "in_progress": 0},
+            "tours": {"total_tours": 0, "bookings_this_month": 0},
+        }
+        if not db.use_postgres:
+            return {"success": True, "data": result}
+
+        # Employees
+        row = db.execute(
+            "SELECT COUNT(*) as total, COUNT(*) FILTER(WHERE status='active') as active FROM employees WHERE client_id=%s",
+            (cid,), fetch="one"
+        )
+        if row:
+            result["employees"] = {"total": row["total"] or 0, "active": row["active"] or 0}
+
+        # Bookings this month
+        row = db.execute(
+            """SELECT COUNT(*) as cnt,
+                      COALESCE(SUM(total_room), 0) as revenue,
+                      ROUND(COUNT(*) FILTER(WHERE status IN ('confirmed','checked_in')) * 100.0 / NULLIF(COUNT(*), 0), 1) as occ
+               FROM bookings
+               WHERE client_id=%s
+                 AND DATE_TRUNC('month', check_in) = DATE_TRUNC('month', NOW())""",
+            (cid,), fetch="one"
+        )
+        if row:
+            result["bookings"] = {
+                "this_month": row["cnt"] or 0,
+                "revenue_this_month": float(row["revenue"] or 0),
+                "occupancy_rate": float(row["occ"] or 0),
+            }
+
+        # Inventory
+        row = db.execute(
+            """SELECT COUNT(*) as total,
+                      COUNT(*) FILTER(WHERE quantity <= reorder_level AND reorder_level > 0) as low_stock,
+                      COALESCE(SUM(quantity * price_per_unit), 0) as total_value
+               FROM warehouse_items WHERE client_id=%s""",
+            (cid,), fetch="one"
+        )
+        if row:
+            result["inventory"] = {
+                "total_items": row["total"] or 0,
+                "low_stock": row["low_stock"] or 0,
+                "total_value": float(row["total_value"] or 0),
+            }
+
+        # Maintenance
+        row = db.execute(
+            """SELECT COUNT(*) FILTER(WHERE status='open') as open_cnt,
+                      COUNT(*) FILTER(WHERE status='in_progress') as in_progress
+               FROM maintenance_orders WHERE client_id=%s""",
+            (cid,), fetch="one"
+        )
+        if row:
+            result["maintenance"] = {
+                "open_orders": row["open_cnt"] or 0,
+                "in_progress": row["in_progress"] or 0,
+            }
+
+        # Tours
+        row = db.execute(
+            """SELECT COUNT(DISTINCT tc.id) as total_tours,
+                      COUNT(tb.id) FILTER(WHERE DATE_TRUNC('month', tb.created_at) = DATE_TRUNC('month', NOW())) as monthly_bookings
+               FROM tour_catalog tc
+               LEFT JOIN tour_bookings tb ON tc.id = tb.tour_id AND tb.client_id=%s
+               WHERE tc.client_id=%s""",
+            (cid, cid), fetch="one"
+        )
+        if row:
+            result["tours"] = {
+                "total_tours": row["total_tours"] or 0,
+                "bookings_this_month": row["monthly_bookings"] or 0,
+            }
+
+        return {"success": True, "data": result}
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error(f"analytics_overview error: {e}", exc_info=True)
+        raise HTTPException(500, f"خطأ في التحليلات: {str(e)}")
 
 
 # ──────────────────────────────────────────────────────────────
@@ -2297,6 +2650,11 @@ async def client_login(request: Request):
     client_id = str(form.get("client_id", "")).strip()
     password = str(form.get("password", "")).strip()
 
+    # Rate-limit: block IPs that exceed LOGIN_MAX_PER_MINUTE attempts per minute
+    client_ip = (request.client.host if request.client else "?")
+    if not _login_rate_ok(client_ip):
+        return HTMLResponse(_login_page("محاولات تسجيل دخول كثيرة — حاول لاحقاً"), status_code=429)
+
     if not client_id or not password:
         return HTMLResponse(_login_page("معرف المنشأة وكلمة المرور مطلوبان"), status_code=400)
 
@@ -2311,14 +2669,30 @@ async def client_login(request: Request):
         return HTMLResponse(_login_page("كلمة المرور خاطئة"), status_code=401)
 
     token = _new_token()
+    session_data = {
+        "client_id": client_id,
+        "created_at": datetime.now().isoformat(),
+    }
     with _lock:
-        _client_sessions[token] = {
-            "client_id": client_id,
-            "created_at": datetime.now().isoformat(),
-        }
+        _client_sessions[token] = session_data
+    # Persist session to PostgreSQL when available
+    try:
+        db = request.app.state.db
+        if db.use_postgres:
+            ip = request.client.host if request.client else ""
+            ua = request.headers.get("user-agent", "")[:200]
+            expires = datetime.now() + timedelta(days=7)
+            db.execute(
+                """INSERT INTO client_sessions (token, client_id, expires_at, ip_address, user_agent)
+                   VALUES (%s, %s, %s, %s, %s)
+                   ON CONFLICT (token) DO NOTHING""",
+                (token, client_id, expires.isoformat(), ip, ua)
+            )
+    except Exception as _e:
+        log.debug(f"session persist skipped: {_e}")
 
     response = RedirectResponse("/", status_code=303)
-    response.set_cookie("client_token", token, httponly=True, samesite="lax", max_age=86400 * 7)
+    response.set_cookie("client_token", token, httponly=True, samesite="lax", secure=_COOKIE_SECURE, max_age=86400 * 7)
     return response
 
 
@@ -2330,6 +2704,13 @@ async def client_logout(request: Request):
         session = None
         with _lock:
             session = _client_sessions.pop(token, None)
+        # Remove from PostgreSQL sessions table
+        try:
+            db = request.app.state.db
+            if db.use_postgres:
+                db.execute("DELETE FROM client_sessions WHERE token=%s", (token,))
+        except Exception:
+            pass
         # Finding #8: persist revocation so other servers/restarts honor it
         try:
             from db.security import revoke_token
@@ -3108,20 +3489,63 @@ _DEFAULT_PACKAGES = [
     },
 ]
 
-_PKG_EDITABLE = ("name_ar", "name_en", "price", "currency", "period", "save_note", "cta")
+# discount_percent: خصم اختياري (٠–١٠٠) يحرّره المالك من اللوحة
+_PKG_EDITABLE = ("name_ar", "name_en", "price", "currency", "period",
+                 "save_note", "cta", "discount_percent")
+
+
+def _arabic_to_int(s) -> Optional[float]:
+    """يحوّل سعراً عربياً/إنجليزياً مثل '٥٬٤٠٠' أو '5,400' إلى رقم — أو None."""
+    if s is None:
+        return None
+    trans = str.maketrans("٠١٢٣٤٥٦٧٨٩،٬", "0123456789,,")
+    digits = str(s).translate(trans).replace(",", "").replace(" ", "")
+    try:
+        return float(digits)
+    except (ValueError, TypeError):
+        return None
+
+
+def _int_to_arabic(n: float) -> str:
+    """يحوّل رقماً إلى صيغة عربية بفاصل آلاف '٬'."""
+    whole = int(round(n))
+    grouped = f"{whole:,}".replace(",", "٬")
+    return grouped.translate(str.maketrans("0123456789", "٠١٢٣٤٥٦٧٨٩"))
 
 
 def _merge_packages(stored: list) -> list:
-    """يدمج القيم المحفوظة فوق الافتراضية حسب id — يضمن وجود الباقات الثلاث دائماً."""
+    """يدمج القيم المحفوظة فوق الافتراضية حسب id — يضمن وجود الباقات الثلاث دائماً.
+
+    يحسب أيضاً السعر بعد الخصم (price_after) و discount_percent المطبّق.
+    """
     by_id = {p.get("id"): dict(p) for p in (stored or []) if isinstance(p, dict)}
     result = []
     for default in _DEFAULT_PACKAGES:
         merged = dict(default)
+        merged.setdefault("discount_percent", 0)
         saved = by_id.get(default["id"])
         if isinstance(saved, dict):
             for k in _PKG_EDITABLE:
                 if k in saved and saved[k] is not None:
                     merged[k] = saved[k]
+        # احسب السعر بعد الخصم
+        try:
+            pct = float(merged.get("discount_percent", 0) or 0)
+        except (ValueError, TypeError):
+            pct = 0
+        pct = max(0, min(pct, 100))
+        merged["discount_percent"] = pct
+        base = _arabic_to_int(merged.get("price"))
+        if base is not None and pct > 0:
+            after = round(base * (1 - pct / 100))
+            merged["price_after"] = _int_to_arabic(after)
+            merged["price_original"] = merged.get("price")
+            if not merged.get("save_note"):
+                saved_amount = _int_to_arabic(base - after)
+                merged["save_note"] = f"خصم {int(pct)}٪ — وفّر {saved_amount} {merged.get('currency','')}"
+        else:
+            merged["price_after"] = merged.get("price")
+            merged["price_original"] = ""
         result.append(merged)
     return result
 
@@ -3181,6 +3605,12 @@ async def client_register(request: Request):
     password = str(body.get("password", "")).strip()
     activation_key = str(body.get("activation_key", body.get("key", ""))).strip().upper()
 
+    # بيانات التسجيل: الاسم + الجوال + السجل التجاري + المدينة + البريد الإلكتروني
+    reg_phone = str(body.get("phone", "")).strip()
+    reg_email = str(body.get("email", "")).strip()
+    reg_city = str(body.get("city", "")).strip()
+    reg_cr = str(body.get("cr_number", body.get("cr", ""))).strip()
+
     if not hotel_name or not client_id or not password:
         return JSONResponse({"success": False, "error": "جميع الحقول مطلوبة"}, status_code=400)
 
@@ -3220,9 +3650,14 @@ async def client_register(request: Request):
         "status": "trial",
         "pass_hash": pass_hash,
         "pass_salt": pass_salt,
+        "phone": reg_phone,
+        "email": reg_email,
+        "city": reg_city,
         "trial_end": (datetime.now() + timedelta(days=days)).isoformat(),
         "created_at": datetime.now().isoformat(),
         "settings": {},
+        # السجل التجاري يُحفظ في invoice_settings (يُستخدم في الفواتير لاحقاً)
+        "invoice_settings": {"cr_number": reg_cr} if reg_cr else {},
     }
     store.save_client(client)
 
@@ -3250,7 +3685,7 @@ async def client_register(request: Request):
         _client_sessions[token] = {"client_id": client_id, "created_at": datetime.now().isoformat()}
 
     response = JSONResponse({"success": True, "ok": True, "client_id": client_id})
-    response.set_cookie("client_token", token, httponly=True, samesite="lax", max_age=86400 * 7)
+    response.set_cookie("client_token", token, httponly=True, samesite="lax", secure=_COOKIE_SECURE, max_age=86400 * 7)
     return response
 
 

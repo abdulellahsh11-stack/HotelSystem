@@ -24,7 +24,7 @@
   /* ── Channel banner ──────────────────────────────────────── */
   .bk-banner {
     background: linear-gradient(135deg, #1a237e 0%, #0d47a1 100%);
-    color: #fff;
+    color: var(--white);
     border-radius: 14px;
     padding: 24px 28px;
     margin-bottom: 22px;
@@ -66,12 +66,12 @@
   .bk-row.is-head:hover { background:var(--surface-2); }
 
   .bk-ch-logo { width:32px; height:32px; border-radius:8px; display:grid; place-items:center; font-size:16px; font-weight:700; flex-shrink:0; }
-  .bk-ch-logo.agoda { background:#e53935; color:#fff; }
-  .bk-ch-logo.booking { background:#003580; color:#fff; font-size:12px; }
+  .bk-ch-logo.agoda { background:#e53935; color:var(--white); }
+  .bk-ch-logo.booking { background:#003580; color:var(--white); font-size:12px; }
   .bk-ch-logo.expedia { background:#FFDD00; color:#003087; font-size:11px; }
-  .bk-ch-logo.almosafer { background:#00897B; color:#fff; font-size:11px; }
-  .bk-ch-logo.airbnb { background:#FF5A5F; color:#fff; font-size:13px; }
-  .bk-ch-logo.direct { background:var(--brand-700); color:#fff; font-size:12px; }
+  .bk-ch-logo.almosafer { background:#00897B; color:var(--white); font-size:11px; }
+  .bk-ch-logo.airbnb { background:#FF5A5F; color:var(--white); font-size:13px; }
+  .bk-ch-logo.direct { background:var(--brand-700); color:var(--white); font-size:12px; }
 
   .bk-guest-name { font-weight:500; color:var(--ink-900); }
   .bk-guest-sub { font-size:11px; color:var(--fg-3); margin-top:2px; }
@@ -80,7 +80,7 @@
   .bk-net { font-family:var(--font-en); font-variant-numeric:tabular-nums; font-weight:700; color:var(--brand-700); }
   .bk-status { display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:999px; font-size:11px; font-weight:600; }
   .bk-status.conf { background:#D1FAE5; color:#065F46; }
-  .bk-status.pend { background:#FEF3C7; color:#D97706; }
+  .bk-status.pend { background:#FEF3C7; color:var(--warning-700); }
   .bk-status.canc { background:#FEE2E2; color:#C0392B; }
   .bk-status.chk { background:#DBEAFE; color:#1D4ED8; }
 
@@ -100,7 +100,7 @@
   .ch-bar-row .ch-pct { width:36px; text-align:left; font-family:var(--font-en); font-weight:600; color:var(--fg-2); font-size:11px; }
 
   /* Commission summary */
-  .comm-box { margin:14px 16px; background:linear-gradient(135deg,#FEF2F2,#FFF); border:1px solid #FECACA; border-radius:10px; padding:14px 16px; }
+  .comm-box { margin:14px 16px; background:linear-gradient(135deg,#FEF2F2,var(--white)); border:1px solid #FECACA; border-radius:10px; padding:14px 16px; }
   .comm-box .ttl { font-size:12px; color:#991B1B; font-weight:600; margin-bottom:10px; }
   .comm-item { display:flex; justify-content:space-between; font-size:12px; padding:4px 0; border-top:1px solid rgba(0,0,0,.06); }
   .comm-item:first-of-type { border-top:none; }
@@ -129,11 +129,11 @@
   /* ═══════════ Direct Booking Engine + Establishment platform ═══════════ */
   .de-ov { display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:500; align-items:center; justify-content:center; padding:20px; }
   .de-modal { background:var(--white); border-radius:18px; width:720px; max-width:100%; max-height:92vh; overflow-y:auto; box-shadow:0 24px 64px rgba(0,0,0,.28); }
-  .de-head { padding:22px 26px; background:linear-gradient(135deg,#1B4D3D,#2d6a52); color:#fff; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:3; }
+  .de-head { padding:22px 26px; background:linear-gradient(135deg,var(--brand-700),#2d6a52); color:var(--white); display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:3; }
   .de-head .t { font-family:var(--font-ar-display); font-size:19px; font-weight:700; display:flex; align-items:center; gap:8px; }
   .de-head .s { font-size:11px; color:rgba(255,255,255,.72); margin-top:4px; }
   .de-head .z { display:inline-block; background:#FFD600; color:#0d3d2e; font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px; }
-  .de-x { background:rgba(255,255,255,.15); border:none; color:#fff; border-radius:8px; padding:8px 12px; cursor:pointer; font-size:14px; }
+  .de-x { background:rgba(255,255,255,.15); border:none; color:var(--white); border-radius:8px; padding:8px 12px; cursor:pointer; font-size:14px; }
   .de-body { padding:22px 26px; display:flex; flex-direction:column; gap:20px; }
   .de-sec-t { font-size:12px; font-weight:700; color:var(--ink-800); margin-bottom:10px; display:flex; align-items:center; gap:6px; }
   .de-types { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
@@ -149,7 +149,7 @@
   .de-unit:hover { border-color:var(--brand-400); box-shadow:0 4px 14px rgba(0,0,0,.07); }
   .de-unit.on { border-color:var(--brand-700); box-shadow:0 0 0 3px rgba(27,77,61,.12); }
   .de-unit .ph { height:96px; background-size:cover; background-position:center; display:grid; place-items:center; font-size:34px; position:relative; }
-  .de-unit .ph .check { position:absolute; top:8px; inset-inline-end:8px; width:24px; height:24px; border-radius:999px; background:var(--brand-700); color:#fff; display:none; place-items:center; font-size:13px; }
+  .de-unit .ph .check { position:absolute; top:8px; inset-inline-end:8px; width:24px; height:24px; border-radius:999px; background:var(--brand-700); color:var(--white); display:none; place-items:center; font-size:13px; }
   .de-unit.on .ph .check { display:grid; }
   .de-unit .body { padding:10px 12px; }
   .de-unit .nm { font-size:13px; font-weight:600; color:var(--ink-900); }
@@ -167,23 +167,23 @@
   .de-svc .un { font-size:9px; color:var(--fg-3); margin-top:1px; }
   .de-svc .pr { font-family:var(--font-en); font-size:12px; font-weight:700; color:var(--brand-700); }
   .de-svc .tick { width:20px; height:20px; border-radius:6px; border:1.5px solid var(--hairline); display:grid; place-items:center; font-size:12px; color:transparent; flex-shrink:0; }
-  .de-svc.on .tick { background:var(--brand-700); border-color:var(--brand-700); color:#fff; }
+  .de-svc.on .tick { background:var(--brand-700); border-color:var(--brand-700); color:var(--white); }
   /* Form */
   .de-grid2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
   .de-field label { font-size:11px; font-weight:600; color:var(--ink-700); display:block; margin-bottom:5px; }
   .de-field input, .de-field select { width:100%; padding:10px 12px; border:1px solid var(--hairline); border-radius:8px; font-family:var(--font-ar); font-size:13px; box-sizing:border-box; color:var(--ink-900); }
   /* Summary */
-  .de-summary { background:linear-gradient(135deg,#f0f7f4,#fff); border:1px solid #c6ddd7; border-radius:12px; padding:16px; }
+  .de-summary { background:linear-gradient(135deg,#f0f7f4,var(--white)); border:1px solid #c6ddd7; border-radius:12px; padding:16px; }
   .de-sum-row { display:flex; justify-content:space-between; align-items:center; padding:6px 0; font-size:13px; }
   .de-sum-row .l { color:var(--fg-2); display:flex; align-items:center; gap:6px; }
   .de-sum-row .v { font-family:var(--font-en); font-weight:600; color:var(--ink-900); }
   .de-sum-row.zero .v { color:var(--brand-700); }
   .de-sum-row.total { border-top:2px solid #c6ddd7; margin-top:6px; padding-top:12px; }
-  .de-sum-row.total .l { font-weight:700; color:#1B4D3D; font-size:14px; }
+  .de-sum-row.total .l { font-weight:700; color:var(--brand-700); font-size:14px; }
   .de-sum-row.total .v { font-weight:800; color:#1B7A56; font-size:20px; }
   .de-zero-badge { display:inline-flex; align-items:center; gap:4px; background:#D1FAE5; color:#065F46; font-size:10px; font-weight:700; padding:2px 8px; border-radius:999px; }
   .de-foot { padding:18px 26px; border-top:1px solid var(--hairline); display:flex; gap:10px; position:sticky; bottom:0; background:var(--white); }
-  .de-confirm { flex:1; padding:14px; background:var(--brand-700); color:#fff; border:none; border-radius:10px; font-family:var(--font-ar); font-size:15px; font-weight:700; cursor:pointer; }
+  .de-confirm { flex:1; padding:14px; background:var(--brand-700); color:var(--white); border:none; border-radius:10px; font-family:var(--font-ar); font-size:15px; font-weight:700; cursor:pointer; }
   .de-confirm:hover { background:var(--brand-800); }
   .de-cancel { padding:14px 20px; background:var(--surface-2); color:var(--ink-700); border:1px solid var(--hairline); border-radius:10px; font-family:var(--font-ar); font-size:13px; cursor:pointer; }
   /* Establishment management rows */
@@ -199,8 +199,8 @@
   .fac { border:1.5px solid var(--hairline); border-radius:12px; overflow:hidden; transition:all 140ms; background:var(--white); }
   .fac.on { border-color:var(--brand-700); box-shadow:0 0 0 3px rgba(27,77,61,.12); }
   .fac .ph { height:84px; background-size:cover; background-position:center; display:grid; place-items:center; font-size:30px; position:relative; }
-  .fac .ph .tag { position:absolute; bottom:6px; inset-inline-start:6px; background:rgba(0,0,0,.55); color:#fff; font-family:var(--font-en); font-size:11px; font-weight:700; padding:2px 8px; border-radius:6px; }
-  .fac .ph .ck { position:absolute; top:6px; inset-inline-end:6px; width:22px; height:22px; border-radius:999px; background:var(--brand-700); color:#fff; display:none; place-items:center; font-size:12px; }
+  .fac .ph .tag { position:absolute; bottom:6px; inset-inline-start:6px; background:rgba(0,0,0,.55); color:var(--white); font-family:var(--font-en); font-size:11px; font-weight:700; padding:2px 8px; border-radius:6px; }
+  .fac .ph .ck { position:absolute; top:6px; inset-inline-end:6px; width:22px; height:22px; border-radius:999px; background:var(--brand-700); color:var(--white); display:none; place-items:center; font-size:12px; }
   .fac.on .ph .ck { display:grid; }
   .fac .body { padding:10px 12px; cursor:pointer; }
   .fac .nm { font-size:13px; font-weight:600; color:var(--ink-900); }
@@ -214,10 +214,10 @@
   /* Establishment facility customisation cards */
   .fp-tabs { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
   .fp-tab { padding:6px 12px; border:1px solid var(--hairline); border-radius:8px; font-size:11px; font-family:var(--font-ar); cursor:pointer; background:var(--white); }
-  .fp-tab.on { background:var(--brand-700); color:#fff; border-color:var(--brand-700); }
+  .fp-tab.on { background:var(--brand-700); color:var(--white); border-color:var(--brand-700); }
   .fp-card { display:grid; grid-template-columns:74px 1fr 92px; gap:10px; align-items:center; padding:10px; border:1px solid var(--hairline); border-radius:10px; margin-bottom:8px; }
   .fp-card .ph { width:74px; height:58px; border-radius:8px; background-size:cover; background-position:center; display:grid; place-items:center; font-size:22px; cursor:pointer; position:relative; }
-  .fp-card .ph .cam { position:absolute; bottom:2px; inset-inline-end:2px; background:rgba(0,0,0,.6); color:#fff; border-radius:5px; font-size:9px; padding:1px 5px; }
+  .fp-card .ph .cam { position:absolute; bottom:2px; inset-inline-end:2px; background:rgba(0,0,0,.6); color:var(--white); border-radius:5px; font-size:9px; padding:1px 5px; }
   .fp-card .mid .nm-in { width:100%; border:none; background:transparent; font-size:13px; font-weight:600; color:var(--ink-900); font-family:var(--font-ar); padding:2px 0; }
   .fp-card .mid .desc-in { width:100%; border:1px solid var(--hairline); border-radius:6px; font-size:11px; color:var(--fg-2); font-family:var(--font-ar); padding:6px 8px; margin-top:4px; box-sizing:border-box; }
   .fp-card .price-col input { width:100%; padding:8px; border:1px solid var(--hairline); border-radius:7px; text-align:center; font-family:var(--font-en); font-weight:700; box-sizing:border-box; }
@@ -310,7 +310,7 @@
             <div class="ch-bar-row"><span class="ch-name" style="color:#003580">Booking</span><div class="ch-bar"><div style="width:39%;background:#003580"></div></div><span class="ch-pct">٣٩٪</span></div>
             <div class="ch-bar-row"><span class="ch-name" style="color:#e53935">Agoda</span><div class="ch-bar"><div style="width:28%;background:#e53935"></div></div><span class="ch-pct">٢٨٪</span></div>
             <div class="ch-bar-row"><span class="ch-name" style="color:#00897B">الموساف.</span><div class="ch-bar"><div style="width:13%;background:#00897B"></div></div><span class="ch-pct">١٣٪</span></div>
-            <div class="ch-bar-row"><span class="ch-name" style="color:#D97706">Expedia</span><div class="ch-bar"><div style="width:11%;background:#D97706"></div></div><span class="ch-pct">١١٪</span></div>
+            <div class="ch-bar-row"><span class="ch-name" style="color:var(--warning-700)">Expedia</span><div class="ch-bar"><div style="width:11%;background:var(--warning-700)"></div></div><span class="ch-pct">١١٪</span></div>
             <div class="ch-bar-row"><span class="ch-name" style="color:#FF5A5F">Airbnb</span><div class="ch-bar"><div style="width:6%;background:#FF5A5F"></div></div><span class="ch-pct">٦٪</span></div>
             <div class="ch-bar-row"><span class="ch-name" style="color:var(--brand-700)">مباشر</span><div class="ch-bar"><div style="width:4%;background:var(--brand-700)"></div></div><span class="ch-pct">٤٪</span></div>
           </div>
@@ -322,12 +322,12 @@
               <button onclick="openCommSettings()" style="background:var(--surface-2);border:1px solid var(--hairline);border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:var(--font-ar)">⚙ تخصيص</button>
             </div>
             <!-- Calculation steps -->
-            <div style="margin:12px 16px 0;background:linear-gradient(135deg,#f0f7f4,#fff);border:1px solid #c6ddd7;border-radius:10px;padding:13px 14px">
-              <div style="font-size:11px;font-weight:600;color:#1B4D3D;margin-bottom:8px">📐 خطوات الحساب</div>
+            <div style="margin:12px 16px 0;background:linear-gradient(135deg,#f0f7f4,var(--white));border:1px solid #c6ddd7;border-radius:10px;padding:13px 14px">
+              <div style="font-size:11px;font-weight:600;color:var(--brand-700);margin-bottom:8px">📐 خطوات الحساب</div>
               <div style="font-size:11px;display:flex;flex-direction:column;gap:5px">
-                <div style="display:flex;justify-content:space-between;padding:6px 8px;background:#fff;border-radius:5px;border:1px solid #e8eceb"><span style="color:var(--fg-2)">① مبلغ الحجز</span><span style="font-family:var(--font-en);font-weight:600">X ر.س</span></div>
+                <div style="display:flex;justify-content:space-between;padding:6px 8px;background:var(--white);border-radius:5px;border:1px solid #e8eceb"><span style="color:var(--fg-2)">① مبلغ الحجز</span><span style="font-family:var(--font-en);font-weight:600">X ر.س</span></div>
                 <div style="display:flex;justify-content:space-between;padding:6px 8px;background:#FEF2F2;border-radius:5px;border:1px solid #FECACA"><span style="color:#991B1B">② عمولة القناة (<span class="calc-pct">٥</span>٪)</span><span style="font-family:var(--font-en);font-weight:600;color:#C0392B">− X × <span class="calc-pct">٥</span>٪</span></div>
-                <div style="display:flex;justify-content:space-between;padding:6px 8px;background:#D1FAE5;border-radius:5px;border:1px solid #A7F3D0"><span style="color:#1B4D3D;font-weight:700">③ الصافي المحصّل</span><span style="font-family:var(--font-en);font-weight:700;color:#1B7A56">X − عمولة</span></div>
+                <div style="display:flex;justify-content:space-between;padding:6px 8px;background:#D1FAE5;border-radius:5px;border:1px solid #A7F3D0"><span style="color:var(--brand-700);font-weight:700">③ الصافي المحصّل</span><span style="font-family:var(--font-en);font-weight:700;color:#1B7A56">X − عمولة</span></div>
                 <div style="font-size:10px;color:var(--fg-3);margin-top:2px">✓ الحجوزات المباشرة: عمولة ٠٪</div>
               </div>
             </div>
@@ -395,10 +395,10 @@
     </div>
 
     <!-- Live calculation steps preview -->
-    <div style="background:linear-gradient(135deg,#f0f7f4,#fff);border:1px solid #c6ddd7;border-radius:12px;padding:16px;margin-bottom:16px">
-      <div style="font-size:12px;font-weight:700;color:#1B4D3D;margin-bottom:12px">📐 مثال حساب لحجز بـ 1,000 ر.س</div>
+    <div style="background:linear-gradient(135deg,#f0f7f4,var(--white));border:1px solid #c6ddd7;border-radius:12px;padding:16px;margin-bottom:16px">
+      <div style="font-size:12px;font-weight:700;color:var(--brand-700);margin-bottom:12px">📐 مثال حساب لحجز بـ 1,000 ر.س</div>
       <div style="display:flex;flex-direction:column;gap:8px;font-size:13px">
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#fff;border-radius:8px;border:1px solid #e8eceb">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--white);border-radius:8px;border:1px solid #e8eceb">
           <span style="color:var(--fg-2)">① مبلغ الحجز الإجمالي</span>
           <span style="font-family:var(--font-en);font-weight:700;font-size:15px">1,000 ر.س</span>
         </div>
@@ -408,7 +408,7 @@
         </div>
         <div style="height:1px;background:#c6ddd7;margin:2px 0"></div>
         <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#D1FAE5;border-radius:8px;border:1px solid #A7F3D0">
-          <span style="color:#1B4D3D;font-weight:700">③ الصافي المحصّل</span>
+          <span style="color:var(--brand-700);font-weight:700">③ الصافي المحصّل</span>
           <span style="font-family:var(--font-en);font-weight:700;color:#1B7A56;font-size:17px" id="prev-net-val">950 ر.س</span>
         </div>
         <div style="font-size:11px;color:var(--fg-3);padding:4px 0">✓ الحجوزات المباشرة تُعفى من العمولة تلقائياً</div>
@@ -419,7 +419,7 @@
       💾 تُحفظ النسبة تلقائياً في هذا المتصفح وتُطبق على جميع الحجوزات والتقارير.
     </div>
     <div style="display:flex;gap:8px">
-      <button onclick="saveCommRate()" style="flex:1;padding:12px;background:var(--brand-700);color:#fff;border:none;border-radius:10px;font-family:var(--font-ar);font-size:14px;font-weight:700;cursor:pointer">💾 حفظ النسبة</button>
+      <button onclick="saveCommRate()" style="flex:1;padding:12px;background:var(--brand-700);color:var(--white);border:none;border-radius:10px;font-family:var(--font-ar);font-size:14px;font-weight:700;cursor:pointer">💾 حفظ النسبة</button>
       <button onclick="resetCommRate()" style="padding:12px 16px;background:var(--surface-2);color:var(--ink-700);border:1px solid var(--hairline);border-radius:10px;font-family:var(--font-ar);font-size:12px;cursor:pointer">إعادة تعيين (٥٪)</button>
     </div>
   </div>
@@ -572,6 +572,7 @@
   </div>
 </div>
 
+<script src="/static/dheuof/shared/module-base.js"></script>
 <script src="/static/dheuof/shared/sidebar.js"></script>
 <script>StaticSidebar.mount({ activeId: "17-bookings", placeholder: "بحث في الحجوزات..." });</script>
 <script src="/static/dheuof/assets/animations.js"></script>
@@ -596,6 +597,82 @@ function saveDirectBooking(bk){
   localStorage.setItem('dheuof_direct_bookings', JSON.stringify(saved));
   BOOKINGS = loadBookings();
   renderBookingList();
+}
+
+// ── API helpers ───────────────────────────────────────────────
+function showLoadingState(){
+  var el = document.getElementById('bookings-list');
+  if(el) el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--fg-3);font-family:var(--font-ar)"><div style="font-size:24px;margin-bottom:10px">⏳</div>جارٍ تحميل الحجوزات…</div>';
+}
+function showBookingsError(msg){
+  var el = document.getElementById('bookings-list');
+  if(el) el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--danger-700);font-family:var(--font-ar)"><div style="font-size:24px;margin-bottom:10px">✕</div>'+(msg||'تعذّر تحميل الحجوزات')+'</div>';
+}
+
+// ── Load bookings from API (with optional filters) ────────────
+async function loadBookingsFromAPI(filters){
+  showLoadingState();
+  try {
+    var params = new URLSearchParams();
+    if(filters){
+      if(filters.status)    params.set('status',    filters.status);
+      if(filters.source)    params.set('source',    filters.source);
+      if(filters.date_from) params.set('date_from', filters.date_from);
+      if(filters.date_to)   params.set('date_to',   filters.date_to);
+    }
+    var url = '/api/m17/reservations' + (params.toString() ? '?'+params.toString() : '');
+    var res = await fetch(url);
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    var json = await res.json();
+    if(!json.success) throw new Error(json.message || 'API error');
+    // Merge API data into BOOKINGS, normalising field names to match existing renderer
+    var apiBookings = (json.data || []).map(function(r){
+      return {
+        id:       String(r.id),
+        guest:    r.guest_name    || '—',
+        ch:       r.source        || 'direct',
+        room:     r.room_number   || '—',
+        nights:   0,
+        amount:   parseFloat(r.total_amount) || 0,
+        checkIn:  r.check_in      || '',
+        checkOut: r.check_out     || '',
+        status:   r.status        || 'conf',
+        bkNumber: r.booking_number|| ''
+      };
+    });
+    // Keep locally-created direct bookings, prepend API data
+    var localSaved = [];
+    try { localSaved = JSON.parse(localStorage.getItem('dheuof_direct_bookings') || '[]'); } catch(e){}
+    BOOKINGS = apiBookings.concat(localSaved);
+    renderBookingList();
+  } catch(e){
+    console.error('loadBookingsFromAPI:', e);
+    // Fall back to local data so the page stays usable
+    BOOKINGS = loadBookings();
+    renderBookingList();
+    toast('تعذّر تحميل الحجوزات من الخادم — يتم عرض البيانات المحلية');
+  }
+}
+
+// ── Load booking stats (KPI banner) ──────────────────────────
+async function loadBookingStats(){
+  try {
+    var res = await fetch('/api/m17/stats');
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    var json = await res.json();
+    if(!json.success) throw new Error(json.message || 'API error');
+    var s = json.data || json;
+    function upd(id,v){ var e=document.getElementById(id); if(e) e.textContent=v!=null?v:'—'; }
+    upd('bk-stat-count', s.total_bookings  != null ? s.total_bookings  : '—');
+    upd('bk-stat-total', s.total_revenue   != null ? Number(s.total_revenue).toLocaleString('ar-EG') : '—');
+    var comm = s.total_revenue != null ? Math.round(Number(s.total_revenue) * COMM_RATE) : null;
+    upd('bk-stat-comm',  comm  != null ? comm.toLocaleString('ar-EG') : '—');
+    var net  = s.total_revenue != null && comm != null ? (Number(s.total_revenue) - comm) : null;
+    upd('bk-stat-net',   net   != null ? net.toLocaleString('ar-EG')  : '—');
+  } catch(e){
+    console.error('loadBookingStats:', e);
+    // Banner stats will be updated by renderBookingList() as fallback
+  }
 }
 // ── Commission rate: load from localStorage (default 5%) ─────
 var COMM_RATE = (function(){
@@ -654,9 +731,9 @@ window.filterChannel = function(ch, btn) {
   CURRENT_CH = ch;
   document.querySelectorAll('.bk-tab').forEach(function(b){ b.classList.remove('on'); });
   btn.classList.add('on');
-  document.querySelectorAll('#bookings-list .bk-row').forEach(function(row){
-    row.style.display = (ch === 'all' || row.dataset.ch === ch) ? '' : 'none';
-  });
+  // Fetch from API with source filter; fall back to client-side hide if fetch fails quickly
+  var filters = ch === 'all' ? {} : { source: ch };
+  loadBookingsFromAPI(filters);
 };
 
 window.searchBookings = function(q) {
@@ -684,14 +761,14 @@ window.showDetail = function(id) {
     +'<div style="background:var(--surface-2);border-radius:8px;padding:12px"><div style="font-size:10px;color:var(--fg-3)">الحالة</div><div style="font-weight:600;margin-top:4px">'+statusMap[bk.status]+'</div></div>'
     +'</div>'
     +(bk.services&&bk.services.length?'<div style="background:var(--surface-2);border-radius:8px;padding:12px"><div style="font-size:10px;color:var(--fg-3);margin-bottom:6px">🧩 الخدمات الإضافية</div><div style="display:flex;flex-wrap:wrap;gap:6px">'+bk.services.map(function(s){return '<span style="background:var(--brand-50);color:var(--brand-700);border:1px solid var(--brand-200);border-radius:999px;padding:3px 10px;font-size:11px">'+s+'</span>';}).join('')+'</div></div>':'')
-    +'<div style="background:linear-gradient(135deg,#f0f7f4,#fff);border:1px solid #c6ddd7;border-radius:10px;padding:14px">'
+    +'<div style="background:linear-gradient(135deg,#f0f7f4,var(--white));border:1px solid #c6ddd7;border-radius:10px;padding:14px">'
     +'<div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="color:var(--fg-2)">المبلغ الإجمالي</span><span style="font-family:var(--font-en);font-weight:600">'+bk.amount+' ر.س</span></div>'
     +'<div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="color:var(--fg-2)">'+(bk.ch==='direct'?'عمولة (حجز مباشر)':'عمولة القناة')+'</span><span style="font-family:var(--font-en);font-weight:600;color:'+(comm===0?'var(--brand-700)':'#C0392B')+'">'+(comm===0?'٠ ر.س ✓':'−'+comm+' ر.س')+'</span></div>'
     +'<div style="height:1px;background:#c6ddd7;margin:8px 0"></div>'
     +'<div style="display:flex;justify-content:space-between"><span style="font-weight:700;color:var(--brand-700)">الصافي المحصّل</span><span style="font-family:var(--font-en);font-weight:700;color:var(--brand-700);font-size:16px">'+net+' ر.س</span></div>'
     +'</div>'
     +(bk.phone?'<div style="display:flex;gap:8px"><a href="tel:'+bk.phone+'" style="flex:1;padding:10px;background:var(--brand-50);color:var(--brand-700);border:1px solid var(--brand-200);border-radius:8px;text-align:center;font-size:12px;font-weight:600;text-decoration:none">📞 '+bk.phone+'</a>'+(bk.email?'<a href="mailto:'+bk.email+'" style="flex:1;padding:10px;background:var(--surface-2);color:var(--ink-700);border:1px solid var(--hairline);border-radius:8px;text-align:center;font-size:12px;text-decoration:none">✉ '+bk.email+'</a>':'')+'</div>':'')
-    +'<button onclick="linkToGuest(\''+id+'\')" style="width:100%;padding:11px;background:var(--brand-700);color:#fff;border:none;border-radius:8px;font-family:var(--font-ar);font-size:13px;font-weight:600;cursor:pointer;margin-top:4px">🔗 ربط بسجل الضيف</button>'
+    +'<button onclick="linkToGuest(\''+id+'\')" style="width:100%;padding:11px;background:var(--brand-700);color:var(--white);border:none;border-radius:8px;font-family:var(--font-ar);font-size:13px;font-weight:600;cursor:pointer;margin-top:4px">🔗 ربط بسجل الضيف</button>'
     +'</div>';
   document.getElementById('bk-modal').style.display = 'flex';
 };
@@ -702,17 +779,47 @@ window.linkToGuest = function(id) {
   closeModal();
 };
 
-// ── Quick Add ─────────────────────────────────────────────────
-window.quickAdd = function() {
-  var name = document.getElementById('q-name').value.trim();
-  var ch   = document.getElementById('q-ch').value;
-  var amt  = parseFloat(document.getElementById('q-amt').value) || 0;
-  if (!name || !amt) { alert('أدخل اسم الضيف والمبلغ'); return; }
-  var comm = ch === 'direct' ? 0 : Math.round(amt * COMM_RATE);
-  var net  = amt - comm;
-  alert('✓ تم إضافة الحجز!\n' + name + ' · ' + CH_NAMES[ch] + '\nمبلغ: ' + amt + ' ر.س\nعمولة: −' + comm + ' ر.س\nصافي: ' + net + ' ر.س\n\nتم الربط بسجل الضيف تلقائياً.');
-  document.getElementById('q-name').value = '';
-  document.getElementById('q-amt').value = '';
+// ── Quick Add (POSTs to API) ───────────────────────────────────
+window.quickAdd = async function() {
+  var name    = document.getElementById('q-name').value.trim();
+  var ch      = document.getElementById('q-ch').value;
+  var amt     = parseFloat(document.getElementById('q-amt').value) || 0;
+  var checkIn = document.getElementById('q-in').value  || '';
+  var checkOut= document.getElementById('q-out').value || '';
+  if (!name || !amt) { toast('أدخل اسم الضيف والمبلغ', true); return; }
+  var payload = {
+    guest_name:   name,
+    source:       ch,
+    total_amount: amt,
+    check_in:     checkIn,
+    check_out:    checkOut,
+    status:       'conf'
+  };
+  try {
+    var res = await fetch('/api/m17/reservations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    var json = await res.json();
+    if(!json.success) throw new Error(json.message || 'API error');
+    document.getElementById('q-name').value  = '';
+    document.getElementById('q-amt').value   = '';
+    document.getElementById('q-in').value    = '';
+    document.getElementById('q-out').value   = '';
+    toast('✓ تم إضافة الحجز: ' + name + ' · ' + CH_NAMES[ch] + ' · ' + amt + ' ر.س');
+    // Refresh list and stats
+    await loadBookingsFromAPI();
+    await loadBookingStats();
+  } catch(e){
+    console.error('quickAdd:', e);
+    // Fallback: save locally
+    var comm = ch === 'direct' ? 0 : Math.round(amt * COMM_RATE);
+    var net  = amt - comm;
+    saveDirectBooking({ id:'Q'+Date.now().toString().slice(-6), guest:name, ch:ch, room:'—', nights:0, amount:amt, checkIn:checkIn, status:'conf' });
+    toast('تم الحفظ محلياً (تعذّر الاتصال بالخادم)');
+  }
 };
 
 window.openAddBooking = window.quickAdd;
@@ -789,13 +896,16 @@ window.resetCommRate = function() {
 
 // Apply display on load
 refreshCommDisplay();
-renderBookingList();
+renderBookingList();  // render local/seed data immediately while API loads
+// Then fetch live data from API
+loadBookingsFromAPI();
+loadBookingStats();
 
 // ── Export helpers ──────────────────────────────────
 function todayStr(){var d=new Date();return d.getFullYear()+(d.getMonth()+1<10?'0':'')+(d.getMonth()+1)+(d.getDate()<10?'0':'')+d.getDate();}
 function toXLS(headers,rows,name){var s='<Styles><Style ss:ID="H"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1B4D3D" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center"/></Style><Style ss:ID="BAD"><Interior ss:Color="#C0392B" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style><Style ss:ID="WARN"><Interior ss:Color="#D97706" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style><Style ss:ID="OK"><Interior ss:Color="#BBF7D0" ss:Pattern="Solid"/><Font ss:Color="#1B7A56" ss:Bold="1"/></Style><Style ss:ID="EXC"><Interior ss:Color="#1B7A56" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style></Styles>';function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}function cell(v){if(v&&typeof v==='object'&&'s' in v)return '<Cell ss:StyleID="'+v.s+'"><Data ss:Type="String">'+esc(v.v)+'</Data></Cell>';return '<Cell><Data ss:Type="'+(typeof v==='number'?'Number':'String')+'">'+esc(v)+'</Data></Cell>';}var hRow='<Row>'+headers.map(function(h){return '<Cell ss:StyleID="H"><Data ss:Type="String">'+esc(h)+'</Data></Cell>';}).join('')+'</Row>';var dRows=rows.map(function(r){return '<Row>'+r.map(cell).join('')+'</Row>';}).join('');return '<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'+s+'<Worksheet ss:Name="'+esc(name)+'"><Table>'+hRow+dRows+'</Table></Worksheet></Workbook>';}
 function dlXLS(c,fn){var b=new Blob([c],{type:'application/vnd.ms-excel;charset=utf-8'});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download=fn;a.click();setTimeout(function(){URL.revokeObjectURL(u);},1000);}
-function toast(msg){var old=document.querySelector('.dh-toast');if(old)old.remove();var t=document.createElement('div');t.className='dh-toast';t.style.cssText='position:fixed;bottom:24px;inset-inline-end:24px;background:#1B4D3D;color:#fff;padding:12px 18px;border-radius:8px;font-family:"Tajawal",sans-serif;font-size:13px;z-index:9999;display:flex;gap:8px';t.innerHTML='<span style="color:#C9A85F">✓</span>'+msg;document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .4s';setTimeout(function(){if(t.parentNode)t.remove();},400);},3000);}
+function toast(msg){var old=document.querySelector('.dh-toast');if(old)old.remove();var t=document.createElement('div');t.className='dh-toast';t.style.cssText='position:fixed;bottom:24px;inset-inline-end:24px;background:var(--brand-700);color:var(--white);padding:12px 18px;border-radius:8px;font-family:"Tajawal",sans-serif;font-size:13px;z-index:9999;display:flex;gap:8px';t.innerHTML='<span style="color:var(--gold-500)">✓</span>'+msg;document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .4s';setTimeout(function(){if(t.parentNode)t.remove();},400);},3000);}
 
 window.exportCSV = function(){
   var headers = ['رقم الحجز','الضيف','القناة','الغرفة','الليالي','تاريخ الوصول','المبلغ (ر.س)','العمولة ٥٪ (ر.س)','الصافي (ر.س)','الحالة'];
@@ -832,18 +942,18 @@ window.exportPDF = function(){
   var totComm=BOOKINGS.filter(function(b){return b.status!=='canc';}).reduce(function(s,b){return s+(b.ch==='direct'?0:Math.round(b.amount*COMM_RATE));},0);
   var t=BOOKINGS.length; function _p(n){return t>0?Math.round(n/t*100):0;}
   var statsHtml='<div style="background:linear-gradient(135deg,#f0f7f4,#f8faf9);border:1px solid #c6ddd7;border-radius:12px;padding:18px 20px;margin-bottom:20px">'
-    +'<div style="font-size:14px;font-weight:700;color:#1B4D3D;margin-bottom:14px">📊 ملخص حجوزات القنوات · الإجمالي: '+t+' حجز</div>'
+    +'<div style="font-size:14px;font-weight:700;color:var(--brand-700);margin-bottom:14px">📊 ملخص حجوزات القنوات · الإجمالي: '+t+' حجز</div>'
     +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">'
     +'<div style="flex:1;min-width:80px;text-align:center;background:#f0f0f0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#333">'+t+'</div><div style="font-size:10px;color:#666;margin-top:4px">إجمالي</div></div>'
     +'<div style="flex:1;min-width:80px;text-align:center;background:#D1FAE5;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#1B7A56">'+conf+'</div><div style="font-size:13px;font-weight:700;color:#1B7A56">'+_p(conf)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">مؤكد ✓</div></div>'
-    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEF3C7;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#D97706">'+pend+'</div><div style="font-size:13px;font-weight:700;color:#D97706">'+_p(pend)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">قيد التأكيد ⏳</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEF3C7;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:var(--warning-700)">'+pend+'</div><div style="font-size:13px;font-weight:700;color:var(--warning-700)">'+_p(pend)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">قيد التأكيد ⏳</div></div>'
     +'<div style="flex:1;min-width:80px;text-align:center;background:#FEE2E2;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#C0392B">'+canc+'</div><div style="font-size:13px;font-weight:700;color:#C0392B">'+_p(canc)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">ملغي ✕</div></div>'
     +'<div style="flex:1;min-width:80px;text-align:center;background:#D1FAE5;border-radius:8px;padding:12px 8px"><div style="font-size:22px;font-weight:700;color:#1B7A56">'+totAmt.toLocaleString()+'</div><div style="font-size:10px;color:rgba(0,0,0,0.5);margin-top:4px">إجمالي ر.س</div></div>'
     +'<div style="flex:1;min-width:80px;text-align:center;background:#FEE2E2;border-radius:8px;padding:12px 8px"><div style="font-size:22px;font-weight:700;color:#C0392B">'+totComm.toLocaleString()+'</div><div style="font-size:10px;color:rgba(0,0,0,0.5);margin-top:4px">عمولات ر.س</div></div>'
     +'</div>'
     +'<div style="background:#e8eceb;border-radius:6px;height:12px;overflow:hidden;display:flex">'
     +(conf>0?'<div style="width:'+_p(conf)+'%;background:#1B7A56;height:100%"></div>':'')
-    +(pend>0?'<div style="width:'+_p(pend)+'%;background:#D97706;height:100%"></div>':'')
+    +(pend>0?'<div style="width:'+_p(pend)+'%;background:var(--warning-700);height:100%"></div>':'')
     +(canc>0?'<div style="width:'+_p(canc)+'%;background:#C0392B;height:100%"></div>':'')
     +'</div>'
     +'<div style="margin-top:8px;font-size:10px;color:#666;display:flex;gap:14px;flex-wrap:wrap">'
@@ -852,7 +962,7 @@ window.exportPDF = function(){
     +'</div></div>';
   var rows = BOOKINGS.map(function(bk){
     var comm = bk.ch==='direct'?0:Math.round(bk.amount*COMM_RATE);
-    var stStyle = bk.status==='conf'?'color:#1B7A56;font-weight:700':bk.status==='pend'?'color:#D97706;font-weight:700':bk.status==='canc'?'color:#C0392B;font-weight:700':'color:#1D4ED8;font-weight:700';
+    var stStyle = bk.status==='conf'?'color:#1B7A56;font-weight:700':bk.status==='pend'?'color:var(--warning-700);font-weight:700':bk.status==='canc'?'color:#C0392B;font-weight:700':'color:#1D4ED8;font-weight:700';
     var stLabel = {conf:'✓ مؤكد', pend:'⏳ قيد التأكيد', canc:'✕ ملغي', chk:'⬆ تسجيل دخول'}[bk.status] || bk.status;
     return '<tr><td>'+bk.guest+'</td><td>'+CH_NAMES[bk.ch]+'</td><td>'+bk.room+'</td>'
       +'<td style="font-family:monospace">'+bk.checkIn+'</td>'
@@ -867,7 +977,7 @@ window.exportPDF = function(){
     +'<style>body{font-family:"Tajawal","Segoe UI",sans-serif;margin:32px;color:#1a1a1a;direction:rtl}'
     +'h1{font-size:22px;margin:0 0 4px}.sub{font-size:12px;color:#666;margin:0 0 18px}'
     +'table{width:100%;border-collapse:collapse;font-size:12px}'
-    +'th{background:#1B4D3D;color:#fff;padding:9px 10px;text-align:right}'
+    +'th{background:var(--brand-700);color:var(--white);padding:9px 10px;text-align:right}'
     +'td{padding:8px 10px;border-bottom:1px solid #eee;vertical-align:middle}'
     +'tr:nth-child(even){background:#fafafa}'
     +'.footer{margin-top:18px;font-size:11px;color:#999}@media print{.no-print{display:none}}'
@@ -890,11 +1000,11 @@ window.exportPDF = function(){
 // ── Property units catalogue (hotel / apartment / villa) ──────
 var UNITS = [
   // فندق
-  {id:'H101', type:'hotel',     name:'غرفة مفردة',          prop:'فندق ضيوف الرئيسي', cap:1,  price:280,  icon:'🛏', grad:'linear-gradient(135deg,#1B4D3D,#2d6a52)'},
+  {id:'H101', type:'hotel',     name:'غرفة مفردة',          prop:'فندق ضيوف الرئيسي', cap:1,  price:280,  icon:'🛏', grad:'linear-gradient(135deg,var(--brand-700),#2d6a52)'},
   {id:'H102', type:'hotel',     name:'غرفة مزدوجة',         prop:'فندق ضيوف الرئيسي', cap:2,  price:360,  icon:'🛏', grad:'linear-gradient(135deg,#0d47a1,#1976d2)'},
   {id:'H201', type:'hotel',     name:'جناح جونيور',         prop:'فندق ضيوف الرئيسي', cap:2,  price:520,  icon:'🛎', grad:'linear-gradient(135deg,#6a1b9a,#9c27b0)'},
   {id:'H202', type:'hotel',     name:'جناح عائلي',          prop:'فندق ضيوف الرئيسي', cap:4,  price:680,  icon:'🛎', grad:'linear-gradient(135deg,#00695c,#00897b)'},
-  {id:'H301', type:'hotel',     name:'الجناح الملكي',       prop:'فندق ضيوف الرئيسي', cap:2,  price:980,  icon:'👑', grad:'linear-gradient(135deg,#c9a85f,#e0c074)'},
+  {id:'H301', type:'hotel',     name:'الجناح الملكي',       prop:'فندق ضيوف الرئيسي', cap:2,  price:980,  icon:'👑', grad:'linear-gradient(135deg,var(--gold-500),#e0c074)'},
   // شقق مفروشة
   {id:'A1',   type:'apartment', name:'شقة غرفة وصالة',      prop:'شقق ضيوف المفروشة', cap:2,  price:320,  icon:'🏢', grad:'linear-gradient(135deg,#0277bd,#039be5)'},
   {id:'A2',   type:'apartment', name:'شقة غرفتين وصالة',    prop:'شقق ضيوف المفروشة', cap:4,  price:480,  icon:'🏢', grad:'linear-gradient(135deg,#00838f,#00acc1)'},
@@ -1045,11 +1155,31 @@ window.deConfirm = function(){
     pay: document.getElementById('de-pay').value, propType: DE.type,
     services: chosenSvcs
   };
-  saveDirectBooking(bk);
-  closeDirectBooking();
-  CURRENT_CH = 'all';
-  document.querySelectorAll('.bk-tab').forEach(function(b,i){ b.classList.toggle('on', i===0); });
-  toast('✓ حجز مباشر مؤكد: '+name+' · '+unit.name+' · '+toAr(total)+' ر.س · عمولة ٠٪');
+  // Persist to backend reservations API (cascade), fall back to local on failure
+  DH.fetch('/api/m17/reservations', {
+    method:'POST',
+    body: JSON.stringify({
+      guest_name:   name,
+      phone:        bk.phone,
+      room_id:      unit.id,
+      check_in:     bk.checkIn,
+      check_out:    document.getElementById('de-out').value,
+      total_amount: total,
+      source:       'direct'
+    })
+  }).then(function(res){
+    saveDirectBooking(bk);
+    closeDirectBooking();
+    CURRENT_CH = 'all';
+    document.querySelectorAll('.bk-tab').forEach(function(b,i){ b.classList.toggle('on', i===0); });
+    if(res){
+      toast('✓ حجز مباشر مؤكد: '+name+' · '+unit.name+' · '+toAr(total)+' ر.س · عمولة ٠٪');
+      if(window.loadBookingsFromAPI) loadBookingsFromAPI();
+      if(window.loadBookingStats) loadBookingStats();
+    } else {
+      toast('تم الحفظ محلياً (تعذّر الاتصال بالخادم)');
+    }
+  });
 };
 
 // ═══════════ Facilities catalogue (external bookable services) ═══════════
@@ -1171,7 +1301,7 @@ function applyEstablishmentProfile(){
   if(!bar){
     bar = document.createElement('div');
     bar.id = 'es-profile-bar';
-    bar.style.cssText = 'display:flex;flex-wrap:wrap;gap:14px;align-items:center;background:linear-gradient(135deg,#1B4D3D,#2d6a52);color:#fff;border-radius:12px;padding:12px 18px;margin-bottom:16px;font-size:13px';
+    bar.style.cssText = 'display:flex;flex-wrap:wrap;gap:14px;align-items:center;background:linear-gradient(135deg,var(--brand-700),#2d6a52);color:var(--white);border-radius:12px;padding:12px 18px;margin-bottom:16px;font-size:13px';
     var head = document.querySelector('.mod-head');
     if(head && head.parentNode) head.parentNode.insertBefore(bar, head.nextSibling);
   }
@@ -1179,7 +1309,7 @@ function applyEstablishmentProfile(){
   var loc = ES_PROFILE.loc || '';
   var locHtml = /^https?:\/\//i.test(loc) ? ('<a href="'+loc+'" target="_blank" style="color:#FFD600;text-decoration:none">📍 الموقع على الخريطة</a>') : (loc?('📍 '+loc):'');
   bar.innerHTML = (ES_PROFILE.name?'<span style="font-family:var(--font-ar-display);font-weight:700;font-size:15px">🏢 '+ES_PROFILE.name+'</span>':'')
-    + (ES_PROFILE.phone?'<a href="tel:'+ES_PROFILE.phone+'" style="color:#fff;text-decoration:none;background:rgba(255,255,255,.12);border-radius:8px;padding:5px 12px">📞 المسؤول: '+ES_PROFILE.phone+'</a>':'')
+    + (ES_PROFILE.phone?'<a href="tel:'+ES_PROFILE.phone+'" style="color:var(--white);text-decoration:none;background:rgba(255,255,255,.12);border-radius:8px;padding:5px 12px">📞 المسؤول: '+ES_PROFILE.phone+'</a>':'')
     + (locHtml?'<span style="background:rgba(255,255,255,.12);border-radius:8px;padding:5px 12px">'+locHtml+'</span>':'');
 }
 

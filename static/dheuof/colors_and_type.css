@@ -410,3 +410,69 @@ html[dir="ltr"] {
   color: var(--gold-400);
 }
 
+/* =========================================================================
+   Utility color classes — use these instead of hardcoded hex values
+   ========================================================================= */
+.bg-brand    { background: var(--brand-700); color: var(--paper); }
+.bg-brand-light { background: var(--brand-100); color: var(--brand-800); }
+.bg-gold     { background: var(--gold-500); color: var(--brand-900); }
+.bg-gold-light { background: var(--gold-100); color: var(--gold-800); }
+.bg-success  { background: var(--success-100); color: var(--success-700); }
+.bg-warning  { background: var(--warning-100); color: var(--warning-700); }
+.bg-danger   { background: var(--danger-100); color: var(--danger-700); }
+.bg-info     { background: var(--info-100); color: var(--info-700); }
+.bg-surface  { background: var(--white); }
+.bg-paper    { background: var(--paper); }
+.bg-sand     { background: var(--sand); }
+
+.text-brand  { color: var(--brand-700); }
+.text-gold   { color: var(--gold-700); }
+.text-muted  { color: var(--fg-3); }
+.text-success { color: var(--success-700); }
+.text-warning { color: var(--warning-700); }
+.text-danger  { color: var(--danger-700); }
+
+.border-brand { border-color: var(--brand-700); }
+.border-gold  { border-color: var(--gold-500); }
+
+/* Status indicators */
+.status-available  { background: var(--success-100); color: var(--success-700); }
+.status-occupied   { background: var(--danger-100); color: var(--danger-700); }
+.status-cleaning   { background: var(--warning-100); color: var(--warning-700); }
+.status-reserved   { background: var(--info-100); color: var(--info-700); }
+.status-pending    { background: var(--sand); color: var(--fg-2); }
+
+/* =========================================================================
+   Additional spacing utilities
+   ========================================================================= */
+.gap-1 { gap: var(--space-1); }
+.gap-2 { gap: var(--space-2); }
+.gap-3 { gap: var(--space-3); }
+.gap-4 { gap: var(--space-4); }
+.gap-6 { gap: var(--space-6); }
+.gap-8 { gap: var(--space-8); }
+
+.p-1 { padding: var(--space-1); }
+.p-2 { padding: var(--space-2); }
+.p-3 { padding: var(--space-3); }
+.p-4 { padding: var(--space-4); }
+.p-6 { padding: var(--space-6); }
+
+.mt-auto { margin-top: auto; }
+.mr-auto { margin-right: auto; }
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.w-full { width: 100%; }
+.h-full { height: 100%; }
+.overflow-hidden { overflow: hidden; }
+.rounded { border-radius: var(--radius-md); }
+.rounded-lg { border-radius: var(--radius-lg); }
+.rounded-pill { border-radius: var(--radius-pill); }
+.shadow-1 { box-shadow: var(--shadow-1); }
+.shadow-2 { box-shadow: var(--shadow-2); }
+.shadow-3 { box-shadow: var(--shadow-3); }
+.truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+

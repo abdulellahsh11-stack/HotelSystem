@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <title>ضيوف · المحاسبة العامة</title>
-<meta name="viewport" content="width=1440, initial-scale=1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
 <link rel="stylesheet" href="/static/dheuof/colors_and_type.css"/>
 <link rel="stylesheet" href="/static/dheuof/assets/animations.css"/>
 <link rel="stylesheet" href="/static/dheuof/shared/chrome.css"/>
@@ -24,7 +24,7 @@
 .ac-kpi .meta.dn{color:var(--danger-600)}
 
 /* ── ZATCA card — قريباً ─────────────────────────────────────── */
-.zatca-card{background:linear-gradient(135deg,#4B5563,#374151);color:var(--paper);border-radius:14px;padding:20px 26px;display:flex;align-items:center;gap:22px;position:relative;overflow:hidden}
+.zatca-card{background:linear-gradient(135deg,var(--ink-500),var(--ink-600));color:var(--paper);border-radius:14px;padding:20px 26px;display:flex;align-items:center;gap:22px;position:relative;overflow:hidden}
 .zatca-card::before{content:"";position:absolute;inset-block-start:-40px;inset-inline-end:-40px;width:180px;height:180px;border-radius:999px;background:radial-gradient(circle,rgba(255,255,255,.08),transparent 65%)}
 .zatca-card>*{position:relative}
 .zatca-card .ic{width:52px;height:52px;background:rgba(255,255,255,.15);border-radius:11px;display:grid;place-items:center;font-size:26px;flex-shrink:0}
@@ -45,7 +45,7 @@
 .int-item{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border-radius:10px;border:1.5px solid var(--hairline);cursor:pointer;transition:all 160ms;background:var(--paper-tint);position:relative;user-select:none}
 .int-item:hover{border-color:var(--brand-400);background:var(--brand-50);transform:translateY(-1px)}
 .int-item.linked{border-color:var(--success-500);background:#F0FDF4;box-shadow:0 0 0 3px rgba(34,197,94,.12)}
-.int-item.linked::after{content:"✓";position:absolute;top:5px;inset-inline-end:5px;width:15px;height:15px;background:var(--success-600);color:#fff;border-radius:999px;font-size:9px;font-weight:700;display:grid;place-items:center}
+.int-item.linked::after{content:"✓";position:absolute;top:5px;inset-inline-end:5px;width:15px;height:15px;background:var(--success-600);color:var(--white);border-radius:999px;font-size:9px;font-weight:700;display:grid;place-items:center}
 .int-item .ic{font-size:22px;line-height:1}
 .int-item .nm{font-size:10px;font-weight:600;color:var(--ink-800);text-align:center;line-height:1.3}
 .int-item .st{font-size:9px;color:var(--fg-3);font-family:var(--font-mono)}
@@ -145,7 +145,7 @@
 
 /* ── 4-tier color tiers ──────────────────────────────────────── */
 .tier-critical{color:#C0392B!important;font-weight:700}
-.tier-low{color:#D97706!important;font-weight:600}
+.tier-low{color:var(--warning-700)!important;font-weight:600}
 .tier-good{color:#22C55E!important;font-weight:600}
 .tier-excellent{color:#1B7A56!important;font-weight:700}
 /* ── Rev/Exp progress bar ────────────────────────────────────── */
@@ -468,27 +468,27 @@
             <tr style="border-bottom:1px solid var(--hairline)">
               <td style="padding:9px 12px 9px 24px;color:var(--ink-900)">رواتب الموظفين</td>
               <td style="padding:9px 12px;text-align:center;color:var(--fg-2);font-size:11px">٢٨ موظف</td>
-              <td style="padding:9px 12px;text-align:left;font-family:var(--font-mono);color:#DC2626">-42,000</td>
+              <td style="padding:9px 12px;text-align:left;font-family:var(--font-mono);color:var(--danger-700)">-42,000</td>
             </tr>
             <tr style="border-bottom:1px solid var(--hairline)">
               <td style="padding:9px 12px 9px 24px;color:var(--ink-900)">التشغيل والصيانة</td>
               <td style="padding:9px 12px;text-align:center;color:var(--fg-2);font-size:11px">كهرباء، ماء، صيانة</td>
-              <td style="padding:9px 12px;text-align:left;font-family:var(--font-mono);color:#DC2626">-18,500</td>
+              <td style="padding:9px 12px;text-align:left;font-family:var(--font-mono);color:var(--danger-700)">-18,500</td>
             </tr>
             <tr style="border-bottom:1px solid var(--hairline)">
               <td style="padding:9px 12px 9px 24px;color:var(--ink-900)">التسويق والقنوات</td>
               <td style="padding:9px 12px;text-align:center;color:var(--fg-2);font-size:11px">عمولات OTA، إعلانات</td>
-              <td style="padding:9px 12px;text-align:left;font-family:var(--font-mono);color:#DC2626">-12,200</td>
+              <td style="padding:9px 12px;text-align:left;font-family:var(--font-mono);color:var(--danger-700)">-12,200</td>
             </tr>
             <tr style="border-bottom:1px solid var(--hairline)">
               <td style="padding:9px 12px 9px 24px;color:var(--ink-900)">المواد والمستهلكات</td>
               <td style="padding:9px 12px;text-align:center;color:var(--fg-2);font-size:11px">أغذية، نظافة، مستلزمات</td>
-              <td style="padding:9px 12px;text-align:left;font-family:var(--font-mono);color:#DC2626">-8,800</td>
+              <td style="padding:9px 12px;text-align:left;font-family:var(--font-mono);color:var(--danger-700)">-8,800</td>
             </tr>
             <tr style="background:#FEF2F2;font-weight:700">
               <td style="padding:10px 12px;color:#991B1B">إجمالي المصروفات</td>
-              <td style="padding:10px 12px;text-align:center;color:#DC2626;font-size:12px">↓ -٣٪ عن الشهر الماضي</td>
-              <td style="padding:10px 12px;text-align:left;font-family:var(--font-mono);color:#DC2626;font-size:15px">-81,500</td>
+              <td style="padding:10px 12px;text-align:center;color:var(--danger-700);font-size:12px">↓ -٣٪ عن الشهر الماضي</td>
+              <td style="padding:10px 12px;text-align:left;font-family:var(--font-mono);color:var(--danger-700);font-size:15px">-81,500</td>
             </tr>
             <!-- Net -->
             <tr style="background:linear-gradient(to left,var(--brand-50),var(--paper));border-top:2px solid var(--brand-200)">
@@ -545,12 +545,12 @@
               <tr style="border-bottom:1px solid var(--hairline);background:#FFF7ED">
                 <td style="padding:10px 12px;font-weight:600">إجمالي المصروفات</td>
                 <td style="padding:10px 12px;text-align:center;font-family:var(--font-mono)">78,000</td>
-                <td style="padding:10px 12px;text-align:center;font-family:var(--font-mono);color:#D97706;font-weight:600">81,500</td>
-                <td style="padding:10px 12px;text-align:center;color:#DC2626;font-weight:600">+3,500 ⚠</td>
+                <td style="padding:10px 12px;text-align:center;font-family:var(--font-mono);color:var(--warning-700);font-weight:600">81,500</td>
+                <td style="padding:10px 12px;text-align:center;color:var(--danger-700);font-weight:600">+3,500 ⚠</td>
                 <td style="padding:10px 12px;text-align:center">
                   <div style="display:flex;align-items:center;gap:6px">
-                    <div style="flex:1;height:6px;background:var(--hairline);border-radius:3px"><div style="width:100%;height:100%;background:#D97706;border-radius:3px"></div></div>
-                    <span style="font-size:11px;color:#D97706;font-weight:600">104%</span>
+                    <div style="flex:1;height:6px;background:var(--hairline);border-radius:3px"><div style="width:100%;height:100%;background:var(--warning-700);border-radius:3px"></div></div>
+                    <span style="font-size:11px;color:var(--warning-700);font-weight:600">104%</span>
                   </div>
                 </td>
               </tr>
@@ -594,7 +594,7 @@
             </div>
             <div style="text-align:center;padding:12px 6px;border:1px solid var(--hairline);border-radius:8px">
               <div style="font-size:10px;color:var(--fg-3);margin-bottom:4px">الاثنين</div>
-              <div style="font-size:13px;font-weight:700;color:#DC2626;font-family:var(--font-en)">-3,800</div>
+              <div style="font-size:13px;font-weight:700;color:var(--danger-700);font-family:var(--font-en)">-3,800</div>
               <div style="font-size:9px;color:var(--fg-3);margin-top:2px">مصروفات</div>
             </div>
             <div style="text-align:center;padding:12px 6px;border:1px solid var(--hairline);border-radius:8px">
@@ -609,12 +609,12 @@
             </div>
             <div style="text-align:center;padding:12px 6px;border:1px solid var(--hairline);border-radius:8px">
               <div style="font-size:10px;color:var(--fg-3);margin-bottom:4px">الخميس</div>
-              <div style="font-size:13px;font-weight:700;color:#DC2626;font-family:var(--font-en)">-12,400</div>
+              <div style="font-size:13px;font-weight:700;color:var(--danger-700);font-family:var(--font-en)">-12,400</div>
               <div style="font-size:9px;color:var(--fg-3);margin-top:2px">رواتب</div>
             </div>
             <div style="text-align:center;padding:12px 6px;border:1.5px solid var(--brand-300,#2D6A4F);border-radius:8px;background:var(--brand-700)">
               <div style="font-size:10px;color:rgba(255,255,255,.7);margin-bottom:4px">اليوم</div>
-              <div style="font-size:13px;font-weight:700;color:var(--gold-400,#C9A85F);font-family:var(--font-en)">+11,840</div>
+              <div style="font-size:13px;font-weight:700;color:var(--gold-400,var(--gold-500));font-family:var(--font-en)">+11,840</div>
               <div style="font-size:9px;color:rgba(255,255,255,.7);margin-top:2px">ر.س</div>
             </div>
           </div>
@@ -626,7 +626,7 @@
             </div>
             <div style="padding:12px;background:#FEF2F2;border-radius:8px;text-align:center">
               <div style="font-size:11px;color:var(--fg-3);margin-bottom:4px">إجمالي المصروفات (أسبوع)</div>
-              <div style="font-size:18px;font-weight:700;color:#DC2626;font-family:var(--font-en)">-16,200</div>
+              <div style="font-size:18px;font-weight:700;color:var(--danger-700);font-family:var(--font-en)">-16,200</div>
               <div style="font-size:10px;color:var(--fg-3)">ر.س</div>
             </div>
             <div style="padding:12px;background:var(--brand-50);border-radius:8px;text-align:center;border:1.5px solid var(--brand-200)">
@@ -1127,17 +1127,17 @@ window.onMonthChange = function() {
 function printPDF(title, bodyHTML) {
   var w = window.open('', '_blank');
   if (!w) { toast('تعذّر فتح نافذة الطباعة — تأكد من السماح بالنوافذ المنبثقة', true); return; }
-  var css = 'body{font-family:"Segoe UI",Arial,sans-serif;background:#fff;color:#111;direction:rtl;padding:32px 40px;font-size:13px;line-height:1.6}'
-    + 'h1{font-size:20px;color:#1B4D3D;margin:0 0 4px}'
-    + 'h2{font-size:15px;color:#1B4D3D;margin:24px 0 10px;border-bottom:2px solid #C9A85F;padding-bottom:4px}'
+  var css = 'body{font-family:"Segoe UI",Arial,sans-serif;background:var(--white);color:#111;direction:rtl;padding:32px 40px;font-size:13px;line-height:1.6}'
+    + 'h1{font-size:20px;color:var(--brand-700);margin:0 0 4px}'
+    + 'h2{font-size:15px;color:var(--brand-700);margin:24px 0 10px;border-bottom:2px solid var(--gold-500);padding-bottom:4px}'
     + '.meta{font-size:11px;color:#888;margin-bottom:24px}'
     + 'table{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:12px}'
-    + 'th{background:#1B4D3D;color:#fff;padding:8px 12px;text-align:right;font-weight:600}'
+    + 'th{background:var(--brand-700);color:var(--white);padding:8px 12px;text-align:right;font-weight:600}'
     + 'td{padding:7px 12px;border-bottom:1px solid #eee;text-align:right}'
     + 'tr:nth-child(even) td{background:#f7faf8}'
     + '.cr{color:#1B7A56;font-weight:600}.dr{color:#C0392B;font-weight:600}'
     + '.gold{color:#B8860B;font-weight:700}'
-    + '.tier-excellent{color:#1B7A56;font-weight:700}.tier-good{color:#22C55E;font-weight:600}.tier-low{color:#D97706;font-weight:600}.tier-critical{color:#C0392B;font-weight:700}'
+    + '.tier-excellent{color:#1B7A56;font-weight:700}.tier-good{color:#22C55E;font-weight:600}.tier-low{color:var(--warning-700);font-weight:600}.tier-critical{color:#C0392B;font-weight:700}'
     + '.rev-bar{background:#e8f5ee;padding:4px 8px;border-radius:4px;font-size:11px;color:#1B7A56;display:inline-block;margin-bottom:8px}'
     + '.sec td{background:#f0f4f2!important;font-weight:700;font-size:13px}'
     + '.tot td{background:#e4ede7!important;font-weight:700}'
@@ -1171,7 +1171,7 @@ window.exportPDF = function() {
   function _pA(n){return totE>0?Math.round(n/totE*100):0;}
   var netColor = net>=0?'#1B7A56':'#C0392B';
   var statsHtml = '<div style="background:linear-gradient(135deg,#f0f7f4,#f8faf9);border:1px solid #c6ddd7;border-radius:12px;padding:18px 20px;margin-bottom:20px">'
-    +'<div style="font-size:14px;font-weight:700;color:#1B4D3D;margin-bottom:14px">📊 ملخص المحاسبة · الإجمالي: '+totE+' قيد</div>'
+    +'<div style="font-size:14px;font-weight:700;color:var(--brand-700);margin-bottom:14px">📊 ملخص المحاسبة · الإجمالي: '+totE+' قيد</div>'
     +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">'
     +'<div style="flex:1;min-width:90px;text-align:center;background:#f0f0f0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#333">'+totE+'</div><div style="font-size:10px;color:#666;margin-top:4px">إجمالي القيود</div></div>'
     +'<div style="flex:1;min-width:90px;text-align:center;background:#D1FAE5;border-radius:8px;padding:12px 8px"><div style="font-size:22px;font-weight:700;color:#1B7A56">'+rev.toLocaleString('ar-EG')+'</div><div style="font-size:11px;font-weight:700;color:#1B7A56">'+cntRev+' قيد · '+_pA(cntRev)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">إيرادات ⭐</div></div>'
@@ -1304,6 +1304,167 @@ function toast(msg,isErr){
 }
 
 /* ════════════════════════════════════════════════
+   API — Revenue Summary
+════════════════════════════════════════════════ */
+function loadRevenueSummary(){
+  var kpiRevEl  = document.getElementById('kpi-rev');
+  var kpiExpEl  = document.getElementById('kpi-exp');
+  var kpiNetEl  = document.getElementById('kpi-net');
+  /* show loading state */
+  ['kpi-rev','kpi-exp','kpi-net'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el){ el.childNodes[0].textContent = '…'; }
+  });
+  fetch('/api/m06acc/revenue/summary')
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      /* API returns {today, this_week, this_month, last_month} */
+      function setKpi(id, val){
+        var el = document.getElementById(id);
+        if(!el) return;
+        el.childNodes[0].textContent = typeof val === 'number' ? val.toLocaleString('ar-EG') : '—';
+      }
+      setKpi('kpi-rev', d.today);
+      /* Update meta labels with week/month context */
+      var revMeta = document.getElementById('kpi-rev-m');
+      if(revMeta && d.this_week != null){
+        revMeta.textContent = 'الأسبوع: ' + Number(d.this_week).toLocaleString('ar-EG') + ' ر.س';
+      }
+      var netMeta = document.getElementById('kpi-net-m');
+      if(netMeta && d.this_month != null){
+        netMeta.textContent = 'الشهر: ' + Number(d.this_month).toLocaleString('ar-EG') + ' ر.س';
+      }
+      /* balance badge */
+      var badge = document.getElementById('acc-balance-badge');
+      if(badge && d.this_month != null){
+        badge.textContent = 'الرصيد الحالي: ' + Number(d.this_month).toLocaleString('ar-EG') + ' ر.س';
+      }
+    })
+    .catch(function(err){
+      console.warn('loadRevenueSummary:', err);
+      toast('تعذّر تحميل ملخص الإيرادات', true);
+    });
+}
+
+/* ════════════════════════════════════════════════
+   API — Invoices
+════════════════════════════════════════════════ */
+function loadInvoices(){
+  var tbody = document.getElementById('ac-tbody');
+  if(!tbody) return;
+  tbody.innerHTML = '<div style="padding:32px;text-align:center;color:var(--fg-3);font-size:13px">جارٍ تحميل الفواتير…</div>';
+  fetch('/api/m06acc/invoices')
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if(!res.success || !res.data || !res.data.length){
+        tbody.innerHTML = '<div style="padding:36px;text-align:center;color:var(--fg-3);font-size:13px">لا توجد فواتير مسجّلة</div>';
+        return;
+      }
+      /* Map invoices to journal-style MANUAL entries so existing renderJournal() works */
+      res.data.forEach(function(inv){
+        /* avoid duplicates on re-load */
+        var exists = MANUAL.some(function(e){ return e.apiId === inv.id; });
+        if(exists) return;
+        var amt = parseFloat(inv.total_room) || 0;
+        MANUAL.unshift({
+          id: manualNextId++,
+          apiId: inv.id,
+          type: 'cr',
+          desc: 'فاتورة #' + inv.booking_number + ' — ' + (inv.guest_name || ''),
+          acct: 'إيراد الغرف',
+          src: 'الضيوف',
+          amt: amt,
+          vat: false,
+          time: inv.check_in || '--:--',
+          note: 'غرفة ' + (inv.room_number || '—') + ' · حتى ' + (inv.check_out || '—'),
+          link: inv.booking_number,
+          status: inv.status,
+        });
+      });
+      renderJournal();
+      updateKPIs();
+    })
+    .catch(function(err){
+      console.warn('loadInvoices:', err);
+      tbody.innerHTML = '<div style="padding:36px;text-align:center;color:var(--danger-600);font-size:13px">تعذّر تحميل الفواتير</div>';
+      toast('تعذّر تحميل الفواتير', true);
+    });
+}
+
+/* ════════════════════════════════════════════════
+   API — Monthly Chart
+════════════════════════════════════════════════ */
+function loadMonthlyChart(){
+  fetch('/api/m06acc/revenue/by-month')
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      if(!Array.isArray(data) || !data.length) return;
+      /* Use last 6 months from the API, falling back to static data for remainder */
+      var apiMonths = data.slice(-6);
+      var mx = Math.max.apply(null, apiMonths.map(function(m){ return parseFloat(m.revenue) || 0; })) || 1;
+      var w = document.getElementById('bars-wrap');
+      if(!w) return;
+      w.innerHTML = apiMonths.map(function(m){
+        var rev = parseFloat(m.revenue) || 0;
+        var rh  = Math.max(Math.round(rev / mx * 88), 2);
+        /* bookings_count as a secondary bar proxy — scale same axis */
+        var bk  = parseFloat(m.bookings_count) || 0;
+        var bh  = bk > 0 ? Math.max(Math.round((bk / mx) * 88 * 0.5), 2) : 2;
+        var label = m.month ? String(m.month).slice(5, 7) + '/' + String(m.month).slice(0, 4) : '—';
+        return '<div class="bar-col">'
+          + '<div style="display:flex;gap:3px;align-items:flex-end;height:88px">'
+          + '<div class="bar rev" style="height:' + rh + 'px;width:48%"></div>'
+          + '<div class="bar exp" style="height:' + bh + 'px;width:48%;background:var(--brand-400)"></div>'
+          + '</div>'
+          + '<div class="mon">' + label + '</div>'
+          + '</div>';
+      }).join('');
+    })
+    .catch(function(err){
+      console.warn('loadMonthlyChart:', err);
+      /* silently keep the static chart rendered by renderChart() */
+    });
+}
+
+/* ════════════════════════════════════════════════
+   API — Outstanding / Overdue
+════════════════════════════════════════════════ */
+function loadOutstanding(){
+  fetch('/api/m06acc/outstanding')
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      var list = Array.isArray(res) ? res : (res.data || []);
+      if(!list.length) return;
+      /* Inject overdue bookings as debit/warning entries */
+      list.forEach(function(inv){
+        var exists = MANUAL.some(function(e){ return e.apiId === 'od-' + inv.id; });
+        if(exists) return;
+        var amt = parseFloat(inv.total_room || inv.amount) || 0;
+        MANUAL.unshift({
+          id: manualNextId++,
+          apiId: 'od-' + inv.id,
+          type: 'dr',
+          desc: 'مستحق متأخر — ' + (inv.guest_name || '') + ' #' + (inv.booking_number || inv.id),
+          acct: 'مصاريف متنوعة',
+          src: 'الضيوف',
+          amt: amt,
+          vat: false,
+          time: inv.check_out || '--:--',
+          note: 'متأخر الدفع',
+          link: inv.booking_number || '',
+        });
+      });
+      renderJournal();
+      updateKPIs();
+      toast('تحميل ' + list.length + ' فاتورة متأخرة ✓');
+    })
+    .catch(function(err){
+      console.warn('loadOutstanding:', err);
+      /* non-critical — no toast needed */
+    });
+}
+
+/* ════════════════════════════════════════════════
    INIT
 ════════════════════════════════════════════════ */
 
@@ -1327,6 +1488,12 @@ window.addEventListener('storage', function(ev) {
 
 renderJournal();
 updateKPIs();
+
+/* Load live API data after initial static render */
+loadRevenueSummary();
+loadInvoices();
+loadMonthlyChart();
+loadOutstanding();
 
 })();
 </script>

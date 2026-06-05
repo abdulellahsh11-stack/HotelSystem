@@ -4,6 +4,7 @@
 db/connection.py — Connection Pool لـ PostgreSQL مع JSON Fallback
 Singleton — pool واحد للتطبيق كله
 """
+import asyncio
 import os
 import json
 import threading
@@ -65,7 +66,12 @@ class DatabasePool:
                     min_conn,
                     max_conn,
                     database_url,
-                    options="-c timezone=Asia/Riyadh",  # توقيت السعودية
+                    options="-c timezone=Asia/Riyadh -c statement_timeout=30000",
+                    connect_timeout=10,
+                    keepalives=1,
+                    keepalives_idle=30,
+                    keepalives_interval=10,
+                    keepalives_count=3,
                 )
                 log.info(f"✅ PostgreSQL Pool جاهز — {min_conn}..{max_conn} اتصال")
             except Exception as e:
@@ -135,6 +141,31 @@ class DatabasePool:
         except Exception as e:
             log.error(f"خطأ في query: {e}\nSQL: {query[:200]}")
             raise
+
+    async def async_execute(
+        self,
+        query: str,
+        params: tuple = (),
+        fetch: str = None,
+    ) -> Any:
+        """Non-blocking wrapper: runs db.execute in threadpool so asyncio event loop
+        is not blocked while psycopg2 waits for the database."""
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(None, self.execute, query, params, fetch)
+
+    @contextmanager
+    def transaction(self):
+        """Runs multiple execute() calls in a single atomic transaction.
+
+        Usage:
+            with db.transaction() as cur:
+                cur.execute(sql1, params1)
+                cur.execute(sql2, params2)
+        All statements commit together; any exception rolls back all of them.
+        """
+        with self._get_conn() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                yield cur
 
     def execute_many(self, query: str, params_list: list) -> int:
         """تنفيذ batch insert/update بكفاءة"""

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <title>ضيوف · مستودع الصيانة</title>
-<meta name="viewport" content="width=1440, initial-scale=1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
 <link rel="stylesheet" href="/static/dheuof/colors_and_type.css"/>
 <link rel="stylesheet" href="/static/dheuof/assets/animations.css"/>
 <link rel="stylesheet" href="/static/dheuof/shared/chrome.css"/>
@@ -16,8 +16,8 @@
 .wh-tk-row.is-head{background:var(--paper-tint);font-size:11px;color:var(--fg-3);font-weight:600;border-top:none;letter-spacing:.04em}
 .wh-tk-row .id{font-family:var(--font-mono);font-size:11px;color:var(--fg-3)}
 .wh-tk-row .prio{width:36px;height:36px;border-radius:8px;display:grid;place-items:center;font-size:16px}
-.wh-tk-row .prio.urgent{background:#F1D8CF;color:var(--danger-700)}
-.wh-tk-row .prio.high{background:#F6E7C2;color:var(--warning-700)}
+.wh-tk-row .prio.urgent{background:var(--danger-100);color:var(--danger-700)}
+.wh-tk-row .prio.high{background:var(--warning-100);color:var(--warning-700)}
 .wh-tk-row .prio.norm{background:var(--sand);color:var(--fg-2)}
 .wh-tk-row .ttl{font-weight:500;color:var(--ink-900)}
 .wh-tk-row .sub{font-size:11px;color:var(--fg-3);margin-top:2px}
@@ -88,11 +88,11 @@
 .ic-btn.del:hover{color:var(--danger-600);border-color:var(--danger-200);background:var(--danger-50)}
 
 /* ── Low-stock alert bar ───────────────────────────────────────────── */
-.low-bar{background:linear-gradient(135deg,#C99428,#9A6D14);color:var(--paper);border-radius:12px;padding:16px 22px;display:flex;align-items:center;gap:18px}
+.low-bar{background:linear-gradient(135deg,var(--warning-500),var(--warning-700));color:var(--paper);border-radius:12px;padding:16px 22px;display:flex;align-items:center;gap:18px}
 .low-bar .ic{width:42px;height:42px;background:rgba(255,255,255,.15);border-radius:9px;display:grid;place-items:center;font-size:20px;flex-shrink:0}
 .low-bar .txt .ar{font-family:var(--font-ar-display);font-size:16px;font-weight:600}
 .low-bar .txt .sub{font-size:11px;color:rgba(255,255,255,.8);margin-top:2px}
-.low-bar .act{margin-inline-start:auto;background:var(--paper);color:#9A6D14;border:none;padding:8px 16px;border-radius:6px;font-family:var(--font-ar);font-weight:600;font-size:12px;cursor:pointer;flex-shrink:0}
+.low-bar .act{margin-inline-start:auto;background:var(--paper);color:var(--warning-700);border:none;padding:8px 16px;border-radius:6px;font-family:var(--font-ar);font-weight:600;font-size:12px;cursor:pointer;flex-shrink:0}
 
 /* ── Modal ─────────────────────────────────────────────────────────── */
 .dh-modal-bd{position:fixed;inset:0;background:rgba(14,42,34,.6);backdrop-filter:blur(4px);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px}
@@ -149,7 +149,7 @@
           <p class="sub">أدوات الفنيين، قطع الغيار، الإنارة، الأسلاك، الأصباغ — متكامل مع تطبيق الفنيين وتذاكر الاستقبال.</p>
         </div>
         <div class="actions">
-          <button class="btn-sec" id="btn-supply">📦 طلب توريد</button>
+          <button class="btn-sec" id="btn-supply" onclick="showAddSupplier()">📦 مورد جديد</button>
           <button class="btn-green" onclick="showAddItem()">+ صنف جديد</button>
         </div>
       </div>
@@ -307,12 +307,69 @@
         <div class="form-field"><label>وحدة القياس</label>
           <select id="f-unit"><option>قطعة</option><option>متر</option><option>كيلو</option><option>دلو</option><option>علبة</option><option>كرتون</option><option>لفة</option><option>أنبوب</option><option>مجموعة</option></select>
         </div>
-        <div class="form-field"><label>رمز SKU</label><input id="f-sku" placeholder="LT-1812" dir="ltr"/></div>
+        <div class="form-field"><label>سعر الوحدة (ر.س)</label><input id="f-price" type="number" min="0" value="0" step="0.01" dir="ltr"/></div>
       </div>
     </div>
     <div class="modal-foot">
-      <button class="btn-green" onclick="saveItem()">+ إضافة للمستودع</button>
+      <button class="btn-green" id="save-item-btn" onclick="saveItem()">+ إضافة للمستودع</button>
       <button class="close-btn" onclick="closeAddModal()">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ADD SUPPLIER MODAL ════════════════════════════════════════════ -->
+<div id="supplier-modal" style="display:none" class="dh-modal-bd" onclick="if(event.target===this)closeSupplierModal()">
+  <div class="dh-modal" dir="rtl">
+    <div class="modal-head">
+      <div class="ttl">+ مورد جديد</div>
+      <button class="close-btn" onclick="closeSupplierModal()">✕ إغلاق</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-field form-full"><label>اسم المورد (عربي) *</label><input id="s-name-ar" placeholder="مثال: شركة المواد الكهربائية"/></div>
+        <div class="form-field form-full"><label>اسم المورد (إنجليزي)</label><input id="s-name-en" placeholder="Electrical Supplies Co." dir="ltr"/></div>
+        <div class="form-field"><label>رقم الهاتف</label><input id="s-phone" placeholder="05xxxxxxxx" dir="ltr"/></div>
+        <div class="form-field"><label>البريد الإلكتروني</label><input id="s-email" type="email" placeholder="info@example.com" dir="ltr"/></div>
+        <div class="form-field"><label>الرقم الضريبي</label><input id="s-vat" placeholder="300xxxxxxxxxx" dir="ltr"/></div>
+        <div class="form-field"><label>شروط الدفع (أيام)</label><input id="s-terms" type="number" min="0" value="30" dir="ltr"/></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-green" id="save-supplier-btn" onclick="saveSupplier()">+ إضافة المورد</button>
+      <button class="close-btn" onclick="closeSupplierModal()">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ STOCK ADJUST MODAL ════════════════════════════════════════════ -->
+<div id="adjust-modal" style="display:none" class="dh-modal-bd" onclick="if(event.target===this)closeAdjustModal()">
+  <div class="dh-modal" dir="rtl" style="width:min(420px,95vw)">
+    <div class="modal-head">
+      <div class="ttl" id="adjust-modal-title">تعديل الكمية</div>
+      <button class="close-btn" onclick="closeAdjustModal()">✕ إغلاق</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-field form-full">
+          <label>نوع الحركة</label>
+          <select id="adj-type">
+            <option value="in">إضافة للمخزون (وارد)</option>
+            <option value="out">سحب من المخزون (صادر)</option>
+          </select>
+        </div>
+        <div class="form-field form-full">
+          <label>الكمية *</label>
+          <input id="adj-qty" type="number" min="1" value="1" dir="ltr"/>
+        </div>
+        <div class="form-field form-full">
+          <label>ملاحظات</label>
+          <input id="adj-notes" placeholder="سبب التعديل أو رقم أمر العمل..."/>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-green" id="save-adjust-btn" onclick="saveAdjust()">تأكيد التعديل</button>
+      <button class="close-btn" onclick="closeAdjustModal()">إلغاء</button>
     </div>
   </div>
 </div>
@@ -335,19 +392,95 @@ setTimeout(function(){
 'use strict';
 
 /* ════════════════════════════════════════
-   DATA — 20 maintenance / warehouse items
+   STATE
 ════════════════════════════════════════ */
-var ITEMS = [];
+var ITEMS     = [];
+var SUPPLIERS = [];
+var POS       = [];
+var activeCat  = 'all';
+var activeQ    = '';
+var editingId  = null;
+var adjustingId = null;
 
-var itemCounter = 1;
-var activeCat   = 'all';
-var activeQ     = '';
-var editingId   = null;
+/* ════════════════════════════════════════
+   MAP BACKEND ROW → LOCAL ITEM
+════════════════════════════════════════ */
+function mapItem(r){
+  return {
+    id:       r.id,
+    name:     r.name || '',
+    cat:      r.warehouse_type || 'عام',
+    brand:    '—',
+    color:    '—',
+    colorHex: '#F5F5F5',
+    spec:     '',
+    icon:     '📦',
+    qty:      parseFloat(r.quantity)       || 0,
+    par:      parseFloat(r.reorder_level)  || 0,
+    unit:     r.unit || 'قطعة',
+    sku:      r.id ? ('ID-' + r.id) : '',
+    cost:     parseFloat(r.price_per_unit) || 0,
+  };
+}
+
+/* ════════════════════════════════════════
+   LOAD WAREHOUSE DATA (parallel fetch)
+════════════════════════════════════════ */
+async function loadWarehouseData(){
+  var tbody = document.getElementById('inv-tbody');
+  if(tbody) tbody.innerHTML = '<div style="padding:32px;text-align:center;color:var(--fg-3);font-family:var(--font-ar)">جارٍ تحميل البيانات…</div>';
+
+  try {
+    var results = await Promise.all([
+      fetch('/api/m13/items').then(function(r){ return r.json(); }),
+      fetch('/api/m13/suppliers').then(function(r){ return r.json(); }),
+      fetch('/api/m13/purchase-orders').then(function(r){ return r.json(); }),
+      fetch('/api/m13/low-stock').then(function(r){ return r.json(); }),
+    ]);
+
+    var itemsRes = results[0];
+    var suppRes  = results[1];
+    var posRes   = results[2];
+    var lowRes   = results[3];
+
+    ITEMS     = (itemsRes.success && itemsRes.data) ? itemsRes.data.map(mapItem) : [];
+    SUPPLIERS = (suppRes.success  && suppRes.data)  ? suppRes.data               : [];
+    POS       = (posRes.success   && posRes.data)   ? posRes.data                : [];
+    var lowItems = (lowRes.success && lowRes.data)  ? lowRes.data.map(mapItem)   : [];
+
+    renderInv();
+    updateKPIs();
+    renderLowParts(lowItems);
+  } catch(err){
+    console.error('loadWarehouseData error:', err);
+    toast('تعذّر تحميل بيانات المستودع — تحقق من الاتصال', true);
+    if(tbody) tbody.innerHTML = '<div style="padding:32px;text-align:center;color:var(--danger-600);font-family:var(--font-ar)">فشل تحميل البيانات · حاول تحديث الصفحة</div>';
+  }
+}
+
+/* ════════════════════════════════════════
+   RENDER LOW-STOCK RIBBON
+════════════════════════════════════════ */
+function renderLowParts(lowItems){
+  var el = document.getElementById('wh-low-parts-body');
+  if(!el) return;
+  if(!lowItems.length){
+    el.innerHTML = '<div style="padding:20px;color:var(--fg-3);font-size:13px;font-family:var(--font-ar)">لا توجد أصناف تحت الحد — المستودع في حالة جيدة ✓</div>';
+    return;
+  }
+  el.innerHTML = lowItems.slice(0,4).map(function(it){
+    return '<div class="part">'
+      +'<div class="row1"><div class="ic">'+it.icon+'</div><div><div class="nm">'+it.name+'</div><div class="sku">'+it.unit+'</div></div></div>'
+      +'<div class="qty-row"><span class="qty">'+it.qty+'</span><span class="par">/ '+it.par+'</span></div>'
+      +'</div>';
+  }).join('');
+}
 
 /* ════════════════════════════════════════
    STATUS HELPERS
 ════════════════════════════════════════ */
 function statusOf(item){
+  if(item.par <= 0) return 'excellent';
   if(item.qty<=0||item.qty<item.par*.25) return 'bad';
   if(item.qty<item.par*.5)  return 'warn';
   if(item.qty<item.par*.8)  return 'ok';
@@ -360,10 +493,13 @@ function statusLabel(item){
   if(s==='ok')        return '<span class="stat-pill stat-ok">🟢 جيدة</span>';
   return '<span class="stat-pill stat-excellent">⭐ ممتاز</span>';
 }
-function pct(item){ return Math.min(100, Math.max(3, Math.round(item.qty / item.par * 100))); }
+function pct(item){
+  if(item.par <= 0) return 100;
+  return Math.min(100, Math.max(3, Math.round(item.qty / item.par * 100)));
+}
 function fillColor(item){
   var s=statusOf(item);
-  return s==='bad'?'#C0392B': s==='warn'?'#D97706': s==='ok'?'#22C55E':'#1B7A56';
+  return s==='bad'?'#C0392B': s==='warn'?'var(--warning-700)': s==='ok'?'#22C55E':'#1B7A56';
 }
 
 /* ════════════════════════════════════════
@@ -398,7 +534,7 @@ function renderInv(){
       +'<div class="inv-spec">'+it.spec+'</div>'
       +'<div>'
         +'<div class="qty-cell">'
-          +'<button class="qty-btn" onclick="adjustQty('+it.id+',-1)">−</button>'
+          +'<button class="qty-btn" onclick="openAdjust('+it.id+',-1)">−</button>'
           +'<div>'
             +'<div style="display:flex;align-items:baseline;gap:5px">'
               +'<span class="qty-val" id="qv-'+it.id+'">'+it.qty+'</span>'
@@ -406,13 +542,13 @@ function renderInv(){
             +'</div>'
             +'<div class="qty-bar"><div class="qty-fill" id="qf-'+it.id+'" style="width:'+p+'%;background:'+fc+'"></div></div>'
           +'</div>'
-          +'<button class="qty-btn" onclick="adjustQty('+it.id+',+1)">+</button>'
+          +'<button class="qty-btn" onclick="openAdjust('+it.id+',+1)">+</button>'
         +'</div>'
       +'</div>'
       +'<div id="qs-'+it.id+'">'+statusLabel(it)+'</div>'
       +'<div class="acts-cell">'
+        +'<button class="ic-btn" onclick="openAdjust('+it.id+',0)" title="تعديل الكمية">⇅</button>'
         +'<button class="ic-btn" onclick="editItem('+it.id+')" title="تعديل">✏</button>'
-        +'<button class="ic-btn del" onclick="deleteItem('+it.id+')" title="حذف">🗑</button>'
       +'</div>'
       +'</div>';
   }).join('');
@@ -492,32 +628,78 @@ window.filterByLow = function(){
 };
 
 /* ════════════════════════════════════════
-   QUANTITY ADJUST (in-place DOM update)
+   STOCK ADJUSTMENT — API
 ════════════════════════════════════════ */
-window.adjustQty = function(id, delta){
+window.openAdjust = function(id, hint){
+  adjustingId = id;
   var it = ITEMS.find(function(x){ return x.id===id; });
-  if(!it) return;
-  it.qty = Math.max(0, it.qty + delta);
-  var qv = document.getElementById('qv-'+id);
-  var qf = document.getElementById('qf-'+id);
-  var qs = document.getElementById('qs-'+id);
-  if(qv) qv.textContent = it.qty;
-  if(qf){ var p=pct(it); qf.style.width=p+'%'; qf.style.background=fillColor(it); }
-  if(qs) qs.innerHTML = statusLabel(it);
-  updateKPIs();
+  var title = document.getElementById('adjust-modal-title');
+  if(title) title.textContent = 'تعديل الكمية — '+(it ? it.name : '');
+  var typeEl = document.getElementById('adj-type');
+  if(typeEl) typeEl.value = (hint < 0) ? 'out' : 'in';
+  var qtyEl = document.getElementById('adj-qty');
+  if(qtyEl) qtyEl.value = '1';
+  var notesEl = document.getElementById('adj-notes');
+  if(notesEl) notesEl.value = '';
+  document.getElementById('adjust-modal').style.display = 'flex';
+};
+
+window.closeAdjustModal = function(){
+  document.getElementById('adjust-modal').style.display = 'none';
+  adjustingId = null;
+};
+
+window.saveAdjust = async function(){
+  if(!adjustingId){ toast('لم يتم تحديد الصنف', true); return; }
+  var qty   = parseFloat((document.getElementById('adj-qty')||{value:'1'}).value) || 1;
+  var type  = (document.getElementById('adj-type')||{value:'in'}).value;
+  var notes = (document.getElementById('adj-notes')||{value:''}).value.trim();
+
+  var btn = document.getElementById('save-adjust-btn');
+  if(btn){ btn.disabled = true; btn.textContent = '…'; }
+
+  try {
+    var res = await fetch('/api/m13/items/'+adjustingId+'/adjust', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ quantity: qty, type: type, notes: notes }),
+    });
+    var json = await res.json();
+    if(!res.ok || !json.success) throw new Error(json.message || res.statusText);
+
+    var it = ITEMS.find(function(x){ return x.id===adjustingId; });
+    if(it){
+      it.qty = Math.max(0, it.qty + (type === 'in' ? qty : -qty));
+      var qv = document.getElementById('qv-'+it.id);
+      var qf = document.getElementById('qf-'+it.id);
+      var qs = document.getElementById('qs-'+it.id);
+      if(qv) qv.textContent = it.qty;
+      if(qf){ var p=pct(it); qf.style.width=p+'%'; qf.style.background=fillColor(it); }
+      if(qs) qs.innerHTML = statusLabel(it);
+      updateKPIs();
+    }
+    closeAdjustModal();
+    toast((type==='in'?'تمت إضافة ':'تم سحب ')+qty+' '+(it?it.unit:'وحدة')+' ✓');
+  } catch(err){
+    toast('فشل تعديل الكمية: '+err.message, true);
+  } finally {
+    if(btn){ btn.disabled = false; btn.textContent = 'تأكيد التعديل'; }
+  }
 };
 
 /* ════════════════════════════════════════
-   ADD / EDIT / DELETE
+   ADD / EDIT ITEM — API
 ════════════════════════════════════════ */
 window.showAddItem = function(){
   editingId = null;
   document.getElementById('modal-title').textContent = '+ إضافة صنف جديد';
-  ['f-name','f-brand','f-color','f-spec','f-icon','f-sku'].forEach(function(id){
-    var e=document.getElementById(id); if(e) e.value='';
+  ['f-name','f-brand','f-color','f-spec','f-icon'].forEach(function(fid){
+    var e=document.getElementById(fid); if(e) e.value='';
   });
-  var fq=document.getElementById('f-qty'); if(fq) fq.value='0';
-  var fp=document.getElementById('f-par'); if(fp) fp.value='20';
+  var fq=document.getElementById('f-qty');   if(fq) fq.value='0';
+  var fp=document.getElementById('f-par');   if(fp) fp.value='20';
+  var fpr=document.getElementById('f-price');if(fpr) fpr.value='0';
+  var btn=document.getElementById('save-item-btn'); if(btn) btn.textContent='+ إضافة للمستودع';
   document.getElementById('add-modal').style.display='flex';
 };
 
@@ -535,18 +717,20 @@ window.editItem = function(id){
   set('f-qty',   it.qty);
   set('f-par',   it.par);
   set('f-unit',  it.unit);
-  set('f-sku',   it.sku);
+  set('f-price', it.cost||0);
   document.getElementById('modal-title').textContent = '✏ تعديل — '+it.name;
   document.getElementById('add-modal').style.display='flex';
 };
 
-window.saveItem = function(){
-  var get = function(id){ return (document.getElementById(id)||{value:''}).value.trim(); };
+window.saveItem = async function(){
+  var get = function(fid){ return (document.getElementById(fid)||{value:''}).value.trim(); };
   var name = get('f-name');
   if(!name){ toast('أدخل اسم الصنف', true); return; }
-  var qty = parseInt(get('f-qty'),10)||0;
-  var par = parseInt(get('f-par'),10)||20;
+  var qty   = parseFloat(get('f-qty'))  || 0;
+  var par   = parseFloat(get('f-par'))  || 20;
+  var price = parseFloat(get('f-price'))|| 0;
 
+  /* edit is local-only (no PUT endpoint yet) */
   if(editingId){
     var it = ITEMS.find(function(x){ return x.id===editingId; });
     if(it){
@@ -559,44 +743,96 @@ window.saveItem = function(){
       it.qty   = qty;
       it.par   = par;
       it.unit  = get('f-unit')||it.unit;
-      it.sku   = get('f-sku')||it.sku;
+      it.cost  = price;
       toast('تم تحديث «'+it.name+'» ✓');
     }
-  } else {
-    ITEMS.push({
-      id:       itemCounter++,
-      icon:     get('f-icon')||'📦',
-      name:     name,
-      cat:      get('f-cat')||'إضافة',
-      brand:    get('f-brand')||'—',
-      color:    get('f-color')||'—',
-      colorHex: '#F5F5F5',
-      spec:     get('f-spec'),
-      qty:      qty,
-      par:      par,
-      unit:     get('f-unit')||'قطعة',
-      sku:      get('f-sku')||('SKU-'+itemCounter),
-    });
-    toast('تمت إضافة «'+name+'» للمستودع ✓');
+    closeAddModal();
+    renderInv();
+    updateKPIs();
+    return;
   }
-  closeAddModal();
-  renderInv();
-  updateKPIs();
-};
 
-window.deleteItem = function(id){
-  var it = ITEMS.find(function(x){ return x.id===id; });
-  if(!it) return;
-  if(!confirm('حذف «'+it.name+'» من المستودع؟')) return;
-  ITEMS = ITEMS.filter(function(x){ return x.id!==id; });
-  renderInv();
-  updateKPIs();
-  toast('تم حذف «'+it.name+'»');
+  /* CREATE via API */
+  var btn = document.getElementById('save-item-btn');
+  if(btn){ btn.disabled = true; btn.textContent = '…'; }
+  try {
+    var payload = {
+      name:           name,
+      warehouse_type: get('f-cat')||'إضافة',
+      unit:           get('f-unit')||'قطعة',
+      quantity:       qty,
+      reorder_level:  par,
+      price_per_unit: price,
+    };
+    var res = await fetch('/api/m13/items', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload),
+    });
+    var json = await res.json();
+    if(!res.ok || !json.success) throw new Error(json.message || res.statusText);
+    ITEMS.push(mapItem(json.data));
+    toast('تمت إضافة «'+name+'» للمستودع ✓');
+    closeAddModal();
+    renderInv();
+    updateKPIs();
+  } catch(err){
+    toast('فشل حفظ الصنف: '+err.message, true);
+  } finally {
+    if(btn){ btn.disabled = false; btn.textContent = '+ إضافة للمستودع'; }
+  }
 };
 
 window.closeAddModal = function(){
   document.getElementById('add-modal').style.display='none';
   editingId = null;
+};
+
+/* ════════════════════════════════════════
+   ADD SUPPLIER — API
+════════════════════════════════════════ */
+window.showAddSupplier = function(){
+  ['s-name-ar','s-name-en','s-phone','s-email','s-vat'].forEach(function(fid){
+    var e=document.getElementById(fid); if(e) e.value='';
+  });
+  var st=document.getElementById('s-terms'); if(st) st.value='30';
+  document.getElementById('supplier-modal').style.display='flex';
+};
+
+window.closeSupplierModal = function(){
+  document.getElementById('supplier-modal').style.display='none';
+};
+
+window.saveSupplier = async function(){
+  var get = function(fid){ return (document.getElementById(fid)||{value:''}).value.trim(); };
+  var nameAr = get('s-name-ar');
+  if(!nameAr){ toast('أدخل اسم المورد', true); return; }
+  var btn = document.getElementById('save-supplier-btn');
+  if(btn){ btn.disabled = true; btn.textContent = '…'; }
+  try {
+    var payload = {
+      name_ar:       nameAr,
+      name_en:       get('s-name-en')||null,
+      contact_phone: get('s-phone')||null,
+      contact_email: get('s-email')||null,
+      vat_number:    get('s-vat')||null,
+      payment_terms: parseInt(get('s-terms'))||30,
+    };
+    var res = await fetch('/api/m13/suppliers', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload),
+    });
+    var json = await res.json();
+    if(!res.ok || !json.success) throw new Error(json.message || res.statusText);
+    if(json.data) SUPPLIERS.push(json.data);
+    toast('تمت إضافة المورد «'+nameAr+'» ✓');
+    closeSupplierModal();
+  } catch(err){
+    toast('فشل حفظ المورد: '+err.message, true);
+  } finally {
+    if(btn){ btn.disabled = false; btn.textContent = '+ إضافة المورد'; }
+  }
 };
 
 /* ════════════════════════════════════════
@@ -649,15 +885,15 @@ window.exportCSV = function(){
 function printPDF(title, bodyHTML) {
   var w = window.open('', '_blank');
   if (!w) { toast('تعذّر فتح نافذة الطباعة — تأكد من السماح بالنوافذ المنبثقة', true); return; }
-  var css = 'body{font-family:"Segoe UI",Arial,sans-serif;background:#fff;color:#111;direction:rtl;padding:32px 40px;font-size:13px;line-height:1.6}'
-    +'h1{font-size:20px;color:#1B4D3D;margin:0 0 4px}'
-    +'h2{font-size:15px;color:#1B4D3D;margin:24px 0 10px;border-bottom:2px solid #C9A85F;padding-bottom:4px}'
+  var css = 'body{font-family:"Segoe UI",Arial,sans-serif;background:var(--white);color:#111;direction:rtl;padding:32px 40px;font-size:13px;line-height:1.6}'
+    +'h1{font-size:20px;color:var(--brand-700);margin:0 0 4px}'
+    +'h2{font-size:15px;color:var(--brand-700);margin:24px 0 10px;border-bottom:2px solid var(--gold-500);padding-bottom:4px}'
     +'.meta{font-size:11px;color:#888;margin-bottom:24px}'
     +'table{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:12px}'
-    +'th{background:#1B4D3D;color:#fff;padding:8px 12px;text-align:right;font-weight:600}'
+    +'th{background:var(--brand-700);color:var(--white);padding:8px 12px;text-align:right;font-weight:600}'
     +'td{padding:7px 12px;border-bottom:1px solid #eee;text-align:right}'
     +'tr:nth-child(even) td{background:#f7faf8}'
-    +'.excellent{color:#1B7A56;font-weight:700}.ok{color:#22C55E;font-weight:600}.warn{color:#D97706;font-weight:600}.bad{color:#C0392B;font-weight:700}'
+    +'.excellent{color:#1B7A56;font-weight:700}.ok{color:#22C55E;font-weight:600}.warn{color:var(--warning-700);font-weight:600}.bad{color:#C0392B;font-weight:700}'
     +'.footer{font-size:10px;color:#bbb;margin-top:32px;border-top:1px solid #eee;padding-top:12px;text-align:center}'
     +'@media print{@page{margin:15mm}}';
   w.document.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"/><title>'+title+'</title><style>'+css+'</style></head><body>'
@@ -675,24 +911,24 @@ window.exportPDF = function(){
   ITEMS.forEach(function(it){ var s=statusOf(it); if(s==='excellent')excellent++; else if(s==='ok')ok++; else if(s==='warn')warn++; else bad++; totalVal+=it.qty*(it.cost||0); });
   var t=ITEMS.length; function _p(n){return t>0?Math.round(n/t*100):0;}
   var statsHtml = '<div style="background:linear-gradient(135deg,#f0f7f4,#f8faf9);border:1px solid #c6ddd7;border-radius:12px;padding:18px 20px;margin-bottom:20px">'
-    +'<div style="font-size:14px;font-weight:700;color:#1B4D3D;margin-bottom:14px">📊 ملخص المستودع · الإجمالي: '+t+' صنف · القيمة: '+totalVal.toLocaleString('ar-EG')+' ر.س</div>'
+    +'<div style="font-size:14px;font-weight:700;color:var(--brand-700);margin-bottom:14px">📊 ملخص المستودع · الإجمالي: '+t+' صنف · القيمة: '+totalVal.toLocaleString('ar-EG')+' ر.س</div>'
     +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">'
     +'<div style="flex:1;min-width:80px;text-align:center;background:#f0f0f0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#333">'+t+'</div><div style="font-size:10px;color:#666;margin-top:4px">الإجمالي</div></div>'
     +'<div style="flex:1;min-width:80px;text-align:center;background:#D1FAE5;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#1B7A56">'+excellent+'</div><div style="font-size:13px;font-weight:700;color:#1B7A56">'+_p(excellent)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">ممتاز ⭐</div></div>'
-    +'<div style="flex:1;min-width:80px;text-align:center;background:#BBF7D0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#059669">'+ok+'</div><div style="font-size:13px;font-weight:700;color:#059669">'+_p(ok)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">جيدة 🟢</div></div>'
-    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEF3C7;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#D97706">'+warn+'</div><div style="font-size:13px;font-weight:700;color:#D97706">'+_p(warn)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">منخفض 🟠</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#BBF7D0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:var(--success-700)">'+ok+'</div><div style="font-size:13px;font-weight:700;color:var(--success-700)">'+_p(ok)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">جيدة 🟢</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEF3C7;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:var(--warning-700)">'+warn+'</div><div style="font-size:13px;font-weight:700;color:var(--warning-700)">'+_p(warn)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">منخفض 🟠</div></div>'
     +'<div style="flex:1;min-width:80px;text-align:center;background:#FEE2E2;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#C0392B">'+bad+'</div><div style="font-size:13px;font-weight:700;color:#C0392B">'+_p(bad)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">تحت الحد 🔴</div></div>'
     +'</div>'
     +'<div style="background:#e8eceb;border-radius:6px;height:12px;overflow:hidden;display:flex">'
     +(excellent>0?'<div style="width:'+_p(excellent)+'%;background:#1B7A56;height:100%"></div>':'')
     +(ok>0?'<div style="width:'+_p(ok)+'%;background:#22C55E;height:100%"></div>':'')
-    +(warn>0?'<div style="width:'+_p(warn)+'%;background:#D97706;height:100%"></div>':'')
+    +(warn>0?'<div style="width:'+_p(warn)+'%;background:var(--warning-700);height:100%"></div>':'')
     +(bad>0?'<div style="width:'+_p(bad)+'%;background:#C0392B;height:100%"></div>':'')
     +'</div>'
     +'<div style="margin-top:8px;font-size:10px;color:#666;display:flex;gap:14px;flex-wrap:wrap">'
     +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#1B7A56;margin-left:3px"></span>ممتاز '+_p(excellent)+'%</span>'
     +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#22C55E;margin-left:3px"></span>جيدة '+_p(ok)+'%</span>'
-    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#D97706;margin-left:3px"></span>منخفض '+_p(warn)+'%</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--warning-700);margin-left:3px"></span>منخفض '+_p(warn)+'%</span>'
     +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#C0392B;margin-left:3px"></span>تحت الحد '+_p(bad)+'%</span>'
     +'</div>'
     +'</div>';
@@ -734,10 +970,9 @@ function toast(msg, isErr){
 }
 
 /* ════════════════════════════════════════
-   INIT
+   INIT — load real data on page load
 ════════════════════════════════════════ */
-renderInv();
-updateKPIs();
+loadWarehouseData();
 
 })();
 </script>

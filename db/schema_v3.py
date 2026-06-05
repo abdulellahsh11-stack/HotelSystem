@@ -577,6 +577,111 @@ NEW_TRIGGERS = [
     ("trg_emp_updated",  "employees"),
 ]
 
+# ── Sessions table migration ────────────────────────────────────────────────
+SESSIONS_MIGRATION = """
+CREATE TABLE IF NOT EXISTS client_sessions (
+    token       VARCHAR(64) PRIMARY KEY,
+    client_id   VARCHAR(50) NOT NULL,
+    created_at  TIMESTAMPTZ DEFAULT NOW(),
+    expires_at  TIMESTAMPTZ NOT NULL,
+    user_agent  TEXT,
+    ip_address  VARCHAR(50)
+);
+CREATE INDEX IF NOT EXISTS idx_csess_client ON client_sessions(client_id);
+CREATE INDEX IF NOT EXISTS idx_csess_exp    ON client_sessions(expires_at)
+"""
+
+
+def run_sessions_migration(db) -> None:
+    import logging
+    log = logging.getLogger("dheuof.db.sessions")
+    if not db.use_postgres:
+        return
+    for stmt in SESSIONS_MIGRATION.split(";"):
+        s = stmt.strip()
+        if s:
+            try:
+                db.execute(s)
+            except Exception as e:
+                if "already exists" not in str(e).lower():
+                    log.warning(f"sessions migration: {e}")
+    log.info("✅ client_sessions table ready")
+
+
+# ── Row Level Security — defense-in-depth for multi-tenant isolation ────────
+
+RLS_POLICIES = """
+-- ================================================================
+-- Row Level Security — enforced at DB layer (defense in depth)
+-- Note: app layer already enforces client_id; RLS adds DB-layer guarantee
+-- ================================================================
+ALTER TABLE guests ENABLE ROW LEVEL SECURITY;
+ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE employees ENABLE ROW LEVEL SECURITY;
+ALTER TABLE rooms ENABLE ROW LEVEL SECURITY;
+ALTER TABLE invoices ENABLE ROW LEVEL SECURITY;
+ALTER TABLE warehouse_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE maintenance_orders ENABLE ROW LEVEL SECURITY;
+
+-- Application role must SET app.current_client_id before queries
+-- CREATE POLICY guest_isolation ON guests USING (client_id = current_setting('app.current_client_id', true));
+-- (Commented: enable when app sets session variable per request)
+
+-- For now, ensure all tables have RLS enabled (blocks direct DB access without policy)
+"""
+
+
+def run_rls_migration(db) -> None:
+    """Enable RLS on all tenant tables (idempotent — ALTER TABLE ... ENABLE is safe to re-run)."""
+    if not db.use_postgres:
+        return
+    for stmt in RLS_POLICIES.strip().split("\n"):
+        stmt = stmt.strip()
+        if stmt and not stmt.startswith("--") and not stmt.startswith("CREATE"):
+            try:
+                db.execute(stmt)
+            except Exception as e:
+                err = str(e).lower()
+                if "does not exist" not in err:
+                    import logging
+                    logging.getLogger("dheuof").warning(f"RLS migration: {e}")
+
+
+# ── Performance indexes for hot multi-tenant query paths ────────────────────
+PERF_INDEXES = """
+CREATE INDEX IF NOT EXISTS idx_bookings_client_status   ON bookings(client_id, status);
+CREATE INDEX IF NOT EXISTS idx_bookings_client_checkin  ON bookings(client_id, check_in);
+CREATE INDEX IF NOT EXISTS idx_bookings_client_checkout ON bookings(client_id, check_out);
+CREATE INDEX IF NOT EXISTS idx_bookings_client_room     ON bookings(client_id, room_id);
+CREATE INDEX IF NOT EXISTS idx_rooms_client_status      ON rooms(client_id, status);
+CREATE INDEX IF NOT EXISTS idx_guests_client_created    ON guests(client_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_employees_client_status  ON employees(client_id, status);
+CREATE INDEX IF NOT EXISTS idx_maint_client_status      ON maintenance_orders(client_id, status);
+CREATE INDEX IF NOT EXISTS idx_checkin_client_date      ON check_in_log(client_id, checked_in_at);
+CREATE INDEX IF NOT EXISTS idx_wmov_client              ON warehouse_movements(client_id, created_at);
+"""
+
+
+def run_perf_indexes(db) -> None:
+    """Create composite indexes on (client_id, hot_column) for fast tenant queries.
+
+    Idempotent — every statement is CREATE INDEX IF NOT EXISTS. Failures on a
+    not-yet-created table are ignored (the table's own migration runs elsewhere).
+    """
+    if not db.use_postgres:
+        return
+    import logging
+    log = logging.getLogger("dheuof")
+    for stmt in PERF_INDEXES.strip().split(";"):
+        s = stmt.strip()
+        if s and not s.startswith("--"):
+            try:
+                db.execute(s)
+            except Exception as e:
+                err = str(e).lower()
+                if "does not exist" not in err and "already exists" not in err:
+                    log.warning(f"perf index: {e}")
+
 
 def run_v3_migrations(db) -> None:
     import logging

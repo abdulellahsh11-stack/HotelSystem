@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <title>ضيوف · لوحة الضيوف</title>
-<meta name="viewport" content="width=1440, initial-scale=1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
 <link rel="stylesheet" href="/static/dheuof/colors_and_type.css"/>
 <link rel="stylesheet" href="/static/dheuof/assets/animations.css"/>
 <link rel="stylesheet" href="/static/dheuof/shared/chrome.css"/>
@@ -111,7 +111,7 @@
 .room-card.hk-needed{background:var(--warning-50);border-color:var(--warning-300)}.room-card.hk-needed .rnum{color:var(--warning-800)}.room-card.hk-needed .rstatus{color:var(--warning-700)}
 .room-card.maintenance{background:var(--danger-50);border-color:var(--danger-200)}.room-card.maintenance .rnum{color:var(--danger-700)}.room-card.maintenance .rstatus{color:var(--danger-600)}
 .room-card.reserved{background:var(--gold-50);border-color:var(--gold-300)}.room-card.reserved .rnum{color:var(--gold-800)}.room-card.reserved .rstatus{color:var(--gold-700)}
-.room-card.out-of-order{background:#f1f5f9;border-color:#94a3b8}.room-card.out-of-order .rnum{color:#475569}.room-card.out-of-order .rstatus{color:#64748b}
+.room-card.out-of-order{background:var(--paper-tint);border-color:#94a3b8}.room-card.out-of-order .rnum{color:#475569}.room-card.out-of-order .rstatus{color:#64748b}
 .room-card.cleaning{background:#fdf4ff;border-color:#d8b4fe}.room-card.cleaning .rnum{color:#7c3aed}.room-card.cleaning .rstatus{color:#8b5cf6}
 .room-card .guest-hint{font-size:9px;color:var(--fg-3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:88px}
 .room-legend{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px}
@@ -345,13 +345,13 @@
                 <span style="background:var(--brand-50);color:var(--brand-700);font-size:10px;padding:2px 7px;border-radius:4px">٤٢ حجز</span>
               </div>
             </div>
-            <div style="border:1.5px solid #D97706;border-radius:10px;padding:14px;background:#FFFBEB">
+            <div style="border:1.5px solid var(--warning-700);border-radius:10px;padding:14px;background:#FFFBEB">
               <div style="font-size:12px;font-weight:700;color:#92400E;margin-bottom:6px">الموسم العالي</div>
               <div style="font-size:20px;font-weight:700;color:#92400E;font-family:var(--font-en)">720 <span style="font-size:11px;color:var(--fg-3)">ر.س/ليلة</span></div>
               <div style="font-size:11px;color:var(--fg-3);margin-top:4px">رمضان · الصيف · المواسم</div>
               <div style="margin-top:8px;display:flex;gap:6px">
                 <span style="background:#FEF3C7;color:#92400E;font-size:10px;padding:2px 7px;border-radius:4px">موسمي</span>
-                <span style="background:#FFFBEB;color:#D97706;font-size:10px;padding:2px 7px;border-radius:4px">١٨ حجز</span>
+                <span style="background:#FFFBEB;color:var(--warning-700);font-size:10px;padding:2px 7px;border-radius:4px">١٨ حجز</span>
               </div>
             </div>
             <div style="border:1.5px solid var(--hairline);border-radius:10px;padding:14px">
@@ -508,6 +508,7 @@
   </div>
 </div>
 
+<script src="/static/dheuof/shared/module-base.js"></script>
 <script src="/static/dheuof/shared/sidebar.js"></script>
 <script>StaticSidebar.mount({ activeId: "01-guests", placeholder: "بحث في النزلاء والحجوزات..." });</script>
 <script src="/static/dheuof/assets/animations.js"></script>
@@ -1153,10 +1154,221 @@ function updateBadges(){
 }
 
 /* ═══════════════════════════════════════════════
+   API — LOAD GUESTS (GET /api/guests)
+═══════════════════════════════════════════════ */
+function loadGuests(){
+  var tbody = document.getElementById('guest-tbody');
+  if(tbody) tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--fg-3)">⏳ جارٍ تحميل النزلاء...</td></tr>';
+  fetch('/api/guests')
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if(!res.success){ throw new Error(res.detail||'خطأ'); }
+      var raw = res.data || [];
+      GUESTS = raw.map(function(g){
+        var nm = g.full_name||g.name||'—';
+        var parts = nm.trim().split(/\s+/);
+        var initials = parts.slice(0,2).map(function(w){ return w[0]||''; }).join('');
+        return {
+          id:        g.id,
+          name:      nm,
+          initials:  initials,
+          nationality: g.nationality||'—',
+          room:      g.room_number||g.room||'—',
+          roomType:  g.room_type||'—',
+          checkin:   g.check_in||g.checkin||'—',
+          checkout:  g.check_out||g.checkout||'—',
+          phone:     g.phone||g.mobile||'—',
+          balanceLeft: g.balance_due!=null ? String(g.balance_due) : '٠',
+          vip:       !!(g.vip||g.is_vip),
+          status:    g.status==='departing'||g.checkout_today ? 'departing' : 'ok',
+          alerts:    g.alerts||[],
+          bookingId: g.booking_id||g.id,
+        };
+      });
+      filterAndRenderGuests();
+      updateBadges();
+    })
+    .catch(function(err){
+      var tbody2 = document.getElementById('guest-tbody');
+      if(tbody2) tbody2.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--danger-600)">⚠ تعذّر تحميل النزلاء — '+err.message+'</td></tr>';
+    });
+}
+
+/* ═══════════════════════════════════════════════
+   API — LOAD ARRIVALS (GET /api/m02/arrivals)
+═══════════════════════════════════════════════ */
+function loadArrivals(){
+  var tbody = document.getElementById('res-tbody');
+  if(tbody) tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:32px;color:var(--fg-3)">⏳ جارٍ تحميل الحجوزات...</td></tr>';
+  fetch('/api/m02/arrivals')
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if(!res.success){ throw new Error(res.detail||'خطأ'); }
+      var raw = res.data || [];
+      RESERVATIONS = raw.map(function(b){
+        var nm = b.full_name||b.name||'—';
+        var parts = nm.trim().split(/\s+/);
+        var initials = parts.slice(0,2).map(function(w){ return w[0]||''; }).join('');
+        var cin  = (b.check_in||'').split('T')[0];
+        var cout = (b.check_out||'').split('T')[0];
+        var nights = 0;
+        if(cin && cout){ var d1=new Date(cin),d2=new Date(cout); nights=Math.max(0,Math.round((d2-d1)/86400000)); }
+        var payMap = {paid:'ok', deposit:'warn', unpaid:'danger', confirmed:'info'};
+        var payLbl = {paid:'مدفوع', deposit:'عربون', unpaid:'لم يدفع', confirmed:'مؤكّد'};
+        var ps = b.payment_status||b.payment||'confirmed';
+        return {
+          id:          b.id||b.booking_id||('RES-'+Date.now()),
+          name:        nm,
+          initials:    initials,
+          nationality: b.nationality||'—',
+          idNum:       b.id_number||'—',
+          idType:      b.id_type||'هوية',
+          room:        b.room_number||b.room||'—',
+          roomType:    b.room_type||'—',
+          checkin:     cin,
+          checkout:    cout,
+          nights:      nights,
+          channel:     b.channel||b.booking_source||'مباشر',
+          payment:     payLbl[ps]||ps,
+          payClass:    payMap[ps]||'neu',
+          amt:         b.total_amount!=null ? String(b.total_amount) : '—',
+          vip:         !!(b.vip||b.is_vip),
+          phone:       b.phone||b.mobile||'—',
+        };
+      });
+      filterAndRenderRes();
+      updateBadges();
+    })
+    .catch(function(err){
+      var tbody2 = document.getElementById('res-tbody');
+      if(tbody2) tbody2.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:32px;color:var(--danger-600)">⚠ تعذّر تحميل الحجوزات — '+err.message+'</td></tr>';
+    });
+}
+
+/* ═══════════════════════════════════════════════
+   API — LOAD DEPARTURES (GET /api/m02/departures)
+═══════════════════════════════════════════════ */
+function loadDepartures(){
+  fetch('/api/m02/departures')
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if(!res.success){ throw new Error(res.detail||'خطأ'); }
+      var raw = res.data || [];
+      // Merge today's departures into GUESTS (mark status=departing)
+      raw.forEach(function(b){
+        var nm = b.full_name||b.name||'—';
+        var bid = b.id||b.booking_id;
+        var existing = GUESTS.find(function(g){ return g.bookingId===bid||g.id===bid; });
+        if(existing){
+          existing.status = 'departing';
+        } else {
+          var parts = nm.trim().split(/\s+/);
+          var initials = parts.slice(0,2).map(function(w){ return w[0]||''; }).join('');
+          GUESTS.push({
+            id:        bid,
+            name:      nm,
+            initials:  initials,
+            nationality: b.nationality||'—',
+            room:      b.room_number||b.room||'—',
+            roomType:  b.room_type||'—',
+            checkin:   (b.check_in||'').split('T')[0],
+            checkout:  (b.check_out||'').split('T')[0],
+            phone:     b.phone||b.mobile||'—',
+            balanceLeft: b.balance_due!=null ? String(b.balance_due) : '٠',
+            vip:       !!(b.vip||b.is_vip),
+            status:    'departing',
+            alerts:    [],
+            bookingId: bid,
+          });
+        }
+      });
+      filterAndRenderGuests();
+      updateBadges();
+    })
+    .catch(function(err){
+      // Non-blocking — departures panel relies on guests already loaded
+      console.warn('loadDepartures:', err.message);
+    });
+}
+
+/* ═══════════════════════════════════════════════
+   API — WIRE CHECKIN (POST /api/integration/checkin)
+   Cascade: room→occupied, revenue, inventory, KPI
+═══════════════════════════════════════════════ */
+function cascadeSummary(res){
+  var parts = [];
+  if(res.room_status || res.room) parts.push('الغرفة: '+(res.room_status||res.room));
+  if(res.revenue!=null) parts.push('إيراد: '+(DH.formatSAR ? DH.formatSAR(res.revenue) : res.revenue));
+  var inv = res.inventory_deducted||res.inventory;
+  if(inv!=null){
+    if(typeof inv==='number') parts.push('خصم مخزون: '+inv+' صنف');
+    else if(Array.isArray(inv)) parts.push('خصم مخزون: '+inv.length+' صنف');
+  }
+  return parts.join(' · ');
+}
+window.doCheckin = function(btn){
+  if(btn.disabled) return;
+  // Find booking id from row  (id stored in button id="ci-<bookingId>")
+  var bid = btn.id.replace('ci-','');
+  var r = RESERVATIONS.find(function(x){ return String(x.id)===String(bid); }) || {};
+  var amount = parseFloat(r.amt)||0;
+  btn.disabled = true;
+  btn.textContent = '⏳ جارٍ...';
+  DH.fetch('/api/integration/checkin', {
+    method:'POST',
+    body: JSON.stringify({ booking_id: bid, amount: amount, payment_method:'cash', checkin_by:'استقبال' })
+  }).then(function(res){
+    if(res){
+      btn.textContent = '✓ مسجَّل';
+      var sum = cascadeSummary(res);
+      toast('تم تسجيل الدخول ✓'+(sum?' — '+sum:''));
+    } else {
+      btn.disabled = false;
+      btn.textContent = 'تسجيل دخول';
+      toast('فشل تسجيل الدخول', true);
+    }
+  });
+};
+
+/* ═══════════════════════════════════════════════
+   API — WIRE CHECKOUT (POST /api/integration/checkout)
+   Cascade: room→cleaning, revenue, KPI
+═══════════════════════════════════════════════ */
+window.doCheckout = function(gid){
+  var g = GUESTS.find(function(x){ return x.id===gid; });
+  if(!g) return;
+  if(!confirm('تسجيل خروج '+g.name+' من غرفة '+g.room+'؟')) return;
+  var bid = g.bookingId||gid;
+  DH.fetch('/api/integration/checkout', {
+    method:'POST',
+    body: JSON.stringify({ booking_id: bid, final_amount: parseFloat(g.balanceLeft)||0, payment_method:'cash' })
+  }).then(function(res){
+    if(res){
+      FLOORS.forEach(function(fl){
+        fl.rooms.forEach(function(rm){
+          if(rm.num===g.room && rm.status==='occupied'){
+            rm.status='hk-needed'; rm.guest=null;
+          }
+        });
+      });
+      GUESTS = GUESTS.filter(function(x){ return x.id!==gid; });
+      filterAndRenderGuests();
+      renderFloors();
+      updateBadges();
+      var sum = cascadeSummary(res);
+      toast('تم تسجيل خروج '+g.name+' — غرفة '+g.room+' بانتظار التنظيف ✓'+(sum?' — '+sum:''));
+    } else {
+      toast('فشل تسجيل الخروج', true);
+    }
+  });
+};
+
+/* ═══════════════════════════════════════════════
    INIT
 ═══════════════════════════════════════════════ */
-filterAndRenderRes();
-filterAndRenderGuests();
+loadArrivals();
+loadGuests();
+loadDepartures();
 renderFloors();
 renderPermGrid();
 renderStaff();
@@ -1217,29 +1429,29 @@ window.exportPDF = function(){
   function _pPct(n){return totRes>0?Math.round(n/totRes*100):0;}
 
   var statsHtml = '<div style="background:linear-gradient(135deg,#f0f7f4,#f8faf9);border:1px solid #c6ddd7;border-radius:12px;padding:18px 20px;margin-bottom:20px">'
-    +'<div style="font-size:14px;font-weight:700;color:#1B4D3D;margin-bottom:14px">📊 ملخص الإحصائيات · إجمالي الحجوزات: '+totRes+'</div>'
+    +'<div style="font-size:14px;font-weight:700;color:var(--brand-700);margin-bottom:14px">📊 ملخص الإحصائيات · إجمالي الحجوزات: '+totRes+'</div>'
     +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">'
     +'<div style="flex:1;min-width:80px;text-align:center;background:#f0f0f0;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#333">'+totRes+'</div><div style="font-size:10px;color:#666;margin-top:4px">الحجوزات</div></div>'
     +'<div style="flex:1;min-width:80px;text-align:center;background:#D1FAE5;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#1B7A56">'+paid+'</div><div style="font-size:13px;font-weight:700;color:#1B7A56">'+_pPct(paid)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">مدفوع ✓</div></div>'
-    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEF3C7;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#D97706">'+deposit+'</div><div style="font-size:13px;font-weight:700;color:#D97706">'+_pPct(deposit)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">عربون</div></div>'
+    +'<div style="flex:1;min-width:80px;text-align:center;background:#FEF3C7;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:var(--warning-700)">'+deposit+'</div><div style="font-size:13px;font-weight:700;color:var(--warning-700)">'+_pPct(deposit)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">عربون</div></div>'
     +'<div style="flex:1;min-width:80px;text-align:center;background:#FEE2E2;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#C0392B">'+unpaid+'</div><div style="font-size:13px;font-weight:700;color:#C0392B">'+_pPct(unpaid)+'%</div><div style="font-size:10px;color:rgba(0,0,0,0.5)">لم يدفع</div></div>'
     +'<div style="flex:1;min-width:80px;text-align:center;background:#DBEAFE;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#1d4ed8">'+inhouse+'</div><div style="font-size:10px;color:rgba(0,0,0,0.5);margin-top:4px">نزلاء حاليون</div></div>'
     +(departing?'<div style="flex:1;min-width:80px;text-align:center;background:#FEE2E2;border-radius:8px;padding:12px 8px"><div style="font-size:26px;font-weight:700;color:#C0392B">'+departing+'</div><div style="font-size:10px;color:rgba(0,0,0,0.5);margin-top:4px">مغادر اليوم</div></div>':'')
     +'</div>'
     +'<div style="background:#e8eceb;border-radius:6px;height:12px;overflow:hidden;display:flex">'
     +(paid>0?'<div style="width:'+_pPct(paid)+'%;background:#1B7A56;height:100%"></div>':'')
-    +(deposit>0?'<div style="width:'+_pPct(deposit)+'%;background:#D97706;height:100%"></div>':'')
+    +(deposit>0?'<div style="width:'+_pPct(deposit)+'%;background:var(--warning-700);height:100%"></div>':'')
     +(unpaid>0?'<div style="width:'+_pPct(unpaid)+'%;background:#C0392B;height:100%"></div>':'')
     +'</div>'
     +'<div style="margin-top:8px;font-size:10px;color:#666;display:flex;gap:14px;flex-wrap:wrap">'
     +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#1B7A56;margin-left:3px"></span>مدفوع '+_pPct(paid)+'%</span>'
-    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#D97706;margin-left:3px"></span>عربون '+_pPct(deposit)+'%</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--warning-700);margin-left:3px"></span>عربون '+_pPct(deposit)+'%</span>'
     +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#C0392B;margin-left:3px"></span>لم يدفع '+_pPct(unpaid)+'%</span>'
     +'</div>'
     +'</div>';
 
   var resRows = RESERVATIONS.map(function(r){
-    var payStyle = r.payment==='مدفوع'?'color:#1B7A56;font-weight:700':r.payment==='عربون'?'color:#D97706;font-weight:700':'color:#C0392B;font-weight:700';
+    var payStyle = r.payment==='مدفوع'?'color:#1B7A56;font-weight:700':r.payment==='عربون'?'color:var(--warning-700);font-weight:700':'color:#C0392B;font-weight:700';
     var vip = r.vip?'<span style="background:#FEF3C7;color:#b45309;padding:2px 6px;border-radius:4px;font-size:10px">VIP</span>':'';
     return '<tr><td><strong>'+r.id+'</strong></td><td>'+r.name+' '+vip+'</td><td>'+r.room+'</td>'
       +'<td>'+r.checkin+'</td><td>'+r.checkout+' ('+r.nights+' ل)</td>'
@@ -1254,17 +1466,17 @@ window.exportPDF = function(){
     var vip = g.vip?'<span style="background:#FEF3C7;color:#b45309;padding:2px 6px;border-radius:4px;font-size:10px">VIP</span>':'';
     return '<tr><td>'+g.name+' '+vip+'</td><td>'+g.room+' ('+g.roomType+')</td>'
       +'<td>'+g.checkin+'</td><td>'+g.checkout+'</td>'
-      +'<td style="font-weight:600;color:#D97706">'+g.balanceLeft+' ر.س</td>'
+      +'<td style="font-weight:600;color:var(--warning-700)">'+g.balanceLeft+' ر.س</td>'
       +'<td style="'+depStyle+'">'+depLabel+'</td></tr>';
   }).join('');
 
   var win=window.open('','_blank','width=1020,height=760');
   win.document.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"/><title>تقرير الضيوف</title>'
     +'<style>body{font-family:"Tajawal","Segoe UI",sans-serif;margin:32px;color:#1a1a1a;direction:rtl}'
-    +'h1{font-size:22px;margin:0 0 4px}h2{font-size:16px;margin:24px 0 10px;color:#1B4D3D}'
+    +'h1{font-size:22px;margin:0 0 4px}h2{font-size:16px;margin:24px 0 10px;color:var(--brand-700)}'
     +'.sub{font-size:12px;color:#666;margin:0 0 18px}'
     +'table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:24px}'
-    +'th{background:#1B4D3D;color:#fff;padding:9px 10px;text-align:right}'
+    +'th{background:var(--brand-700);color:var(--white);padding:9px 10px;text-align:right}'
     +'td{padding:8px 10px;border-bottom:1px solid #eee;vertical-align:middle}'
     +'tr:nth-child(even){background:#fafafa}'
     +'.footer{margin-top:18px;font-size:11px;color:#999}@media print{.no-print{display:none}}'
@@ -1362,7 +1574,7 @@ window.addRatePlan = function(){
   div.style.cssText='border:1.5px solid var(--hairline);border-radius:10px;padding:14px';
   div.innerHTML='<div style="font-size:12px;font-weight:700;color:var(--ink-900);margin-bottom:6px">'+name+'</div>'
     +'<div style="font-size:20px;font-weight:700;color:var(--ink-900);font-family:var(--font-en)">'+rate+' <span style="font-size:11px;color:var(--fg-3)">ر.س/ليلة</span></div>'
-    +'<div style="margin-top:8px"><span style="background:#F3F4F6;color:#6B7280;font-size:10px;padding:2px 7px;border-radius:4px">جديد</span></div>';
+    +'<div style="margin-top:8px"><span style="background:#F3F4F6;color:var(--ink-400);font-size:10px;padding:2px 7px;border-radius:4px">جديد</span></div>';
   grid.appendChild(div);
 };
 
