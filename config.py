@@ -27,8 +27,14 @@ class Config:
     github_backup_token: str = ""
     github_backup_repo: str = ""
 
+    # ── التخزين المؤقت / الجلسات الموزّعة ─────────────────
+    redis_url: str = ""             # redis://... من Railway — اختياري
+
     # ── المراقبة ────────────────────────────────────────────
     sentry_dsn: str = ""            # جديد في الشهر 2
+
+    # ── شبكة توصيل المحتوى (CDN) ───────────────────────────
+    cdn_url: str = ""               # مثال: https://cdn.dheuof.com — فارغ = محلي
 
     # ── الأمان ──────────────────────────────────────────────
     admin_pass_hash: str = ""
@@ -70,12 +76,18 @@ class Config:
             github_backup_token=os.environ.get("GITHUB_BACKUP_TOKEN", ""),
             github_backup_repo=os.environ.get("GITHUB_BACKUP_REPO", ""),
             sentry_dsn=os.environ.get("SENTRY_DSN", ""),
+            cdn_url=os.environ.get("CDN_URL", ""),
             admin_pass_hash=os.environ["ADMIN_PASS_HASH"],
             pass_salt=os.environ.get("PASS_SALT", "HotelSaaS2025"),
             secret_key=secret_key,
+            redis_url=os.environ.get("REDIS_URL", ""),
             dual_write=os.environ.get("DUAL_WRITE", "true").lower() == "true",
             owner_client_id=os.environ.get("OWNER_CLIENT_ID", ""),
         )
+
+    @property
+    def has_redis(self) -> bool:
+        return bool(self.redis_url)
 
     @property
     def has_postgres(self) -> bool:
@@ -89,6 +101,10 @@ class Config:
     def has_sentry(self) -> bool:
         return bool(self.sentry_dsn)
 
+    @property
+    def has_cdn(self) -> bool:
+        return bool(self.cdn_url)
+
     def summary(self) -> str:
         """طباعة ملخص الإعدادات عند البدء"""
         lines = [
@@ -98,8 +114,10 @@ class Config:
             f"  Client Port  → {self.port}",
             f"  Admin Port   → {self.admin_port}",
             f"  PostgreSQL   → {'✅ متصل' if self.has_postgres else '⚠️  JSON Fallback'}",
+            f"  Redis        → {'✅ مُفعَّل' if self.has_redis else '⚠️  In-Memory Fallback'}",
             f"  GitHub       → {'✅ ' + self.github_repo if self.has_github else '⚠️  غير مُفعَّل'}",
             f"  Sentry       → {'✅ مُفعَّل' if self.has_sentry else '⚠️  غير مُفعَّل'}",
+            f"  CDN          → {'✅ ' + self.cdn_url if self.has_cdn else '⚠️  محلي (بدون CDN)'}",
             f"  Claude AI    → {'✅ متاح' if self.anthropic_api_key else '⚠️  غير مُفعَّل'}",
             f"  Dual-Write   → {'✅ مُفعَّل' if self.dual_write else '❌ موقوف'}",
             f"  Debug        → {'✅' if self.debug else '❌'}",

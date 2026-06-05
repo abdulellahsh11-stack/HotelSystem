@@ -1,0 +1,209 @@
+name: "CI — ضيوف Hotel Platform"
+
+on:
+  push:
+    branches:
+      - main
+      - "claude/*"
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  # ────────────────────────────────────────────────────────────
+  # Job 1: Lint
+  # ────────────────────────────────────────────────────────────
+  lint:
+    name: "Lint (ruff)"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install ruff
+        run: pip install ruff>=0.4.0
+
+      - name: Run ruff
+        run: ruff check . --select=E,F,W --ignore=E501
+
+  # ────────────────────────────────────────────────────────────
+  # Job 2: Integration tests against real PostgreSQL 15
+  # ────────────────────────────────────────────────────────────
+  test-postgres:
+    name: "Tests (PostgreSQL 15)"
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: dheuof_test
+          POSTGRES_USER: dheuof
+          POSTGRES_PASSWORD: testpass123
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U dheuof"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://dheuof:testpass123@localhost:5432/dheuof_test
+      ADMIN_PASS_HASH: ${{ secrets.ADMIN_PASS_HASH || 'test_hash_for_ci' }}
+      SECRET_KEY: ci_test_secret_key_32chars_minimum
+      REDIS_URL: ""
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Wait for PostgreSQL to be ready
+        run: |
+          echo "Waiting for PostgreSQL..."
+          for i in $(seq 1 30); do
+            pg_isready -h localhost -p 5432 -U dheuof && echo "PostgreSQL ready" && break
+            echo "Attempt $i/30 — sleeping 2s..."
+            sleep 2
+          done
+          pg_isready -h localhost -p 5432 -U dheuof || (echo "PostgreSQL did not become ready in time" && exit 1)
+
+      - name: Run database migrations
+        run: |
+          python -c "
+          from db.connection import init_db
+          from db.migrations import run_all_migrations
+          db = init_db('$DATABASE_URL')
+          run_all_migrations(db)
+          print('Migrations completed successfully')
+          "
+
+      - name: Run pytest
+        run: pytest tests/ -v --tb=short -x
+
+  # ────────────────────────────────────────────────────────────
+  # Job 3: End-to-end tests (push to main only)
+  # ────────────────────────────────────────────────────────────
+  test-e2e:
+    name: "E2E Tests (Playwright)"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: dheuof_test
+          POSTGRES_USER: dheuof
+          POSTGRES_PASSWORD: testpass123
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U dheuof"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://dheuof:testpass123@localhost:5432/dheuof_test
+      ADMIN_PASS_HASH: ${{ secrets.ADMIN_PASS_HASH || 'test_hash_for_ci' }}
+      SECRET_KEY: ci_test_secret_key_32chars_minimum
+      REDIS_URL: ""
+      PORT: "5050"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Install Playwright
+        run: |
+          pip install playwright
+          playwright install --with-deps chromium
+
+      - name: Wait for PostgreSQL
+        run: |
+          for i in $(seq 1 30); do
+            pg_isready -h localhost -p 5432 -U dheuof && break
+            sleep 2
+          done
+
+      - name: Run migrations
+        run: |
+          python -c "
+          from db.connection import init_db
+          from db.migrations import run_all_migrations
+          db = init_db('$DATABASE_URL')
+          run_all_migrations(db)
+          "
+
+      - name: Start application server in background
+        run: |
+          uvicorn main:app --host 0.0.0.0 --port 5050 &
+          echo $! > /tmp/uvicorn.pid
+          # Wait until the server responds
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:5050/api/health && echo "Server ready" && break
+            sleep 2
+          done
+
+      - name: Run E2E tests (Playwright)
+        run: |
+          if [ -d "tests/e2e" ]; then
+            pytest tests/e2e/ -v --tb=short
+          else
+            echo "No E2E tests directory found — skipping"
+          fi
+
+      - name: Stop application server
+        if: always()
+        run: |
+          if [ -f /tmp/uvicorn.pid ]; then
+            kill "$(cat /tmp/uvicorn.pid)" || true
+          fi
+
+  # ────────────────────────────────────────────────────────────
+  # Job 4: Docker build verification (no push)
+  # ────────────────────────────────────────────────────────────
+  docker-build:
+    name: "Docker Build"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image (no push)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: dheuof-hotel:ci-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
