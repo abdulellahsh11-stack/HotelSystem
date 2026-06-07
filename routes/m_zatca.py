@@ -2,17 +2,23 @@
 # -*- coding: utf-8 -*-
 """ZATCA — فواتير إلكترونية + QR Code (TLV معيار ZATCA الرسمي)"""
 import base64
-import io
 import json
 import logging
-import struct
 from datetime import datetime
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import JSONResponse, Response
+from fastapi.responses import Response
 from pydantic import BaseModel
+
+# المنطق الموحَّد لـ TLV/QR يعيش في services/zatca.py (مصدر واحد، بلا تكرار)
+from services.zatca import (
+    build_tlv,
+    decode_tlv,
+    generate_qr_image_base64,
+    validate_vat_number,
+)
 
 router = APIRouter(prefix="/api/zatca", tags=["ZATCA"])
 log = logging.getLogger("dheuof.zatca")
@@ -24,65 +30,6 @@ VAT_RATE = Decimal("0.15")
 def _require_client(request: Request) -> dict:
     from main import require_client
     return require_client(request)
-
-
-# ── TLV helpers ──────────────────────────────────────────────────────────────
-
-def _encode_tlv_field(tag: int, value: str) -> bytes:
-    val_bytes = value.encode("utf-8")
-    length = len(val_bytes)
-    if length <= 127:
-        return bytes([tag, length]) + val_bytes
-    # multi-byte length for long strings
-    len_bytes = length.to_bytes((length.bit_length() + 7) // 8, "big")
-    return bytes([tag, 0x80 | len(len_bytes)]) + len_bytes + val_bytes
-
-
-def build_tlv(seller_name: str, vat_number: str, timestamp: str,
-              total_with_vat: str, vat_amount: str) -> bytes:
-    return (
-        _encode_tlv_field(1, seller_name) +
-        _encode_tlv_field(2, vat_number) +
-        _encode_tlv_field(3, timestamp) +
-        _encode_tlv_field(4, total_with_vat) +
-        _encode_tlv_field(5, vat_amount)
-    )
-
-
-def decode_tlv(data: bytes) -> dict:
-    result: dict = {}
-    i = 0
-    while i < len(data):
-        tag = data[i]; i += 1
-        if i >= len(data):
-            break
-        length_byte = data[i]; i += 1
-        if length_byte & 0x80:
-            n = length_byte & 0x7F
-            length = int.from_bytes(data[i:i+n], "big")
-            i += n
-        else:
-            length = length_byte
-        value = data[i:i+length].decode("utf-8", errors="replace")
-        result[tag] = value
-        i += length
-    return result
-
-
-def generate_qr_image_base64(tlv_base64: str) -> str:
-    try:
-        import qrcode
-        qr = qrcode.QRCode(version=None, error_correction=qrcode.constants.ERROR_CORRECT_M,
-                           box_size=6, border=2)
-        qr.add_data(tlv_base64)
-        qr.make(fit=True)
-        img = qr.make_image(fill_color="black", back_color="white")
-        buf = io.BytesIO()
-        img.save(buf, format="PNG")
-        return base64.b64encode(buf.getvalue()).decode()
-    except Exception as e:
-        log.warning("QR image generation failed: %s", e)
-        return ""
 
 
 def _next_invoice_number(db, client_id: str) -> str:
@@ -156,6 +103,13 @@ async def generate_invoice(
 
     seller_name = inv_settings.get("company_name") or client_data.get("name", "منشأة ضيوف")
     vat_number  = inv_settings.get("vat_number", "")
+
+    # التحقق من الرقم الضريبي (اختياري) — يُطبَّق فقط إذا أُدخل رقم.
+    # القاعدة من services/zatca.py: 15 رقماً يبدأ وينتهي بـ 3.
+    if vat_number and not validate_vat_number(vat_number):
+        raise HTTPException(
+            400, "الرقم الضريبي للمنشأة غير صالح — يجب أن يكون 15 رقماً يبدأ وينتهي بالرقم 3"
+        )
 
     # حسابات مالية
     subtotal   = Decimal(str(body.subtotal)).quantize(TWO, ROUND_HALF_UP)

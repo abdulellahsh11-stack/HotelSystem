@@ -28,10 +28,36 @@ VAT_RATE = 0.15  # 15% ضريبة القيمة المضافة في السعود�
 
 
 # ── ترميز TLV (Tag-Length-Value) ──────────────────────────────
+# المصدر الموحَّد لمنطق TLV/QR في المنصة — تستورده routes/m_zatca.py
+# وroutes/open_api.py معاً (لا تكرار).
 def _tlv(tag: int, value: str) -> bytes:
-    """يُرمّز حقلاً واحداً بصيغة TLV (UTF-8)."""
+    """
+    يُرمّز حقلاً واحداً بصيغة TLV (UTF-8) مع دعم الطول متعدد البايت
+    (DER length) للقيم الأطول من 127 بايت — متوافق مع المعيار الرسمي.
+    """
     vb = value.encode("utf-8")
-    return bytes([tag, len(vb)]) + vb
+    length = len(vb)
+    if length <= 127:
+        return bytes([tag, length]) + vb
+    len_bytes = length.to_bytes((length.bit_length() + 7) // 8, "big")
+    return bytes([tag, 0x80 | len(len_bytes)]) + len_bytes + vb
+
+
+# alias عام للاستخدام خارج الوحدة
+def encode_tlv_field(tag: int, value: str) -> bytes:
+    return _tlv(tag, value)
+
+
+def build_tlv(seller_name: str, vat_number: str, timestamp: str,
+              total_with_vat, vat_total) -> bytes:
+    """يبني تسلسل TLV الكامل (5 حقول) ويُعيده bytes."""
+    return (
+        _tlv(1, str(seller_name)) +
+        _tlv(2, str(vat_number)) +
+        _tlv(3, str(timestamp)) +
+        _tlv(4, f"{float(total_with_vat):.2f}") +
+        _tlv(5, f"{float(vat_total):.2f}")
+    )
 
 
 def generate_qr_base64(seller_name: str, vat_number: str, timestamp: str,
@@ -40,14 +66,47 @@ def generate_qr_base64(seller_name: str, vat_number: str, timestamp: str,
     يُولّد سلسلة QR متوافقة مع ZATCA (Base64 لتسلسل TLV من 5 حقول).
     تُحقن هذه السلسلة في رمز QR على الفاتورة.
     """
-    payload = (
-        _tlv(1, str(seller_name)) +
-        _tlv(2, str(vat_number)) +
-        _tlv(3, str(timestamp)) +
-        _tlv(4, f"{float(total_with_vat):.2f}") +
-        _tlv(5, f"{float(vat_total):.2f}")
-    )
-    return base64.b64encode(payload).decode("ascii")
+    return base64.b64encode(
+        build_tlv(seller_name, vat_number, timestamp, total_with_vat, vat_total)
+    ).decode("ascii")
+
+
+def decode_tlv(data: bytes) -> dict:
+    """يفكّ تسلسل TLV ويُعيد {tag: value} — يُستخدم في التحقق من رمز QR."""
+    result: dict = {}
+    i = 0
+    while i < len(data):
+        tag = data[i]; i += 1
+        if i >= len(data):
+            break
+        length_byte = data[i]; i += 1
+        if length_byte & 0x80:
+            n = length_byte & 0x7F
+            length = int.from_bytes(data[i:i + n], "big")
+            i += n
+        else:
+            length = length_byte
+        result[tag] = data[i:i + length].decode("utf-8", errors="replace")
+        i += length
+    return result
+
+
+def generate_qr_image_base64(tlv_base64: str) -> str:
+    """يُحوّل سلسلة TLV (Base64) إلى صورة QR Code بصيغة PNG (Base64)."""
+    try:
+        import io
+        import qrcode
+        qr = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_M,
+                           box_size=6, border=2)
+        qr.add_data(tlv_base64)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color="black", back_color="white")
+        buf = io.BytesIO()
+        img.save(buf, format="PNG")
+        return base64.b64encode(buf.getvalue()).decode()
+    except Exception as e:  # pragma: no cover
+        log.warning(f"تعذّر توليد صورة QR: {e}")
+        return ""
 
 
 def validate_vat_number(vat: str) -> bool:
