@@ -175,6 +175,12 @@ async def lifespan(app_: FastAPI):
         log.info("✓ Performance indexes ready")
     except Exception as e:
         log.warning(f"perf indexes: {e}")
+    try:
+        from db.schema_v3 import run_v4_migrations
+        run_v4_migrations(db)
+        log.info("✓ v4 migrations (ZATCA + Night Audit + Reviews) ready")
+    except Exception as e:
+        log.warning(f"v4 migrations: {e}")
 
     # ── Sentry (APM / error tracking) ──────────────────────────────────────
     if cfg.has_sentry:
@@ -441,6 +447,27 @@ try:
     log.info("✓ Integration (cross-module orchestration)")
 except Exception as e:
     log.warning(f"Integration: {e}")
+
+try:
+    from routes.m_zatca import router as zatca_router
+    app.include_router(zatca_router)
+    log.info("✓ ZATCA (فواتير إلكترونية + QR Code)")
+except Exception as e:
+    log.warning(f"ZATCA: {e}")
+
+try:
+    from routes.m_night_audit import router as night_audit_router
+    app.include_router(night_audit_router)
+    log.info("✓ Night Audit (إغلاق اليوم + أجهزة الدفع)")
+except Exception as e:
+    log.warning(f"NightAudit: {e}")
+
+try:
+    from routes.m_reviews import router as reviews_router
+    app.include_router(reviews_router)
+    log.info("✓ Reviews (تقييمات الحجوزات)")
+except Exception as e:
+    log.warning(f"Reviews: {e}")
 
 
 # ──────────────────────────────────────────────────────────────

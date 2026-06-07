@@ -855,3 +855,147 @@ def _split_sql_safe(sql: str) -> list:
             statements.append(leftover)
 
     return statements
+
+
+# ══════════════════════════════════════════════════════════════
+#  v4 migrations — ZATCA + Night Audit + Reviews + Payments
+# ══════════════════════════════════════════════════════════════
+
+_SCHEMA_V4 = """
+-- ──────────────────────────────────────────────────────────────
+-- ZATCA — الفواتير الإلكترونية
+-- ──────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS zatca_invoices (
+    id               SERIAL PRIMARY KEY,
+    client_id        VARCHAR(50) REFERENCES clients(id) ON DELETE CASCADE,
+    invoice_number   VARCHAR(50) UNIQUE NOT NULL,
+    booking_id       VARCHAR(100),
+    guest_id         VARCHAR(100),
+    invoice_type     VARCHAR(20)  DEFAULT 'SIMPLIFIED',
+    issue_date       TIMESTAMPTZ  DEFAULT NOW(),
+    supply_date      TIMESTAMPTZ  DEFAULT NOW(),
+    subtotal         DECIMAL(12,2) DEFAULT 0,
+    discount         DECIMAL(12,2) DEFAULT 0,
+    vat_rate         DECIMAL(5,4)  DEFAULT 0.15,
+    vat_amount       DECIMAL(12,2) DEFAULT 0,
+    total            DECIMAL(12,2) DEFAULT 0,
+    vat_number       VARCHAR(20),
+    buyer_name       VARCHAR(200),
+    buyer_vat        VARCHAR(20),
+    zatca_uuid       VARCHAR(100),
+    zatca_hash       VARCHAR(200),
+    zatca_status     VARCHAR(20)  DEFAULT 'PENDING',
+    qr_tlv_base64    TEXT,
+    qr_image_base64  TEXT,
+    xml_signed       TEXT,
+    pdf_url          VARCHAR(500),
+    is_deleted       BOOLEAN DEFAULT FALSE,
+    created_at       TIMESTAMPTZ DEFAULT NOW(),
+    updated_at       TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_zatca_client ON zatca_invoices(client_id);
+CREATE INDEX IF NOT EXISTS idx_zatca_booking ON zatca_invoices(booking_id);
+CREATE INDEX IF NOT EXISTS idx_zatca_status ON zatca_invoices(zatca_status);
+
+-- ──────────────────────────────────────────────────────────────
+-- Night Audit — إعدادات وسجل الإغلاق اليومي
+-- ──────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS night_audit_settings (
+    id                      SERIAL PRIMARY KEY,
+    client_id               VARCHAR(50) UNIQUE REFERENCES clients(id) ON DELETE CASCADE,
+    auto_run                BOOLEAN DEFAULT FALSE,
+    scheduled_time          VARCHAR(5)  DEFAULT '23:59',
+    default_check_in_time   VARCHAR(5)  DEFAULT '14:00',
+    default_check_out_time  VARCHAR(5)  DEFAULT '12:00',
+    grace_period_minutes    INTEGER DEFAULT 30,
+    require_payment_close   BOOLEAN DEFAULT TRUE,
+    updated_by              VARCHAR(100),
+    updated_at              TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS night_audit_log (
+    id                  SERIAL PRIMARY KEY,
+    client_id           VARCHAR(50) REFERENCES clients(id) ON DELETE CASCADE,
+    audit_date          DATE NOT NULL,
+    status              VARCHAR(20)  DEFAULT 'PENDING',
+    trigger_type        VARCHAR(20)  DEFAULT 'MANUAL',
+    started_at          TIMESTAMPTZ,
+    completed_at        TIMESTAMPTZ,
+    performed_by        VARCHAR(100),
+    rooms_audited       INTEGER DEFAULT 0,
+    payments_verified   INTEGER DEFAULT 0,
+    unsettled_payments  INTEGER DEFAULT 0,
+    total_revenue       DECIMAL(12,2) DEFAULT 0,
+    errors_count        INTEGER DEFAULT 0,
+    report_data         JSONB DEFAULT '{}',
+    notes               TEXT,
+    created_at          TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_audit_log_client ON night_audit_log(client_id, audit_date);
+
+-- ──────────────────────────────────────────────────────────────
+-- أجهزة الدفع
+-- ──────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS payment_devices (
+    id               SERIAL PRIMARY KEY,
+    client_id        VARCHAR(50) REFERENCES clients(id) ON DELETE CASCADE,
+    device_name      VARCHAR(100) NOT NULL,
+    device_type      VARCHAR(30)  DEFAULT 'POS',
+    serial_number    VARCHAR(100),
+    is_active        BOOLEAN DEFAULT TRUE,
+    last_settled_at  TIMESTAMPTZ,
+    daily_total      DECIMAL(12,2) DEFAULT 0,
+    is_deleted       BOOLEAN DEFAULT FALSE,
+    created_at       TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_devices_client ON payment_devices(client_id);
+
+-- ──────────────────────────────────────────────────────────────
+-- تقييمات الحجوزات
+-- ──────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS booking_reviews (
+    id               SERIAL PRIMARY KEY,
+    client_id        VARCHAR(50) REFERENCES clients(id) ON DELETE CASCADE,
+    booking_id       VARCHAR(100) NOT NULL,
+    guest_id         VARCHAR(100),
+    recorded_by      VARCHAR(100),
+    overall_rating   SMALLINT CHECK (overall_rating BETWEEN 1 AND 5),
+    cleanliness      SMALLINT CHECK (cleanliness    BETWEEN 1 AND 5),
+    service          SMALLINT CHECK (service        BETWEEN 1 AND 5),
+    location         SMALLINT CHECK (location       BETWEEN 1 AND 5),
+    value_for_money  SMALLINT CHECK (value_for_money BETWEEN 1 AND 5),
+    comment          TEXT,
+    is_public        BOOLEAN DEFAULT TRUE,
+    management_reply TEXT,
+    replied_by       VARCHAR(100),
+    replied_at       TIMESTAMPTZ,
+    created_at       TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(client_id, booking_id)
+);
+CREATE INDEX IF NOT EXISTS idx_reviews_client ON booking_reviews(client_id);
+"""
+
+
+def run_v4_migrations(db) -> None:
+    """تشغيل migrations الوحدات الجديدة — ZATCA + Night Audit + Reviews"""
+    import logging
+    log = logging.getLogger("dheuof.db.migrations")
+    if not db.use_postgres:
+        log.info("v4 migrations: JSON mode — skip")
+        return
+    ok = fail = 0
+    for s in _split_sql_safe(_SCHEMA_V4):
+        s = s.strip()
+        if not s:
+            continue
+        try:
+            db.execute(s)
+            ok += 1
+        except Exception as e:
+            err = str(e).lower()
+            if any(x in err for x in ("already exists", "duplicate", "42p07", "42710")):
+                ok += 1
+            else:
+                log.warning(f"v4 migration failed: {e} | SQL: {s[:80]}")
+                fail += 1
+    log.info(f"✅ v4 migrations — {ok} OK, {fail} failed")
