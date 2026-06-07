@@ -10,3 +10,8 @@ build/
 data/store.json
 *.log
 reports/
+
+# Generated report artifacts — never commit PDFs/bundles
+*.pdf
+*.bundle
+test_results/

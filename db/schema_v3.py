@@ -715,54 +715,6 @@ def run_v3_migrations(db) -> None:
     log.info("✅ v3 migrations اكتملت")
 
 
-# ── Staff App migrations — room accountability ─────────────────────────────
-
-STAFF_APP_MIGRATIONS = """
-CREATE TABLE IF NOT EXISTS room_actions (
-    id              SERIAL PRIMARY KEY,
-    client_id       VARCHAR(50),
-    room_number     VARCHAR(20) NOT NULL,
-    action_type     VARCHAR(40) NOT NULL,
-    performed_by    VARCHAR(100) NOT NULL,
-    previous_status VARCHAR(30),
-    new_status      VARCHAR(30),
-    notes           TEXT,
-    created_at      TIMESTAMPTZ DEFAULT NOW()
-);
-CREATE INDEX IF NOT EXISTS idx_room_actions_client ON room_actions(client_id, room_number);
-CREATE INDEX IF NOT EXISTS idx_room_actions_staff  ON room_actions(performed_by)
-"""
-
-STAFF_APP_ALTER = [
-    "ALTER TABLE rooms ADD COLUMN IF NOT EXISTS last_action_by  VARCHAR(100)",
-    "ALTER TABLE rooms ADD COLUMN IF NOT EXISTS last_action_at  TIMESTAMPTZ",
-    "ALTER TABLE rooms ADD COLUMN IF NOT EXISTS current_guest   VARCHAR(200)",
-    "ALTER TABLE rooms ADD COLUMN IF NOT EXISTS checkout_due    VARCHAR(10)",
-]
-
-
-def run_staff_app_migrations(db) -> None:
-    import logging
-    log = logging.getLogger("dheuof.db.staff_app")
-    if not db.use_postgres:
-        return
-    for stmt in STAFF_APP_MIGRATIONS.split(";"):
-        s = stmt.strip()
-        if s:
-            try:
-                db.execute(s)
-            except Exception as e:
-                if "already exists" not in str(e).lower():
-                    log.warning(f"staff_app migration: {e}")
-    for stmt in STAFF_APP_ALTER:
-        try:
-            db.execute(stmt)
-        except Exception as e:
-            if "already exists" not in str(e).lower():
-                log.warning(f"ALTER rooms: {e}")
-    log.info("✅ Staff App migrations — room_actions + accountability columns")
-
-
 # ── Security Hardening migrations (Isolation Audit — 10 findings) ──────────
 
 def run_security_hardening(db) -> None:
