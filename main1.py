@@ -468,6 +468,13 @@ try:
 except Exception as e:
     log.warning(f"Reviews: {e}")
 
+try:
+    from routes.pricing import router as pricing_router
+    app.include_router(pricing_router)
+    log.info("✓ Dynamic Pricing (التسعير الديناميكي)")
+except Exception as e:
+    log.warning(f"DynamicPricing router: {e}")
+
 
 # ──────────────────────────────────────────────────────────────
 #  Auth helpers
