@@ -144,8 +144,8 @@ def _login_page(error: str = "", ref_code: str = "") -> str:
       <input type="text" id="reg-cr" dir="ltr" inputmode="numeric" placeholder="1010XXXXXX">
     </div>
     <div class="form-group">
-      <label>البريد الإلكتروني</label>
-      <input type="email" id="reg-email" dir="ltr" placeholder="your@email.com">
+      <label>البريد الإلكتروني <span style="color:#ef4444;font-size:.8rem">* سيصلك معرّفك عليه</span></label>
+      <input type="email" id="reg-email" dir="ltr" placeholder="your@email.com" required>
     </div>
     <div class="form-group">
       <label>كلمة المرور</label>
@@ -192,16 +192,13 @@ async function doRegister(){{
   const key=document.getElementById('reg-key').value.trim();
   const ref=document.getElementById('ref-code')?.value||'';
   if(!name||!pass)return showErr('اسم المنشأة وكلمة المرور مطلوبان');
+  if(!email)return showErr('البريد الإلكتروني مطلوب — سيصلك معرّفك الرقمي عليه');
   if(pass.length<6)return showErr('كلمة المرور ٦ أحرف على الأقل');
-  // توليد معرّف تلقائي من اسم المنشأة + رقم عشوائي
-  const autoId=name.toLowerCase().replace(/[\s؀-ۿ]+/g,'-').replace(/[^a-z0-9-]/g,'').replace(/-+/g,'-').replace(/^-|-$/g,'')||'hotel';
-  const id=autoId+'-'+Math.random().toString(36).slice(2,6);
-  const r=await fetch('/api/client/register',{{method:'POST',headers:{{'Content-Type':'application/json'}},body:JSON.stringify({{hotel_name:name,name:owner||name,client_id:id,password:pass,phone:phone,city:city,cr_number:cr,email:email,activation_key:key,ref_code:ref}})}});
+  const r=await fetch('/api/client/register',{{method:'POST',headers:{{'Content-Type':'application/json'}},body:JSON.stringify({{hotel_name:name,name:owner||name,password:pass,phone:phone,city:city,cr_number:cr,email:email,activation_key:key,ref_code:ref}})}});
   const d=await r.json();
   if(d.ok||d.success){{
-    // أعلم المستخدم بمعرّفه قبل الانتقال
-    const cid=d.client_id||id;
-    alert('✅ تم التسجيل بنجاح!\n\nمعرّف منشأتك للدخول لاحقاً:\n'+cid+'\n\nاحتفظ بهذا المعرّف.');
+    const cid=d.client_id||'';
+    alert('✅ تم التسجيل بنجاح!\n\nمعرّفك الرقمي:\n'+cid+'\n\nتم إرساله إلى بريدك الإلكتروني — احتفظ به للدخول لاحقاً.');
     location.href='/';
   }}else showErr(d.error||'خطأ في التسجيل');
 }}

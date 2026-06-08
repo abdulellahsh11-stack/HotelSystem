@@ -47,6 +47,13 @@ class Config:
     # ── حساب المالك ─────────────────────────────────────────
     owner_client_id: str = ""       # معرف حساب المالك — يُميَّز بشارة في لوحة الإدارة
 
+    # ── البريد الإلكتروني (SMTP) ────────────────────────────
+    smtp_host: str = ""             # مثال: smtp.gmail.com
+    smtp_port: int = 587
+    smtp_user: str = ""             # البريد المُرسِل
+    smtp_pass: str = ""             # كلمة مرور التطبيق
+    smtp_from: str = ""             # اسم + بريد: "ضيوف <info@dheuof.com>"
+
     @classmethod
     def from_env(cls) -> "Config":
         """يُنشئ Config من Railway Environment Variables مع validation"""
@@ -83,7 +90,16 @@ class Config:
             redis_url=os.environ.get("REDIS_URL", ""),
             dual_write=os.environ.get("DUAL_WRITE", "true").lower() == "true",
             owner_client_id=os.environ.get("OWNER_CLIENT_ID", ""),
+            smtp_host=os.environ.get("SMTP_HOST", ""),
+            smtp_port=int(os.environ.get("SMTP_PORT", "587")),
+            smtp_user=os.environ.get("SMTP_USER", ""),
+            smtp_pass=os.environ.get("SMTP_PASS", ""),
+            smtp_from=os.environ.get("SMTP_FROM", "ضيوف <info@dheuof.com>"),
         )
+
+    @property
+    def has_smtp(self) -> bool:
+        return bool(self.smtp_host and self.smtp_user and self.smtp_pass)
 
     @property
     def has_redis(self) -> bool:

@@ -1387,11 +1387,10 @@ async def client_register(request: Request):
 
     if not hotel_name or not password:
         return JSONResponse({"success": False, "error": "اسم المنشأة وكلمة المرور مطلوبان"}, status_code=400)
-    # توليد معرّف تلقائي إذا لم يُرسَل (تسجيل جديد بدون معرّف)
+    # توليد معرّف رقمي تلقائي (8 أرقام) — فريد ولا يتكرر
     if not client_id:
-        import re, secrets as _sec
-        slug = re.sub(r'[^a-z0-9]+', '-', hotel_name.lower()).strip('-') or 'hotel'
-        client_id = f"{slug[:20]}-{_sec.token_hex(3)}"
+        import random as _rnd
+        client_id = str(_rnd.randint(10000000, 99999999))
 
     # M3 mitigation: حدّ معدّل التسجيل لكل IP
     client_ip = (request.client.host if request.client else "?")
@@ -1462,6 +1461,15 @@ async def client_register(request: Request):
     token = _new_token()
     with _lock:
         _client_sessions[token] = {"client_id": client_id, "created_at": datetime.now().isoformat()}
+
+    # إرسال المعرّف الرقمي عبر البريد الإلكتروني
+    if reg_email:
+        try:
+            from services.mailer import send_registration_email
+            cfg = request.app.state.cfg
+            send_registration_email(cfg, reg_email, hotel_name, client_id)
+        except Exception as _mail_err:
+            log.warning(f"register email failed: {_mail_err}")
 
     response = JSONResponse({"success": True, "ok": True, "client_id": client_id})
     response.set_cookie("client_token", token, httponly=True, samesite="lax", secure=_COOKIE_SECURE, max_age=86400 * 7)
