@@ -1385,8 +1385,13 @@ async def client_register(request: Request):
     reg_city = str(body.get("city", "")).strip()
     reg_cr = str(body.get("cr_number", body.get("cr", ""))).strip()
 
-    if not hotel_name or not client_id or not password:
-        return JSONResponse({"success": False, "error": "جميع الحقول مطلوبة"}, status_code=400)
+    if not hotel_name or not password:
+        return JSONResponse({"success": False, "error": "اسم المنشأة وكلمة المرور مطلوبان"}, status_code=400)
+    # توليد معرّف تلقائي إذا لم يُرسَل (تسجيل جديد بدون معرّف)
+    if not client_id:
+        import re, secrets as _sec
+        slug = re.sub(r'[^a-z0-9]+', '-', hotel_name.lower()).strip('-') or 'hotel'
+        client_id = f"{slug[:20]}-{_sec.token_hex(3)}"
 
     # M3 mitigation: حدّ معدّل التسجيل لكل IP
     client_ip = (request.client.host if request.client else "?")

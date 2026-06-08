@@ -132,10 +132,6 @@ def _login_page(error: str = "", ref_code: str = "") -> str:
       <input type="text" id="reg-owner" placeholder="محمد الأحمد">
     </div>
     <div class="form-group">
-      <label>معرّف المنشأة (للدخول لاحقاً)</label>
-      <input type="text" id="reg-id" placeholder="hotel-001">
-    </div>
-    <div class="form-group">
       <label>رقم الجوال</label>
       <input type="tel" id="reg-phone" dir="ltr" inputmode="numeric" placeholder="05XXXXXXXX">
     </div>
@@ -188,7 +184,6 @@ async function doLogin(){{
 async function doRegister(){{
   const name=document.getElementById('reg-name').value.trim();
   const owner=document.getElementById('reg-owner').value.trim();
-  const id=document.getElementById('reg-id').value.trim();
   const phone=document.getElementById('reg-phone').value.trim();
   const city=document.getElementById('reg-city').value.trim();
   const cr=document.getElementById('reg-cr').value.trim();
@@ -196,11 +191,19 @@ async function doRegister(){{
   const pass=document.getElementById('reg-pass').value;
   const key=document.getElementById('reg-key').value.trim();
   const ref=document.getElementById('ref-code')?.value||'';
-  if(!name||!id||!pass)return showErr('اسم المنشأة والمعرّف وكلمة المرور مطلوبة');
+  if(!name||!pass)return showErr('اسم المنشأة وكلمة المرور مطلوبان');
   if(pass.length<6)return showErr('كلمة المرور ٦ أحرف على الأقل');
+  // توليد معرّف تلقائي من اسم المنشأة + رقم عشوائي
+  const autoId=name.toLowerCase().replace(/[\s؀-ۿ]+/g,'-').replace(/[^a-z0-9-]/g,'').replace(/-+/g,'-').replace(/^-|-$/g,'')||'hotel';
+  const id=autoId+'-'+Math.random().toString(36).slice(2,6);
   const r=await fetch('/api/client/register',{{method:'POST',headers:{{'Content-Type':'application/json'}},body:JSON.stringify({{hotel_name:name,name:owner||name,client_id:id,password:pass,phone:phone,city:city,cr_number:cr,email:email,activation_key:key,ref_code:ref}})}});
   const d=await r.json();
-  if(d.ok||d.success)location.href='/';else showErr(d.error||'خطأ في التسجيل');
+  if(d.ok||d.success){{
+    // أعلم المستخدم بمعرّفه قبل الانتقال
+    const cid=d.client_id||id;
+    alert('✅ تم التسجيل بنجاح!\n\nمعرّف منشأتك للدخول لاحقاً:\n'+cid+'\n\nاحتفظ بهذا المعرّف.');
+    location.href='/';
+  }}else showErr(d.error||'خطأ في التسجيل');
 }}
 </script>
 </body>
