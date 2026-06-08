@@ -15,7 +15,7 @@ tests/e2e/test_auth.py — اختبارات تسجيل الدخول والجلس
 import pytest
 from playwright.sync_api import Page, expect
 
-from conftest import BASE_URL, TEST_CLIENT_ID, TEST_PASSWORD
+from e2e_config import BASE_URL, TEST_CLIENT_ID, TEST_PASSWORD
 
 
 # ──────────────────────────────────────────────────────────────

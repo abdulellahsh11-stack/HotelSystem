@@ -9,17 +9,7 @@ import os
 import pytest
 from playwright.sync_api import sync_playwright, Browser, BrowserContext, Page
 
-
-# ──────────────────────────────────────────────────────────────
-#  إعدادات البيئة
-# ──────────────────────────────────────────────────────────────
-
-# عنوان الخادم — يقرأ من متغير البيئة أو يستخدم القيمة الافتراضية
-BASE_URL: str = os.environ.get("BASE_URL", "http://localhost:8000")
-
-# بيانات الاعتماد الافتراضية للاختبارات (يجب إنشاؤها مسبقاً في قاعدة البيانات)
-TEST_CLIENT_ID: str = os.environ.get("TEST_CLIENT_ID", "test-hotel-e2e")
-TEST_PASSWORD: str = os.environ.get("TEST_PASSWORD", "TestPass@2025!")
+from e2e_config import BASE_URL, TEST_CLIENT_ID, TEST_PASSWORD  # noqa: F401
 
 # بيانات حساب المدير
 ADMIN_PASSWORD: str = os.environ.get("ADMIN_PASSWORD", "admin_secret")

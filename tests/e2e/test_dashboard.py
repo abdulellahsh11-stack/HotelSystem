@@ -13,7 +13,7 @@ tests/e2e/test_dashboard.py — اختبارات لوحة التحكم الرئ�
 import pytest
 from playwright.sync_api import Page, expect
 
-from conftest import BASE_URL
+from e2e_config import BASE_URL
 
 
 # ──────────────────────────────────────────────────────────────
