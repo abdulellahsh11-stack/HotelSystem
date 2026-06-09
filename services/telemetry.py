@@ -61,10 +61,9 @@ except ImportError:
 try:
     from prometheus_client import (
         Counter, Gauge, Histogram,
-        CollectorRegistry, generate_latest, CONTENT_TYPE_LATEST,
+        generate_latest, CONTENT_TYPE_LATEST,
         REGISTRY,
     )
-    from fastapi import FastAPI as _FastAPI
     from fastapi.responses import Response as _Response
     _PROMETHEUS_AVAILABLE = True
 except ImportError:

@@ -90,7 +90,7 @@ def test_navigation_works(authenticated_page: Page):
     authenticated_page.wait_for_timeout(800)
 
     # المحتوى الخاص بالنزلاء ظاهر
-    guests_section = authenticated_page.locator(
+    guests_section = authenticated_page.locator(  # noqa: F841
         "#sec-guests, [id*='guest'], .section.active"
     )
     # انتظر أن يكون قسم ما نشطاً
@@ -104,7 +104,7 @@ def test_navigation_works(authenticated_page: Page):
     authenticated_page.wait_for_timeout(800)
 
     # تحقق من أن رابط الحجوزات أصبح نشطاً أو المحتوى ظهر
-    active_section = authenticated_page.locator(
+    active_section = authenticated_page.locator(  # noqa: F841
         "#sec-bookings.active, #sec-bookings.pane-section.active"
     )
     # أو تحقق أن عنوان الصفحة تغيّر ليشير للحجوزات
@@ -239,7 +239,7 @@ def test_new_dashboard_navigation(authenticated_page: Page):
     first_item.click()
     authenticated_page.wait_for_timeout(500)
 
-    active_section = authenticated_page.locator(".section.active")
+    active_section = authenticated_page.locator(".section.active")  # noqa: F841
     expect(active_section.first).to_be_visible(timeout=5_000)
 
 

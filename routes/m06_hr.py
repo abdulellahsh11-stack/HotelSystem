@@ -6,7 +6,6 @@ import logging
 from datetime import datetime
 from typing import Optional
 from fastapi import APIRouter, Request, Depends, HTTPException
-from fastapi.responses import JSONResponse
 
 router = APIRouter(prefix="/api/m06", tags=["HR"])
 
@@ -29,7 +28,7 @@ async def list_employees(request: Request, status: Optional[str] = None, page: i
             q = "SELECT * FROM employees WHERE client_id = %s"
             params = [cid]
             if status:
-                q += " AND status = %s"; params.append(status)
+                q += " AND status = %s"; params.append(status)  # noqa: E702
             count_q = q.replace("SELECT *", "SELECT COUNT(*)", 1)
             count_result = db.execute(count_q, params, fetch="one")
             total = count_result[0] if count_result else 0
@@ -129,9 +128,9 @@ async def list_attendance(request: Request, date_from: Optional[str] = None,
                    WHERE a.client_id = %s"""
             params = [cid]
             if date_from:
-                q += " AND a.work_date >= %s"; params.append(date_from)
+                q += " AND a.work_date >= %s"; params.append(date_from)  # noqa: E702
             if date_to:
-                q += " AND a.work_date <= %s"; params.append(date_to)
+                q += " AND a.work_date <= %s"; params.append(date_to)  # noqa: E702
             q += " ORDER BY a.work_date DESC LIMIT 200"
             rows = db.execute(q, params, fetch="all")
             return {"success": True, "data": [dict(r) for r in (rows or [])]}
@@ -183,8 +182,8 @@ async def list_payroll(request: Request, year: Optional[int] = None,
                    FROM payroll p JOIN employees e ON p.employee_id = e.id
                    WHERE p.client_id = %s"""
             params = [cid]
-            if year: q += " AND p.period_year = %s"; params.append(year)
-            if month: q += " AND p.period_month = %s"; params.append(month)
+            if year: q += " AND p.period_year = %s"; params.append(year)  # noqa: E701, E702
+            if month: q += " AND p.period_month = %s"; params.append(month)  # noqa: E701, E702
             q += " ORDER BY p.period_year DESC, p.period_month DESC"
             rows = db.execute(q, params, fetch="all")
             return {"success": True, "data": [dict(r) for r in (rows or [])]}

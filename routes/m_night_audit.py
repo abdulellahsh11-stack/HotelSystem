@@ -3,7 +3,7 @@
 """Night Audit — إغلاق اليوم + أجهزة الدفع + جدولة تلقائية"""
 import json
 import logging
-from datetime import datetime, date, timedelta
+from datetime import datetime, date
 from decimal import Decimal
 from typing import Optional
 
@@ -320,7 +320,6 @@ async def run_manual_audit(
     session=Depends(_require_client),
 ):
     _require_manager(session)
-    db   = request.app.state.db
     cid  = session["client_id"]
     user = session.get("user_id") or cid
 

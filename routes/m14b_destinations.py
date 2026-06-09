@@ -33,9 +33,9 @@ async def list_destinations(request: Request,
             q = "SELECT * FROM tourist_destinations WHERE client_id=%s AND status='active'"
             params = [cid]
             if category:
-                q += " AND category=%s"; params.append(category)
+                q += " AND category=%s"; params.append(category)  # noqa: E702
             if city:
-                q += " AND city ILIKE %s"; params.append(f"%{city}%")
+                q += " AND city ILIKE %s"; params.append(f"%{city}%")  # noqa: E702
             q += " ORDER BY name_ar"
             rows = db.execute(q, params, fetch="all")
             return {"success": True, "data": [dict(r) for r in (rows or [])]}
@@ -197,7 +197,7 @@ async def list_dest_bookings(request: Request,
             """
             params = [cid]
             if date_from:
-                q += " AND db.visit_date >= %s"; params.append(date_from)
+                q += " AND db.visit_date >= %s"; params.append(date_from)  # noqa: E702
             q += " ORDER BY db.visit_date DESC LIMIT 50"
             rows = db.execute(q, params, fetch="all")
             return {"success": True, "data": [dict(r) for r in (rows or [])]}

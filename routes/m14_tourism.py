@@ -103,7 +103,7 @@ async def list_tour_bookings(request: Request, date_from: Optional[str] = None,
                    WHERE tb.client_id = %s"""
             params = [cid]
             if date_from:
-                q += " AND tb.tour_date >= %s"; params.append(date_from)
+                q += " AND tb.tour_date >= %s"; params.append(date_from)  # noqa: E702
             q += " ORDER BY tb.tour_date DESC LIMIT 50"
             rows = db.execute(q, params, fetch="all")
             return {"success": True, "data": [dict(r) for r in (rows or [])]}

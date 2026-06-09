@@ -3,7 +3,7 @@
 """routes/pricing.py — التسعير الديناميكي"""
 import logging
 from typing import Optional
-from fastapi import APIRouter, Request, Depends, HTTPException
+from fastapi import APIRouter, Request, Depends
 from fastapi.responses import JSONResponse
 
 router = APIRouter(prefix="/api/pricing", tags=["DynamicPricing"])

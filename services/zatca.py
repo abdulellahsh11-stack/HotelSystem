@@ -76,10 +76,10 @@ def decode_tlv(data: bytes) -> dict:
     result: dict = {}
     i = 0
     while i < len(data):
-        tag = data[i]; i += 1
+        tag = data[i]; i += 1  # noqa: E702
         if i >= len(data):
             break
-        length_byte = data[i]; i += 1
+        length_byte = data[i]; i += 1  # noqa: E702
         if length_byte & 0x80:
             n = length_byte & 0x7F
             length = int.from_bytes(data[i:i + n], "big")

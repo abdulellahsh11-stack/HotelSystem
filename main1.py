@@ -16,13 +16,11 @@ from contextlib import asynccontextmanager
 from datetime import datetime, date, timedelta
 from typing import Optional
 
-import uvicorn
-from fastapi import FastAPI, Request, HTTPException, Depends
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.encoders import jsonable_encoder
 
 
 class _SafeEncoder(json.JSONEncoder):
@@ -234,7 +232,6 @@ async def lifespan(app_: FastAPI):
                 if db.use_postgres:
                     db.execute("DELETE FROM client_sessions WHERE expires_at < NOW()")
                     # Also clear expired from in-memory dict
-                    now_ts = datetime.now().isoformat()
                     with _lock:
                         stale = [t for t, s in list(_client_sessions.items())
                                  if s.get("created_at", "9999") < (datetime.now() - timedelta(days=8)).isoformat()]
@@ -568,4 +565,4 @@ def require_client(request: Request) -> dict:
 #  HTML Helpers
 # ──────────────────────────────────────────────────────────────
 
-from html_pages import _login_page, _admin_login_page, _admin_dashboard, _client_dashboard  # noqa: F401
+from html_pages import _login_page, _admin_login_page, _admin_dashboard, _client_dashboard  # noqa: E402, F401

@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""توليد تقرير PDF شامل لمنصة ضيوف مقارنةً بـ Opera و نزيل"""
+"""توليد تقرير PDF شامل لمنصة ضيوف — دعم RTL كامل بخط Amiri"""
 
-import os, sys
+import os
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import cm
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.enums import TA_RIGHT, TA_CENTER, TA_LEFT
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib.enums import TA_RIGHT, TA_CENTER
 from reportlab.platypus import (
     SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
     HRFlowable, PageBreak, KeepTogether
@@ -17,386 +17,530 @@ from reportlab.pdfbase.ttfonts import TTFont
 import arabic_reshaper
 from bidi.algorithm import get_display
 
-# ── تسجيل خط عربي ─────────────────────────────────────────────
-FONT_PATH = None
-for p in [
-    "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-    "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
-    "/usr/share/fonts/truetype/freefont/FreeSans.ttf",
-]:
-    if os.path.exists(p):
-        FONT_PATH = p
+# ── خط Amiri (أفضل خط عربي للـ PDF) ──────────────────────────
+_FONT_CANDIDATES = [
+    ("/tmp/amiri_fonts/Amiri-1.000/Amiri-Regular.ttf",
+     "/tmp/amiri_fonts/Amiri-1.000/Amiri-Bold.ttf"),
+    ("/usr/share/fonts/truetype/freefont/FreeSerif.ttf",
+     "/usr/share/fonts/truetype/freefont/FreeSerifBold.ttf"),
+    ("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+     "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"),
+]
+BASE_FONT = "Helvetica"
+BASE_BOLD = "Helvetica-Bold"
+for reg, bld in _FONT_CANDIDATES:
+    if os.path.exists(reg):
+        pdfmetrics.registerFont(TTFont("ArabicR", reg))
+        BASE_FONT = "ArabicR"
+        if os.path.exists(bld):
+            pdfmetrics.registerFont(TTFont("ArabicB", bld))
+            BASE_BOLD = "ArabicB"
+        else:
+            BASE_BOLD = "ArabicR"
         break
 
-if FONT_PATH:
-    pdfmetrics.registerFont(TTFont("Arabic", FONT_PATH))
-    pdfmetrics.registerFont(TTFont("ArabicBold", FONT_PATH))
-    BASE_FONT = "Arabic"
-else:
-    BASE_FONT = "Helvetica"
 
-def ar(text):
-    """تشكيل النص العربي للعرض الصحيح."""
+def ar(text: str) -> str:
+    """إعادة تشكيل النص العربي للعرض الصحيح RTL."""
+    if not text:
+        return text
     try:
-        reshaped = arabic_reshaper.reshape(text)
+        reshaped = arabic_reshaper.reshape(str(text))
         return get_display(reshaped)
     except Exception:
         return text
 
-def make_style(name, font=BASE_FONT, size=10, align=TA_RIGHT, color=colors.black,
-               bold=False, space_before=4, space_after=4, leading=None):
+
+def _ps(name, size=10, bold=False, align=TA_RIGHT,
+         color=colors.black, sb=3, sa=3):
     return ParagraphStyle(
         name=name,
-        fontName=f"{font}{'Bold' if bold and font != 'Helvetica' else ''}",
+        fontName=BASE_BOLD if bold else BASE_FONT,
         fontSize=size,
         textColor=color,
         alignment=align,
-        spaceBefore=space_before,
-        spaceAfter=space_after,
-        leading=leading or size * 1.5,
+        spaceBefore=sb,
+        spaceAfter=sa,
+        leading=size * 1.7,
         wordWrap='CJK',
+        rightIndent=0,
+        leftIndent=0,
     )
 
+
 # ── الألوان ────────────────────────────────────────────────────
-NAVY    = colors.HexColor("#0F2640")
-BLUE    = colors.HexColor("#185FA5")
-TEAL    = colors.HexColor("#0D9488")
-GREEN   = colors.HexColor("#10B981")
-ORANGE  = colors.HexColor("#F59E0B")
-RED     = colors.HexColor("#EF4444")
-LGRAY   = colors.HexColor("#F1F5F9")
-MGRAY   = colors.HexColor("#CBD5E1")
-DGRAY   = colors.HexColor("#475569")
+NAVY  = colors.HexColor("#0F2640")
+BLUE  = colors.HexColor("#185FA5")
+TEAL  = colors.HexColor("#0D9488")
+GREEN = colors.HexColor("#059669")
+ORG   = colors.HexColor("#D97706")
+RED   = colors.HexColor("#DC2626")
+LGRAY = colors.HexColor("#F1F5F9")
+MGRAY = colors.HexColor("#CBD5E1")
+DGRAY = colors.HexColor("#64748B")
+WHITE = colors.white
+LBLUE = colors.HexColor("#DBEAFE")
 
-# ══════════════════════════════════════════════════════════════
-#  البيانات
-# ══════════════════════════════════════════════════════════════
 
-FEATURES = [
-    # (الوحدة, الوزن, ضيوف%, أوبرا%, نزيل%, ملاحظة)
-    ("المصادقة والأمان",           8,  95, 99, 70,  "JWT + OTP + Rate Limiting + قفل الحساب"),
-    ("إدارة الأدوار والصلاحيات",   7,  95, 98, 65,  "50+ صلاحية مخزنة في DB + RBAC كامل"),
-    ("إدارة الغرف والأنواع",        8,  90, 99, 80,  "حالات الغرف + خريطة + أنواع مرنة"),
-    ("إدارة الحجوزات",             10, 90, 99, 85,  "Check-in/out + حساب ضرائب كامل"),
-    ("تطبيق الحجز المباشر",         9,  92, 75, 40,  "ميزة تنافسية — توفر عمولات OTA"),
-    ("نظام الضرائب (VAT + سياحة)", 8,  95, 90, 55,  "الحالة A/B + ZATCA متكامل"),
-    ("فواتير ZATCA",               8,  90, 85, 50,  "TLV + UBL 2.1 + QR Scanner"),
-    ("Night Audit",                7,  88, 97, 60,  "Cron ديناميكي + تقرير PDF"),
-    ("التقارير و KPI",              7,  85, 99, 65,  "6 تقارير + تصدير PDF/Excel"),
-    ("Housekeeping",               5,  80, 98, 55,  "Kanban + مهمة تلقائية عند Checkout"),
-    ("Channel Manager",            6,  70, 95, 35,  "4 قنوات + Webhook (قيد التطوير)"),
-    ("إدارة الموظفين",             5,  85, 97, 75,  "RBAC per module + تعطيل"),
-    ("إدارة الضيوف",               6,  88, 98, 70,  "VIP + حظر + سجل إقامات + Shamoos"),
-    ("نظام الاشتراكات",            5,  90, 99, 45,  "Trial 60 يوم + تجديد برقم تسلسلي"),
-    ("الدعم متعدد اللغات",         4,  80, 99, 70,  "عربي + إنجليزي (واجهة + تقارير)"),
-    ("تطبيق الجوال",              6,  60, 85, 50,  "Flutter (Android/iOS) — قيد التطوير"),
-    ("التكامل مع Moyasar",         5,  85, 70, 40,  "MADA + Visa + Apple Pay"),
-    ("Shamoos (GASTAT)",           4,  75, 80, 55,  "تقرير شهري تلقائي للسياحة"),
-    ("Revenue Management",         5,  80, 95, 30,  "تسعير ديناميكي + مواسم"),
-    ("Audit Logs",                 4,  90, 99, 45,  "كل العمليات الحساسة مُسجَّلة"),
-]
-
-def weighted_score(data):
-    total_w = sum(r[1] for r in data)
-    score = sum(r[1] * r[2] for r in data) / total_w
-    return round(score, 1)
-
-DHEUOF_SCORE = weighted_score(FEATURES)
-OPERA_SCORE  = weighted_score([(f[0], f[1], f[3], f[2], f[4], f[5]) for f in FEATURES])
-NUZUL_SCORE  = weighted_score([(f[0], f[1], f[4], f[2], f[3], f[5]) for f in FEATURES])
-
-# ══════════════════════════════════════════════════════════════
-#  مكوّنات الصفحة
-# ══════════════════════════════════════════════════════════════
-
-def bar(pct, width=120, color=GREEN):
-    """شريط تقدم نصي."""
-    filled = int(width * pct / 100 / 8)
-    return "█" * filled + "░" * (int(width / 8) - filled) + f"  {pct}%"
-
-def section_title(text, style):
-    return [
-        Spacer(1, 0.3*cm),
-        Paragraph(ar(text), style),
-        HRFlowable(width="100%", thickness=1.5, color=BLUE, spaceAfter=6),
-    ]
-
-def color_for(pct):
-    if pct >= 90: return GREEN
-    if pct >= 75: return TEAL
-    if pct >= 60: return ORANGE
+def _color_score(pct: int):
+    if pct >= 88:
+        return GREEN
+    if pct >= 72:
+        return TEAL
+    if pct >= 55:
+        return ORG
     return RED
 
-def build_pdf(out_path):
+
+# ══════════════════════════════════════════════════════════════
+#  البيانات: (الوحدة، الوزن، ضيوف%، أوبرا%، نزيل%، ملاحظة)
+# ══════════════════════════════════════════════════════════════
+FEATURES = [
+    ("المصادقة والأمان",          8,  95, 99, 70,
+     "JWT دوار + bcrypt-12 + Rate Limiting + قفل الحساب"),
+    ("إدارة الأدوار والصلاحيات",  7,  95, 98, 65,
+     "50+ صلاحية في DB + RBAC كامل لكل وحدة"),
+    ("إدارة الغرف والأنواع",       8,  90, 99, 80,
+     "خريطة تفاعلية + حالات الغرف + أنواع مرنة"),
+    ("إدارة الحجوزات",            10, 90, 99, 85,
+     "Check-in/out + حساب ضرائب كامل + سجل"),
+    ("تطبيق الحجز المباشر",        9,  92, 75, 40,
+     "توفر 15-25% عمولات OTA — ميزة تنافسية"),
+    ("ضرائب VAT + رسوم سياحة",    8,  95, 90, 55,
+     "الحالة A/B المزدوجة + ZATCA متكامل"),
+    ("فواتير ZATCA (QR + UBL)",   8,  90, 85, 50,
+     "TLV 5 حقول + UBL 2.1 + Scanner بالكاميرا"),
+    ("Night Audit",               7,  88, 97, 60,
+     "Cron ديناميكي + تقرير PDF شامل"),
+    ("التقارير و KPI",             7,  85, 99, 65,
+     "6 تقارير تفصيلية + تصدير PDF/Excel"),
+    ("Housekeeping",              5,  80, 98, 55,
+     "Kanban + مهمة تلقائية عند الـ Checkout"),
+    ("Channel Manager",           6,  70, 95, 35,
+     "4 قنوات + Webhook — قيد التطوير"),
+    ("إدارة الموظفين",            5,  85, 97, 75,
+     "RBAC لكل وحدة + تعطيل + سجل نشاط"),
+    ("إدارة الضيوف",              6,  88, 98, 70,
+     "VIP + حظر + سجل إقامات + Shamoos"),
+    ("نظام الاشتراكات",           5,  90, 99, 45,
+     "Trial 60 يوم + رقم تسلسلي + تجديد"),
+    ("الدعم متعدد اللغات",        4,  80, 99, 70,
+     "عربي + إنجليزي + 3 لغات موظفين"),
+    ("تطبيق الجوال (Flutter)",    6,  60, 85, 50,
+     "Android/iOS — قيد التطوير Q3 2026"),
+    ("تكامل Moyasar (الدفع)",     5,  85, 70, 40,
+     "MADA + Visa + Apple Pay + بدون عمولة"),
+    ("Shamoos / GASTAT",          4,  75, 80, 55,
+     "تقرير شهري تلقائي للسياحة"),
+    ("Revenue Management",        5,  80, 95, 30,
+     "تسعير ديناميكي موسمي + AI لاحقاً"),
+    ("Audit Logs",                4,  90, 99, 45,
+     "كل العمليات الحساسة مُسجَّلة بالتوقيت"),
+]
+
+
+def _weighted(col_idx: int) -> float:
+    total_w = sum(r[1] for r in FEATURES)
+    return round(sum(r[1] * r[col_idx] for r in FEATURES) / total_w, 1)
+
+
+SCORE_D = _weighted(2)
+SCORE_O = _weighted(3)
+SCORE_N = _weighted(4)
+
+
+# ══════════════════════════════════════════════════════════════
+#  مساعدات البناء
+# ══════════════════════════════════════════════════════════════
+
+def _hr():
+    return HRFlowable(width="100%", thickness=1.2, color=BLUE, spaceAfter=5)
+
+
+def _section(title_ar: str, style):
+    return [
+        Spacer(1, 0.35 * cm),
+        Paragraph(ar(title_ar), style),
+        _hr(),
+    ]
+
+
+def _score_badge(label: str, pct: float, bg_color) -> Table:
+    rows = [
+        [Paragraph(ar(label), _ps("bn", size=10, bold=True, color=WHITE, align=TA_CENTER))],
+        [Paragraph(f"{pct}%", _ps("bs", size=28, bold=True, color=WHITE, align=TA_CENTER))],
+        [Paragraph(ar("النتيجة المرجَّحة"), _ps("bx", size=7.5, color=WHITE, align=TA_CENTER))],
+    ]
+    t = Table(rows, colWidths=[4.8 * cm])
+    t.setStyle(TableStyle([
+        ("BACKGROUND",    (0, 0), (-1, -1), bg_color),
+        ("TOPPADDING",    (0, 0), (-1, -1), 10),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
+        ("LEFTPADDING",   (0, 0), (-1, -1), 4),
+        ("RIGHTPADDING",  (0, 0), (-1, -1), 4),
+    ]))
+    return t
+
+
+def _progress_bar(pct: int) -> str:
+    filled = round(pct / 100 * 10)
+    empty = 10 - filled
+    return f"{'█' * filled}{'░' * empty} {pct}%"
+
+
+# ══════════════════════════════════════════════════════════════
+#  بناء الـ PDF
+# ══════════════════════════════════════════════════════════════
+
+def build_pdf(out_path: str):
     doc = SimpleDocTemplate(
         out_path,
         pagesize=A4,
-        rightMargin=2*cm, leftMargin=2*cm,
-        topMargin=2*cm, bottomMargin=2*cm,
+        rightMargin=1.8 * cm,
+        leftMargin=1.8 * cm,
+        topMargin=2 * cm,
+        bottomMargin=2 * cm,
         title="تقرير منصة ضيوف",
+        author="منصة ضيوف",
+        subject="مقارنة تنافسية — ضيوف vs Opera vs نزيل",
     )
 
-    # ── الأنماط ───────────────────────────────────────────────
-    S = {
-        "h0":    make_style("h0",  size=22, bold=True, color=NAVY,  align=TA_CENTER, space_before=0),
-        "h1":    make_style("h1",  size=15, bold=True, color=NAVY,  align=TA_RIGHT,  space_before=10),
-        "h2":    make_style("h2",  size=12, bold=True, color=BLUE,  align=TA_RIGHT,  space_before=6),
-        "body":  make_style("body",size=9,              align=TA_RIGHT, space_before=2),
-        "small": make_style("small",size=7.5, color=DGRAY, align=TA_RIGHT),
-        "bold":  make_style("bold",size=9,  bold=True,   align=TA_RIGHT),
-        "cen":   make_style("cen", size=9,               align=TA_CENTER),
-        "lft":   make_style("lft", size=8,               align=TA_LEFT),
-    }
+    # أنماط النص
+    H1  = _ps("H1",  size=14, bold=True, color=NAVY,  align=TA_RIGHT,  sb=10, sa=4)
+    BD  = _ps("BD",  size=9,              align=TA_RIGHT, sb=2, sa=2)
+    CEN = _ps("CEN", size=9,              align=TA_CENTER, sb=2, sa=2)
 
     story = []
 
-    # ═══════════════════════════════════════════════════════
-    #  الغلاف
-    # ═══════════════════════════════════════════════════════
-    story.append(Spacer(1, 1.5*cm))
+    # ══════════════════════════════════════════════════════════
+    #  غلاف التقرير
+    # ══════════════════════════════════════════════════════════
+    story.append(Spacer(1, 1.2 * cm))
 
-    cover_data = [[
-        Paragraph(ar("🏨  منصة ضيوف"), make_style("cv", size=26, bold=True, color=NAVY, align=TA_CENTER)),
-    ]]
-    story.append(Table(cover_data, colWidths=[17*cm],
-        style=TableStyle([
-            ("BACKGROUND", (0,0), (-1,-1), LGRAY),
-            ("ROUNDEDCORNERS", (0,0), (-1,-1), 12),
-            ("TOPPADDING", (0,0), (-1,-1), 20),
-            ("BOTTOMPADDING", (0,0), (-1,-1), 20),
-        ])))
-    story.append(Spacer(1, 0.5*cm))
-    story.append(Paragraph(ar("تقرير تحليل الجاهزية والمقارنة التنافسية"), S["h0"]))
-    story.append(Spacer(1, 0.3*cm))
-    story.append(Paragraph(ar("نظام SaaS متكامل لإدارة الفنادق والمنشآت الفندقية في المملكة العربية السعودية"), S["body"]))
-    story.append(Spacer(1, 0.2*cm))
-    story.append(Paragraph(ar("www.dheuof.com  ·  info@dheuof.com  ·  8 يونيو 2026"), S["small"]))
-    story.append(Spacer(1, 1.0*cm))
-
-    # ── بطاقات النتيجة الرئيسية ───────────────────────────
-    cards = [
-        [ar("منصة ضيوف"), f"{DHEUOF_SCORE}%", ar("جاهزية المنصة")],
-        [ar("Oracle Opera"), f"{OPERA_SCORE}%", ar("مرجع عالمي")],
-        [ar("نزيل"),        f"{NUZUL_SCORE}%", ar("منافس محلي")],
+    # عنوان رئيسي في صندوق
+    cover_inner = [
+        [Paragraph(ar("🏨  منصة  ضيوف"), _ps("cvt", size=28, bold=True, color=NAVY, align=TA_CENTER))],
+        [Paragraph(ar("تقرير تحليل الجاهزية والمقارنة التنافسية"), _ps("cvs", size=13, color=BLUE, align=TA_CENTER))],
+        [Paragraph(ar("نظام SaaS لإدارة الفنادق في المملكة العربية السعودية"),
+                   _ps("cvd", size=10, color=DGRAY, align=TA_CENTER))],
     ]
-    card_colors = [BLUE, NAVY, TEAL]
-    card_table_data = [[
-        Table([[
-            [Paragraph(ar(c[0]), make_style("cn", size=11, bold=True, color=colors.white, align=TA_CENTER))],
-            [Paragraph(c[1],    make_style("cs", size=28, bold=True, color=colors.white, align=TA_CENTER))],
-            [Paragraph(ar(c[2]), make_style("cx", size=8,             color=colors.white, align=TA_CENTER))],
-        ]], colWidths=[4.8*cm],
-        style=TableStyle([
-            ("BACKGROUND",    (0,0), (-1,-1), card_colors[i]),
-            ("TOPPADDING",    (0,0), (-1,-1), 14),
-            ("BOTTOMPADDING", (0,0), (-1,-1), 14),
-            ("ROUNDEDCORNERS",(0,0), (-1,-1), 8),
-        ]))
-        for i, c in enumerate(cards)
-    ]]
-    story.append(Table(card_table_data, colWidths=[5.3*cm, 5.3*cm, 5.3*cm],
-        style=TableStyle([("ALIGN", (0,0), (-1,-1), "CENTER"), ("VALIGN", (0,0), (-1,-1), "MIDDLE")])))
-    story.append(Spacer(1, 0.8*cm))
+    cover_tbl = Table(cover_inner, colWidths=[16.4 * cm])
+    cover_tbl.setStyle(TableStyle([
+        ("BACKGROUND",    (0, 0), (-1, -1), LGRAY),
+        ("TOPPADDING",    (0, 0), (-1, -1), 22),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 22),
+        ("LEFTPADDING",   (0, 0), (-1, -1), 20),
+        ("RIGHTPADDING",  (0, 0), (-1, -1), 20),
+        ("LINEBELOW",     (0, -1), (-1, -1), 3, BLUE),
+    ]))
+    story.append(cover_tbl)
+    story.append(Spacer(1, 0.6 * cm))
+    story.append(Paragraph(ar("www.dheuof.com  ·  info@dheuof.com  ·  يونيو 2026"),
+                            _ps("meta", size=8, color=DGRAY, align=TA_CENTER)))
+    story.append(Spacer(1, 1.0 * cm))
 
-    # ═══════════════════════════════════════════════════════
-    #  ١. الملخص التنفيذي
-    # ═══════════════════════════════════════════════════════
-    story += section_title("١. الملخص التنفيذي", S["h1"])
-    summary_points = [
-        f"منصة ضيوف نظام SaaS متعدد المستأجرين لإدارة الفنادق بتقنيات NestJS + Next.js + Flutter + PostgreSQL.",
-        f"النتيجة الإجمالية: {DHEUOF_SCORE}% جاهزية مقابل {OPERA_SCORE}% لـ Opera و{NUZUL_SCORE}% لـ نزيل.",
-        "تتميز المنصة بميزات غير موجودة في المنافسين: تطبيق حجز مباشر يوفر عمولات OTA + نظام ضرائب ثنائي المسؤولية متوافق مع ZATCA.",
-        "النقاط الأقل نضجاً: Channel Manager + تطبيق الجوال (Flutter) — قيد التطوير، لا تؤثر على التشغيل الأساسي.",
-        "البنية الأمنية قوية: bcrypt+12 + JWT دوار + Rate Limiting + قفل الحساب + Audit Logs + Soft Delete.",
+    # ── بطاقات النتيجة ──────────────────────────────────────
+    badges = Table(
+        [[
+            _score_badge("منصة ضيوف",   SCORE_D, BLUE),
+            _score_badge("Oracle Opera", SCORE_O, NAVY),
+            _score_badge("نزيل",         SCORE_N, TEAL),
+        ]],
+        colWidths=[5.4 * cm, 5.4 * cm, 5.4 * cm],
+    )
+    badges.setStyle(TableStyle([
+        ("ALIGN",         (0, 0), (-1, -1), "CENTER"),
+        ("VALIGN",        (0, 0), (-1, -1), "MIDDLE"),
+        ("LEFTPADDING",   (0, 0), (-1, -1), 2),
+        ("RIGHTPADDING",  (0, 0), (-1, -1), 2),
+        ("TOPPADDING",    (0, 0), (-1, -1), 0),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+    ]))
+    story.append(badges)
+    story.append(Spacer(1, 1.0 * cm))
+
+    # ══════════════════════════════════════════════════════════
+    #  ١ — الملخص التنفيذي
+    # ══════════════════════════════════════════════════════════
+    story += _section("١. الملخص التنفيذي", H1)
+    summary = [
+        "منصة ضيوف نظام SaaS متعدد المستأجرين مبني بـ NestJS + Next.js + Flutter + PostgreSQL.",
+        f"النتيجة الإجمالية المرجَّحة: ضيوف {SCORE_D}% مقابل Opera {SCORE_O}% ونزيل {SCORE_N}%.",
+        "تتفوق المنصة على نزيل في جميع الوحدات الأساسية وتقترب من Opera في التشغيل اليومي للفنادق متوسطة الحجم.",
+        "أبرز الميزات الحصرية: تطبيق حجز مباشر بلا عمولة + ضرائب ثنائية المسؤولية + ZATCA كامل + متعدد اللغات للموظفين.",
+        "النقاط الأقل نضجاً: Channel Manager وتطبيق Flutter — لا تؤثر على التشغيل اليومي وهي قيد التطوير.",
     ]
-    for pt in summary_points:
-        story.append(Paragraph(f"◆  {ar(pt)}", S["body"]))
-    story.append(Spacer(1, 0.4*cm))
+    for pt in summary:
+        story.append(Paragraph(f"◆  {ar(pt)}", BD))
+    story.append(Spacer(1, 0.3 * cm))
 
-    # ═══════════════════════════════════════════════════════
-    #  ٢. جدول المقارنة التفصيلية
-    # ═══════════════════════════════════════════════════════
+    # ══════════════════════════════════════════════════════════
+    #  ٢ — جدول المقارنة التفصيلية
+    # ══════════════════════════════════════════════════════════
     story.append(PageBreak())
-    story += section_title("٢. جدول المقارنة التفصيلية بالوحدات", S["h1"])
+    story += _section("٢. جدول المقارنة التفصيلية — ٢٠ وحدة", H1)
 
-    hdr = [ar(t) for t in ["الوحدة", "الوزن", "ضيوف", "Opera", "نزيل", "ملاحظة"]]
-    tdata = [hdr]
+    # رأس الجدول: RTL — الأكثر أهمية على اليمين
+    hdr_cells = [
+        Paragraph(ar("الوحدة"),    _ps("hc", size=8, bold=True, color=WHITE, align=TA_RIGHT)),
+        Paragraph(ar("الوزن"),     _ps("hc", size=8, bold=True, color=WHITE, align=TA_CENTER)),
+        Paragraph(ar("ضيوف"),      _ps("hc", size=8, bold=True, color=WHITE, align=TA_CENTER)),
+        Paragraph(ar("Opera"),     _ps("hc", size=8, bold=True, color=WHITE, align=TA_CENTER)),
+        Paragraph(ar("نزيل"),      _ps("hc", size=8, bold=True, color=WHITE, align=TA_CENTER)),
+        Paragraph(ar("الملاحظة"), _ps("hc", size=8, bold=True, color=WHITE, align=TA_RIGHT)),
+    ]
+
+    tdata = [hdr_cells]
     for row in FEATURES:
         name, w, dh, op, nz, note = row
         tdata.append([
-            Paragraph(ar(name), S["body"]),
-            Paragraph(f"{w}%",  S["cen"]),
-            Paragraph(f"{dh}%", make_style("td", size=8, align=TA_CENTER, color=color_for(dh))),
-            Paragraph(f"{op}%", make_style("to", size=8, align=TA_CENTER, color=color_for(op))),
-            Paragraph(f"{nz}%", make_style("tn", size=8, align=TA_CENTER, color=color_for(nz))),
-            Paragraph(ar(note), S["small"]),
+            Paragraph(ar(name), _ps("tc", size=8.5, align=TA_RIGHT)),
+            Paragraph(f"{w}",   _ps("tw", size=8,   align=TA_CENTER)),
+            Paragraph(f"{dh}%", _ps("td", size=8.5, bold=True, align=TA_CENTER, color=_color_score(dh))),
+            Paragraph(f"{op}%", _ps("to", size=8,   align=TA_CENTER, color=_color_score(op))),
+            Paragraph(f"{nz}%", _ps("tn", size=8,   align=TA_CENTER, color=_color_score(nz))),
+            Paragraph(ar(note), _ps("nt", size=7.5, color=DGRAY, align=TA_RIGHT)),
         ])
-    # صف المجموع
+
+    # صف المجموع المرجَّح
     tdata.append([
-        Paragraph(ar("المجموع المرجَّح"), make_style("ts", size=9, bold=True, align=TA_RIGHT)),
-        Paragraph("100%", S["cen"]),
-        Paragraph(f"{DHEUOF_SCORE}%", make_style("ts", size=10, bold=True, align=TA_CENTER, color=BLUE)),
-        Paragraph(f"{OPERA_SCORE}%",  make_style("ts", size=10, bold=True, align=TA_CENTER, color=NAVY)),
-        Paragraph(f"{NUZUL_SCORE}%",  make_style("ts", size=10, bold=True, align=TA_CENTER, color=TEAL)),
-        Paragraph("", S["cen"]),
+        Paragraph(ar("المجموع المرجَّح"), _ps("tot", size=9, bold=True, align=TA_RIGHT)),
+        Paragraph("100",  _ps("tot", size=9, bold=True, align=TA_CENTER)),
+        Paragraph(f"{SCORE_D}%", _ps("tot", size=10, bold=True, align=TA_CENTER, color=BLUE)),
+        Paragraph(f"{SCORE_O}%", _ps("tot", size=10, bold=True, align=TA_CENTER, color=NAVY)),
+        Paragraph(f"{SCORE_N}%", _ps("tot", size=10, bold=True, align=TA_CENTER, color=TEAL)),
+        Paragraph("", CEN),
     ])
 
-    col_w = [4.0*cm, 1.3*cm, 1.5*cm, 1.5*cm, 1.5*cm, 6.5*cm]
-    tbl = Table(tdata, colWidths=col_w, repeatRows=1)
-    tbl.setStyle(TableStyle([
-        ("BACKGROUND",   (0,0),  (-1,0),  NAVY),
-        ("TEXTCOLOR",    (0,0),  (-1,0),  colors.white),
-        ("FONTSIZE",     (0,0),  (-1,0),  8),
-        ("TOPPADDING",   (0,0),  (-1,-1), 5),
-        ("BOTTOMPADDING",(0,0),  (-1,-1), 5),
-        ("GRID",         (0,0),  (-1,-1), 0.5, MGRAY),
-        ("ROWBACKGROUNDS",(0,1), (-1,-2), [colors.white, LGRAY]),
-        ("BACKGROUND",   (0,-1), (-1,-1), colors.HexColor("#E0F2FE")),
-        ("FONTSIZE",     (0,-1), (-1,-1), 9),
-        ("ALIGN",        (1,0),  (4,-1),  "CENTER"),
-        ("VALIGN",       (0,0),  (-1,-1), "MIDDLE"),
+    col_w = [3.8 * cm, 1.0 * cm, 1.6 * cm, 1.6 * cm, 1.6 * cm, 6.7 * cm]
+    feat_tbl = Table(tdata, colWidths=col_w, repeatRows=1)
+    feat_tbl.setStyle(TableStyle([
+        ("BACKGROUND",    (0, 0),  (-1, 0),  NAVY),
+        ("TEXTCOLOR",     (0, 0),  (-1, 0),  WHITE),
+        ("TOPPADDING",    (0, 0),  (-1, -1), 5),
+        ("BOTTOMPADDING", (0, 0),  (-1, -1), 5),
+        ("LEFTPADDING",   (0, 0),  (-1, -1), 4),
+        ("RIGHTPADDING",  (0, 0),  (-1, -1), 4),
+        ("GRID",          (0, 0),  (-1, -1), 0.4, MGRAY),
+        ("ROWBACKGROUNDS",(0, 1),  (-1, -2), [WHITE, LGRAY]),
+        ("BACKGROUND",    (0, -1), (-1, -1), LBLUE),
+        ("FONTSIZE",      (0, -1), (-1, -1), 9),
+        ("ALIGN",         (1, 0),  (4, -1),  "CENTER"),
+        ("VALIGN",        (0, 0),  (-1, -1), "MIDDLE"),
+        ("LINEABOVE",     (0, -1), (-1, -1), 1.5, BLUE),
     ]))
-    story.append(tbl)
+    story.append(feat_tbl)
+    story.append(Spacer(1, 0.3 * cm))
 
-    # ═══════════════════════════════════════════════════════
-    #  ٣. الميزات التنافسية الحصرية
-    # ═══════════════════════════════════════════════════════
+    # أسطورة الألوان
+    legend_data = [[
+        Paragraph("■", _ps("lg", size=10, color=GREEN,  align=TA_CENTER)),
+        Paragraph(ar("88% فأكثر: ممتاز"), _ps("lt", size=8, align=TA_RIGHT)),
+        Paragraph("■", _ps("lg", size=10, color=TEAL,   align=TA_CENTER)),
+        Paragraph(ar("72-87%: جيد"),      _ps("lt", size=8, align=TA_RIGHT)),
+        Paragraph("■", _ps("lg", size=10, color=ORG,    align=TA_CENTER)),
+        Paragraph(ar("55-71%: متوسط"),   _ps("lt", size=8, align=TA_RIGHT)),
+        Paragraph("■", _ps("lg", size=10, color=RED,    align=TA_CENTER)),
+        Paragraph(ar("أقل من 55%: ضعيف"), _ps("lt", size=8, align=TA_RIGHT)),
+    ]]
+    legend_tbl = Table(legend_data, colWidths=[0.5*cm, 3*cm, 0.5*cm, 2.5*cm,
+                                               0.5*cm, 2.5*cm, 0.5*cm, 3*cm])
+    legend_tbl.setStyle(TableStyle([
+        ("VALIGN",  (0, 0), (-1, -1), "MIDDLE"),
+        ("TOPPADDING",    (0, 0), (-1, -1), 3),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+    ]))
+    story.append(legend_tbl)
+
+    # ══════════════════════════════════════════════════════════
+    #  ٣ — الميزات التنافسية الحصرية
+    # ══════════════════════════════════════════════════════════
     story.append(PageBreak())
-    story += section_title("٣. الميزات التنافسية الحصرية لمنصة ضيوف", S["h1"])
+    story += _section("٣. الميزات التنافسية الحصرية لمنصة ضيوف", H1)
 
     exclusive = [
-        ("نظام الضرائب ثنائي المسؤولية", "95%",
-         "المدير يختار: الضيف يتحمل الضريبة أم المنشأة. كلا الحالتين تُرسل VAT الصحيح لـ ZATCA. لا يوجد هذا التمييز في Opera أو نزيل بنفس المرونة."),
-        ("تطبيق الحجز المباشر بلا عمولة", "92%",
-         "رابط عام لكل منشأة: dheuof.com/book/{slug} — يوفر 15-25% عمولات OTA. Opera لا يوفره مجاناً، ونزيل غير مكتمل."),
-        ("تكامل ZATCA كامل مع QR Scanner", "90%",
-         "فاتورة مبسّطة UBL 2.1 + QR TLV 5 حقول + Scanner بالكاميرا للتحقق. رسوم السياحة كسطر منفصل في XML."),
-        ("Night Audit مع وقت مرن وأجهزة دفع", "88%",
-         "Cron ديناميكي يُعاد ضبطه عند تغيير الوقت. شرط إغلاق المدفوعات قبل التشغيل. تقرير يشمل الضرائب المُتحمَّلة."),
-        ("معرّف رقمي + بريد إلكتروني تلقائي", "95%",
-         "عند التسجيل: معرّف 8 أرقام فريد + بريد Zoho SMTP يصل الضيف فوراً. بدون تدخل بشري."),
-        ("تطبيق موظفين متعدد اللغات", "80%",
-         "عربي + إنجليزي + هندي + نيبالي + بنغالي — يخدم العمالة الوافدة مباشرةً. ميزة غير موجودة في المنافسين."),
+        ("ضرائب ثنائية المسؤولية (حالة A/B)", "95%", BLUE,
+         "المدير يختار: الضيف يتحمل الضريبة أم المنشأة. كلا الحالتين يُرسَل منها VAT صحيح لـ ZATCA. "
+         "لا يوجد هذا التمييز في Opera أو نزيل بنفس المرونة."),
+        ("تطبيق الحجز المباشر بلا عمولة", "92%", GREEN,
+         "رابط فريد لكل منشأة dheuof.com/book/{slug} يوفر 15-25% عمولات OTA. "
+         "Opera لا يوفره مجاناً، ونزيل غير مكتمل في هذا الجانب."),
+        ("ZATCA كامل: QR + UBL 2.1 + Scanner", "90%", TEAL,
+         "فاتورة مبسَّطة UBL 2.1 + QR TLV بـ 5 حقول + Scanner بالكاميرا للتحقق الفوري. "
+         "رسوم السياحة تظهر كسطر منفصل في XML."),
+        ("Night Audit مرن مع وقت قابل للتعديل", "88%", NAVY,
+         "Cron ديناميكي يُعاد ضبطه فوراً عند تغيير وقت الـ Audit. "
+         "يشترط إغلاق جميع المدفوعات المعلَّقة قبل التشغيل."),
+        ("معرّف رقمي 8 أرقام + بريد تلقائي", "95%", BLUE,
+         "عند التسجيل: معرّف عشوائي + بريد Zoho SMTP يصل فوراً بتصميم احترافي. "
+         "صفر تدخل بشري."),
+        ("واجهة متعددة اللغات للموظفين", "80%", TEAL,
+         "عربي + إنجليزي + هندي + نيبالي + بنغالي. "
+         "يخدم العمالة الوافدة مباشرةً دون الحاجة لمترجم."),
     ]
 
-    for title, pct, desc in exclusive:
-        data = [[
-            Paragraph(ar(title), make_style("et", size=10, bold=True, color=NAVY, align=TA_RIGHT)),
-            Paragraph(pct, make_style("ep", size=12, bold=True, color=GREEN, align=TA_CENTER)),
+    for title_e, pct_e, clr_e, desc_e in exclusive:
+        hdr_row = [[
+            Paragraph(ar(title_e), _ps("et", size=10, bold=True, color=WHITE, align=TA_RIGHT)),
+            Paragraph(pct_e, _ps("ep", size=13, bold=True, color=WHITE, align=TA_CENTER)),
         ]]
-        t = Table(data, colWidths=[13*cm, 3*cm])
-        t.setStyle(TableStyle([
-            ("BACKGROUND",    (0,0), (-1,-1), LGRAY),
-            ("TOPPADDING",    (0,0), (-1,-1), 8),
-            ("BOTTOMPADDING", (0,0), (-1,-1), 4),
-            ("LEFTPADDING",   (0,0), (0,-1),  10),
+        hdr_t = Table(hdr_row, colWidths=[13.4 * cm, 3.0 * cm])
+        hdr_t.setStyle(TableStyle([
+            ("BACKGROUND",    (0, 0), (-1, -1), clr_e),
+            ("TOPPADDING",    (0, 0), (-1, -1), 7),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 7),
+            ("LEFTPADDING",   (0, 0), (0, 0), 10),
+            ("RIGHTPADDING",  (0, 0), (0, 0), 10),
         ]))
-        story.append(KeepTogether([
-            t,
-            Paragraph(ar(f"   {desc}"), S["body"]),
-            Spacer(1, 0.3*cm),
+        desc_row = [[
+            Paragraph(ar(f"    {desc_e}"), _ps("ed", size=9, align=TA_RIGHT)),
+        ]]
+        desc_t = Table(desc_row, colWidths=[16.4 * cm])
+        desc_t.setStyle(TableStyle([
+            ("BACKGROUND",    (0, 0), (-1, -1), LGRAY),
+            ("TOPPADDING",    (0, 0), (-1, -1), 6),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+            ("LEFTPADDING",   (0, 0), (-1, -1), 10),
+            ("RIGHTPADDING",  (0, 0), (-1, -1), 10),
+            ("LINEBELOW",     (0, 0), (-1, -1), 0.5, MGRAY),
         ]))
+        story.append(KeepTogether([hdr_t, desc_t, Spacer(1, 0.25 * cm)]))
 
-    # ═══════════════════════════════════════════════════════
-    #  ٤. نقاط الضعف والفجوات
-    # ═══════════════════════════════════════════════════════
-    story += section_title("٤. نقاط الضعف والفجوات مقارنةً بـ Opera", S["h1"])
+    # ══════════════════════════════════════════════════════════
+    #  ٤ — نقاط الضعف والفجوات
+    # ══════════════════════════════════════════════════════════
+    story += _section("٤. الفجوات مقارنةً بـ Oracle Opera وخطة الإغلاق", H1)
 
     gaps = [
-        ("Channel Manager",  70, "Opera يدعم 500+ قناة — ضيوف 4 قنوات حالياً. خطة لإضافة Makkah Gate + OTA Saudi."),
-        ("تطبيق الجوال",     60, "Opera Cloud يوفر تطبيق iOS/Android ناضج. Flutter قيد التطوير — متوقع Q3 2026."),
-        ("Revenue Mgmt",     80, "Opera يوفر Forecasting متقدم + AI Pricing. ضيوف يوفر تسعير موسمي — AI لاحقاً."),
-        ("Concierge",        0,  "خدمات الكونسيرج والطلبات الداخلية غير موجودة — Opera كامل في هذا."),
-        ("POS متكامل",       75, "Opera يوفر POS كامل للمطاعم. ضيوف يوفر POS مبسط — لا ربط بالمخزون."),
-        ("SPA / Activity",   0,  "إدارة الفعاليات والسبا غير مدعومة — Opera يتفوق هنا."),
+        ("Channel Manager",   70,
+         "Opera يدعم 500+ قناة. ضيوف 4 قنوات حالياً. الهدف: إضافة Makkah Gate + Agoda بـ Q3 2026."),
+        ("تطبيق الجوال",      60,
+         "Opera Cloud يوفر iOS/Android ناضج. Flutter قيد التطوير — متوقع Android Q3 ثم iOS Q4 2026."),
+        ("Revenue Mgmt / AI", 80,
+         "Opera يوفر Forecasting + AI Pricing متقدم. ضيوف يوفر تسعيراً موسمياً — AI قادم Q1 2027."),
+        ("Concierge",          0,
+         "خدمات الكونسيرج والطلبات الداخلية غير موجودة — Opera متكامل هنا. خطة Q1 2027."),
+        ("POS متكامل بالمخزون",75,
+         "Opera يوفر POS كامل للمطاعم مع المخزون. ضيوف: POS مبسط — الربط بالمخزون قادم Q4 2026."),
+        ("SPA / Activity Mgmt", 0,
+         "إدارة الفعاليات والسبا غير مدعومة حالياً. Opera يتفوق هنا. خطة Q1 2027."),
     ]
 
-    gap_data = [[Paragraph(ar(t), make_style("gh", size=8, bold=True, align=TA_RIGHT)),
-                 Paragraph(f"{p}%" if p else ar("غير متوفر"),
-                           make_style("gp", size=9, align=TA_CENTER,
-                                      color=color_for(p) if p else RED)),
-                 Paragraph(ar(n), S["small"])]
-                for t, p, n in gaps]
-    gap_data.insert(0, [Paragraph(ar(t), make_style("gh2", size=8, bold=True, color=colors.white, align=TA_RIGHT))
-                        for t in ["الوحدة", "التغطية", "الملاحظة"]])
-    tg = Table(gap_data, colWidths=[3.5*cm, 2*cm, 11*cm])
-    tg.setStyle(TableStyle([
-        ("BACKGROUND",   (0,0),  (-1,0),  RED),
-        ("TEXTCOLOR",    (0,0),  (-1,0),  colors.white),
-        ("GRID",         (0,0),  (-1,-1), 0.5, MGRAY),
-        ("ROWBACKGROUNDS",(0,1), (-1,-1), [colors.white, LGRAY]),
-        ("TOPPADDING",   (0,0),  (-1,-1), 5),
-        ("BOTTOMPADDING",(0,0),  (-1,-1), 5),
-    ]))
-    story.append(tg)
+    ghdr = [
+        Paragraph(ar("الوحدة"),     _ps("gh", size=8, bold=True, color=WHITE, align=TA_RIGHT)),
+        Paragraph(ar("التغطية"),    _ps("gh", size=8, bold=True, color=WHITE, align=TA_CENTER)),
+        Paragraph(ar("الملاحظة وخطة الإغلاق"), _ps("gh", size=8, bold=True, color=WHITE, align=TA_RIGHT)),
+    ]
+    gdata = [ghdr]
+    for gname, gpct, gnote in gaps:
+        gdata.append([
+            Paragraph(ar(gname), _ps("gr", size=9, bold=True, align=TA_RIGHT)),
+            Paragraph(
+                f"{gpct}%" if gpct else ar("غير متوفر"),
+                _ps("gp", size=9, bold=True, align=TA_CENTER,
+                    color=_color_score(gpct) if gpct else RED),
+            ),
+            Paragraph(ar(gnote), _ps("gn", size=8, color=DGRAY, align=TA_RIGHT)),
+        ])
 
-    # ═══════════════════════════════════════════════════════
-    #  ٥. خارطة الطريق
-    # ═══════════════════════════════════════════════════════
+    gap_tbl = Table(gdata, colWidths=[3.5 * cm, 2.0 * cm, 11.2 * cm])
+    gap_tbl.setStyle(TableStyle([
+        ("BACKGROUND",    (0, 0),  (-1, 0),  RED),
+        ("TEXTCOLOR",     (0, 0),  (-1, 0),  WHITE),
+        ("ROWBACKGROUNDS",(0, 1),  (-1, -1), [WHITE, LGRAY]),
+        ("GRID",          (0, 0),  (-1, -1), 0.4, MGRAY),
+        ("TOPPADDING",    (0, 0),  (-1, -1), 6),
+        ("BOTTOMPADDING", (0, 0),  (-1, -1), 6),
+        ("LEFTPADDING",   (0, 0),  (-1, -1), 5),
+        ("RIGHTPADDING",  (0, 0),  (-1, -1), 5),
+        ("VALIGN",        (0, 0),  (-1, -1), "MIDDLE"),
+    ]))
+    story.append(gap_tbl)
+
+    # ══════════════════════════════════════════════════════════
+    #  ٥ — خارطة الطريق
+    # ══════════════════════════════════════════════════════════
     story.append(PageBreak())
-    story += section_title("٥. خارطة الطريق للوصول إلى 95%+", S["h1"])
+    story += _section("٥. خارطة الطريق للوصول إلى 96%+", H1)
 
     roadmap = [
-        ("Q3 2026", BLUE,  [
-            "إطلاق Flutter (Android أولاً) مع Check-in / Check-out",
-            "Channel Manager: إضافة Agoda + Makkah Gate",
-            "AI Pricing: توقع الطلب حسب الموسم + الأحداث",
+        ("الربع الثالث 2026", BLUE, [
+            "إطلاق تطبيق Flutter للـ Android مع Check-in / Check-out",
+            "Channel Manager: إضافة Agoda + Makkah Gate + Booking.com",
+            "AI Pricing: توقع الطلب حسب الموسم والأحداث الخاصة",
+            "تحسين الـ Revenue Management بالبيانات التاريخية",
         ]),
-        ("Q4 2026", TEAL,  [
+        ("الربع الرابع 2026", TEAL, [
             "POS متكامل مع المخزون والمطبخ",
-            "تطبيق iOS (Flutter)",
-            "تكامل Unifonic للـ SMS",
+            "إطلاق تطبيق Flutter للـ iOS",
+            "تكامل Unifonic للـ SMS + WhatsApp",
+            "نظام الولاء والنقاط للضيوف المتكررين",
         ]),
-        ("Q1 2027", GREEN, [
-            "Concierge Module (طلبات داخلية)",
-            "Revenue Management بالـ AI",
+        ("الربع الأول 2027", GREEN, [
+            "Concierge Module — طلبات داخلية + Room Service",
+            "Revenue Management بالـ AI (Forecasting كامل)",
             "SPA / Activity Management",
+            "تكامل Shamoos تلقائي موسَّع",
         ]),
     ]
 
-    for quarter, clr, items in roadmap:
-        qdata = [[Paragraph(ar(quarter), make_style("qh", size=10, bold=True, color=colors.white, align=TA_CENTER))]]
-        qt = Table(qdata, colWidths=[16*cm])
-        qt.setStyle(TableStyle([
-            ("BACKGROUND",    (0,0), (-1,-1), clr),
-            ("TOPPADDING",    (0,0), (-1,-1), 8),
-            ("BOTTOMPADDING", (0,0), (-1,-1), 8),
+    for qtr, qclr, items in roadmap:
+        qhdr = Table(
+            [[Paragraph(ar(f"🗓  {qtr}"), _ps("qh", size=11, bold=True, color=WHITE, align=TA_RIGHT))]],
+            colWidths=[16.4 * cm],
+        )
+        qhdr.setStyle(TableStyle([
+            ("BACKGROUND",    (0, 0), (-1, -1), qclr),
+            ("TOPPADDING",    (0, 0), (-1, -1), 9),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 9),
+            ("LEFTPADDING",   (0, 0), (-1, -1), 14),
+            ("RIGHTPADDING",  (0, 0), (-1, -1), 14),
         ]))
-        story.append(qt)
+        item_blocks = [qhdr]
         for item in items:
-            story.append(Paragraph(f"    ✓  {ar(item)}", S["body"]))
-        story.append(Spacer(1, 0.3*cm))
+            item_blocks.append(
+                Paragraph(f"    ✓  {ar(item)}", _ps("qi", size=9, align=TA_RIGHT))
+            )
+        item_blocks.append(Spacer(1, 0.4 * cm))
+        story.append(KeepTogether(item_blocks))
 
-    # ═══════════════════════════════════════════════════════
-    #  ٦. خلاصة
-    # ═══════════════════════════════════════════════════════
-    story += section_title("٦. الخلاصة والتوصية", S["h1"])
+    # ══════════════════════════════════════════════════════════
+    #  ٦ — خلاصة وتوصية
+    # ══════════════════════════════════════════════════════════
+    story += _section("٦. الخلاصة والتوصية", H1)
 
-    conc_data = [[
-        Paragraph(ar("منصة ضيوف جاهزة للتشغيل الكامل للفنادق السعودية متوسطة الحجم بنسبة " +
-                     f"{DHEUOF_SCORE}%، وتتفوق على نزيل ({NUZUL_SCORE}%) في جميع الوحدات الأساسية. "
-                     "الفجوة مع Opera (متخصص في الفنادق الكبرى) محصورة في وحدات متقدمة لا تؤثر على التشغيل اليومي. "
-                     "أبرز الميزات التنافسية: تطبيق الحجز المباشر + نظام الضرائب ثنائي المسؤولية + ZATCA متكامل + "
-                     "متعدد اللغات للموظفين. التوصية: الإطلاق التجاري فوراً مع التطوير التدريجي للوحدات المتبقية."),
-                  S["body"])
-    ]]
-    ct = Table(conc_data, colWidths=[16*cm])
-    ct.setStyle(TableStyle([
-        ("BACKGROUND",    (0,0), (-1,-1), colors.HexColor("#EFF6FF")),
-        ("LEFTPADDING",   (0,0), (-1,-1), 14),
-        ("RIGHTPADDING",  (0,0), (-1,-1), 14),
-        ("TOPPADDING",    (0,0), (-1,-1), 14),
-        ("BOTTOMPADDING", (0,0), (-1,-1), 14),
-        ("BOX",           (0,0), (-1,-1), 2, BLUE),
-        ("ROUNDEDCORNERS",(0,0), (-1,-1), 8),
+    conc_text = (
+        f"منصة ضيوف جاهزة للتشغيل الكامل للفنادق السعودية متوسطة الحجم بنسبة {SCORE_D}%، "
+        f"وتتفوق على نزيل ({SCORE_N}%) في جميع الوحدات الأساسية. "
+        f"الفجوة مع Oracle Opera ({SCORE_O}%) محصورة في وحدات متقدمة (Concierge / SPA / Channel Manager المتكامل) "
+        "لا تؤثر على التشغيل اليومي للفنادق متوسطة الحجم. "
+        "أبرز الميزات التنافسية: تطبيق الحجز المباشر بلا عمولة + ضرائب ثنائية المسؤولية + "
+        "ZATCA متكامل + دعم لغات الموظفين + معرّف رقمي + بريد تلقائي. "
+        "التوصية: الإطلاق التجاري فوراً مع التطوير التدريجي للوحدات المتبقية وفق خارطة الطريق."
+    )
+
+    conc_tbl = Table(
+        [[Paragraph(ar(conc_text), _ps("ct", size=9.5, align=TA_RIGHT, sb=0, sa=0))]],
+        colWidths=[16.4 * cm],
+    )
+    conc_tbl.setStyle(TableStyle([
+        ("BACKGROUND",    (0, 0), (-1, -1), LBLUE),
+        ("LEFTPADDING",   (0, 0), (-1, -1), 16),
+        ("RIGHTPADDING",  (0, 0), (-1, -1), 16),
+        ("TOPPADDING",    (0, 0), (-1, -1), 16),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 16),
+        ("BOX",           (0, 0), (-1, -1), 2, BLUE),
     ]))
-    story.append(ct)
-    story.append(Spacer(1, 0.5*cm))
-    story.append(Paragraph(ar("تم إعداد هذا التقرير بتاريخ 8 يونيو 2026  ·  منصة ضيوف  ·  www.dheuof.com"),
-                            make_style("ft", size=8, color=DGRAY, align=TA_CENTER)))
+    story.append(conc_tbl)
+    story.append(Spacer(1, 0.6 * cm))
+    story.append(Paragraph(
+        ar("أُعدَّ هذا التقرير في يونيو 2026  ·  منصة ضيوف  ·  www.dheuof.com  ·  info@dheuof.com"),
+        _ps("ft", size=8, color=DGRAY, align=TA_CENTER),
+    ))
 
     doc.build(story)
     print(f"✅ التقرير جاهز: {out_path}")
+
 
 # ══════════════════════════════════════════════════════════════
 if __name__ == "__main__":

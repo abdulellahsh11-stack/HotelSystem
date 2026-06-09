@@ -27,7 +27,7 @@ async def list_orders(request: Request, status: Optional[str] = None,
                    FROM maintenance_orders o LEFT JOIN rooms r ON o.room_id = r.id
                    WHERE o.client_id = %s"""
             params = [cid]
-            if status: q += " AND o.status = %s"; params.append(status)
+            if status: q += " AND o.status = %s"; params.append(status)  # noqa: E701, E702
             q += " ORDER BY o.created_at DESC LIMIT 100"
             rows = db.execute(q, params, fetch="all")
             return {"success": True, "data": [dict(r) for r in (rows or [])]}

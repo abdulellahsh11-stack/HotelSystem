@@ -229,7 +229,7 @@ def set_event_context(db, tenant_id: str) -> None:
 
 # ── Finding #7: Secure File Links ─────────────────────────────
 
-import secrets as _secrets
+import secrets as _secrets  # noqa: E402
 
 
 def create_secure_link(

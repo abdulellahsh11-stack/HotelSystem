@@ -15,8 +15,7 @@ from fastapi import Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse, Response
 
 from main1 import (
-    app, log, _SafeEncoder,
-    _lock, _admin_sessions, _client_sessions,
+    app, log, _lock, _admin_sessions, _client_sessions,
     _COOKIE_SECURE, _reg_rate_ok, _login_rate_ok,
     _new_token, _make_password, _verify_password, _hash_password,
     get_client_session, require_client, require_admin,
@@ -110,7 +109,7 @@ async def guests_page(request: Request):
     session = get_client_session(request)
     if not session:
         return RedirectResponse("/login")
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     client = store.get_client(session["client_id"]) or {"id": session["client_id"]}
     return HTMLResponse(_client_dashboard(client))
 
@@ -120,7 +119,7 @@ async def bookings_page(request: Request):
     session = get_client_session(request)
     if not session:
         return RedirectResponse("/login")
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     client = store.get_client(session["client_id"]) or {"id": session["client_id"]}
     return HTMLResponse(_client_dashboard(client))
 
@@ -373,7 +372,7 @@ async def admin_logout_post(request: Request):
 @app.get("/api/admin/clients")
 async def admin_clients(request: Request, _=Depends(require_admin)):
     cfg = request.app.state.cfg
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     clients = store.get_all_clients()
     owner_id = getattr(cfg, "owner_client_id", "") or ""
     for c in clients:
@@ -396,8 +395,7 @@ async def admin_create_client(request: Request, _=Depends(require_admin)):
     if not all([client_id, name, password]):
         return JSONResponse({"success": False, "error": "id و name و password مطلوبة"}, status_code=400)
 
-    cfg = request.app.state.cfg
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
 
     existing = store.get_client(client_id)
     if existing:
@@ -437,7 +435,7 @@ async def admin_owner_setup(request: Request, _=Depends(require_admin)):
         return JSONResponse({"success": False, "error": "client_id و name و password مطلوبة"}, status_code=400)
 
     cfg = request.app.state.cfg
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
 
     pass_hash, pass_salt = _make_password(password)
     sub_end = (datetime.now() + timedelta(days=36500)).strftime("%Y-%m-%d")  # 100 years
@@ -468,7 +466,7 @@ async def admin_owner_setup(request: Request, _=Depends(require_admin)):
 
 @app.get("/api/admin/clients/{client_id}")
 async def admin_get_client(client_id: str, request: Request, _=Depends(require_admin)):
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     client = store.get_client(client_id)
     if not client:
         raise HTTPException(status_code=404, detail="المنشأة غير موجودة")
@@ -477,7 +475,7 @@ async def admin_get_client(client_id: str, request: Request, _=Depends(require_a
 
 @app.put("/api/admin/clients/{client_id}")
 async def admin_update_client(client_id: str, request: Request, _=Depends(require_admin)):
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     client = store.get_client(client_id)
     if not client:
         raise HTTPException(status_code=404, detail="المنشأة غير موجودة")
@@ -494,7 +492,7 @@ async def admin_update_client(client_id: str, request: Request, _=Depends(requir
 
 @app.delete("/api/admin/clients/{client_id}")
 async def admin_delete_client(client_id: str, request: Request, _=Depends(require_admin)):
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     store.delete_client(client_id)
     return {"success": True}
 
@@ -517,7 +515,7 @@ async def client_login(request: Request):
         return HTMLResponse(_login_page("معرف المنشأة وكلمة المرور مطلوبان"), status_code=400)
 
     cfg = request.app.state.cfg
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     client = store.get_client(client_id)
 
     if not client:
@@ -587,7 +585,7 @@ async def client_logout(request: Request):
 # ──────────────────────────────────────────────────────────────
 @app.get("/api/guests")
 async def get_guests(request: Request, limit: int = 100, session=Depends(require_client)):
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     guests = store.get_guests(session["client_id"])
     return {"success": True, "data": guests[:limit]}
 
@@ -595,7 +593,7 @@ async def get_guests(request: Request, limit: int = 100, session=Depends(require
 @app.post("/api/guests")
 async def save_guest(request: Request, session=Depends(require_client)):
     data = await request.json()
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     if not data.get("id"):
         data["id"] = secrets.token_hex(8)
     data["client_id"] = session["client_id"]
@@ -606,7 +604,7 @@ async def save_guest(request: Request, session=Depends(require_client)):
 
 @app.get("/api/guests/{guest_id}")
 async def get_guest(guest_id: str, request: Request, session=Depends(require_client)):
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     guests = store.get_guests(session["client_id"])
     guest = next((g for g in guests if str(g.get("id")) == guest_id), None)
     if not guest:
@@ -622,7 +620,7 @@ async def get_bookings(
     request: Request, status: Optional[str] = None, limit: int = 100,
     session=Depends(require_client)
 ):
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     bookings = store.get_bookings(session["client_id"], status)
     return {"success": True, "data": bookings[:limit]}
 
@@ -630,7 +628,7 @@ async def get_bookings(
 @app.post("/api/bookings")
 async def save_booking(request: Request, session=Depends(require_client)):
     data = await request.json()
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     if not data.get("id"):
         data["id"] = secrets.token_hex(8)
     data["client_id"] = session["client_id"]
@@ -645,7 +643,7 @@ async def update_booking(booking_id: str, request: Request, session=Depends(requ
     data = await request.json()
     data["id"] = booking_id
     data["client_id"] = session["client_id"]
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     booking = store.save_booking(session["client_id"], data)
     return {"success": True, "data": booking}
 
@@ -655,7 +653,7 @@ async def update_booking(booking_id: str, request: Request, session=Depends(requ
 # ──────────────────────────────────────────────────────────────
 @app.get("/api/invoices")
 async def get_invoices(request: Request, limit: int = 100, session=Depends(require_client)):
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     invoices = store.get_invoices(session["client_id"])
     return {"success": True, "data": invoices[:limit]}
 
@@ -663,7 +661,7 @@ async def get_invoices(request: Request, limit: int = 100, session=Depends(requi
 @app.post("/api/invoices")
 async def save_invoice(request: Request, session=Depends(require_client)):
     data = await request.json()
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     cid = session["client_id"]
     if not data.get("id"):
         seq = store.get_next_invoice_seq(cid)
@@ -682,7 +680,7 @@ async def get_pos(
     request: Request, date_from: Optional[str] = None, date_to: Optional[str] = None,
     session=Depends(require_client)
 ):
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     txns = store.get_pos_transactions(session["client_id"], date_from, date_to)
     return {"success": True, "data": txns}
 
@@ -690,7 +688,7 @@ async def get_pos(
 @app.post("/api/pos")
 async def save_pos(request: Request, session=Depends(require_client)):
     data = await request.json()
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     if not data.get("id"):
         data["id"] = secrets.token_hex(8)
     data["client_id"] = session["client_id"]
@@ -704,7 +702,7 @@ async def save_pos(request: Request, session=Depends(require_client)):
 # ──────────────────────────────────────────────────────────────
 @app.get("/api/settings")
 async def get_settings(request: Request, session=Depends(require_client)):
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     client = store.get_client(session["client_id"]) or {}
     return {"success": True, "data": client.get("settings", {})}
 
@@ -712,7 +710,7 @@ async def get_settings(request: Request, session=Depends(require_client)):
 @app.post("/api/settings")
 async def save_settings(request: Request, session=Depends(require_client)):
     data = await request.json()
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     cid = session["client_id"]
     client = store.get_client(cid) or {"id": cid}
     client["settings"] = data
@@ -884,7 +882,7 @@ async def revenue_split(client_id: str, request: Request, days: int = 30, sessio
 # ──────────────────────────────────────────────────────────────
 @app.get("/api/kpi")
 async def get_kpi(request: Request, session=Depends(require_client)):
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     cid = session["client_id"]
     bookings = store.get_bookings(cid)
     guests = store.get_guests(cid)
@@ -899,7 +897,7 @@ async def get_kpi(request: Request, session=Depends(require_client)):
 
 @app.get("/api/analytics")
 async def get_analytics(request: Request, session=Depends(require_client)):
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     cid = session["client_id"]
     bookings = store.get_bookings(cid)
     invoices = store.get_invoices(cid)
@@ -915,7 +913,7 @@ async def get_analytics(request: Request, session=Depends(require_client)):
 
 @app.get("/api/notifications")
 async def get_notifications(request: Request, session=Depends(require_client)):
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     cid = session["client_id"]
     notifications = []
     client = store.get_client(cid) or {}
@@ -943,7 +941,7 @@ async def get_notifications(request: Request, session=Depends(require_client)):
 
 @app.get("/api/subscription")
 async def get_subscription(request: Request, session=Depends(require_client)):
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     client = store.get_client(session["client_id"]) or {}
     return {"success": True, "subscription": {
         "plan": client.get("plan", "trial"),
@@ -968,7 +966,7 @@ async def get_plans():
 # ──────────────────────────────────────────────────────────────
 @app.post("/api/admin/clients/{client_id}/toggle")
 async def admin_toggle_client(client_id: str, request: Request, _=Depends(require_admin)):
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     client = store.get_client(client_id)
     if client:
         client["status"] = "suspended" if client.get("status") == "active" else "active"
@@ -978,7 +976,7 @@ async def admin_toggle_client(client_id: str, request: Request, _=Depends(requir
 
 @app.get("/api/admin/keys")
 async def admin_get_keys(request: Request, _=Depends(require_admin)):
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     data = store.get_admin_data()
     return {"success": True, "keys": data.get("activation_keys", [])}
 
@@ -990,7 +988,7 @@ async def admin_gen_key(request: Request, _=Depends(require_admin)):
     days = int(body.get("days", 30))
     key = "-".join([secrets.token_hex(4).upper() for _ in range(4)])
     entry = {"key": key, "plan": plan, "days": days, "used": False, "created_at": datetime.now().isoformat()}
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     data = store.get_admin_data()
     data.setdefault("activation_keys", []).append(entry)
     store.save_admin_data(data)
@@ -1001,7 +999,7 @@ async def admin_gen_key(request: Request, _=Depends(require_admin)):
 async def admin_revoke_key(request: Request, _=Depends(require_admin)):
     body = await request.json()
     key = body.get("key", "")
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     data = store.get_admin_data()
     data["activation_keys"] = [k for k in data.get("activation_keys", []) if k.get("key") != key]
     store.save_admin_data(data)
@@ -1010,7 +1008,7 @@ async def admin_revoke_key(request: Request, _=Depends(require_admin)):
 
 @app.get("/api/admin/payments")
 async def admin_get_payments(request: Request, _=Depends(require_admin)):
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     data = store.get_admin_data()
     return {"success": True, "payments": data.get("payments", [])}
 
@@ -1019,7 +1017,7 @@ async def admin_get_payments(request: Request, _=Depends(require_admin)):
 async def admin_add_payment(request: Request, _=Depends(require_admin)):
     body = await request.json()
     payment = {"id": secrets.token_hex(8), "client_id": body.get("client_id", ""), "amount": float(body.get("amount", 0)), "plan": body.get("plan", ""), "date": datetime.now().isoformat()}
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     data = store.get_admin_data()
     data.setdefault("payments", []).append(payment)
     store.save_admin_data(data)
@@ -1028,7 +1026,7 @@ async def admin_add_payment(request: Request, _=Depends(require_admin)):
 
 @app.get("/api/admin/tickets")
 async def admin_get_tickets(request: Request, _=Depends(require_admin)):
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     data = store.get_admin_data()
     return {"success": True, "tickets": data.get("tickets", [])}
 
@@ -1038,7 +1036,7 @@ async def admin_reply_ticket(request: Request, _=Depends(require_admin)):
     body = await request.json()
     tid = str(body.get("id", ""))
     reply = body.get("reply", "")
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     data = store.get_admin_data()
     for t in data.get("tickets", []):
         if str(t.get("id")) == tid:
@@ -1052,7 +1050,7 @@ async def admin_reply_ticket(request: Request, _=Depends(require_admin)):
 async def admin_close_ticket(request: Request, _=Depends(require_admin)):
     body = await request.json()
     tid = str(body.get("id", ""))
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     data = store.get_admin_data()
     for t in data.get("tickets", []):
         if str(t.get("id")) == tid:
@@ -1065,7 +1063,7 @@ async def admin_close_ticket(request: Request, _=Depends(require_admin)):
 @app.get("/api/admin/sessions")
 async def admin_list_sessions(request: Request, _=Depends(require_admin)):
     """قائمة الجلسات النشطة لجميع المنشآت"""
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     with _lock:
         raw = dict(_client_sessions)
     result = []
@@ -1097,7 +1095,7 @@ async def admin_revoke_session(token_prefix: str, request: Request, _=Depends(re
 async def admin_list_subscriptions(request: Request, _=Depends(require_admin)):
     """قائمة اشتراكات جميع المنشآت"""
     cfg = request.app.state.cfg
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     clients = store.get_all_clients()
     owner_id = getattr(cfg, "owner_client_id", "") or ""
     subs = []
@@ -1119,7 +1117,7 @@ async def admin_list_subscriptions(request: Request, _=Depends(require_admin)):
 @app.put("/api/admin/subscriptions/{client_id}")
 async def admin_update_subscription(client_id: str, request: Request, _=Depends(require_admin)):
     """تحديث اشتراك منشأة"""
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     client = store.get_client(client_id)
     if not client:
         raise HTTPException(status_code=404, detail="المنشأة غير موجودة")
@@ -1137,7 +1135,7 @@ async def admin_update_subscription(client_id: str, request: Request, _=Depends(
 @app.post("/api/admin/clients/{client_id}/reset-password")
 async def admin_reset_client_password(client_id: str, request: Request, _=Depends(require_admin)):
     """إعادة تعيين كلمة مرور مدير المنشأة"""
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     client = store.get_client(client_id)
     if not client:
         raise HTTPException(status_code=404, detail="المنشأة غير موجودة")
@@ -1153,7 +1151,7 @@ async def admin_reset_client_password(client_id: str, request: Request, _=Depend
 @app.put("/api/admin/clients/{client_id}/modules")
 async def admin_update_modules(client_id: str, request: Request, _=Depends(require_admin)):
     """تحديث الوحدات المفعّلة لمنشأة"""
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     client = store.get_client(client_id)
     if not client:
         raise HTTPException(status_code=404, detail="المنشأة غير موجودة")
@@ -1167,7 +1165,7 @@ async def admin_update_modules(client_id: str, request: Request, _=Depends(requi
 async def admin_list_employees(request: Request, client_id: Optional[str] = None, _=Depends(require_admin)):
     """قائمة الموظفين من قاعدة البيانات مع آخر نشاط"""
     db = request.app.state.db
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     if not db.use_postgres:
         return {"success": True, "employees": []}
     try:
@@ -1212,7 +1210,7 @@ async def admin_list_employees(request: Request, client_id: Optional[str] = None
 
 @app.get("/api/admin/settings")
 async def admin_get_settings(request: Request, _=Depends(require_admin)):
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     data = store.get_admin_data()
     return {"success": True, "settings": data.get("settings", {})}
 
@@ -1220,7 +1218,7 @@ async def admin_get_settings(request: Request, _=Depends(require_admin)):
 @app.post("/api/admin/settings/save")
 async def admin_save_settings(request: Request, _=Depends(require_admin)):
     body = await request.json()
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     data = store.get_admin_data()
     data.setdefault("settings", {}).update(body)
     store.save_admin_data(data)
@@ -1327,7 +1325,7 @@ def _merge_packages(stored: list) -> list:
 @app.get("/api/packages")
 async def public_packages(request: Request):
     """عام — يقرأه صفحة الباقات لعرض الأسعار الحيّة (لا يتطلب تسجيل دخول)."""
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     data = store.get_admin_data()
     return {"success": True, "packages": _merge_packages(data.get("public_packages", []))}
 
@@ -1349,7 +1347,7 @@ async def admin_update_packages(request: Request, _=Depends(require_admin)):
             if k in p:
                 item[k] = str(p[k])
         cleaned.append(item)
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     data = store.get_admin_data()
     data["public_packages"] = cleaned
     store.save_admin_data(data)
@@ -1358,7 +1356,7 @@ async def admin_update_packages(request: Request, _=Depends(require_admin)):
 
 @app.get("/api/admin/stats")
 async def admin_stats_v2(request: Request, _=Depends(require_admin)):
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     clients = store.get_all_clients()
     active = sum(1 for c in clients if c.get("status") == "active")
     trial = sum(1 for c in clients if c.get("status") == "trial")
@@ -1400,7 +1398,7 @@ async def client_register(request: Request):
             status_code=429)
 
     cfg = request.app.state.cfg
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
 
     # Validate activation key if provided
     plan = "trial"
@@ -1481,7 +1479,7 @@ async def client_register(request: Request):
 # ──────────────────────────────────────────────────────────────
 @app.post("/api/invoices/{invoice_id}/pay")
 async def pay_invoice(invoice_id: str, request: Request, session=Depends(require_client)):
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     cid = session["client_id"]
     invoices = store.get_invoices(cid)
     inv = next((i for i in invoices if str(i.get("id", i.get("invoice_number", ""))) == invoice_id), None)
@@ -1496,7 +1494,7 @@ async def pay_invoice(invoice_id: str, request: Request, session=Depends(require
 # ──────────────────────────────────────────────────────────────
 @app.get("/api/tickets")
 async def get_tickets(request: Request, session=Depends(require_client)):
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     cid = session["client_id"]
     data = store.get_admin_data()
     tickets = [t for t in data.get("tickets", []) if t.get("client_id") == cid]
@@ -1506,7 +1504,7 @@ async def get_tickets(request: Request, session=Depends(require_client)):
 @app.post("/api/tickets")
 async def create_ticket(request: Request, session=Depends(require_client)):
     body = await request.json()
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     cid = session["client_id"]
     ticket = {
         "id": secrets.token_hex(8),
@@ -1539,7 +1537,7 @@ async def ai_analyze(request: Request, session=Depends(require_client)):
 
     try:
         import anthropic
-        store: "DataStore" = request.app.state.store
+        store = request.app.state.store
         cid = session["client_id"]
         bookings = store.get_bookings(cid)
         guests = store.get_guests(cid)
@@ -1562,7 +1560,7 @@ async def ai_analyze(request: Request, session=Depends(require_client)):
 # ──────────────────────────────────────────────────────────────
 @app.post("/api/backup/create")
 async def backup_create(request: Request, session=Depends(require_client)):
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     cid = session["client_id"]
     backup_data = {
         "client_id": cid,
@@ -1637,7 +1635,7 @@ async def modules_catalog():
 
 @app.get("/api/modules/client")
 async def client_modules(request: Request, session=Depends(require_client)):
-    store: "DataStore" = request.app.state.store
+    store = request.app.state.store
     client = store.get_client(session["client_id"]) or {}
     plan = client.get("plan", "trial")
     plan_data = next((p for p in PLANS_CATALOG if p["code"] == plan), PLANS_CATALOG[0])
@@ -1681,7 +1679,6 @@ async def dashboard_page(request: Request):
 # ──────────────────────────────────────────────────────────────
 @app.get("/robots.txt")
 async def robots_txt():
-    from fastapi.responses import PlainTextResponse
     return PlainTextResponse(
         "User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api/\n"
         "Sitemap: https://dheuof.com/sitemap.xml\n"
@@ -1778,7 +1775,6 @@ async def admin_delete_marketer(mktr_id: int, request: Request, _=Depends(requir
 @app.get("/api/admin/marketers/{mktr_id}/referrals")
 async def admin_marketer_referrals(mktr_id: int, request: Request, _=Depends(require_admin)):
     db = request.app.state.db
-    store: "DataStore" = request.app.state.store
     try:
         rows = db.execute("""
             SELECT r.*, c.name as client_name
