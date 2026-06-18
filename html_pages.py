@@ -198,7 +198,7 @@ async function doRegister(){{
   const d=await r.json();
   if(d.ok||d.success){{
     const cid=d.client_id||'';
-    alert('✅ تم التسجيل بنجاح!\n\nمعرّفك الرقمي:\n'+cid+'\n\nتم إرساله إلى بريدك الإلكتروني — احتفظ به للدخول لاحقاً.');
+    alert('✅ تم التسجيل بنجاح!\\n\\nمعرّفك الرقمي:\\n'+cid+'\\n\\nتم إرساله إلى بريدك الإلكتروني — احتفظ به للدخول لاحقاً.');
     location.href='/';
   }}else showErr(d.error||'خطأ في التسجيل');
 }}
