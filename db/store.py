@@ -8,9 +8,9 @@ db/store.py — Data Access Layer
 import json
 import logging
 from datetime import datetime, date
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional
 
-from db.connection import DatabasePool, get_db
+from db.connection import DatabasePool
 
 log = logging.getLogger("dheuof.db.store")
 

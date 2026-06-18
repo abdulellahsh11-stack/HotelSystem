@@ -9,7 +9,6 @@ They are automatically skipped when DATABASE_URL is absent.
 """
 
 import threading
-import time
 import uuid
 from datetime import datetime, timedelta, timezone
 

@@ -5,7 +5,7 @@ config.py — إعدادات مركزية لنظام ضيوف
 يُحمَّل مرة واحدة عند بدء التشغيل من Railway Environment Variables
 """
 import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
 
 

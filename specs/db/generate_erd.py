@@ -9,18 +9,16 @@ generate_erd.py — يولّد ملف PDF يحتوي:
 import sys
 sys.path.insert(0, '/home/user/HotelSystem')
 
-from reportlab.lib.pagesizes import A3, A4, landscape
+from reportlab.lib.pagesizes import A3, landscape
 from reportlab.lib import colors
-from reportlab.lib.units import cm, mm
+from reportlab.lib.units import cm
 from reportlab.platypus import (
     SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
     HRFlowable, PageBreak
 )
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+from reportlab.lib.enums import TA_CENTER
 from reportlab.platypus import Flowable
-from reportlab.graphics.shapes import Drawing, Rect, String, Line, Circle
-from reportlab.graphics import renderPDF
 import os
 
 OUTPUT = os.path.join(os.path.dirname(__file__), "hotel-system-erd.pdf")

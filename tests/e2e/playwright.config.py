@@ -22,8 +22,6 @@ tests/e2e/playwright.config.py — إعدادات Playwright المركزية
 """
 
 import os
-from dataclasses import dataclass, field
-from typing import Optional
 
 
 # ──────────────────────────────────────────────────────────────

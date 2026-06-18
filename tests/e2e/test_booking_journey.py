@@ -10,11 +10,10 @@ tests/e2e/test_booking_journey.py — رحلة المستخدم الكاملة �
   - تدفق تسجيل المغادرة (Check-Out): البحث عن مغادر ثم معالجة الخروج
 """
 
-import re
 from datetime import date, timedelta
 
 import pytest
-from playwright.sync_api import Page, expect
+from playwright.sync_api import Page
 
 from e2e_config import BASE_URL
 
@@ -81,7 +80,6 @@ def _api_create_booking(page: Page, **kwargs) -> dict:
         headers={"Content-Type": "application/json"},
     )
     # نُرسل JSON مباشرة
-    import json
     response = page.evaluate(
         """
         async (args) => {
@@ -129,7 +127,7 @@ class TestCreateBooking:
             ids = [str(b.get("id", "")) for b in bookings]
             assert str(booking_id) in ids or any(
                 b.get("guest_name") == TEST_GUEST_NAME for b in bookings
-            ), f"الحجز المُنشأ غير موجود في القائمة"
+            ), "الحجز المُنشأ غير موجود في القائمة"
 
     def test_create_booking_via_ui_form(self, authenticated_page: Page):
         """
@@ -340,7 +338,7 @@ class TestCheckinFlow:
             checkin_btn.click()
             authenticated_page.wait_for_timeout(1_000)
             # تحقق من رسالة نجاح أو تغيير الحالة
-            success = authenticated_page.locator(
+            success = authenticated_page.locator(  # noqa: F841
                 ".toast-success, .alert-success, [class*='success']:visible"
             ).first
             # نجاح اختياري — الاختبار الرئيسي هو API

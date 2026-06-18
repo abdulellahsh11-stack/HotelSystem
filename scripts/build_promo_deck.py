@@ -33,7 +33,7 @@ def bars(items, unit="", maxv=100):
 
 def table(headers, rows, badges=None):
     h = '<table class="mtbl"><thead><tr>'
-    for hd in headers: h += f'<th>{hd}</th>'
+    for hd in headers: h += f'<th>{hd}</th>'  # noqa: E701
     h += '</tr></thead><tbody>'
     for r in rows:
         h += '<tr>'
@@ -281,7 +281,7 @@ MODULES = [
 # ---------- build HTML ----------
 def stars(n_full, half=False):
     s = '★'*n_full
-    if half: s += '½'
+    if half: s += '½'  # noqa: E701
     s += '☆'*(5-n_full-(1 if half else 0))
     return s
 

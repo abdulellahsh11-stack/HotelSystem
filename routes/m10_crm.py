@@ -26,7 +26,7 @@ async def list_contacts(request: Request, segment: Optional[str] = None,
                    FROM crm_contacts c LEFT JOIN guests g ON c.guest_id = g.id
                    WHERE c.client_id = %s"""
             params = [cid]
-            if segment: q += " AND c.segment = %s"; params.append(segment)
+            if segment: q += " AND c.segment = %s"; params.append(segment)  # noqa: E701, E702
             q += " ORDER BY c.lifetime_value DESC LIMIT 200"
             rows = db.execute(q, params, fetch="all")
             return {"success": True, "data": [dict(r) for r in (rows or [])]}

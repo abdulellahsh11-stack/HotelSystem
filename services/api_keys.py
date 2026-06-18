@@ -13,7 +13,6 @@
 import hashlib
 import secrets
 import logging
-from datetime import datetime, timezone
 
 log = logging.getLogger("dheuof.apikeys")
 

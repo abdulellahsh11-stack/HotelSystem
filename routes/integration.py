@@ -17,7 +17,6 @@ routes/integration.py — محرك الترابط بين البرامج (Cross-M
 التحليلات ولوحة المدير تقرأ من نفس الجداول، فتعكس الحدث تلقائياً.
 """
 import logging
-import secrets
 from datetime import date
 from fastapi import APIRouter, Request, Depends, HTTPException
 

@@ -7,7 +7,6 @@ and DatabasePool.health().
 These tests use the TestClient and db_pool fixtures from conftest.py.
 """
 
-import pytest
 
 
 # ── /api/health ───────────────────────────────────────────────────────────────

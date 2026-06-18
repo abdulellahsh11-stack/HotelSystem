@@ -198,7 +198,7 @@ async function doRegister(){{
   const d=await r.json();
   if(d.ok||d.success){{
     const cid=d.client_id||'';
-    alert('✅ تم التسجيل بنجاح!\n\nمعرّفك الرقمي:\n'+cid+'\n\nتم إرساله إلى بريدك الإلكتروني — احتفظ به للدخول لاحقاً.');
+    alert('✅ تم التسجيل بنجاح!\\n\\nمعرّفك الرقمي:\\n'+cid+'\\n\\nتم إرساله إلى بريدك الإلكتروني — احتفظ به للدخول لاحقاً.');
     location.href='/';
   }}else showErr(d.error||'خطأ في التسجيل');
 }}
@@ -1145,7 +1145,6 @@ loadOverview();
 
 def _client_dashboard(client: dict) -> str:
     name = client.get("name", client.get("hotel_name", client.get("id", "المنشأة")))
-    cid = client.get("id", "")
     plan = client.get("plan", "starter")
 
     return f"""<!DOCTYPE html>

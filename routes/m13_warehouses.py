@@ -25,7 +25,7 @@ async def list_items(request: Request, category: Optional[str] = None,
         if db.use_postgres:
             q = "SELECT * FROM warehouse_items WHERE client_id=%s"
             params = [cid]
-            if category: q += " AND warehouse_type=%s"; params.append(category)
+            if category: q += " AND warehouse_type=%s"; params.append(category)  # noqa: E701, E702
             q += " ORDER BY name"
             rows = db.execute(q, params, fetch="all")
             return {"success": True, "data": [dict(r) for r in (rows or [])]}
@@ -142,7 +142,7 @@ async def list_po(request: Request, status: Optional[str] = None,
                    FROM purchase_orders p LEFT JOIN suppliers s ON p.supplier_id = s.id
                    WHERE p.client_id = %s"""
             params = [cid]
-            if status: q += " AND p.status=%s"; params.append(status)
+            if status: q += " AND p.status=%s"; params.append(status)  # noqa: E701, E702
             q += " ORDER BY p.created_at DESC LIMIT 50"
             rows = db.execute(q, params, fetch="all")
             return {"success": True, "data": [dict(r) for r in (rows or [])]}

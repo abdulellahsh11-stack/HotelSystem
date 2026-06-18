@@ -148,12 +148,12 @@ async def generate_invoice(
                 vat_number, body.guest_name,
                 "CLEARED", tlv_b64, qr_image,
             ), fetch="one")
-            result = dict(row) if row else {}
+            _ = dict(row) if row else {}
         except Exception as e:
             log.error("DB insert zatca_invoice: %s", e)
-            result = {}
+            pass
     else:
-        result = {}
+        pass
 
     return {
         "success": True,

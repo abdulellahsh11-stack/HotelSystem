@@ -3,7 +3,6 @@
 """M11 — مؤشرات الأداء KPI Analytics"""
 import logging
 from datetime import date, timedelta
-from typing import Optional
 from fastapi import APIRouter, Request, Depends, HTTPException
 
 router = APIRouter(prefix="/api/m11", tags=["KPI"])

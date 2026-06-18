@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """routes/m02_frontdesk.py — الاستقبال Front Desk"""
-import secrets
 import logging
 from typing import Optional
 from fastapi import APIRouter, Request, Depends, HTTPException

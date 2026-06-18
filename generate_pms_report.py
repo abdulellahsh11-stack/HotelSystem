@@ -13,8 +13,8 @@ from reportlab.platypus import (
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.lib.enums import TA_RIGHT, TA_CENTER, TA_LEFT
-import os, sys
+from reportlab.lib.enums import TA_RIGHT, TA_CENTER
+import os
 
 # ── الخط العربي ──────────────────────────────────────────────────────────────
 FONT_PATH = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
