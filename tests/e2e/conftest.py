@@ -6,9 +6,12 @@ tests/e2e/conftest.py — إعدادات Playwright المشتركة لاختب�
 """
 
 import os
+import sys
 import pytest
 from playwright.sync_api import sync_playwright, Browser, BrowserContext, Page
 
+# e2e_config.py lives in the same directory — ensure it is importable
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from e2e_config import BASE_URL, TEST_CLIENT_ID, TEST_PASSWORD  # noqa: F401
 
 # بيانات حساب المدير

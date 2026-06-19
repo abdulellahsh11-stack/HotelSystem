@@ -341,7 +341,7 @@ async def admin_login(request: Request):
         _admin_sessions[token] = {"created_at": datetime.now().isoformat()}
 
     response = RedirectResponse("/admin", status_code=303)
-    response.set_cookie("admin_token", token, httponly=True, samesite="lax", max_age=86400)
+    response.set_cookie("admin_token", token, httponly=True, samesite="lax", secure=_COOKIE_SECURE, max_age=86400)
     return response
 
 
