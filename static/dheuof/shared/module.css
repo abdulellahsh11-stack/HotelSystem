@@ -263,6 +263,47 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE — tablet & mobile breakpoints
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .mod-stats { --cols: 3; }
+  .vib-hero { padding: 22px 24px; }
+}
+
+@media (max-width: 768px) {
+  /* Page header stacks on small screens */
+  .mod-head { flex-direction: column; align-items: flex-start; gap: 14px; }
+  .mod-head h1 { font-size: 26px; }
+  .mod-head .actions { flex-wrap: wrap; gap: 8px; }
+
+  /* Stat grid: 2 columns */
+  .mod-stats { --cols: 2; }
+
+  /* Two-column layouts collapse to one */
+  .mod-2col, .mod-2col-wide, .mod-2col-narrow { grid-template-columns: 1fr; }
+
+  /* Vibrant hero: stack vertically */
+  .vib-hero { flex-direction: column; align-items: flex-start; gap: 16px; padding: 20px; }
+
+  /* Table rows: reduce padding and use smaller font */
+  .mod-tr { padding: 10px 14px; font-size: 12px; gap: 10px; }
+}
+
+@media (max-width: 480px) {
+  /* Stat grid: 1 column on tiny screens */
+  .mod-stats { --cols: 1; }
+
+  /* Section heads wrap */
+  .mod-section-head { flex-direction: column; gap: 10px; }
+
+  /* Card padding reduced */
+  .mod-card-pad { padding: 14px 16px; }
+
+  /* Table rows: minimal padding */
+  .mod-tr { padding: 9px 12px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
    PRINT STYLES — clean professional report layout
    ═══════════════════════════════════════════════════════════════ */
 @media print {
