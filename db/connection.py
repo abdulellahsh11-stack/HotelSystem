@@ -228,9 +228,13 @@ class DatabasePool:
             return {"status": "ok", "type": "json_fallback"}
 
     def close(self) -> None:
-        """إغلاق كل الاتصالات عند إيقاف التشغيل"""
+        """إغلاق كل الاتصالات عند إيقاف التشغيل — آمن للاستدعاء أكثر من مرة"""
         if self._pool:
-            self._pool.closeall()
+            try:
+                self._pool.closeall()
+            except Exception:
+                pass
+            self._pool = None
             log.info("PostgreSQL Pool مُغلق")
 
 
