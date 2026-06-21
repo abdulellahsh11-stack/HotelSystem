@@ -104,7 +104,7 @@ class DatabasePool:
         self,
         query: str,
         params: tuple = (),
-        fetch: str = None,
+        fetch: Optional[str] = None,
     ) -> Any:
         """
         تنفيذ query مع:
@@ -146,7 +146,7 @@ class DatabasePool:
         self,
         query: str,
         params: tuple = (),
-        fetch: str = None,
+        fetch: Optional[str] = None,
     ) -> Any:
         """Non-blocking wrapper: runs db.execute in threadpool so asyncio event loop
         is not blocked while psycopg2 waits for the database."""

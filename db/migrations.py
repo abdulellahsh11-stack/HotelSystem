@@ -410,15 +410,34 @@ def run_all_migrations(db) -> None:
     log.info("🔄 بدء تطبيق database migrations...")
 
     try:
-        # 1. إنشاء الجداول
-        for statement in _SCHEMA_V1.split(";"):
+        # 1. إنشاء الجداول — نفصل دالة dollar-quoted عن بقية الـ schema
+        _schema_tables = _SCHEMA_V1[:_SCHEMA_V1.find("CREATE OR REPLACE FUNCTION")]
+
+        for statement in _schema_tables.split(";"):
             s = statement.strip()
-            if s and not s.startswith("--"):
+            # تحقق: هل يوجد SQL حقيقي (سطر لا يبدأ بـ --)؟
+            has_sql = any(
+                line.strip() and not line.strip().startswith("--")
+                for line in s.splitlines()
+            )
+            if s and has_sql:
                 try:
                     db.execute(s)
                 except Exception as e:
                     if "already exists" not in str(e).lower():
                         log.error(f"خطأ في migration statement: {e}\nSQL: {s[:100]}")
+
+        # 1b. إنشاء دالة updated_at بشكل منفصل (تجنب مشكلة dollar-quote split)
+        try:
+            db.execute("""
+                CREATE OR REPLACE FUNCTION update_updated_at()
+                RETURNS TRIGGER AS $$
+                BEGIN NEW.updated_at = NOW(); RETURN NEW; END;
+                $$ LANGUAGE plpgsql
+            """)
+        except Exception as e:
+            if "already exists" not in str(e).lower():
+                log.warning(f"⚠️ دالة update_updated_at: {e}")
 
         # 2. إنشاء الـ triggers (IF NOT EXISTS لا يدعمها PostgreSQL للـ triggers)
         for trigger_name, table_name in _TRIGGERS:

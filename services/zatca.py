@@ -21,6 +21,7 @@ import json
 import logging
 import uuid
 from datetime import datetime, timezone
+from typing import Optional
 
 log = logging.getLogger("dheuof.zatca")
 
@@ -157,7 +158,7 @@ class ZatcaInvoiceService:
     def build_invoice(self, company_name: str, seller_vat: str,
                       guest_name: str, line_items: list,
                       buyer_vat: str = "", invoice_type: str = "simplified",
-                      timestamp: str = None) -> dict:
+                      timestamp: Optional[str] = None) -> dict:
         """
         يبني فاتورة ضريبية كاملة من بنود الخدمة.
         line_items: [{description, qty, unit_price}]
@@ -213,7 +214,7 @@ class ZatcaInvoiceService:
         }
 
     # ── تخزين الفاتورة ────────────────────────────────────────
-    def save_invoice(self, client_id: str, inv: dict, booking_id: str = None) -> dict:
+    def save_invoice(self, client_id: str, inv: dict, booking_id: Optional[str] = None) -> dict:
         """يخزّن الفاتورة في جدول invoices مع حقول ZATCA."""
         inv_id = "INV-" + inv["zatca_uuid"][:8].upper()
         if not getattr(self.db, "use_postgres", False):

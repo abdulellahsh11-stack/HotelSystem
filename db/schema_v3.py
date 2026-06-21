@@ -690,7 +690,12 @@ def run_v3_migrations(db) -> None:
 
     for statement in SCHEMA_V3_MODULES.split(";"):
         s = statement.strip()
-        if s and not s.startswith("--"):
+        # تحقق: هل يوجد SQL حقيقي (سطر لا يبدأ بـ --)؟
+        has_sql = any(
+            line.strip() and not line.strip().startswith("--")
+            for line in s.splitlines()
+        )
+        if s and has_sql:
             try:
                 db.execute(s)
             except Exception as e:
