@@ -23,7 +23,6 @@ def _ensure_booking_tax_cols(db) -> None:
     if _booking_tax_done or not db.use_postgres:
         return
     for col_def in _BOOKING_TAX_COLS:
-        col_name = col_def.split()[0]
         try:
             db.execute(f"ALTER TABLE bookings ADD COLUMN IF NOT EXISTS {col_def}")
         except Exception:

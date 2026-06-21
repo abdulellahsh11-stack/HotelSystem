@@ -26,7 +26,6 @@ def _ensure_po_tax_cols(db) -> None:
     if _po_tax_done or not db.use_postgres:
         return
     for col_def in _PO_TAX_COLS:
-        col_name = col_def.split()[0]
         try:
             db.execute(f"ALTER TABLE purchase_orders ADD COLUMN IF NOT EXISTS {col_def}")
         except Exception:

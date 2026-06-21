@@ -534,11 +534,14 @@ async def open_list_transactions(
             """
             params: list = [cid]
             if date_from:
-                q += " AND b.check_in >= %s"; params.append(date_from)
+                q += " AND b.check_in >= %s"
+                params.append(date_from)
             if date_to:
-                q += " AND b.check_in <= %s"; params.append(date_to)
+                q += " AND b.check_in <= %s"
+                params.append(date_to)
             if source:
-                q += " AND b.source = %s"; params.append(source)
+                q += " AND b.source = %s"
+                params.append(source)
             count_row = db.execute(f"SELECT COUNT(*) FROM ({q}) AS _s", params, fetch="one")
             total = count_row[0] if count_row else 0
             q += " ORDER BY b.created_at DESC LIMIT %s OFFSET %s"
@@ -594,9 +597,11 @@ async def open_tax_summary(
             """
             params: list = [cid]
             if date_from:
-                q += " AND check_in >= %s"; params.append(date_from)
+                q += " AND check_in >= %s"
+                params.append(date_from)
             if date_to:
-                q += " AND check_in <= %s"; params.append(date_to)
+                q += " AND check_in <= %s"
+                params.append(date_to)
             row = db.execute(q, params, fetch="one")
             return {"success": True, "data": dict(row) if row else {}}
         return {"success": True, "data": {}}

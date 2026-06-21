@@ -124,7 +124,6 @@ async def generate_invoice(
     )
     subtotal       = Decimal(str(tax["subtotal"])).quantize(TWO, ROUND_HALF_UP)
     discount       = Decimal(str(tax["discount"])).quantize(TWO, ROUND_HALF_UP)
-    net            = Decimal(str(tax["net"])).quantize(TWO, ROUND_HALF_UP)
     vat_amount     = Decimal(str(tax["vat_amount"])).quantize(TWO, ROUND_HALF_UP)
     tourism_rate   = Decimal(str(tax["tourism_rate"])).quantize(Decimal("0.0001"), ROUND_HALF_UP)
     tourism_amount = Decimal(str(tax["tourism_tax_amount"])).quantize(TWO, ROUND_HALF_UP)
