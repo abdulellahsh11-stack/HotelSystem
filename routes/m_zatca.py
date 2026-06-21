@@ -25,6 +25,7 @@ log = logging.getLogger("dheuof.zatca")
 
 TWO = Decimal("0.01")
 VAT_RATE = Decimal("0.15")
+TOURISM_TAX_RATE = Decimal("0.025")  # ضريبة السياحة السعودية 2.5%
 
 
 def _require_client(request: Request) -> dict:
@@ -61,6 +62,8 @@ class GenerateInvoiceRequest(BaseModel):
     discount: float = 0.0
     supply_date: Optional[str] = None
     invoice_type: str = "SIMPLIFIED"
+    tourism_tax_enabled: bool = False
+    tax_absorbed_by: str = "guest"  # "guest" | "property"
 
 
 class VerifyQrRequest(BaseModel):
@@ -116,7 +119,17 @@ async def generate_invoice(
     discount   = Decimal(str(body.discount)).quantize(TWO, ROUND_HALF_UP)
     net        = (subtotal - discount).quantize(TWO, ROUND_HALF_UP)
     vat_amount = (net * VAT_RATE).quantize(TWO, ROUND_HALF_UP)
-    total      = (net + vat_amount).quantize(TWO, ROUND_HALF_UP)
+
+    # ضريبة السياحة 2.5%
+    tourism_rate  = TOURISM_TAX_RATE if body.tourism_tax_enabled else Decimal("0")
+    tourism_amount = (net * tourism_rate).quantize(TWO, ROUND_HALF_UP)
+    absorbed_by   = body.tax_absorbed_by if body.tourism_tax_enabled else "guest"
+
+    # الإجمالي: إذا "المنشأة تتحمّل" → الضيف لا يدفع ضريبة السياحة
+    if body.tourism_tax_enabled and absorbed_by == "property":
+        total = (net + vat_amount).quantize(TWO, ROUND_HALF_UP)  # الضيف يدفع VAT فقط
+    else:
+        total = (net + vat_amount + tourism_amount).quantize(TWO, ROUND_HALF_UP)
 
     # بناء TLV
     timestamp  = datetime.now().isoformat()
@@ -137,8 +150,9 @@ async def generate_invoice(
                      invoice_type, issue_date, supply_date,
                      subtotal, discount, vat_rate, vat_amount, total,
                      vat_number, buyer_name,
-                     zatca_status, qr_tlv_base64, qr_image_base64)
-                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                     zatca_status, qr_tlv_base64, qr_image_base64,
+                     tourism_tax_rate, tourism_tax_amount, tax_absorbed_by)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
                 RETURNING *
             """, (
                 cid, inv_number, body.booking_id, body.guest_id,
@@ -147,6 +161,7 @@ async def generate_invoice(
                 float(vat_amount), float(total),
                 vat_number, body.guest_name,
                 "CLEARED", tlv_b64, qr_image,
+                float(tourism_rate), float(tourism_amount), absorbed_by,
             ), fetch="one")
             _ = dict(row) if row else {}
         except Exception as e:
@@ -162,6 +177,9 @@ async def generate_invoice(
             "subtotal": float(subtotal),
             "discount": float(discount),
             "vat_amount": float(vat_amount),
+            "tourism_tax_rate": float(tourism_rate),
+            "tourism_tax_amount": float(tourism_amount),
+            "tax_absorbed_by": absorbed_by,
             "total": float(total),
             "vat_number": vat_number,
             "seller_name": seller_name,

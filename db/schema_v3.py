@@ -956,3 +956,19 @@ def run_v4_migrations(db) -> None:
                 log.warning(f"v4 migration failed: {e} | SQL: {s[:80]}")
                 fail += 1
     log.info(f"✅ v4 migrations — {ok} OK, {fail} failed")
+
+    # ── ضريبة السياحة (Tourism Tax 2.5%) — أعمدة إضافية ────────
+    _tourism_cols = [
+        "tourism_tax_rate   DECIMAL(5,4) DEFAULT 0.025",
+        "tourism_tax_amount DECIMAL(12,2) DEFAULT 0",
+        "tax_absorbed_by    VARCHAR(20)   DEFAULT 'guest'",
+    ]
+    for col_def in _tourism_cols:
+        col_name = col_def.split()[0]
+        try:
+            db.execute(
+                f"ALTER TABLE zatca_invoices ADD COLUMN IF NOT EXISTS {col_def}"
+            )
+        except Exception as e:
+            if "already exists" not in str(e).lower():
+                log.warning(f"tourism tax col {col_name}: {e}")
