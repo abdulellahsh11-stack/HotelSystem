@@ -957,7 +957,7 @@ def run_v4_migrations(db) -> None:
                 fail += 1
     log.info(f"✅ v4 migrations — {ok} OK, {fail} failed")
 
-    # ── ضريبة السياحة (Tourism Tax 2.5%) — أعمدة إضافية ────────
+    # ── ضريبة السياحة (Tourism Tax 2.5%) — أعمدة zatca_invoices ─
     _tourism_cols = [
         "tourism_tax_rate   DECIMAL(5,4) DEFAULT 0.025",
         "tourism_tax_amount DECIMAL(12,2) DEFAULT 0",
@@ -972,3 +972,79 @@ def run_v4_migrations(db) -> None:
         except Exception as e:
             if "already exists" not in str(e).lower():
                 log.warning(f"tourism tax col {col_name}: {e}")
+
+    # ── أعمدة الضريبة المركزية — bookings ────────────────────────
+    _booking_tax_cols = [
+        "tax_mode            VARCHAR(10)   DEFAULT 'MODE_A'",
+        "vat_amount          DECIMAL(12,2) DEFAULT 0",
+        "tourism_tax_amount  DECIMAL(12,2) DEFAULT 0",
+    ]
+    for col_def in _booking_tax_cols:
+        col_name = col_def.split()[0]
+        try:
+            db.execute(
+                f"ALTER TABLE bookings ADD COLUMN IF NOT EXISTS {col_def}"
+            )
+        except Exception as e:
+            if "already exists" not in str(e).lower():
+                log.warning(f"bookings tax col {col_name}: {e}")
+
+    # ── أعمدة الضريبة المركزية — pos_sales ───────────────────────
+    _pos_tax_cols = [
+        "subtotal            DECIMAL(10,2) DEFAULT 0",
+        "vat_amount          DECIMAL(10,2) DEFAULT 0",
+        "tourism_tax_amount  DECIMAL(10,2) DEFAULT 0",
+        "tax_mode            VARCHAR(10)   DEFAULT 'MODE_A'",
+    ]
+    for col_def in _pos_tax_cols:
+        col_name = col_def.split()[0]
+        try:
+            db.execute(
+                f"ALTER TABLE pos_sales ADD COLUMN IF NOT EXISTS {col_def}"
+            )
+        except Exception as e:
+            if "already exists" not in str(e).lower():
+                log.warning(f"pos_sales tax col {col_name}: {e}")
+
+    # ── أعمدة الضريبة المركزية — purchase_orders ─────────────────
+    _po_tax_cols = [
+        "vat_amount          DECIMAL(12,2) DEFAULT 0",
+        "tourism_tax_amount  DECIMAL(12,2) DEFAULT 0",
+        "tax_mode            VARCHAR(10)   DEFAULT 'MODE_A'",
+    ]
+    for col_def in _po_tax_cols:
+        col_name = col_def.split()[0]
+        try:
+            db.execute(
+                f"ALTER TABLE purchase_orders ADD COLUMN IF NOT EXISTS {col_def}"
+            )
+        except Exception as e:
+            if "already exists" not in str(e).lower():
+                log.warning(f"purchase_orders tax col {col_name}: {e}")
+
+    # ── جدول القيود المحاسبية (API مفتوح) ────────────────────────
+    try:
+        db.execute("""
+            CREATE TABLE IF NOT EXISTS journal_entries (
+                id          SERIAL PRIMARY KEY,
+                client_id   VARCHAR(50) REFERENCES clients(id) ON DELETE CASCADE,
+                reference   VARCHAR(100),
+                entry_date  DATE DEFAULT CURRENT_DATE,
+                description TEXT,
+                lines       JSONB DEFAULT '[]',
+                source      VARCHAR(30) DEFAULT 'external',
+                created_at  TIMESTAMPTZ DEFAULT NOW()
+            )
+        """)
+    except Exception as e:
+        if "already exists" not in str(e).lower():
+            log.warning(f"journal_entries table: {e}")
+
+    # ── مفتاح API للربط بالأنظمة الخارجية (clients.api_key) ─────
+    try:
+        db.execute(
+            "ALTER TABLE clients ADD COLUMN IF NOT EXISTS api_key VARCHAR(80) UNIQUE"
+        )
+    except Exception as e:
+        if "already exists" not in str(e).lower():
+            log.warning(f"clients.api_key col: {e}")

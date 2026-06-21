@@ -11,7 +11,8 @@ data/store.json
 *.log
 reports/
 
-# Generated report artifacts — never commit PDFs/bundles
+# Generated report artifacts — never commit PDFs/bundles/scripts
 *.pdf
 *.bundle
 test_results/
+scripts/generate_*.py

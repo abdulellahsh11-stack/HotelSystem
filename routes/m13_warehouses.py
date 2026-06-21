@@ -6,9 +6,32 @@ import logging
 from typing import Optional
 from fastapi import APIRouter, Request, Depends, HTTPException
 
+from services.tax_config import get_client_tax_config, calculate_tax as _calc_tax
+
 router = APIRouter(prefix="/api/m13", tags=["Warehouses"])
 
 logger = logging.getLogger("dheuof")
+
+# أعمدة ضريبة المشتريات — تُضاف تلقائياً عند أول استخدام
+_PO_TAX_COLS = [
+    "vat_amount          DECIMAL(12,2) DEFAULT 0",
+    "tourism_tax_amount  DECIMAL(12,2) DEFAULT 0",
+    "tax_mode            VARCHAR(10)   DEFAULT 'MODE_A'",
+]
+_po_tax_done = False
+
+
+def _ensure_po_tax_cols(db) -> None:
+    global _po_tax_done
+    if _po_tax_done or not db.use_postgres:
+        return
+    for col_def in _PO_TAX_COLS:
+        col_name = col_def.split()[0]
+        try:
+            db.execute(f"ALTER TABLE purchase_orders ADD COLUMN IF NOT EXISTS {col_def}")
+        except Exception:
+            pass
+    _po_tax_done = True
 
 
 def _require_client(request: Request) -> dict:
@@ -136,9 +159,14 @@ async def list_po(request: Request, status: Optional[str] = None,
                   session=Depends(_require_client)):
     try:
         db = request.app.state.db
+        _ensure_po_tax_cols(db)
         cid = session["client_id"]
         if db.use_postgres:
-            q = """SELECT p.*, s.name_ar as supplier_name
+            q = """SELECT p.*,
+                          s.name_ar as supplier_name,
+                          COALESCE(p.vat_amount, 0)         AS vat_amount,
+                          COALESCE(p.tourism_tax_amount, 0) AS tourism_tax_amount,
+                          COALESCE(p.tax_mode, 'MODE_A')    AS tax_mode
                    FROM purchase_orders p LEFT JOIN suppliers s ON p.supplier_id = s.id
                    WHERE p.client_id = %s"""
             params = [cid]
@@ -159,20 +187,33 @@ async def create_po(request: Request, session=Depends(_require_client)):
     try:
         data = await request.json()
         db = request.app.state.db
+        _ensure_po_tax_cols(db)
         cid = session["client_id"]
+
+        raw_total = float(data.get("total_amount", 0))
+
+        # حساب ضريبة المشتريات حسب إعدادات العميل
+        tax_cfg = get_client_tax_config(db, cid)
+        tax = _calc_tax(amount=raw_total, config=tax_cfg)
+
         if db.use_postgres:
             num = f"PO-{secrets.token_hex(4).upper()}"
             row = db.execute("""
                 INSERT INTO purchase_orders
                     (client_id,po_number,supplier_id,order_date,expected_date,
-                     status,total_amount,notes)
-                VALUES (%s,%s,%s,CURRENT_DATE,%s,'draft',%s,%s) RETURNING *
+                     status,total_amount,vat_amount,tourism_tax_amount,tax_mode,notes)
+                VALUES (%s,%s,%s,CURRENT_DATE,%s,'draft',%s,%s,%s,%s,%s) RETURNING *
             """, (cid, num, data.get("supplier_id"),
                   data.get("expected_date"),
-                  float(data.get("total_amount", 0)),
+                  tax["grand_total"],
+                  tax["vat_amount"],
+                  tax["tourism_tax_amount"],
+                  tax["tax_mode"],
                   data.get("notes")), fetch="one")
-            return {"success": True, "data": dict(row)}
-        return {"success": True, "data": data}
+            result = dict(row)
+            result["tax_breakdown"] = tax
+            return {"success": True, "data": result}
+        return {"success": True, "data": {**data, "tax_breakdown": tax}}
     except HTTPException:
         raise
     except Exception as e:
