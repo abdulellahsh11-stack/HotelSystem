@@ -1685,14 +1685,42 @@ async def robots_txt():
     )
 
 
+# المسارات المُدرجة في sitemap — تطابق وسوم canonical في ملفات static
+_SITEMAP_URLS = [
+    ("/",            "weekly",  "1.0"),
+    ("/marketing",   "monthly", "0.9"),
+    ("/dheuof",      "weekly",  "0.8"),
+    ("/ota-bookings", "weekly", "0.8"),
+    ("/accounting",  "weekly",  "0.8"),
+    ("/pos",         "weekly",  "0.7"),
+    ("/channels",    "weekly",  "0.7"),
+    ("/analytics",   "monthly", "0.7"),
+    ("/inventory",   "monthly", "0.6"),
+    ("/warehouse",   "monthly", "0.6"),
+    ("/hr",          "monthly", "0.6"),
+    ("/shumus",      "monthly", "0.6"),
+    ("/tourism",     "monthly", "0.6"),
+    ("/trips",       "monthly", "0.6"),
+    ("/smart-key",   "monthly", "0.6"),
+    ("/staff",       "monthly", "0.5"),
+    ("/goals",       "monthly", "0.5"),
+    ("/static/dheuof/packages.html",   "monthly", "0.8"),
+    ("/static/dheuof/onboarding.html", "monthly", "0.7"),
+    ("/static/dheuof/api-docs.html",   "monthly", "0.6"),
+]
+
+
 @app.get("/sitemap.xml")
 async def sitemap():
     from fastapi.responses import Response
-    xml = """<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://dheuof.com/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
-  <url><loc>https://dheuof.com/marketing</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-</urlset>"""
+    entries = "\n".join(
+        f"  <url><loc>https://dheuof.com{path}</loc>"
+        f"<changefreq>{freq}</changefreq><priority>{prio}</priority></url>"
+        for path, freq, prio in _SITEMAP_URLS
+    )
+    xml = ('<?xml version="1.0" encoding="UTF-8"?>\n'
+           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+           f"{entries}\n</urlset>")
     return Response(content=xml, media_type="application/xml")
 
 
