@@ -222,6 +222,41 @@ async def lifespan(app_: FastAPI):
     except Exception as e:
         log.warning(f"ZATCA service unavailable: {e}")
 
+    # ── Redis session store ─────────────────────────────────────────────────
+    try:
+        from services.redis_session import RedisSession
+        redis_url = os.environ.get("REDIS_URL", "")
+        app_.state.redis_session = RedisSession(redis_url)
+        if app_.state.redis_session.is_redis_available:
+            log.info("✓ Redis session store — connected")
+        else:
+            log.info("✓ Redis session store — in-memory fallback (set REDIS_URL to enable)")
+    except Exception as e:
+        log.warning(f"Redis session store unavailable: {e}")
+        app_.state.redis_session = None
+
+    # ── Structured JSON logging ─────────────────────────────────────────────
+    try:
+        from services.structured_logging import setup_logging as _setup_logging
+        _setup_logging(log_level=logging.DEBUG if cfg.debug else logging.INFO)
+        log.info("✓ Structured JSON logging active")
+    except Exception as e:
+        log.warning(f"Structured logging setup failed: {e}")
+
+    # ── OpenTelemetry + Prometheus metrics ─────────────────────────────────
+    try:
+        from services.telemetry import setup_telemetry as _setup_telemetry
+        _setup_telemetry(app_, cfg)
+        log.info("✓ OpenTelemetry tracing active")
+    except Exception as e:
+        log.warning(f"Telemetry setup failed: {e}")
+    try:
+        from services.telemetry import setup_metrics as _setup_metrics_final
+        _setup_metrics_final(app_)
+        log.info("✓ Prometheus /metrics endpoint active")
+    except Exception as e:
+        log.warning(f"Metrics setup failed: {e}")
+
     # ── Background session cleanup (every 6 hours) ─────────────────────────
     import asyncio
 
@@ -240,6 +275,15 @@ async def lifespan(app_: FastAPI):
                     log.info("✅ Session cleanup completed")
             except Exception as e:
                 log.warning(f"Session cleanup error: {e}")
+            # Flush expired in-memory cache entries (if Redis is unavailable)
+            try:
+                rs = getattr(app_.state, "redis_session", None)
+                if rs and not rs.is_redis_available:
+                    flushed = rs.flush_expired()
+                    if flushed:
+                        log.debug(f"Flushed {flushed} expired in-memory cache entries")
+            except Exception:
+                pass
 
     _cleanup_task = asyncio.create_task(_session_cleanup())
 
