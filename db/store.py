@@ -255,7 +255,7 @@ class DataStore:
     #  BOOKINGS — الحجوزات
     # ══════════════════════════════════════════════════════════
 
-    def get_bookings(self, client_id: str, status: str = None) -> List[dict]:
+    def get_bookings(self, client_id: str, status: Optional[str] = None) -> List[dict]:
         if self._use_pg:
             if status:
                 rows = self.db.execute(
@@ -337,7 +337,7 @@ class DataStore:
     #  POS TRANSACTIONS
     # ══════════════════════════════════════════════════════════
 
-    def get_pos_transactions(self, client_id: str, date_from: str = None, date_to: str = None) -> List[dict]:
+    def get_pos_transactions(self, client_id: str, date_from: Optional[str] = None, date_to: Optional[str] = None) -> List[dict]:
         if self._use_pg:
             if date_from and date_to:
                 rows = self.db.execute(

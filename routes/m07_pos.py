@@ -7,6 +7,8 @@ import secrets
 from typing import Optional
 from fastapi import APIRouter, Request, Depends, HTTPException
 
+from services.tax_config import get_client_tax_config, calculate_tax as _calc_tax
+
 router = APIRouter(prefix="/api/m07", tags=["POS"])
 
 logger = logging.getLogger("dheuof")
@@ -14,18 +16,26 @@ logger = logging.getLogger("dheuof")
 # ── Lazy migration: create pos_sales table on first use ──────────────────────
 _POS_MIGRATION = """
 CREATE TABLE IF NOT EXISTS pos_sales (
-    id             SERIAL PRIMARY KEY,
-    client_id      VARCHAR(50),
-    sale_number    VARCHAR(30),
-    guest_id       INTEGER,
-    items          JSONB DEFAULT '[]',
-    total          DECIMAL(10,2) DEFAULT 0,
-    payment_method VARCHAR(30) DEFAULT 'cash',
-    status         VARCHAR(20) DEFAULT 'completed',
-    created_by     VARCHAR(100),
-    created_at     TIMESTAMPTZ DEFAULT NOW()
+    id                 SERIAL PRIMARY KEY,
+    client_id          VARCHAR(50),
+    sale_number        VARCHAR(30),
+    guest_id           INTEGER,
+    items              JSONB DEFAULT '[]',
+    subtotal           DECIMAL(10,2) DEFAULT 0,
+    vat_amount         DECIMAL(10,2) DEFAULT 0,
+    tourism_tax_amount DECIMAL(10,2) DEFAULT 0,
+    total              DECIMAL(10,2) DEFAULT 0,
+    tax_mode           VARCHAR(10)   DEFAULT 'MODE_A',
+    payment_method     VARCHAR(30)   DEFAULT 'cash',
+    status             VARCHAR(20)   DEFAULT 'completed',
+    created_by         VARCHAR(100),
+    created_at         TIMESTAMPTZ   DEFAULT NOW()
 );
-CREATE INDEX IF NOT EXISTS idx_pos_client ON pos_sales(client_id, created_at)
+CREATE INDEX IF NOT EXISTS idx_pos_client ON pos_sales(client_id, created_at);
+ALTER TABLE pos_sales ADD COLUMN IF NOT EXISTS subtotal DECIMAL(10,2) DEFAULT 0;
+ALTER TABLE pos_sales ADD COLUMN IF NOT EXISTS vat_amount DECIMAL(10,2) DEFAULT 0;
+ALTER TABLE pos_sales ADD COLUMN IF NOT EXISTS tourism_tax_amount DECIMAL(10,2) DEFAULT 0;
+ALTER TABLE pos_sales ADD COLUMN IF NOT EXISTS tax_mode VARCHAR(10) DEFAULT 'MODE_A'
 """
 
 _migration_done = False
@@ -71,7 +81,12 @@ async def list_sales(
             limit = min(per_page, 200)
             offset = (page - 1) * limit
             q = """
-                SELECT id, sale_number, guest_id, items, total,
+                SELECT id, sale_number, guest_id, items,
+                       COALESCE(subtotal, total)          AS subtotal,
+                       COALESCE(vat_amount, 0)            AS vat_amount,
+                       COALESCE(tourism_tax_amount, 0)    AS tourism_tax_amount,
+                       total                              AS grand_total,
+                       COALESCE(tax_mode, 'MODE_A')       AS tax_mode,
                        payment_method, status, created_by, created_at
                 FROM pos_sales
                 WHERE client_id = %s AND status != 'voided'
@@ -107,34 +122,43 @@ async def create_sale(request: Request, session=Depends(_require_client)):
         cid = session["client_id"]
 
         items = data.get("items", [])
-        total = float(data.get("total", 0) or 0)
+        raw_total = float(data.get("total", 0) or 0)
         payment_method = data.get("payment_method", "cash")
         guest_id = data.get("guest_id")
         created_by = data.get("created_by", session.get("client_id", ""))
+
+        # حساب الضريبة حسب إعدادات العميل
+        tax_cfg = get_client_tax_config(db, cid)
+        tax = _calc_tax(amount=raw_total, config=tax_cfg)
 
         if db.use_postgres:
             sale_number = f"POS-{secrets.token_hex(4).upper()}"
             row = db.execute(
                 """
                 INSERT INTO pos_sales
-                    (client_id, sale_number, guest_id, items, total,
+                    (client_id, sale_number, guest_id, items,
+                     subtotal, vat_amount, tourism_tax_amount, total, tax_mode,
                      payment_method, status, created_by)
-                VALUES (%s, %s, %s, %s::jsonb, %s, %s, 'completed', %s)
+                VALUES (%s, %s, %s, %s::jsonb, %s, %s, %s, %s, %s, %s, 'completed', %s)
                 RETURNING *
                 """,
                 (
-                    cid,
-                    sale_number,
-                    guest_id,
+                    cid, sale_number, guest_id,
                     json.dumps(items, ensure_ascii=False),
-                    total,
+                    tax["subtotal"],
+                    tax["vat_amount"],
+                    tax["tourism_tax_amount"],
+                    tax["grand_total"],
+                    tax["tax_mode"],
                     payment_method,
                     created_by,
                 ),
                 fetch="one",
             )
-            return {"success": True, "data": dict(row)}
-        return {"success": True, "data": data}
+            result = dict(row)
+            result["tax_breakdown"] = tax
+            return {"success": True, "data": result}
+        return {"success": True, "data": {**data, "tax_breakdown": tax}}
     except HTTPException:
         raise
     except Exception as e:
@@ -230,7 +254,7 @@ async def create_item(request: Request, session=Depends(_require_client)):
 
 @router.get("/stats")
 async def pos_stats(request: Request, session=Depends(_require_client)):
-    """Return {today_sales, today_revenue, avg_transaction}."""
+    """Return {today_sales, today_revenue, today_vat, today_tourism_tax, avg_transaction}."""
     try:
         db = request.app.state.db
         _ensure_pos_table(db)
@@ -247,6 +271,14 @@ async def pos_stats(request: Request, session=Depends(_require_client)):
                         WHERE created_at::date = CURRENT_DATE
                           AND status = 'completed'
                     ), 0) AS today_revenue,
+                    COALESCE(SUM(COALESCE(vat_amount, 0)) FILTER (
+                        WHERE created_at::date = CURRENT_DATE
+                          AND status = 'completed'
+                    ), 0) AS today_vat,
+                    COALESCE(SUM(COALESCE(tourism_tax_amount, 0)) FILTER (
+                        WHERE created_at::date = CURRENT_DATE
+                          AND status = 'completed'
+                    ), 0) AS today_tourism_tax,
                     COALESCE(AVG(total) FILTER (
                         WHERE status = 'completed'
                     ), 0) AS avg_transaction
@@ -257,9 +289,13 @@ async def pos_stats(request: Request, session=Depends(_require_client)):
                 fetch="one",
             )
             return {"success": True, "data": dict(row) if row else {
-                "today_sales": 0, "today_revenue": 0, "avg_transaction": 0
+                "today_sales": 0, "today_revenue": 0,
+                "today_vat": 0, "today_tourism_tax": 0, "avg_transaction": 0,
             }}
-        return {"success": True, "data": {"today_sales": 0, "today_revenue": 0, "avg_transaction": 0}}
+        return {"success": True, "data": {
+            "today_sales": 0, "today_revenue": 0,
+            "today_vat": 0, "today_tourism_tax": 0, "avg_transaction": 0,
+        }}
     except HTTPException:
         raise
     except Exception as e:

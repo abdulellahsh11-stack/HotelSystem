@@ -19,12 +19,12 @@ from services.zatca import (
     generate_qr_image_base64,
     validate_vat_number,
 )
+from services.tax_config import get_client_tax_config, calculate_tax as _calc_tax
 
 router = APIRouter(prefix="/api/zatca", tags=["ZATCA"])
 log = logging.getLogger("dheuof.zatca")
 
 TWO = Decimal("0.01")
-VAT_RATE = Decimal("0.15")
 
 
 def _require_client(request: Request) -> dict:
@@ -61,6 +61,8 @@ class GenerateInvoiceRequest(BaseModel):
     discount: float = 0.0
     supply_date: Optional[str] = None
     invoice_type: str = "SIMPLIFIED"
+    tourism_tax_enabled: bool = False
+    tax_absorbed_by: str = "guest"  # "guest" | "property"
 
 
 class VerifyQrRequest(BaseModel):
@@ -111,12 +113,22 @@ async def generate_invoice(
             400, "الرقم الضريبي للمنشأة غير صالح — يجب أن يكون 15 رقماً يبدأ وينتهي بالرقم 3"
         )
 
-    # حسابات مالية
-    subtotal   = Decimal(str(body.subtotal)).quantize(TWO, ROUND_HALF_UP)
-    discount   = Decimal(str(body.discount)).quantize(TWO, ROUND_HALF_UP)
-    net        = (subtotal - discount).quantize(TWO, ROUND_HALF_UP)
-    vat_amount = (net * VAT_RATE).quantize(TWO, ROUND_HALF_UP)
-    total      = (net + vat_amount).quantize(TWO, ROUND_HALF_UP)
+    # حسابات مالية — تُقرأ الأسعار من إعدادات الضريبة للعميل
+    tax_cfg = get_client_tax_config(db, cid)
+    tax = _calc_tax(
+        amount=body.subtotal,
+        config=tax_cfg,
+        discount=body.discount,
+        tourism_enabled=body.tourism_tax_enabled,
+        tax_absorbed_by=body.tax_absorbed_by,
+    )
+    subtotal       = Decimal(str(tax["subtotal"])).quantize(TWO, ROUND_HALF_UP)
+    discount       = Decimal(str(tax["discount"])).quantize(TWO, ROUND_HALF_UP)
+    vat_amount     = Decimal(str(tax["vat_amount"])).quantize(TWO, ROUND_HALF_UP)
+    tourism_rate   = Decimal(str(tax["tourism_rate"])).quantize(Decimal("0.0001"), ROUND_HALF_UP)
+    tourism_amount = Decimal(str(tax["tourism_tax_amount"])).quantize(TWO, ROUND_HALF_UP)
+    absorbed_by    = tax["tax_absorbed_by"]
+    total          = Decimal(str(tax["grand_total"])).quantize(TWO, ROUND_HALF_UP)
 
     # بناء TLV
     timestamp  = datetime.now().isoformat()
@@ -137,16 +149,18 @@ async def generate_invoice(
                      invoice_type, issue_date, supply_date,
                      subtotal, discount, vat_rate, vat_amount, total,
                      vat_number, buyer_name,
-                     zatca_status, qr_tlv_base64, qr_image_base64)
-                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                     zatca_status, qr_tlv_base64, qr_image_base64,
+                     tourism_tax_rate, tourism_tax_amount, tax_absorbed_by)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
                 RETURNING *
             """, (
                 cid, inv_number, body.booking_id, body.guest_id,
                 body.invoice_type, now_ts, supply_date,
-                float(subtotal), float(discount), float(VAT_RATE),
+                float(subtotal), float(discount), float(tax_cfg.vat_rate),
                 float(vat_amount), float(total),
                 vat_number, body.guest_name,
                 "CLEARED", tlv_b64, qr_image,
+                float(tourism_rate), float(tourism_amount), absorbed_by,
             ), fetch="one")
             _ = dict(row) if row else {}
         except Exception as e:
@@ -162,6 +176,9 @@ async def generate_invoice(
             "subtotal": float(subtotal),
             "discount": float(discount),
             "vat_amount": float(vat_amount),
+            "tourism_tax_rate": float(tourism_rate),
+            "tourism_tax_amount": float(tourism_amount),
+            "tax_absorbed_by": absorbed_by,
             "total": float(total),
             "vat_number": vat_number,
             "seller_name": seller_name,
@@ -347,7 +364,7 @@ async def issue_credit_note(
             VALUES (%s,%s,%s,%s,'CREDIT',%s,%s,%s,%s,%s,%s,'CLEARED',%s,%s)
         """, (
             cid, cn_number, orig.get("booking_id"), orig.get("guest_id"),
-            -float(orig["subtotal"]), float(VAT_RATE),
+            -float(orig["subtotal"]), float(orig.get("vat_rate", 0.15)),
             -float(orig["vat_amount"]), -float(orig["total"]),
             orig.get("vat_number"), orig.get("buyer_name"),
             tlv_b64, qr_image,

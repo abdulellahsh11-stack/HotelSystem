@@ -6,6 +6,7 @@
 ربط، مزامنة، واستقبال حجوزات منصات التوزيع العالمية.
 """
 import logging
+from typing import Optional
 from fastapi import APIRouter, Request, Depends, HTTPException
 
 router = APIRouter(prefix="/api/channels", tags=["Channels"])
@@ -101,7 +102,7 @@ async def sync(request: Request, session=Depends(_require_client)):
 
 
 @router.get("/reservations")
-async def reservations(request: Request, status: str = None, session=Depends(_require_client)):
+async def reservations(request: Request, status: Optional[str] = None, session=Depends(_require_client)):
     """الحجوزات الواردة من القنوات."""
     try:
         data = _mgr(request).list_reservations(session["client_id"], status)

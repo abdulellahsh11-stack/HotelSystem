@@ -5,6 +5,8 @@ import logging
 from typing import Optional
 from fastapi import APIRouter, Request, Depends, HTTPException
 
+from services.tax_config import get_client_tax_config, calculate_tax as _calc_tax
+
 router = APIRouter(prefix="/api/m02", tags=["FrontDesk"])
 
 logger = logging.getLogger("dheuof")
@@ -24,7 +26,11 @@ async def today_arrivals(request: Request, session=Depends(_require_client)):
         today = date.today().isoformat()
         if db.use_postgres:
             rows = db.execute("""
-                SELECT b.*, g.full_name, g.id_number, r.room_number
+                SELECT b.*,
+                       COALESCE(b.vat_amount, 0)         AS vat_amount,
+                       COALESCE(b.tourism_tax_amount, 0) AS tourism_tax_amount,
+                       COALESCE(b.tax_mode, 'MODE_A')    AS tax_mode,
+                       g.full_name, g.id_number, r.room_number
                 FROM bookings b
                 LEFT JOIN guests g ON b.guest_id = g.id
                 LEFT JOIN rooms r ON b.room_id = r.id
@@ -49,7 +55,11 @@ async def today_departures(request: Request, session=Depends(_require_client)):
         today = date.today().isoformat()
         if db.use_postgres:
             rows = db.execute("""
-                SELECT b.*, g.full_name, r.room_number
+                SELECT b.*,
+                       COALESCE(b.vat_amount, 0)         AS vat_amount,
+                       COALESCE(b.tourism_tax_amount, 0) AS tourism_tax_amount,
+                       COALESCE(b.tax_mode, 'MODE_A')    AS tax_mode,
+                       g.full_name, r.room_number
                 FROM bookings b
                 LEFT JOIN guests g ON b.guest_id = g.id
                 LEFT JOIN rooms r ON b.room_id = r.id
@@ -73,7 +83,6 @@ async def checkin(booking_id: str, request: Request, session=Depends(_require_cl
         data = await request.json()
         if db.use_postgres:
             with db.transaction() as cur:
-                # Update booking status
                 cur.execute("""
                     UPDATE bookings SET status='checked_in', actual_check_in=NOW()
                     WHERE id=%s AND client_id=%s AND status='confirmed'
@@ -84,12 +93,10 @@ async def checkin(booking_id: str, request: Request, session=Depends(_require_cl
                     raise HTTPException(400, "الحجز غير موجود أو لا يمكن تسجيل وصوله (تحقق من الحالة)")
                 room_id = row["room_id"]
                 guest_id = row["guest_id"]
-                # Update room to occupied
                 cur.execute("""
                     UPDATE rooms SET status='occupied'
                     WHERE id=%s AND client_id=%s
                 """, (room_id, cid))
-                # Write check-in log
                 cur.execute("""
                     INSERT INTO check_in_log
                         (client_id, booking_id, room_id, guest_id, checkin_by, id_verified, key_issued)
@@ -110,9 +117,9 @@ async def checkout(booking_id: str, request: Request, session=Depends(_require_c
         db = request.app.state.db
         cid = session["client_id"]
         data = await request.json()
+        room_id = None
         if db.use_postgres:
             with db.transaction() as cur:
-                # Update booking status
                 cur.execute("""
                     UPDATE bookings SET status='checked_out', actual_check_out=NOW()
                     WHERE id=%s AND client_id=%s AND status='checked_in'
@@ -122,19 +129,59 @@ async def checkout(booking_id: str, request: Request, session=Depends(_require_c
                 if not row:
                     raise HTTPException(400, "الحجز غير موجود أو الضيف لم يُسجَّل وصوله بعد")
                 room_id = row["room_id"]
-                # Mark room as needs cleaning
                 cur.execute("""
                     UPDATE rooms SET status='cleaning'
                     WHERE id=%s AND client_id=%s
                 """, (room_id, cid))
-                # Write check-out log
                 cur.execute("""
                     INSERT INTO check_out_log
                         (client_id, booking_id, checkout_by, final_amount, payment_method)
                     VALUES (%s, %s, %s, %s, %s)
                 """, (cid, booking_id, data.get("checkout_by", "استقبال"),
                       float(data.get("final_amount", 0)), data.get("payment_method", "cash")))
-        return {"success": True, "message": "تم تسجيل المغادرة بنجاح — الغرفة قيد التنظيف"}
+
+        # تفاصيل الضريبة في إيصال المغادرة
+        tax_breakdown = {}
+        if db.use_postgres:
+            b_row = db.execute("""
+                SELECT total_room,
+                       COALESCE(vat_amount, 0)         AS vat_amount,
+                       COALESCE(tourism_tax_amount, 0) AS tourism_tax_amount,
+                       COALESCE(tax_mode, 'MODE_A')    AS tax_mode
+                FROM bookings WHERE id=%s AND client_id=%s
+            """, (booking_id, cid), fetch="one")
+            if b_row:
+                br = dict(b_row)
+                final_amount = float(data.get("final_amount", 0)) or float(br.get("total_room", 0))
+                if float(br.get("vat_amount", 0)) > 0:
+                    # استخدام القيم المخزّنة مع الحجز
+                    grand = float(br.get("total_room", final_amount))
+                    vat   = float(br.get("vat_amount", 0))
+                    tour  = float(br.get("tourism_tax_amount", 0))
+                    tax_breakdown = {
+                        "tax_mode":           br.get("tax_mode", "MODE_A"),
+                        "grand_total":        grand,
+                        "vat_amount":         vat,
+                        "tourism_tax_amount": tour,
+                        "net_amount":         round(grand - vat - tour, 2),
+                    }
+                else:
+                    # حساب من المبلغ النهائي عند غياب البيانات المخزّنة
+                    cfg = get_client_tax_config(db, cid)
+                    t = _calc_tax(amount=final_amount, config=cfg)
+                    tax_breakdown = {
+                        "tax_mode":           t["tax_mode"],
+                        "grand_total":        t["grand_total"],
+                        "vat_amount":         t["vat_amount"],
+                        "tourism_tax_amount": t["tourism_tax_amount"],
+                        "net_amount":         t["net"],
+                    }
+
+        return {
+            "success": True,
+            "message": "تم تسجيل المغادرة بنجاح — الغرفة قيد التنظيف",
+            "tax_breakdown": tax_breakdown,
+        }
     except HTTPException:
         raise
     except Exception as e:

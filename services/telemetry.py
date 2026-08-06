@@ -383,7 +383,7 @@ def health_with_telemetry(db=None, redis_session=None) -> dict:
 #  إرسال تنبيهات عند الأخطاء الحرجة
 # ─────────────────────────────────────────────────────────────────────────────
 
-def alert_on_error(error: Exception, context: dict = None) -> None:
+def alert_on_error(error: Exception, context: Optional[dict] = None) -> None:
     """
     يُسجّل خطأً حرجاً بتنسيق JSON منظَّم يصلح للتقاطه من قبل أدوات التنبيه
     الخارجية (Sentry / Grafana Alerting / PagerDuty عبر log aggregation).

@@ -104,7 +104,7 @@ class DatabasePool:
         self,
         query: str,
         params: tuple = (),
-        fetch: str = None,
+        fetch: Optional[str] = None,
     ) -> Any:
         """
         تنفيذ query مع:
@@ -146,7 +146,7 @@ class DatabasePool:
         self,
         query: str,
         params: tuple = (),
-        fetch: str = None,
+        fetch: Optional[str] = None,
     ) -> Any:
         """Non-blocking wrapper: runs db.execute in threadpool so asyncio event loop
         is not blocked while psycopg2 waits for the database."""
@@ -228,9 +228,13 @@ class DatabasePool:
             return {"status": "ok", "type": "json_fallback"}
 
     def close(self) -> None:
-        """إغلاق كل الاتصالات عند إيقاف التشغيل"""
+        """إغلاق كل الاتصالات عند إيقاف التشغيل — آمن للاستدعاء أكثر من مرة"""
         if self._pool:
-            self._pool.closeall()
+            try:
+                self._pool.closeall()
+            except Exception:
+                pass
+            self._pool = None
             log.info("PostgreSQL Pool مُغلق")
 
 

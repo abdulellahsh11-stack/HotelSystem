@@ -2,7 +2,34 @@
 <html lang="ar" dir="rtl" data-screen-label="Home · Launcher">
 <head>
 <meta charset="utf-8"/>
-<title>ضيوف · لوحة البرامج</title>
+<title>ضيوف — نظام إدارة الفنادق والشقق المخدومة في السعودية</title>
+<meta name="description" content="منصة ضيوف لإدارة الفنادق والشقق المخدومة: حجوزات، استقبال، محاسبة، مستودعات، نقاط بيع وفوترة ZATCA — متوافقة مع أنظمة الضريبة السعودية."/>
+<link rel="canonical" href="https://dheuof.com/"/>
+<meta property="og:type" content="website"/>
+<meta property="og:site_name" content="ضيوف — Dheuof"/>
+<meta property="og:locale" content="ar_SA"/>
+<meta property="og:title" content="ضيوف — نظام إدارة الفنادق والشقق المخدومة في السعودية"/>
+<meta property="og:description" content="منصة ضيوف لإدارة الفنادق والشقق المخدومة: حجوزات، استقبال، محاسبة، مستودعات، نقاط بيع وفوترة ZATCA — متوافقة مع أنظمة الضريبة السعودية."/>
+<meta property="og:url" content="https://dheuof.com/"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="ضيوف — نظام إدارة الفنادق والشقق المخدومة في السعودية"/>
+<meta name="twitter:description" content="منصة ضيوف لإدارة الفنادق والشقق المخدومة: حجوزات، استقبال، محاسبة، مستودعات، نقاط بيع وفوترة ZATCA — متوافقة مع أنظمة الضريبة السعودية."/>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "ضيوف — Dheuof",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Web",
+  "url": "https://dheuof.com/",
+  "description": "منصة ضيوف لإدارة الفنادق والشقق المخدومة: حجوزات، استقبال، محاسبة، مستودعات، نقاط بيع وفوترة ZATCA — متوافقة مع أنظمة الضريبة السعودية.",
+  "inLanguage": "ar-SA",
+  "publisher": {
+    "@type": "Organization",
+    "name": "ضيوف"
+  }
+}
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <!-- ── PWA (iOS / Android / Browser) ── -->
 <link rel="manifest" href="/manifest.json"/>
@@ -273,6 +300,66 @@
   footer .brand-line { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 6px; }
   footer .brand-line .ar { font-family: var(--font-ar-display); font-size: 18px; color: var(--paper); font-weight: 600; }
   footer .cop { color: var(--gold-400); margin-top: 8px; font-family: var(--font-en); }
+
+  /* ───── Responsive — tablet & mobile ─────────────────────────── */
+  @media (max-width: 1024px) {
+    .grid { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  @media (max-width: 768px) {
+    /* Header */
+    .top { padding: 14px 20px; gap: 10px; }
+    .top .links { display: none; }
+    /* Hide customize CTA (second child of .actions) on mobile — keep Book Demo */
+    .top .actions > a:nth-child(2) { display: none; }
+    .top .cta { padding: 8px 14px; font-size: 12px; }
+
+    /* Hero */
+    .hero { padding: 0 20px; margin: 32px auto 28px; }
+    .hero .lead { font-size: 16px; max-width: 100%; }
+    .hero .meta { gap: 10px; flex-wrap: wrap; justify-content: center; }
+
+    /* Module grid: 2 columns */
+    .grid-wrap { padding: 0 16px; margin-bottom: 56px; }
+    .grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .tile { min-height: 180px; padding: 16px 16px 14px; }
+    .tile .ic { width: 48px; height: 48px; font-size: 22px; margin-bottom: 12px; }
+    .tile .ar-name { font-size: 17px; }
+
+    /* Extras section */
+    .extras { padding: 48px 20px; }
+    .extras h2 { font-size: 26px; }
+    .extras .row { grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    /* Footer */
+    footer { padding: 28px 20px; }
+
+    /* Customize drawer: full-width on mobile */
+    #cust-drawer { width: 100% !important; max-width: 100% !important; }
+  }
+
+  @media (max-width: 480px) {
+    /* Header: minimal on tiny screens */
+    .top { padding: 12px 14px; }
+    .top .lang { display: none; }
+
+    /* Grid stays 2-column but more compact */
+    .grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .tile { min-height: 150px; padding: 12px 12px 10px; }
+    .tile .ic { width: 40px; height: 40px; font-size: 18px; margin-bottom: 10px; }
+    .tile .ar-name { font-size: 15px; }
+    .tile .en-name { font-size: 11px; }
+    .tile .desc { font-size: 12px; margin: 8px 0 0; }
+    .tile .foot { margin-top: 10px; padding-top: 10px; }
+
+    /* Extras: single column */
+    .extras { padding: 36px 14px; }
+    .extras h2 { font-size: 22px; }
+    .extras .row { grid-template-columns: 1fr; }
+
+    /* Footer */
+    footer { padding: 24px 16px; }
+  }
 </style>
 </head>
 <body style="font-family: &quot;Times New Roman&quot;">

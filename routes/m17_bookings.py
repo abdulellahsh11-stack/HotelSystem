@@ -5,7 +5,29 @@ import secrets
 from typing import Optional
 from fastapi import APIRouter, Request, Depends, HTTPException
 
+from services.tax_config import get_client_tax_config, calculate_tax as _calc_tax
+
 router = APIRouter(prefix="/api/m17", tags=["ChannelBookings"])
+
+# أعمدة الضريبة — تُضاف تلقائياً عند أول استخدام
+_BOOKING_TAX_COLS = [
+    "tax_mode            VARCHAR(10)   DEFAULT 'MODE_A'",
+    "vat_amount          DECIMAL(12,2) DEFAULT 0",
+    "tourism_tax_amount  DECIMAL(12,2) DEFAULT 0",
+]
+_booking_tax_done = False
+
+
+def _ensure_booking_tax_cols(db) -> None:
+    global _booking_tax_done
+    if _booking_tax_done or not db.use_postgres:
+        return
+    for col_def in _BOOKING_TAX_COLS:
+        try:
+            db.execute(f"ALTER TABLE bookings ADD COLUMN IF NOT EXISTS {col_def}")
+        except Exception:
+            pass
+    _booking_tax_done = True
 
 
 def _require_client(request: Request) -> dict:
@@ -26,6 +48,7 @@ async def list_reservations(
 ):
     try:
         db = request.app.state.db
+        _ensure_booking_tax_cols(db)
         cid = session["client_id"]
         if db.use_postgres:
             limit = min(per_page, 200)
@@ -40,7 +63,13 @@ async def list_reservations(
                     b.check_out,
                     b.status,
                     b.source,
-                    b.total_room  AS total_amount,
+                    b.total_room                               AS grand_total,
+                    COALESCE(b.vat_amount, 0)                  AS vat_amount,
+                    COALESCE(b.tourism_tax_amount, 0)          AS tourism_tax_amount,
+                    COALESCE(b.tax_mode, 'MODE_A')             AS tax_mode,
+                    b.total_room
+                        - COALESCE(b.vat_amount, 0)
+                        - COALESCE(b.tourism_tax_amount, 0)    AS net_amount,
                     b.created_at
                 FROM bookings b
                 LEFT JOIN guests g ON b.guest_id = g.id
@@ -77,11 +106,11 @@ async def create_reservation(request: Request, session=Depends(_require_client))
     try:
         data = await request.json()
         db = request.app.state.db
+        _ensure_booking_tax_cols(db)
         cid = session["client_id"]
 
         guest_id = data.get("guest_id")
 
-        # If no guest_id provided, create a new guest record from name + phone
         if not guest_id and db.use_postgres:
             guest_name = data.get("guest_name", "").strip()
             phone = data.get("phone", "").strip()
@@ -102,8 +131,15 @@ async def create_reservation(request: Request, session=Depends(_require_client))
         if not all([room_id, check_in, check_out]):
             raise HTTPException(400, "room_id و check_in و check_out مطلوبة")
 
+        # حساب الضريبة حسب إعدادات العميل
+        tax_cfg = get_client_tax_config(db, cid)
+        tax = _calc_tax(amount=total_amount, config=tax_cfg)
+        grand_total        = tax["grand_total"]
+        vat_amount         = tax["vat_amount"]
+        tourism_tax_amount = tax["tourism_tax_amount"]
+        tax_mode           = tax["tax_mode"]
+
         if db.use_postgres:
-            # Double-booking check: reject if room has an overlapping active booking
             conflict = db.execute("""
                 SELECT id FROM bookings
                 WHERE client_id = %s
@@ -123,22 +159,23 @@ async def create_reservation(request: Request, session=Depends(_require_client))
             row = db.execute("""
                 INSERT INTO bookings
                     (id, client_id, booking_number, guest_id, room_id,
-                     check_in, check_out, source, total_room, status)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 'confirmed')
+                     check_in, check_out, source, total_room, status,
+                     tax_mode, vat_amount, tourism_tax_amount)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 'confirmed', %s, %s, %s)
                 RETURNING *
             """, (
-                booking_id,
-                cid,
-                booking_number,
-                guest_id,
-                int(room_id),
-                check_in,
-                check_out,
-                source,
-                total_amount,
+                booking_id, cid, booking_number, guest_id, int(room_id),
+                check_in, check_out, source, grand_total,
+                tax_mode, vat_amount, tourism_tax_amount,
             ), fetch="one")
-            return {"success": True, "data": dict(row)}
-        return {"success": True, "data": {**data, "booking_number": booking_number}}
+            result = dict(row)
+            result["tax_breakdown"] = tax
+            return {"success": True, "data": result}
+        return {"success": True, "data": {
+            **data,
+            "booking_number": booking_number,
+            "tax_breakdown": tax,
+        }}
     except HTTPException:
         raise
     except Exception as e:
@@ -151,6 +188,7 @@ async def update_reservation(booking_id: str, request: Request,
     try:
         data = await request.json()
         db = request.app.state.db
+        _ensure_booking_tax_cols(db)
         cid = session["client_id"]
         if db.use_postgres:
             fields = []
@@ -162,8 +200,17 @@ async def update_reservation(booking_id: str, request: Request,
                 fields.append("notes=%s")
                 params.append(data["notes"])
             if "total_amount" in data:
+                # إعادة حساب الضريبة عند تحديث المبلغ
+                tax_cfg = get_client_tax_config(db, cid)
+                tax = _calc_tax(amount=float(data["total_amount"]), config=tax_cfg)
                 fields.append("total_room=%s")
-                params.append(float(data["total_amount"]))
+                params.append(tax["grand_total"])
+                fields.append("tax_mode=%s")
+                params.append(tax["tax_mode"])
+                fields.append("vat_amount=%s")
+                params.append(tax["vat_amount"])
+                fields.append("tourism_tax_amount=%s")
+                params.append(tax["tourism_tax_amount"])
             if not fields:
                 raise HTTPException(400, "لا توجد حقول للتحديث")
             fields.append("updated_at=NOW()")
@@ -209,7 +256,11 @@ async def booking_stats(request: Request, session=Depends(_require_client)):
                     COUNT(*) FILTER (WHERE status = 'checked_out')           AS checked_out,
                     COUNT(*) FILTER (WHERE status = 'cancelled')             AS cancelled,
                     COALESCE(SUM(total_room)
-                        FILTER (WHERE status NOT IN ('cancelled')), 0)       AS total_revenue
+                        FILTER (WHERE status NOT IN ('cancelled')), 0)       AS total_revenue,
+                    COALESCE(SUM(COALESCE(vat_amount, 0))
+                        FILTER (WHERE status NOT IN ('cancelled')), 0)       AS total_vat,
+                    COALESCE(SUM(COALESCE(tourism_tax_amount, 0))
+                        FILTER (WHERE status NOT IN ('cancelled')), 0)       AS total_tourism_tax
                 FROM bookings
                 WHERE client_id = %s
                   AND DATE_TRUNC('month', created_at) = DATE_TRUNC('month', NOW())
@@ -217,21 +268,20 @@ async def booking_stats(request: Request, session=Depends(_require_client)):
             stats = dict(row) if row else {}
             return {
                 "success": True,
-                "total_bookings": stats.get("total_bookings", 0),
-                "confirmed": stats.get("confirmed", 0),
-                "checked_in": stats.get("checked_in", 0),
-                "checked_out": stats.get("checked_out", 0),
-                "cancelled": stats.get("cancelled", 0),
-                "total_revenue": float(stats.get("total_revenue", 0)),
+                "total_bookings":    stats.get("total_bookings", 0),
+                "confirmed":         stats.get("confirmed", 0),
+                "checked_in":        stats.get("checked_in", 0),
+                "checked_out":       stats.get("checked_out", 0),
+                "cancelled":         stats.get("cancelled", 0),
+                "total_revenue":     float(stats.get("total_revenue", 0)),
+                "total_vat":         float(stats.get("total_vat", 0)),
+                "total_tourism_tax": float(stats.get("total_tourism_tax", 0)),
             }
         return {
             "success": True,
-            "total_bookings": 0,
-            "confirmed": 0,
-            "checked_in": 0,
-            "checked_out": 0,
-            "cancelled": 0,
-            "total_revenue": 0.0,
+            "total_bookings": 0, "confirmed": 0, "checked_in": 0,
+            "checked_out": 0, "cancelled": 0, "total_revenue": 0.0,
+            "total_vat": 0.0, "total_tourism_tax": 0.0,
         }
     except Exception as e:
         raise HTTPException(500, str(e))
@@ -249,7 +299,6 @@ async def booking_calendar(request: Request,
         if db.use_postgres:
             today = date.today()
             dfrom = date_from or today.replace(day=1).isoformat()
-            # Default: show next 60 days if no date_to provided
             dto = date_to or (today + timedelta(days=60)).isoformat()
             rows = db.execute("""
                 SELECT

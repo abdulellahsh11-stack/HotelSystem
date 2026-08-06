@@ -18,6 +18,7 @@ import hashlib
 import json
 import logging
 from datetime import datetime, timezone
+from typing import Optional
 
 log = logging.getLogger("dheuof.channels")
 
@@ -191,7 +192,7 @@ class ChannelManager:
             "SELECT COUNT(*) AS c FROM rooms WHERE client_id=%s", (client_id,), fetch="one")
         return dict(row).get("c", 0) if row else 0
 
-    def sync_rates(self, client_id: str, channel_code: str = None) -> dict:
+    def sync_rates(self, client_id: str, channel_code: Optional[str] = None) -> dict:
         """يدفع التوافر والأسعار إلى قناة واحدة أو لكل القنوات المتصلة."""
         if not getattr(self.db, "use_postgres", False):
             return {"synced": [], "rooms": 0}
@@ -244,7 +245,7 @@ class ChannelManager:
                   detail=f"حجز وارد {ext_id}")
         return {"external_id": ext_id, "status": "new", "stored": True}
 
-    def list_reservations(self, client_id: str, status: str = None) -> list:
+    def list_reservations(self, client_id: str, status: Optional[str] = None) -> list:
         if not getattr(self.db, "use_postgres", False):
             return []
         if status:

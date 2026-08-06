@@ -28,24 +28,31 @@ from html_pages import (
 # ──────────────────────────────────────────────────────────────
 #  Public routes
 # ──────────────────────────────────────────────────────────────
+_MARKETING_PAGE = os.path.join("static", "dheuof", "website", "index.html")
+_APP_LAUNCHER = os.path.join("static", "dheuof", "index.html")
+
+
+def _serve(path: str) -> Optional[HTMLResponse]:
+    if os.path.exists(path):
+        with open(path, encoding="utf-8") as f:
+            return HTMLResponse(f.read())
+    return None
+
+
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
-    # App launcher — all 14 modules visible immediately
-    launcher = os.path.join("static", "dheuof", "index.html")
-    if os.path.exists(launcher):
-        with open(launcher, encoding="utf-8") as f:
-            return HTMLResponse(f.read())
-    return HTMLResponse(_login_page())
+    # الزائر غير المسجَّل يرى الموقع التسويقي؛ العميل المسجَّل يذهب للوحة البرامج
+    if get_client_session(request) is None:
+        page = _serve(_MARKETING_PAGE)
+        if page is not None:
+            return page
+    return _serve(_APP_LAUNCHER) or HTMLResponse(_login_page())
 
 
 @app.get("/app", response_class=HTMLResponse)
 async def dheuof_app(request: Request):
-    # Same launcher (kept for backwards compatibility)
-    launcher = os.path.join("static", "dheuof", "index.html")
-    if os.path.exists(launcher):
-        with open(launcher, encoding="utf-8") as f:
-            return HTMLResponse(f.read())
-    return HTMLResponse(_login_page())
+    # لوحة البرامج دائماً — بغضّ النظر عن حالة الجلسة
+    return _serve(_APP_LAUNCHER) or HTMLResponse(_login_page())
 
 
 # ──────────────────────────────────────────────────────────────
@@ -76,12 +83,9 @@ async def pwa_service_worker():
 
 @app.get("/marketing", response_class=HTMLResponse)
 async def marketing_page(request: Request):
-    # Marketing landing page
-    landing = os.path.join("static", "dheuof", "website", "index.html")
-    if os.path.exists(landing):
-        with open(landing, encoding="utf-8") as f:
-            return HTMLResponse(f.read())
-    return HTMLResponse(_login_page())
+    # نفس صفحة "/" التسويقية — محفوظ للتوافق مع الروابط القديمة.
+    # الـ canonical داخل الصفحة يشير إلى "/" فلا يقع تكرار محتوى.
+    return _serve(_MARKETING_PAGE) or HTMLResponse(_login_page())
 
 
 @app.get("/login", response_class=HTMLResponse)
@@ -341,7 +345,7 @@ async def admin_login(request: Request):
         _admin_sessions[token] = {"created_at": datetime.now().isoformat()}
 
     response = RedirectResponse("/admin", status_code=303)
-    response.set_cookie("admin_token", token, httponly=True, samesite="lax", max_age=86400)
+    response.set_cookie("admin_token", token, httponly=True, samesite="lax", secure=_COOKIE_SECURE, max_age=86400)
     return response
 
 
@@ -1685,14 +1689,43 @@ async def robots_txt():
     )
 
 
+# المسارات المُدرجة في sitemap — تطابق وسوم canonical في ملفات static
+_SITEMAP_URLS = [
+    # "/" هو الموقع التسويقي للزائر — و"/marketing" مستبعد لأنه نفس الصفحة
+    # ويحمل canonical يشير إلى "/"، فإدراجه يرسل إشارة محتوى مكرر.
+    ("/",            "weekly",  "1.0"),
+    ("/dheuof",      "weekly",  "0.8"),
+    ("/ota-bookings", "weekly", "0.8"),
+    ("/accounting",  "weekly",  "0.8"),
+    ("/pos",         "weekly",  "0.7"),
+    ("/channels",    "weekly",  "0.7"),
+    ("/analytics",   "monthly", "0.7"),
+    ("/inventory",   "monthly", "0.6"),
+    ("/warehouse",   "monthly", "0.6"),
+    ("/hr",          "monthly", "0.6"),
+    ("/shumus",      "monthly", "0.6"),
+    ("/tourism",     "monthly", "0.6"),
+    ("/trips",       "monthly", "0.6"),
+    ("/smart-key",   "monthly", "0.6"),
+    ("/staff",       "monthly", "0.5"),
+    ("/goals",       "monthly", "0.5"),
+    ("/static/dheuof/packages.html",   "monthly", "0.8"),
+    ("/static/dheuof/onboarding.html", "monthly", "0.7"),
+    ("/static/dheuof/api-docs.html",   "monthly", "0.6"),
+]
+
+
 @app.get("/sitemap.xml")
 async def sitemap():
     from fastapi.responses import Response
-    xml = """<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://dheuof.com/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
-  <url><loc>https://dheuof.com/marketing</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-</urlset>"""
+    entries = "\n".join(
+        f"  <url><loc>https://dheuof.com{path}</loc>"
+        f"<changefreq>{freq}</changefreq><priority>{prio}</priority></url>"
+        for path, freq, prio in _SITEMAP_URLS
+    )
+    xml = ('<?xml version="1.0" encoding="UTF-8"?>\n'
+           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+           f"{entries}\n</urlset>")
     return Response(content=xml, media_type="application/xml")
 
 

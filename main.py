@@ -4,7 +4,9 @@
 main.py — نقطة الدخول لـ uvicorn
 يستورد app من main1 ويُسجّل جميع الـ routes عبر استيراد main2
 """
-from main1 import app  # noqa: F401 — الهدف: uvicorn main:app
+# app + require_client يُعاد تصديرهما هنا حتى تستطيع وحدات routes/*.py
+# استيرادهما عبر «from main import require_client» (نقطة الدخول الموحَّدة).
+from main1 import app, require_client, _client_sessions  # noqa: F401 — الهدف: uvicorn main:app
 import main2           # noqa: F401 — يُسجّل جميع @app.get/post/put/delete
 
 if __name__ == "__main__":

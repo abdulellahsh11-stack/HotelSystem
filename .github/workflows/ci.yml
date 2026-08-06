@@ -94,7 +94,7 @@ jobs:
           "
 
       - name: Run pytest
-        run: pytest tests/ -v --tb=short -x
+        run: pytest tests/ --ignore=tests/e2e -v --tb=short -x
 
   # ────────────────────────────────────────────────────────────
   # Job 3: End-to-end tests (push to main only)

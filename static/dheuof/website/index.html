@@ -2,41 +2,414 @@
 <html lang="ar" dir="rtl" data-screen-label="Marketing Site">
 <head>
 <meta charset="utf-8"/>
-<title>ضيوف · منصة إدارة الضيافة الكاملة</title>
-<meta name="viewport" content="width=1280, initial-scale=1"/>
+<title>ضيوف — منصة إدارة الضيافة الكاملة للفنادق السعودية</title>
+<meta name="description" content="منصة سحابية متكاملة لإدارة الفنادق والشقق المخدومة في السعودية: حجوزات وقنوات بيع، محاسبة وفوترة إلكترونية ZATCA، مستودعات، وتقارير لحظية."/>
+<link rel="canonical" href="https://dheuof.com/"/>
+<meta property="og:type" content="website"/>
+<meta property="og:site_name" content="ضيوف — Dheuof"/>
+<meta property="og:locale" content="ar_SA"/>
+<meta property="og:title" content="ضيوف — منصة إدارة الضيافة الكاملة للفنادق السعودية"/>
+<meta property="og:description" content="منصة سحابية متكاملة لإدارة الفنادق والشقق المخدومة في السعودية: حجوزات وقنوات بيع، محاسبة وفوترة إلكترونية ZATCA، مستودعات، وتقارير لحظية."/>
+<meta property="og:url" content="https://dheuof.com/"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="ضيوف — منصة إدارة الضيافة الكاملة للفنادق السعودية"/>
+<meta name="twitter:description" content="منصة سحابية متكاملة لإدارة الفنادق والشقق المخدومة في السعودية: حجوزات وقنوات بيع، محاسبة وفوترة إلكترونية ZATCA، مستودعات، وتقارير لحظية."/>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "name": "ضيوف",
+      "alternateName": "Dheuof",
+      "url": "https://dheuof.com",
+      "logo": "https://dheuof.com/static/dheuof/assets/logo.png",
+      "areaServed": "SA"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "name": "ضيوف — Dheuof",
+      "applicationCategory": "BusinessApplication",
+      "applicationSubCategory": "Hotel Management Software",
+      "operatingSystem": "Web",
+      "url": "https://dheuof.com/",
+      "description": "منصة سحابية متكاملة لإدارة الفنادق والشقق المخدومة في السعودية: حجوزات وقنوات بيع، محاسبة وفوترة إلكترونية ZATCA، مستودعات، وتقارير لحظية.",
+      "inLanguage": "ar-SA",
+      "publisher": { "@type": "Organization", "name": "ضيوف" },
+      "offers": {
+        "@type": "Offer",
+        "priceCurrency": "SAR",
+        "price": "149",
+        "availability": "https://schema.org/InStock"
+      }
+    }
+  ]
+}
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
 <link rel="stylesheet" href="/static/dheuof/colors_and_type.css"/>
 <link rel="stylesheet" href="/static/dheuof/assets/animations.css"/>
 <link rel="stylesheet" href="/static/dheuof/website/marketing.css"/>
+<script>
+  /* لا يُسمح بإخفاء عناصر الحركة إلا إذا كان JS يعمل فعلاً. وإن لم يبدأ
+     محرك الحركة خلال ١٫٥ ثانية (فشل تحميل animations.js مثلاً) يُلغى
+     الإخفاء ويظهر المحتوى كاملاً. يعمل هنا في <head> فلا يحدث وميض. */
+  document.documentElement.classList.add('motion');
+  setTimeout(function () {
+    if (!window.DheuofMotion) document.documentElement.classList.remove('motion');
+  }, 1500);
+</script>
 </head>
 <body>
-<div id="root"></div>
 
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<!-- =========================================================================
+     الموقع التسويقي — ضيوف
+     HTML ثابت بالكامل عمداً: لا React ولا CDN خارجي، فالصفحة تظهر دائماً
+     وفوراً حتى لو انقطعت الشبكة عن أي مزوّد خارجي. الحركة اختيارية عبر
+     animations.js الذي يقرأ سمات data-m-* من DOM جاهز.
+     الترتيب: تنقّل ← البداية ← ثقة ← منتجات ضيوف ← الباقات ← مميزات النظام
+              ← أرقام ← رأي عميل ← دعوة ← تذييل
+     ========================================================================= -->
 
-<script type="text/babel" src="/static/dheuof/website/Sections.jsx"></script>
+<header class="mk-nav">
+  <a class="mk-brand" href="/">
+    <img src="/static/dheuof/assets/logo-mark.svg" alt="" width="32" height="32"/>
+    <div class="mk-brand-text"><span class="ar">ضيوف</span><span class="en">Dheuof</span></div>
+  </a>
+  <nav class="mk-nav-links">
+    <a href="#hero">الرئيسية</a>
+    <a href="#products">المنتجات</a>
+    <a href="#packages">الباقات</a>
+    <a href="#features">مميزات النظام</a>
+    <a href="/static/dheuof/slides/index.html">العرض التعريفي</a>
+  </nav>
+  <div class="mk-nav-actions">
+    <a class="mk-nav-login" href="/login">تسجيل الدخول على النظام</a>
+    <a class="mk-nav-cta m-shimmer" href="/app">طلب عرض تجريبي</a>
+  </div>
+</header>
+
+<!-- ── ١ · البداية ─────────────────────────────────────────────────────── -->
+<section class="mk-hero" id="hero">
+  <div class="mk-hero-text">
+    <span class="mk-eyebrow">منصة إدارة الضيافة الكاملة</span>
+    <h1 class="mk-h1" data-m-words>ضيافة <span class="accent">فخمة</span><br/>يديرها نظام واحد.</h1>
+    <p class="mk-lead">
+      ضيوف برنامج متكامل PMS يجمع الحجوزات، والمحاسبة، والمخزون، والصيانة،
+      والمفتاح الذكي لكشف الاحتيال، والموارد البشرية، Booking وقنوات أخرى تحت
+      لوحة تحكم واحدة مصممة للسوق السعودي والخليجي — وقريباً سوف تتصل ZATCA.
+    </p>
+    <div class="mk-hero-cta">
+      <a class="mk-btn primary m-shimmer" href="/app">طلب عرض تجريبي</a>
+      <a class="mk-btn ghost" href="#products">تعرّف على النظام →</a>
+    </div>
+  </div>
+  <div class="mk-hero-visual">
+    <div class="mk-shape" data-m-parallax="0.15"></div>
+    <div class="mk-card-stack">
+      <div class="mk-card-mini bg-paper m-float-1 m-shimmer-loop" style="--m-range:14px;--m-rot:-3deg">
+        <div class="row"><span class="ttl">إشغال الليلة</span><span class="pill ok">+٤٪</span></div>
+        <div class="big">٨٧٪</div>
+        <div class="bar"><div style="width:87%"></div></div>
+      </div>
+      <div class="mk-card-mini bg-dark m-float-2" style="--m-range:18px;--m-rot:2deg">
+        <div class="row"><span class="ttl">إيراد اليوم</span></div>
+        <div class="big">٢٤٬٨٦٠ <span class="cur">ر.س</span></div>
+        <div class="sub">+١٨٪ مقابل المتوقع</div>
+      </div>
+      <div class="mk-card-mini bg-gold m-float-3" style="--m-range:10px;--m-rot:-1deg">
+        <div class="row"><span class="ttl">حجوزات قادمة</span></div>
+        <div class="rows">
+          <div><span>Booking.com</span><span>٣٢</span></div>
+          <div><span>Agoda</span><span>١٨</span></div>
+          <div><span>مباشر</span><span>٤٢</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- شريط البيانات التسويقية -->
+<section class="mk-trust-strip" data-m-rise-stagger>
+  <div class="t"><div class="v">١٢٠+</div><div class="l">منشأة تثق</div><div class="s">في ضيوف</div></div>
+  <div class="t"><div class="v">٤٠+</div><div class="l">تكامل</div><div class="s">مع القنوات والمنصات</div></div>
+  <div class="t"><div class="v">ZATCA</div><div class="l">متوافق</div><div class="s">مع المرحلة الثانية للفوترة</div></div>
+  <div class="t"><div class="v">٢٤/٧</div><div class="l">دعم فني</div><div class="s">متميز بالعربية</div></div>
+</section>
+
+<!-- ── ٢ · منتجات ضيوف ─────────────────────────────────────────────────── -->
+<section class="mk-products" id="products">
+  <div class="mk-section-head" data-m-rise>
+    <span class="mk-eyebrow">منتجاتنا</span>
+    <h2 class="mk-h2">منتجات تُعزّز <span class="accent">تجربتك</span> مع ضيوف</h2>
+    <p class="mk-section-sub">
+      إلى جانب نظام إدارة المنشآت الفندقية الأساسي، تساعدك منتجات ضيوف على إدارة
+      الشؤون المالية، وتأمين منشأتك، وتشغيل الوحدات المُدارة بسهولة.
+    </p>
+  </div>
+
+  <div class="mk-prod-rows" data-m-rise-stagger>
+    <div class="mk-prod-row">
+      <div class="logo"><img src="/static/dheuof/assets/logo-mark.svg" alt=""/></div>
+      <div class="body">
+        <div class="nm">تطبيق ضيوف</div>
+        <p class="d">نظام إدارة المنشآت الفندقية المتكامل — الحجوزات والعمليات والمحاسبة والتقارير من منصة واحدة.</p>
+      </div>
+      <a class="mk-btn primary" href="/app">اشترك الآن</a>
+    </div>
+    <div class="mk-prod-row soon">
+      <div class="logo"><img src="/static/dheuof/assets/logo-mark.svg" alt=""/></div>
+      <div class="body">
+        <div class="nm">تطبيق ضيوف مع السياحة <span class="mk-soon">قريباً</span></div>
+        <p class="d">كل ما في تطبيق ضيوف، مضافاً إليه الجولات والرحلات والمستندات الحكومية السياحية.</p>
+      </div>
+      <span class="mk-btn ghost disabled">قريباً</span>
+    </div>
+  </div>
+
+  <div class="mk-prod-sub" data-m-rise>
+    <h3 class="mk-h3">برامج ضيوف</h3>
+    <p>١٧ برنامجاً داخل المنصة — تُفعَّل حسب باقتك.</p>
+  </div>
+
+  <div class="mk-prod-grid" data-m-rise-stagger>
+    <a class="mk-prod-card" href="/static/dheuof/modules/01-guests/index.html">
+      <div class="ic">🛏</div><div class="ttl">إدارة الضيوف والنزلاء</div>
+      <p class="d">تسجيل بيانات النزيل، الوصول والمغادرة، وتوزيع الغرف.</p></a>
+    <a class="mk-prod-card" href="/static/dheuof/modules/17-bookings/index.html">
+      <div class="ic">🗓</div><div class="ttl">إدارة الحجوزات</div>
+      <p class="d">تقويم الغرف، التسعير الديناميكي، ومنع التعارض.</p></a>
+    <a class="mk-prod-card" href="/static/dheuof/modules/06-accounting/index.html">
+      <div class="ic">💳</div><div class="ttl">المحاسبة والفوترة</div>
+      <p class="d">فوترة إلكترونية ZATCA، قيود، وتقارير ضريبية جاهزة.</p></a>
+    <a class="mk-prod-card" href="/static/dheuof/modules/07-pos/index.html">
+      <div class="ic">🧾</div><div class="ttl">نقاط البيع POS</div>
+      <p class="d">مطاعم وكافيهات المنشأة مربوطة مباشرة بحساب الغرفة.</p></a>
+    <a class="mk-prod-card" href="/static/dheuof/modules/04-inventory/index.html">
+      <div class="ic">📦</div><div class="ttl">مخزون الضيافة</div>
+      <p class="d">أصناف الغرف، اللوازم، ومستويات إعادة الطلب.</p></a>
+    <a class="mk-prod-card" href="/static/dheuof/modules/05-warehouse/index.html">
+      <div class="ic">🏭</div><div class="ttl">المستودع والمشتريات</div>
+      <p class="d">الموردون، أوامر الشراء، وقطع الصيانة.</p></a>
+    <a class="mk-prod-card" href="/static/dheuof/modules/09-hr/index.html">
+      <div class="ic">👥</div><div class="ttl">الموارد البشرية</div>
+      <p class="d">رواتب، إقامات، رخص عمل، قوى، GOSI، وتأمين طبي.</p></a>
+    <a class="mk-prod-card" href="/static/dheuof/modules/10-channel-marketing/index.html">
+      <div class="ic">🌐</div><div class="ttl">تسويق القنوات</div>
+      <p class="d">Booking وAgoda وExpedia وأكثر من ٤٠ قناة حجز.</p></a>
+    <a class="mk-prod-card" href="/static/dheuof/modules/08-smart-key/index.html">
+      <div class="ic">🔐</div><div class="ttl">المفتاح الذكي</div>
+      <p class="d">أقفال إلكترونية، تحقّق من الهوية، وحماية من الاحتيال.</p></a>
+    <a class="mk-prod-card" href="/static/dheuof/modules/11-kpis/index.html">
+      <div class="ic">📈</div><div class="ttl">الإيرادات ومؤشرات الأداء</div>
+      <p class="d">ADR وRevPAR وGOPPAR مع توصيات قابلة للتنفيذ.</p></a>
+    <a class="mk-prod-card" href="/static/dheuof/modules/12-analytics/index.html">
+      <div class="ic">🧠</div><div class="ttl">تحليل البيانات</div>
+      <p class="d">قراءة ذكية لأداء المنشأة وتوصيات شهرية.</p></a>
+    <a class="mk-prod-card" href="/static/dheuof/modules/13-staff-tracker/index.html">
+      <div class="ic">✅</div><div class="ttl">متابعة الموظفين</div>
+      <p class="d">المهام اليومية، الإنجاز، وتقييم الأداء.</p></a>
+    <a class="mk-prod-card" href="/static/dheuof/modules/14-manager-goals/index.html">
+      <div class="ic">🎯</div><div class="ttl">أهداف المدير</div>
+      <p class="d">أهداف تشغيلية ومؤشرات إنجاز على مستوى المنشأة.</p></a>
+    <a class="mk-prod-card" href="/static/dheuof/modules/16-staff-app/index.html">
+      <div class="ic">📱</div><div class="ttl">تطبيق الموظفين</div>
+      <p class="d">إدارة المهام الفندقية من الجوال مباشرة.</p></a>
+    <a class="mk-prod-card" href="/static/dheuof/modules/02-shumus/index.html">
+      <div class="ic">🛂</div><div class="ttl">شموس</div>
+      <p class="d">ربط المنصة بنظام التعرّف على النزلاء السعودي.</p></a>
+    <a class="mk-prod-card" href="/static/dheuof/modules/03-tourism/index.html">
+      <div class="ic">📄</div><div class="ttl">المستندات السياحية</div>
+      <p class="d">تراخيص المنشأة والمستندات الحكومية السياحية.</p></a>
+    <a class="mk-prod-card" href="/static/dheuof/modules/15-tourism-trips/index.html">
+      <div class="ic">🧭</div><div class="ttl">الجولات والرحلات</div>
+      <p class="d">برامج الضيوف السياحية والرحلات المنظّمة.</p></a>
+  </div>
+</section>
+
+<!-- ── ٣ · الباقات ─────────────────────────────────────────────────────── -->
+<section class="mk-packages" id="packages">
+  <div class="mk-section-head" data-m-rise>
+    <span class="mk-eyebrow">الباقات</span>
+    <h2 class="mk-h2">باقة لكل حجم <span class="accent">منشأة</span></h2>
+    <p class="mk-section-sub">ابدأ بما تحتاجه اليوم، وارقَّ متى شئت — بلا إعادة تهيئة.</p>
+  </div>
+  <div class="mk-pkg-grid" data-m-rise-stagger>
+
+    <div class="mk-pkg">
+      <div class="stars">★</div>
+      <div class="nm">ضيوف</div>
+      <div class="price"><span class="v">١٤٩</span><span class="cur">ر.س</span><span class="per">/شهر</span></div>
+      <div class="renew">يبدأ من ١٤٩ ر.س / شهر (غير شامل ضريبة القيمة المضافة)</div>
+      <a class="mk-btn primary block" href="/app">اشترك الآن</a>
+      <div class="hd">الاشتراكات</div>
+      <ul class="lst subs">
+        <li><span class="dot"></span>ضيوف (١ شهر)</li>
+        <li><span class="dot"></span>الموقع الإلكتروني (١ شهر)</li>
+        <li><span class="dot"></span>رصيد الرسائل المجاني: ٥٠</li>
+      </ul>
+      <div class="hd">المميزات</div>
+      <ul class="lst feats">
+        <li><span class="chk">✓</span>لوحة معلومات شاملة</li>
+        <li><span class="chk">✓</span>التدبير الفندقي</li>
+        <li><span class="chk">✓</span>إدارة المخزون</li>
+        <li><span class="chk">✓</span>المراجعة الليلية</li>
+        <li><span class="chk">✓</span>إدارة الضرائب والرسوم</li>
+      </ul>
+    </div>
+
+    <div class="mk-pkg soon">
+      <div class="stars">★★</div>
+      <div class="nm">ضيوف سياحة <span class="mk-soon">قريباً</span></div>
+      <div class="price soon-price">قريباً</div>
+      <div class="renew">يُعلَن عن السعر عند الإطلاق</div>
+      <span class="mk-btn ghost disabled block">قريباً</span>
+      <div class="hd">الاشتراكات</div>
+      <ul class="lst subs">
+        <li><span class="dot"></span>ضيوف (١ شهر)</li>
+        <li><span class="dot"></span>هيئة السياحة (١ شهر)</li>
+        <li><span class="dot"></span>الموقع الإلكتروني (١ شهر)</li>
+        <li><span class="dot"></span>رصيد الرسائل المجاني: ٥٠</li>
+      </ul>
+      <div class="hd">المميزات</div>
+      <ul class="lst feats">
+        <li><span class="chk">✓</span>لوحة معلومات شاملة</li>
+        <li><span class="chk">✓</span>التدبير الفندقي</li>
+        <li><span class="chk">✓</span>إدارة المخزون</li>
+        <li><span class="chk">✓</span>المراجعة الليلية</li>
+        <li><span class="chk">✓</span>إدارة الضرائب والرسوم</li>
+        <li><span class="chk">✓</span>الجولات والرحلات السياحية</li>
+      </ul>
+    </div>
+
+    <div class="mk-pkg soon">
+      <div class="stars">★★★</div>
+      <div class="nm">ضيوف سياحة وشموس <span class="mk-soon">قريباً</span></div>
+      <div class="price soon-price">قريباً</div>
+      <div class="renew">يُعلَن عن السعر عند الإطلاق</div>
+      <span class="mk-btn ghost disabled block">قريباً</span>
+      <div class="hd">الاشتراكات</div>
+      <ul class="lst subs">
+        <li><span class="dot"></span>ضيوف (١ شهر)</li>
+        <li><span class="dot"></span>شموس (١ شهر)</li>
+        <li><span class="dot"></span>هيئة السياحة (١ شهر)</li>
+        <li><span class="dot"></span>الموقع الإلكتروني (١ شهر)</li>
+        <li><span class="dot"></span>رصيد الرسائل المجاني: ٥٠</li>
+      </ul>
+      <div class="hd">المميزات</div>
+      <ul class="lst feats">
+        <li><span class="chk">✓</span>لوحة معلومات شاملة</li>
+        <li><span class="chk">✓</span>التدبير الفندقي</li>
+        <li><span class="chk">✓</span>إدارة المخزون</li>
+        <li><span class="chk">✓</span>المراجعة الليلية</li>
+        <li><span class="chk">✓</span>إدارة الضرائب والرسوم</li>
+        <li><span class="chk">✓</span>الجولات والرحلات السياحية</li>
+        <li><span class="chk">✓</span>ربط شموس للتعرّف على النزلاء</li>
+      </ul>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── ٤ · مميزات النظام ───────────────────────────────────────────────── -->
+<section class="mk-features" id="features">
+  <div class="mk-section-head" data-m-rise>
+    <span class="mk-eyebrow">مميزات النظام</span>
+    <h2 class="mk-h2">مبنيّ على ما تحتاجه <span class="accent">فعلاً</span></h2>
+  </div>
+  <div class="mk-grid" data-m-rise-stagger>
+    <div class="mk-feature"><div class="ic">🧾</div><div class="ttl">فوترة إلكترونية ZATCA</div>
+      <p class="d">فواتير متوافقة مع المرحلة الثانية، برمز QR وتوقيع معتمد.</p></div>
+    <div class="mk-feature"><div class="ic">🧮</div><div class="ttl">ضرائب مركزية</div>
+      <p class="d">ضريبة القيمة المضافة ١٥٪ وضريبة السياحة ٢٫٥٪ بنمطَي احتساب.</p></div>
+    <div class="mk-feature"><div class="ic">🔌</div><div class="ttl">API محاسبي مفتوح</div>
+      <p class="d">اربط ضيوف ببرنامجك المحاسبي عبر مفتاح API مؤمَّن.</p></div>
+    <div class="mk-feature"><div class="ic">☁️</div><div class="ttl">سحابي بالكامل</div>
+      <p class="d">بلا خوادم ولا تثبيت — يعمل من أي متصفح وجهاز.</p></div>
+    <div class="mk-feature"><div class="ic">🇸🇦</div><div class="ttl">مبنيّ للسوق السعودي</div>
+      <p class="d">عربي أولاً، تقويم هجري، وربط بالمنصات الحكومية.</p></div>
+    <div class="mk-feature"><div class="ic">🛡</div><div class="ttl">صلاحيات دقيقة</div>
+      <p class="d">تحكّم بمن يرى ماذا على مستوى كل برنامج وكل شاشة.</p></div>
+  </div>
+</section>
+
+<!-- ── ٥ · أرقام ───────────────────────────────────────────────────────── -->
+<section class="mk-stats" id="stats">
+  <div class="mk-stats-grid">
+    <div class="s"><div class="v" data-m-count="120" data-m-suffix="+" data-m-digits="ar">١٢٠+</div><div class="l">منشأة تستخدم ضيوف</div></div>
+    <div class="s"><div class="v" data-m-count="22" data-m-suffix="٪" data-m-digits="ar">٢٢٪</div><div class="l">متوسط زيادة الإيرادات بعد سنة</div></div>
+    <div class="s"><div class="v" data-m-count="40" data-m-suffix="+" data-m-digits="ar">٤٠+</div><div class="l">قناة حجز متكاملة</div></div>
+    <div class="s"><div class="v" data-m-count="99.9" data-m-decimals="1" data-m-suffix="٪" data-m-digits="ar">٩٩.٩٪</div><div class="l">جاهزية الخدمة</div></div>
+  </div>
+</section>
+
+<!-- ── ٦ · رأي عميل ────────────────────────────────────────────────────── -->
+<section class="mk-quote" data-m-rise>
+  <span class="mk-quote-mark">"</span>
+  <p class="mk-quote-body">
+    بعد ست سنوات من إدارة الفندق بثلاثة أنظمة مختلفة، استبدلناها بضيوف في شهر واحد.
+    لأول مرة، أعرف بالضبط ما يحدث في كل ركن من الفندق — قبل أن يحدث.
+  </p>
+  <div class="mk-quote-attr">
+    <div class="av">س‬أ</div>
+    <div>
+      <div class="nm">سارة أحمد المالكي</div>
+      <div class="role">مدير المنشأة — فندق الواحة الذهبية، الرياض</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── ٧ · دعوة للتجربة ────────────────────────────────────────────────── -->
+<section class="mk-cta">
+  <h2 class="mk-h2 inv" data-m-words>ابدأ تجربتك المجانية لمدة ٣٠ يوماً.</h2>
+  <p class="mk-cta-sub">بدون بطاقة ائتمان · تثبيت في يومٍ واحد · فريق دعم باللغة العربية</p>
+  <div class="mk-hero-cta">
+    <a class="mk-btn gold m-shimmer" href="/app">طلب عرض تجريبي</a>
+    <a class="mk-btn ghost-inv" href="mailto:hello@dheuof.com">تحدث مع المبيعات →</a>
+  </div>
+</section>
+
+<!-- ── ٨ · التذييل ─────────────────────────────────────────────────────── -->
+<footer class="mk-footer">
+  <div class="mk-foot-grid">
+    <div class="col col-brand">
+      <div class="mk-brand">
+        <img src="/static/dheuof/assets/logo-mark.svg" alt="" width="28" height="28"/>
+        <span class="ar">ضيوف</span>
+      </div>
+      <p>منصة إدارة الضيافة الكاملة للسوق السعودي والخليجي.</p>
+    </div>
+    <div class="col">
+      <div class="hd">المنتجات</div>
+      <a href="#products">منتجات ضيوف</a>
+      <a href="#packages">الباقات</a>
+      <a href="#features">مميزات النظام</a>
+      <a href="/static/dheuof/modules/08-smart-key/index.html">المفتاح الذكي</a>
+    </div>
+    <div class="col">
+      <div class="hd">الدخول</div>
+      <a href="/app">لوحة البرامج</a>
+      <a href="/login">تسجيل الدخول</a>
+      <a href="/static/dheuof/packages.html">تفاصيل الباقات</a>
+      <a href="/static/dheuof/onboarding.html">البداية السريعة</a>
+    </div>
+    <div class="col">
+      <div class="hd">قانوني</div>
+      <a href="/static/dheuof/security.html">الخصوصية والأمان</a>
+      <a href="/static/dheuof/api-docs.html">توثيق الـ API</a>
+      <a href="mailto:hello@dheuof.com">تواصل معنا</a>
+    </div>
+  </div>
+  <div class="mk-foot-bottom">
+    <span>© ٢٠٢٥ ضيوف · جميع الحقوق محفوظة.</span>
+    <span>صُمّم وطُوّر في السعودية 🇸🇦</span>
+  </div>
+</footer>
+
 <script src="/static/dheuof/assets/animations.js"></script>
-
-<script type="text/babel">
-function App() {
-  return (
-    <>
-      <MarketingNav/>
-      <Hero/>
-      <ModuleGrid/>
-      <StatsBand/>
-      <Testimonial/>
-      <PricingSection/>
-      <CtaFooter/>
-      <Footer/>
-    </>
-  );
-}
-ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
-requestAnimationFrame(() => {
-  if (window.DheuofMotion) window.DheuofMotion.init();
-});
+<script>
+  // الحركة تحسين اختياري — الصفحة مقروءة بالكامل قبل تشغيله وبدونه
+  if (window.DheuofMotion) requestAnimationFrame(function () { window.DheuofMotion.init(); });
 </script>
 
 </body>
