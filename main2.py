@@ -28,24 +28,31 @@ from html_pages import (
 # ──────────────────────────────────────────────────────────────
 #  Public routes
 # ──────────────────────────────────────────────────────────────
+_MARKETING_PAGE = os.path.join("static", "dheuof", "website", "index.html")
+_APP_LAUNCHER = os.path.join("static", "dheuof", "index.html")
+
+
+def _serve(path: str) -> Optional[HTMLResponse]:
+    if os.path.exists(path):
+        with open(path, encoding="utf-8") as f:
+            return HTMLResponse(f.read())
+    return None
+
+
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
-    # App launcher — all 14 modules visible immediately
-    launcher = os.path.join("static", "dheuof", "index.html")
-    if os.path.exists(launcher):
-        with open(launcher, encoding="utf-8") as f:
-            return HTMLResponse(f.read())
-    return HTMLResponse(_login_page())
+    # الزائر غير المسجَّل يرى الموقع التسويقي؛ العميل المسجَّل يذهب للوحة البرامج
+    if get_client_session(request) is None:
+        page = _serve(_MARKETING_PAGE)
+        if page is not None:
+            return page
+    return _serve(_APP_LAUNCHER) or HTMLResponse(_login_page())
 
 
 @app.get("/app", response_class=HTMLResponse)
 async def dheuof_app(request: Request):
-    # Same launcher (kept for backwards compatibility)
-    launcher = os.path.join("static", "dheuof", "index.html")
-    if os.path.exists(launcher):
-        with open(launcher, encoding="utf-8") as f:
-            return HTMLResponse(f.read())
-    return HTMLResponse(_login_page())
+    # لوحة البرامج دائماً — بغضّ النظر عن حالة الجلسة
+    return _serve(_APP_LAUNCHER) or HTMLResponse(_login_page())
 
 
 # ──────────────────────────────────────────────────────────────
@@ -76,12 +83,9 @@ async def pwa_service_worker():
 
 @app.get("/marketing", response_class=HTMLResponse)
 async def marketing_page(request: Request):
-    # Marketing landing page
-    landing = os.path.join("static", "dheuof", "website", "index.html")
-    if os.path.exists(landing):
-        with open(landing, encoding="utf-8") as f:
-            return HTMLResponse(f.read())
-    return HTMLResponse(_login_page())
+    # نفس صفحة "/" التسويقية — محفوظ للتوافق مع الروابط القديمة.
+    # الـ canonical داخل الصفحة يشير إلى "/" فلا يقع تكرار محتوى.
+    return _serve(_MARKETING_PAGE) or HTMLResponse(_login_page())
 
 
 @app.get("/login", response_class=HTMLResponse)
@@ -1687,8 +1691,9 @@ async def robots_txt():
 
 # المسارات المُدرجة في sitemap — تطابق وسوم canonical في ملفات static
 _SITEMAP_URLS = [
+    # "/" هو الموقع التسويقي للزائر — و"/marketing" مستبعد لأنه نفس الصفحة
+    # ويحمل canonical يشير إلى "/"، فإدراجه يرسل إشارة محتوى مكرر.
     ("/",            "weekly",  "1.0"),
-    ("/marketing",   "monthly", "0.9"),
     ("/dheuof",      "weekly",  "0.8"),
     ("/ota-bookings", "weekly", "0.8"),
     ("/accounting",  "weekly",  "0.8"),
