@@ -216,7 +216,10 @@ CREATE INDEX IF NOT EXISTS idx_sfl_client  ON secure_file_links(client_id, guest
 -- §8 — دوال SECURITY DEFINER آمنة (Finding #9)
 -- ──────────────────────────────────────────────────────────────
 -- جرد كل دوال SECURITY DEFINER — يُراجَع دورياً
-CREATE OR REPLACE VIEW v_security_definer_audit AS
+-- security_invoker: تُنفَّذ بصلاحيات المستعلم لا بصلاحيات مالكها، فلا
+-- تصبح ثغرة تجاوز لسياسات RLS. (متاح من PostgreSQL 15.)
+CREATE OR REPLACE VIEW v_security_definer_audit
+WITH (security_invoker = true) AS
 SELECT  n.nspname          AS schema_name,
         p.proname          AS function_name,
         p.prosecdef        AS is_security_definer,

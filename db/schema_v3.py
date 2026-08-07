@@ -649,6 +649,160 @@ def _tenant_tables(db) -> list:
     return [r["t"] for r in rows if r["t"] not in _RLS_EXEMPT]
 
 
+def run_reporting_views(db) -> None:
+    """يُنشئ طرق العرض التقريرية من specs/db/05-reporting-views.sql.
+
+    كان في المشروع كله طريقة عرض واحدة (v_security_definer_audit) رغم
+    أن القسم العاشر من وثيقة التصميم يسرد أكثر من عشرين تقريراً — كلها
+    استعلامات في Markdown لا كائنات في قاعدة البيانات.
+    """
+    if not db.use_postgres:
+        return
+    import logging
+    import os
+    log = logging.getLogger("dheuof.db.views")
+
+    path = os.path.normpath(
+        os.path.join(os.path.dirname(__file__), "..", "specs", "db", "05-reporting-views.sql")
+    )
+    if not os.path.exists(path):
+        log.warning(f"⚠️  ملف طرق العرض غير موجود: {path}")
+        return
+
+    with open(path, encoding="utf-8") as f:
+        raw = f.read()
+
+    ok = fail = 0
+    for stmt in split_sql(raw):
+        s = stmt.strip()
+        if not has_executable_sql(s):
+            continue
+        try:
+            db.execute(s)
+            ok += 1
+        except Exception as e:
+            log.warning(f"view stmt failed: {e} | SQL: {s[:80]}")
+            fail += 1
+
+    log.info(f"✅ طرق العرض التقريرية — {ok} عبارة، {fail} فشل")
+
+    # التحقق من security_invoker: طريقة عرض بدونه تتجاوز سياسات RLS،
+    # فتُظهر لكل منشأة أرقامَ المنشآت الأخرى.
+    try:
+        leaky = db.execute(
+            """
+            SELECT c.relname AS v
+            FROM pg_class c
+            JOIN pg_namespace n ON n.oid = c.relnamespace
+            WHERE n.nspname = 'public' AND c.relkind = 'v'
+              AND c.relname LIKE 'v_%'
+              AND NOT COALESCE(
+                  (SELECT option_value = 'true' FROM pg_options_to_table(c.reloptions)
+                   WHERE option_name = 'security_invoker'), FALSE)
+            """,
+            fetch="all",
+        ) or []
+        if leaky:
+            log.error(
+                "❌ طرق عرض بلا security_invoker (تتجاوز عزل المستأجرين): "
+                f"{[r['v'] for r in leaky]}"
+            )
+    except Exception as e:
+        log.warning(f"فحص security_invoker: {e}")
+
+
+# ── توثيق داخل قاعدة البيانات — COMMENT ON ─────────────────────────────────
+#
+# لم يكن في قاعدة البيانات ولا تعليق واحد. التوثيق كان كله في ملف
+# Markdown منفصل يسهل أن ينحرف عن الواقع — كما حدث فعلاً مع ادّعاء
+# bcrypt. التعليق داخل الكتالوج يظهر في \d+ وفي أدوات العرض ويرافق
+# المخطط أينما ذهب.
+_TABLE_COMMENTS = {
+    "clients":              "المنشآت المشتركة — الجذر الذي يتفرّع منه كل شيء عبر client_id",
+    "subscriptions":        "اشتراكات المنشآت وخططها ومددها",
+    "rooms":                "الغرف والوحدات السكنية",
+    "guests":               "النزلاء. رقم الهوية مشفَّر في id_number_enc والبحث عبر id_number_bidx",
+    "bookings":             "الحجوزات — من التأكيد حتى المغادرة",
+    "invoices":             "الفواتير الضريبية المتوافقة مع هيئة الزكاة والضريبة",
+    "pos_transactions":     "حركات نقاط البيع",
+    "pos_sales":            "مبيعات نقاط البيع بتفصيل الضريبة",
+    "employees":            "الموظفون. الهوية والإقامة مشفّرتان في الأعمدة المنتهية بـ _enc",
+    "payroll":              "مسيّرات الرواتب الشهرية",
+    "warehouse_items":      "أصناف المستودعات وحدود إعادة الطلب",
+    "warehouse_movements":  "حركات دخول وخروج المخزون",
+    "housekeeping_tasks":   "مهام التدبير المنزلي",
+    "maintenance_orders":   "أوامر الصيانة",
+    "audit_log":            "سجل المراجعة — إضافة فقط: UPDATE و DELETE ممنوعان بمُشغّل ودون امتياز",
+    "staff_roles":          "أدوار الموظفين. client_id فارغ يعني قالباً عاماً لكل المنشآت",
+    "staff_role_assignments": "إسناد الأدوار للموظفين — يُقرأ عبر app_has_perm()",
+    "branches":             "فروع المنشأة الواحدة",
+    "revoked_sessions":     "الجلسات المُبطَلة — تُنظَّف بـ cleanup_revoked_sessions()",
+    "guest_sessions":       "جلسات النزلاء المعزولة عن جلسات الموظفين",
+    "secure_file_links":    "روابط ملفات قصيرة العمر بمسار tenant/branch/guest",
+    "client_sessions":      "جلسات المنشآت النشطة",
+    "zatca_invoices":       "فواتير هيئة الزكاة والضريبة والجمارك",
+    "marketers":            "المسوّقون بالعمولة — على مستوى المنصة لا المنشأة",
+    "marketer_referrals":   "إحالات المسوّقين إلى المنشآت",
+    "notifications":        "إشعارات داخل المنصة",
+    "channel_configs":      "إعدادات قنوات التوزيع الخارجية",
+    "api_keys":             "مفاتيح الـ API — يُخزَّن هاش المفتاح لا المفتاح",
+}
+
+_COLUMN_COMMENTS = {
+    ("guests", "id_number"):
+        "متروك فارغاً في الصفوف الجديدة — القيمة في id_number_enc مشفّرة",
+    ("guests", "id_number_enc"):
+        "رقم الهوية مشفَّراً بـ AES-256-GCM (بادئة enc:v1:)",
+    ("guests", "id_number_bidx"):
+        "فهرس أعمى HMAC-SHA256 للبحث بالمساواة دون فكّ التشفير",
+    ("employees", "national_id_enc"):
+        "الهوية الوطنية مشفَّرة بـ AES-256-GCM",
+    ("employees", "iqama_number_enc"):
+        "رقم الإقامة مشفَّراً بـ AES-256-GCM",
+    ("staff_roles", "client_id"):
+        "NULL يعني قالب دور عام متاح لكل المنشآت",
+    ("bookings", "tax_mode"):
+        "MODE_A: الضريبة على الضيف — MODE_B: تتحمّلها المنشأة",
+}
+
+
+def run_table_comments(db) -> None:
+    """يكتب توثيق الجداول والأعمدة داخل كتالوج قاعدة البيانات."""
+    if not db.use_postgres:
+        return
+    import logging
+    log = logging.getLogger("dheuof.db.comments")
+    done = 0
+
+    for table, comment in _TABLE_COMMENTS.items():
+        try:
+            exists = db.execute(
+                "SELECT to_regclass(%s) IS NOT NULL AS ok", (f"public.{table}",), fetch="one"
+            )
+            if not exists or not exists["ok"]:
+                continue
+            db.execute(f"COMMENT ON TABLE {table} IS %s", (comment,))
+            done += 1
+        except Exception as e:
+            log.warning(f"COMMENT ON TABLE {table}: {e}")
+
+    for (table, column), comment in _COLUMN_COMMENTS.items():
+        try:
+            exists = db.execute(
+                "SELECT COUNT(*) AS n FROM information_schema.columns "
+                "WHERE table_schema='public' AND table_name=%s AND column_name=%s",
+                (table, column), fetch="one",
+            )
+            if not exists or not exists["n"]:
+                continue
+            db.execute(f"COMMENT ON COLUMN {table}.{column} IS %s", (comment,))
+            done += 1
+        except Exception as e:
+            log.warning(f"COMMENT ON COLUMN {table}.{column}: {e}")
+
+    log.info(f"✅ توثيق قاعدة البيانات — {done} تعليقاً")
+
+
 def apply_tenant_rls(db, table: str, key: str = "client_id") -> bool:
     """يُطبّق سياسة العزل على جدول واحد — للجداول التي تُنشأ بعد الإقلاع.
 
@@ -1111,6 +1265,26 @@ def run_v4_migrations(db) -> None:
         except Exception as e:
             if "already exists" not in str(e).lower():
                 log.warning(f"bookings tax col {col_name}: {e}")
+
+    # ── أعمدة ZATCA على invoices ─────────────────────────────────
+    # كانت تُضاف كسولاً من services/zatca.py عند أول استخدام، فلا توجد
+    # عند الإقلاع — وطرق العرض التقريرية التي تشير إليها تفشل.
+    _zatca_invoice_cols = [
+        ("zatca_uuid",   "VARCHAR(40)"),
+        ("company_name", "VARCHAR(200)"),
+        ("seller_vat",   "VARCHAR(20)"),
+        ("buyer_name",   "VARCHAR(200)"),
+        ("buyer_vat",    "VARCHAR(20)"),
+        ("zatca_qr",     "TEXT"),
+        ("invoice_hash", "VARCHAR(64)"),
+        ("invoice_type", "VARCHAR(20)"),
+    ]
+    for _col, _type in _zatca_invoice_cols:
+        try:
+            db.execute(f"ALTER TABLE invoices ADD COLUMN IF NOT EXISTS {_col} {_type}")
+        except Exception as e:
+            if "already exists" not in str(e).lower():
+                log.warning(f"ZATCA col invoices.{_col}: {e}")
 
     # ── تشفير حقول الهوية — أعمدة النص المشفَّر والفهرس الأعمى ────
     # النص المشفَّر بـ AES-GCM يطول عن VARCHAR(20) فيحتاج عموداً خاصاً،

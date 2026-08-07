@@ -187,9 +187,10 @@ async def lifespan(app_: FastAPI):
     #   • الفهارس بعد كل شيء لأنها تمسّ أعمدة أضافتها خطوات لاحقة
     from db.migrations import run_all_migrations
     from db.schema_v3 import (
-        run_app_role_migration, run_perf_indexes, run_rls_migration,
-        run_security_hardening, run_sessions_migration, run_staff_app_migrations,
-        run_v3_migrations, run_v4_migrations,
+        run_app_role_migration, run_perf_indexes, run_reporting_views,
+        run_rls_migration, run_security_hardening, run_sessions_migration,
+        run_staff_app_migrations, run_table_comments, run_v3_migrations,
+        run_v4_migrations,
     )
 
     _MIGRATION_STEPS = [
@@ -199,6 +200,8 @@ async def lifespan(app_: FastAPI):
         ("v4 (ZATCA/audit)",   run_v4_migrations),
         ("sessions",           run_sessions_migration),
         ("security hardening", run_security_hardening),
+        ("reporting views",    run_reporting_views),
+        ("table comments",     run_table_comments),
         ("app role",           run_app_role_migration),
         ("row level security", run_rls_migration),
         ("perf indexes",       run_perf_indexes),
