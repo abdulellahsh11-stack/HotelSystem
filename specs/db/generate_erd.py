@@ -430,7 +430,7 @@ def build_pdf():
             ("client_id", "INTEGER", "FK"),
             ("email", "VARCHAR(255)", "UNIQUE"),
             ("full_name", "VARCHAR(200)", "NOT NULL"),
-            ("password_hash", "VARCHAR(255)", "bcrypt"),
+            ("password_hash", "VARCHAR(255)", "argon2id"),
             ("role", "VARCHAR(50)", ""),
             ("is_active", "BOOLEAN", "DEFAULT TRUE"),
             ("last_login_at", "TIMESTAMPTZ", ""),

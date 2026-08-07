@@ -214,7 +214,7 @@
 | `email` | VARCHAR(255) | ✓ | — | — | البريد (UNIQUE) |
 | `phone` | VARCHAR(20) | — | — | — | الهاتف |
 | `full_name` | VARCHAR(200) | ✓ | — | — | الاسم الكامل |
-| `password_hash` | VARCHAR(255) | ✓ | — | — | كلمة المرور المشفرة (bcrypt) |
+| `password_hash` | VARCHAR(255) | ✓ | — | — | كلمة المرور المُجزّأة (Argon2id) |
 | `role` | VARCHAR(50) | ✓ | — | — | super_admin / facility_manager / receptionist… |
 | `is_active` | BOOLEAN DEFAULT TRUE | ✓ | — | — | هل الحساب نشط |
 | `last_login_at` | TIMESTAMPTZ | — | — | — | آخر تسجيل دخول |
@@ -226,7 +226,7 @@
 - `UNIQUE(email)`
 - `CHECK(role IN ('super_admin','facility_manager','receptionist','housekeeping_staff','pos_cashier','warehouse_staff','accountant'))`
 
-**ملاحظة أمنية:** تُخزَّن كلمات المرور مشفرة بـ bcrypt (cost factor 12) — لا تُخزَّن أبدًا كنص صريح.
+**ملاحظة أمنية:** تُجزَّأ كلمات المرور بـ Argon2id (ذاكرة 19 ميبي، جولتان، تفرّع 1 — توصية OWASP) بملح عشوائي فريد مضمَّن في الهاش. لا تُخزَّن أبدًا كنص صريح. التنفيذ في `db/passwords.py`، والهاش موسوم بخوارزميته فتتم الترقية مستقبلاً دون إجبار المستخدمين على تغيير كلمات مرورهم.
 
 ---
 
@@ -843,7 +843,7 @@
 | invoices | status | حالة الفاتورة | VARCHAR | 20 | ✓ | — | — | pending/partial/paid/cancelled |
 | invoices | total_amount | إجمالي الفاتورة | NUMERIC | 12,2 | ✓ | — | — | ≥ 0 |
 | users | role | دور المستخدم | VARCHAR | 50 | ✓ | — | — | super_admin/facility_manager/receptionist… |
-| users | password_hash | كلمة المرور | VARCHAR | 255 | ✓ | — | — | bcrypt hash فقط |
+| users | password_hash | كلمة المرور | VARCHAR | 255 | ✓ | — | — | Argon2id hash موسوم |
 | marketers | ref_code | كود الإحالة | VARCHAR | 20 | ✓ | — | — | UNIQUE، حروف+أرقام |
 | inventory_transactions | transaction_type | نوع الحركة | VARCHAR | 20 | ✓ | — | — | in/out/adjustment/waste |
 | audit_log | action | نوع الإجراء | VARCHAR | 100 | ✓ | — | — | CREATE/UPDATE/DELETE/LOGIN |
@@ -1261,7 +1261,7 @@ ORDER BY completion_rate DESC;
 ## القسم الثالث عشر: اعتبارات الأمان وجودة البيانات
 
 ### 13.1 حماية كلمات المرور
-- تُشفَّر بـ bcrypt (cost factor 12 على الأقل)
+- تُجزَّأ بـ Argon2id (m=19456 KiB، t=2، p=1 — الحد الأدنى الموصى به من OWASP)
 - لا تُخزَّن أبدًا كنص صريح في قاعدة البيانات
 - لا تُرسَّل في الاستجابات (API responses)
 - بعد تسجيل الدخول تُصدَّر JWT فقط

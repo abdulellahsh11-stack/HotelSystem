@@ -5,6 +5,7 @@ python-multipart>=0.0.9
 anthropic>=0.28.0
 sentry-sdk[fastapi]>=2.0.0
 redis>=5.0.0
+argon2-cffi>=23.1.0       # تجزئة كلمات المرور — Argon2id (توصية OWASP)
 
 # ── تثبيت إصدارات آمنة للثغرات الأمنية (pip-audit) ────────────
 starlette>=1.3.1          # CVE-2026-54283, CVE-2026-54282

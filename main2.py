@@ -17,7 +17,7 @@ from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, Red
 from main1 import (
     app, log, _lock, _admin_sessions, _client_sessions,
     _COOKIE_SECURE, _reg_rate_ok, _login_rate_ok,
-    _new_token, _make_password, _verify_password, _hash_password,
+    _new_token, _make_password, _verify_password, _verify_admin_password,
     get_client_session, require_client, require_admin,
     _get_admin_token, _get_client_token,
 )
@@ -334,8 +334,7 @@ async def admin_login(request: Request):
     password = form.get("password", "")
     cfg = request.app.state.cfg
 
-    h = _hash_password(str(password), cfg.pass_salt)
-    if h != cfg.admin_pass_hash:
+    if not _verify_admin_password(str(password), cfg):
         if request.headers.get("content-type", "").startswith("application/json"):
             return JSONResponse({"success": False, "error": "كلمة المرور خاطئة"}, status_code=401)
         return HTMLResponse(_admin_login_page("كلمة المرور خاطئة"), status_code=401)
@@ -488,8 +487,11 @@ async def admin_update_client(client_id: str, request: Request, _=Depends(requir
         if k in data:
             client[k] = data[k]
     if "password" in data and data["password"]:
-        cfg = request.app.state.cfg
-        client["pass_hash"] = _hash_password(str(data["password"]), cfg.pass_salt)
+        # كان هذا السطر يكتب pass_hash بالملح العام ويترك pass_salt
+        # الخاص بالحساب كما هو، فيتحقّق الدخول لاحقاً بملح مختلف عن
+        # الذي جُزّئت به كلمة المرور — أي أن إعادة التعيين كانت تُخرج
+        # المنشأة من حسابها بصمت. _make_password يُحدّث الحقلين معاً.
+        client["pass_hash"], client["pass_salt"] = _make_password(str(data["password"]))
     store.save_client(client)
     return {"success": True, "client": client}
 
@@ -525,7 +527,8 @@ async def client_login(request: Request):
     if not client:
         return HTMLResponse(_login_page("المنشأة غير موجودة"), status_code=401)
 
-    if not _verify_password(password, client, cfg):
+    # تمرير store يُفعّل ترقية الهاش القديم إلى Argon2id عند نجاح الدخول
+    if not _verify_password(password, client, cfg, store=store):
         return HTMLResponse(_login_page("كلمة المرور خاطئة"), status_code=401)
 
     token = _new_token()

@@ -9,44 +9,50 @@ gen_admin_hash.py — يولّد ADMIN_PASS_HASH لوضعه في Railway Variabl
 يسألك عن كلمة المرور (لا تظهر على الشاشة) ويطبع الهاش الذي تنسخه إلى
 Railway → Variables → ADMIN_PASS_HASH
 
-ملاحظة: يجب أن يطابق الملح (PASS_SALT) ما هو مضبوط في Railway.
-الافتراضي "HotelSaaS2025" إن لم تكن قد ضبطت PASS_SALT.
+الهاش الآن Argon2id والملح مضمَّن داخله عشوائياً، فلم يعد PASS_SALT
+مطلوباً لكلمة مرور المالك. الصيغة القديمة (PBKDF2 + ملح عام افتراضي
+معروف في المستودع) ما زالت مقبولة عند الدخول للتوافق، لكن يُستحسن
+إعادة توليد الهاش بهذا السكربت.
 """
 import getpass
-import hashlib
 import os
+import sys
 
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-def hash_password(password: str, salt: str) -> str:
-    return hashlib.pbkdf2_hmac(
-        "sha256", password.encode(), salt.encode(), 100_000
-    ).hex()
+from db.passwords import ARGON2_AVAILABLE, algorithm_of, hash_password  # noqa: E402
+
+MIN_LENGTH = 12
 
 
 def main() -> None:
-    salt = os.environ.get("PASS_SALT", "HotelSaaS2025")
-    print("=" * 56)
+    print("=" * 60)
     print("  مولّد كلمة مرور المالك — ضيوف")
-    print("=" * 56)
-    print(f"  الملح المستخدم (PASS_SALT): {salt}")
-    print("-" * 56)
+    print("=" * 60)
+    if not ARGON2_AVAILABLE:
+        print("  ⚠️  argon2-cffi غير مثبّتة — سيُستخدم scrypt.")
+        print("     ثبّتها بـ: pip install argon2-cffi")
+        print("-" * 60)
 
     p1 = getpass.getpass("  أدخل كلمة المرور الجديدة: ")
-    if len(p1) < 6:
-        print("  ⚠️  كلمة المرور قصيرة — استخدم 6 أحرف على الأقل.")
+    if len(p1) < MIN_LENGTH:
+        print(f"  ⚠️  كلمة المرور قصيرة — {MIN_LENGTH} حرفاً على الأقل.")
+        print("     هذه كلمة مرور مالك المنصة؛ لا تُقارن بكلمة مرور عادية.")
         return
     p2 = getpass.getpass("  أعد إدخال كلمة المرور للتأكيد: ")
     if p1 != p2:
         print("  ❌ كلمتا المرور غير متطابقتين.")
         return
 
-    h = hash_password(p1, salt)
-    print("-" * 56)
-    print("  ✅ تم — انسخ السطر التالي إلى Railway Variables:")
+    h = hash_password(p1)
+    print("-" * 60)
+    print(f"  ✅ تم — الخوارزمية: {algorithm_of(h)}")
+    print("  انسخ السطر التالي إلى Railway Variables:")
     print()
     print(f"  ADMIN_PASS_HASH={h}")
     print()
-    print("=" * 56)
+    print("  ملاحظة: الملح مضمَّن في الهاش — لا تحتاج ضبط PASS_SALT.")
+    print("=" * 60)
 
 
 if __name__ == "__main__":

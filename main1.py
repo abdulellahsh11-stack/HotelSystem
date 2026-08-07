@@ -22,6 +22,8 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
+from db.passwords import hash_password, verify_password
+
 
 class _SafeEncoder(json.JSONEncoder):
     """Serialize PostgreSQL Decimal/date/datetime types that json.dumps rejects."""
@@ -94,24 +96,65 @@ def _new_token() -> str:
 
 
 def _hash_password(password: str, salt: str) -> str:
+    """تجزئة PBKDF2 بالصيغة القديمة — للتحقق من الهاشات المخزَّنة فقط.
+
+    لا تستخدمها لإنتاج هاش جديد؛ استخدم _make_password. مُبقاة لأن
+    ADMIN_PASS_HASH المولَّد بـ scripts/gen_admin_hash.py بهذه الصيغة.
+    """
     return hashlib.pbkdf2_hmac(
         "sha256", password.encode(), salt.encode(), 100_000
     ).hex()
 
 
 def _make_password(password: str) -> tuple[str, str]:
-    """C2 fix: يُنشئ ملحاً عشوائياً فريداً لكل حساب ويعيد (hash, salt)."""
-    salt = secrets.token_hex(16)
-    return _hash_password(password, salt), salt
+    """يُنتج (هاش، ملح) لتخزينهما.
+
+    الهاش الآن Argon2id موسوم بخوارزميته والملح مضمَّن داخله، فالحقل
+    الثاني يعود فارغاً. يُعاد كزوج للحفاظ على توقيع الدالة لدى
+    مواضع الاستدعاء التي تخزّن العمودين معاً.
+    """
+    return hash_password(password), ""
 
 
-def _verify_password(password: str, client: dict, cfg) -> bool:
-    """يتحقق من كلمة المرور بملح الحساب، مع توافق خلفي مع الملح العام القديم."""
+def _verify_password(password: str, client: dict, cfg, store=None) -> bool:
+    """يتحقّق من كلمة المرور، ويُرقّي الهاش القديم بصمت عند النجاح.
+
+    يدعم الصيغ الثلاث: Argon2id الجديدة، وscrypt، وسلسلة hex العارية
+    القديمة (PBKDF2-100k بملح خارجي). حين ينجح التحقّق بصيغة قديمة
+    ويُمرَّر store، تُعاد التجزئة بـ Argon2id وتُحفظ — فيترقّى الحساب
+    عند أول دخول ناجح دون أن يُطلب من صاحبه تغيير كلمة مروره.
+    """
     stored = client.get("pass_hash", "") or ""
     if not stored:
         return False
-    salt = client.get("pass_salt") or cfg.pass_salt   # legacy fallback
-    return secrets.compare_digest(_hash_password(password, salt), stored)
+
+    legacy_salt = client.get("pass_salt") or cfg.pass_salt
+    ok, needs_rehash = verify_password(password, stored, legacy_salt=legacy_salt)
+    if not ok:
+        return False
+
+    if needs_rehash and store is not None:
+        try:
+            client["pass_hash"], client["pass_salt"] = _make_password(password)
+            store.save_client(client)
+            log.info(
+                f"تُرقّي هاش كلمة مرور المنشأة {client.get('id', '?')} إلى Argon2id"
+            )
+        except Exception as e:
+            # الترقية تحسين لا شرط للدخول — لا تُفشل تسجيل الدخول
+            log.warning(f"تعذّرت ترقية هاش كلمة المرور: {e}")
+
+    return True
+
+
+def _verify_admin_password(password: str, cfg) -> bool:
+    """يتحقّق من كلمة مرور المالك مقابل ADMIN_PASS_HASH.
+
+    يقبل الصيغة الجديدة الموسومة والصيغة القديمة (hex عارٍ + PASS_SALT)
+    حتى لا ينكسر أي نشر قائم قبل إعادة توليد الهاش.
+    """
+    ok, _ = verify_password(password, cfg.admin_pass_hash, legacy_salt=cfg.pass_salt)
+    return ok
 
 
 # ──────────────────────────────────────────────────────────────
