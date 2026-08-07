@@ -36,8 +36,16 @@ jobs:
   # Job 2: Integration tests against real PostgreSQL 15
   # ────────────────────────────────────────────────────────────
   test-postgres:
-    name: "Tests (PostgreSQL 15)"
+    name: "Tests (PostgreSQL 15, RLS_ENFORCE=${{ matrix.rls_enforce }})"
     runs-on: ubuntu-latest
+
+    # يُشغَّل في وضعَي العزل: الافتراضي (السياسات موجودة غير مفروضة)
+    # ووضع الفرض (السياسات سارية والاستعلامات بالدور المُقيَّد). أي
+    # انحدار يكسر أحد الوضعين يظهر قبل الدمج.
+    strategy:
+      fail-fast: false
+      matrix:
+        rls_enforce: ["", "1"]
 
     services:
       postgres:
@@ -59,6 +67,10 @@ jobs:
       ADMIN_PASS_HASH: ${{ secrets.ADMIN_PASS_HASH || 'test_hash_for_ci' }}
       SECRET_KEY: ci_test_secret_key_32chars_minimum
       REDIS_URL: ""
+      RLS_ENFORCE: ${{ matrix.rls_enforce }}
+      # مفاتيح اختبارية فقط — تُفعّل مسار تشفير حقول الهوية في CI
+      PII_ENCRYPTION_KEY: "Y2lfdGVzdF9rZXlfMzJfYnl0ZXNfZXhhY3RseV8xMjM="
+      PII_BLIND_INDEX_PEPPER: ci_test_pepper
 
     steps:
       - name: Checkout code
