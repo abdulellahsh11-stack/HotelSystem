@@ -7,6 +7,8 @@ import secrets
 from typing import Optional
 from fastapi import APIRouter, Request, Depends, HTTPException
 
+from db.sqlsplit import has_executable_sql, split_sql
+
 from services.tax_config import get_client_tax_config, calculate_tax as _calc_tax
 
 router = APIRouter(prefix="/api/m07", tags=["POS"])
@@ -45,9 +47,9 @@ def _ensure_pos_table(db) -> None:
     global _migration_done
     if _migration_done or not db.use_postgres:
         return
-    for stmt in _POS_MIGRATION.split(";"):
+    for stmt in split_sql(_POS_MIGRATION):
         s = stmt.strip()
-        if s:
+        if has_executable_sql(s):
             try:
                 db.execute(s)
             except Exception as e:

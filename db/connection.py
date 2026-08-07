@@ -120,7 +120,12 @@ class DatabasePool:
         def _run():
             with self._get_conn() as conn:
                 with conn.cursor(cursor_factory=RealDictCursor) as cur:
-                    cur.execute(query, params)
+                    # params or None: عندما تكون المعاملات فارغة نُمرّر None كي
+                    # يتخطّى psycopg2 مرحلة الاستبدال تماماً. لو مرّرنا ()
+                    # فإنه يُفسّر كل «%» في النص كعلامة معامل، فينهار أي SQL
+                    # يحوي «%» حرفياً — مثل LIKE 'x.%' — بـ
+                    # «IndexError: tuple index out of range».
+                    cur.execute(query, params or None)
                     if fetch == "one":
                         return cur.fetchone()
                     elif fetch == "all":

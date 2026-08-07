@@ -4,6 +4,7 @@
 db/schema_v3.py — مخطط قاعدة بيانات ضيوف الكامل v3.0
 جميع الوحدات الـ 15 — يعمل مع نظام الـ migrations الحالي
 """
+from db.sqlsplit import has_executable_sql, split_sql
 
 SCHEMA_V3_MODULES = """
 -- ================================================================
@@ -555,9 +556,9 @@ def run_staff_app_migrations(db) -> None:
     log = logging.getLogger("dheuof.db.staff_app")
     if not db.use_postgres:
         return
-    for stmt in STAFF_APP_MIGRATIONS.split(";"):
+    for stmt in split_sql(STAFF_APP_MIGRATIONS):
         s = stmt.strip()
-        if s:
+        if has_executable_sql(s):
             try:
                 db.execute(s)
             except Exception as e:
@@ -597,9 +598,9 @@ def run_sessions_migration(db) -> None:
     log = logging.getLogger("dheuof.db.sessions")
     if not db.use_postgres:
         return
-    for stmt in SESSIONS_MIGRATION.split(";"):
+    for stmt in split_sql(SESSIONS_MIGRATION):
         s = stmt.strip()
-        if s:
+        if has_executable_sql(s):
             try:
                 db.execute(s)
             except Exception as e:
@@ -672,9 +673,9 @@ def run_perf_indexes(db) -> None:
         return
     import logging
     log = logging.getLogger("dheuof")
-    for stmt in PERF_INDEXES.strip().split(";"):
+    for stmt in split_sql(PERF_INDEXES):
         s = stmt.strip()
-        if s and not s.startswith("--"):
+        if has_executable_sql(s):
             try:
                 db.execute(s)
             except Exception as e:
@@ -688,14 +689,9 @@ def run_v3_migrations(db) -> None:
     log = logging.getLogger("dheuof.db.migrations")
     log.info("🔄 تطبيق migrations v3 — جميع الوحدات الـ 15...")
 
-    for statement in SCHEMA_V3_MODULES.split(";"):
+    for statement in split_sql(SCHEMA_V3_MODULES):
         s = statement.strip()
-        # تحقق: هل يوجد SQL حقيقي (سطر لا يبدأ بـ --)؟
-        has_sql = any(
-            line.strip() and not line.strip().startswith("--")
-            for line in s.splitlines()
-        )
-        if s and has_sql:
+        if has_executable_sql(s):
             try:
                 db.execute(s)
             except Exception as e:
@@ -747,10 +743,13 @@ def run_security_hardening(db) -> None:
 
     # تقسيم على ';' مع تجاهل الـ DO $$ blocks بشكل صحيح
     statements = _split_sql_safe(raw_sql)
-    ok = fail = 0
+    ok = fail = skipped = 0
     for stmt in statements:
         s = stmt.strip()
-        if not s or s.startswith("--"):
+        # تخطَّ الكتل التعليقية البحتة فقط — لا كل عبارة مسبوقة بتعليق.
+        # الفحص القديم `s.startswith("--")` كان يُسقط 19 من 24 عبارة أمنية.
+        if not has_executable_sql(s):
+            skipped += 1
             continue
         try:
             db.execute(s)
@@ -773,45 +772,22 @@ def run_security_hardening(db) -> None:
     except Exception as e:
         log.warning(f"SECURITY DEFINER audit: {e}")
 
-    log.info(f"✅ Security hardening — {ok} statements OK, {fail} failed")
+    if fail:
+        log.error(f"❌ Security hardening — {ok} OK, {fail} FAILED, {skipped} comment-only")
+        raise RuntimeError(
+            f"فشل تطبيق التحصين الأمني: {fail} عبارة لم تُنفَّذ. "
+            "لا يجوز تشغيل المنصة بعزل مستأجرين ناقص — راجع السجل أعلاه."
+        )
+    log.info(f"✅ Security hardening — {ok} statements OK, {skipped} comment-only")
 
 
 def _split_sql_safe(sql: str) -> list:
-    """تقسيم SQL بشكل آمن مع الحفاظ على DO $$ ... $$ blocks."""
-    statements = []
-    current = []
-    in_dollar_quote = False
-    dollar_tag = ""
+    """تقسيم SQL بشكل آمن — غلاف حول db.sqlsplit.split_sql.
 
-    for line in sql.splitlines():
-        stripped = line.strip()
-        if not in_dollar_quote:
-            if "$$" in stripped:
-                in_dollar_quote = True
-                dollar_tag = "$$"
-            if stripped.endswith(";") and not in_dollar_quote:
-                current.append(line)
-                statements.append("\n".join(current))
-                current = []
-                continue
-        else:
-            if dollar_tag in stripped and stripped != dollar_tag + ";":
-                pass
-            if stripped.endswith(dollar_tag + ";") or stripped == dollar_tag + ";":
-                in_dollar_quote = False
-                dollar_tag = ""
-                current.append(line)
-                statements.append("\n".join(current))
-                current = []
-                continue
-        current.append(line)
-
-    if current:
-        leftover = "\n".join(current).strip()
-        if leftover:
-            statements.append(leftover)
-
-    return statements
+    محفوظ بهذا الاسم لأن وحدات أخرى تستورده. المنطق الحقيقي في
+    db/sqlsplit.py، والذي يتعامل مع $tag$ والنصوص والتعليقات المتداخلة.
+    """
+    return split_sql(sql)
 
 
 # ══════════════════════════════════════════════════════════════
@@ -990,6 +966,35 @@ def run_v4_migrations(db) -> None:
                 log.warning(f"bookings tax col {col_name}: {e}")
 
     # ── أعمدة الضريبة المركزية — pos_sales ───────────────────────
+    # يُنشأ الجدول هنا لا في routes/m07_pos.py فقط: الإنشاء الكسول كان
+    # يعني أن الجدول لا يوجد حتى يزور أحدهم مسار نقاط البيع، فتفشل
+    # ترقيات الضريبة أدناه في كل إقلاع على قاعدة جديدة.
+    try:
+        db.execute("""
+            CREATE TABLE IF NOT EXISTS pos_sales (
+                id                 SERIAL PRIMARY KEY,
+                client_id          VARCHAR(50),
+                sale_number        VARCHAR(30),
+                guest_id           INTEGER,
+                items              JSONB DEFAULT '[]',
+                subtotal           DECIMAL(10,2) DEFAULT 0,
+                vat_amount         DECIMAL(10,2) DEFAULT 0,
+                tourism_tax_amount DECIMAL(10,2) DEFAULT 0,
+                total              DECIMAL(10,2) DEFAULT 0,
+                tax_mode           VARCHAR(10)   DEFAULT 'MODE_A',
+                payment_method     VARCHAR(30)   DEFAULT 'cash',
+                status             VARCHAR(20)   DEFAULT 'completed',
+                created_by         VARCHAR(100),
+                created_at         TIMESTAMPTZ   DEFAULT NOW()
+            )
+        """)
+        db.execute(
+            "CREATE INDEX IF NOT EXISTS idx_pos_client ON pos_sales(client_id, created_at)"
+        )
+    except Exception as e:
+        if "already exists" not in str(e).lower():
+            log.warning(f"pos_sales create: {e}")
+
     _pos_tax_cols = [
         "subtotal            DECIMAL(10,2) DEFAULT 0",
         "vat_amount          DECIMAL(10,2) DEFAULT 0",

@@ -4,6 +4,10 @@
 -- يطبَّق من db/schema_v3.py عند بدء التشغيل
 -- ================================================================
 
+-- pgcrypto مطلوب لـ digest() في mask_serial_id (§10) ولتشفير
+-- أعمدة الهوية (§11). بدونه يفشل نصف الملف بصمت.
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 -- ──────────────────────────────────────────────────────────────
 -- §1 — جلسات الإبطال (Finding #8: JWT/Session Revocation)
 -- ──────────────────────────────────────────────────────────────
@@ -48,30 +52,24 @@ CREATE TABLE IF NOT EXISTS staff_role_assignments (
 );
 CREATE INDEX IF NOT EXISTS idx_sra_client_emp ON staff_role_assignments(client_id, employee_id);
 
--- إدراج الأدوار الافتراضية دون تكرار
-INSERT INTO staff_roles (client_id, role_code, name_ar, permissions)
-SELECT 'system', 'owner',        'مالك المنشأة',    '["*"]'
-WHERE NOT EXISTS (SELECT 1 FROM staff_roles WHERE client_id='system' AND role_code='owner');
+-- الأدوار القياسية العامة: client_id = NULL تعني «قالب لكل المنشآت».
+--
+-- كانت هذه الصفوف تستخدم client_id='system'، وهو مفتاح أجنبي إلى
+-- clients(id) لا يقابله أي صف — فكانت الإدراجات الستة تفشل دائماً بـ
+-- foreign key violation، ويبقى جدول الأدوار فارغاً. NULL هو التمثيل
+-- الصحيح لقالب لا يملكه مستأجر بعينه.
+CREATE UNIQUE INDEX IF NOT EXISTS uq_staff_roles_global
+    ON staff_roles(role_code) WHERE client_id IS NULL;
 
 INSERT INTO staff_roles (client_id, role_code, name_ar, permissions)
-SELECT 'system', 'gm',           'مدير عام',        '["rooms","housekeeping","bookings","guests","hr","pos","reports"]'
-WHERE NOT EXISTS (SELECT 1 FROM staff_roles WHERE client_id='system' AND role_code='gm');
-
-INSERT INTO staff_roles (client_id, role_code, name_ar, permissions)
-SELECT 'system', 'receptionist', 'موظف استقبال',    '["rooms","bookings","guests","pos","checkout"]'
-WHERE NOT EXISTS (SELECT 1 FROM staff_roles WHERE client_id='system' AND role_code='receptionist');
-
-INSERT INTO staff_roles (client_id, role_code, name_ar, permissions)
-SELECT 'system', 'housekeeper',  'موظف نظافة',      '["housekeeping","rooms.read"]'
-WHERE NOT EXISTS (SELECT 1 FROM staff_roles WHERE client_id='system' AND role_code='housekeeper');
-
-INSERT INTO staff_roles (client_id, role_code, name_ar, permissions)
-SELECT 'system', 'maintenance',  'موظف صيانة',      '["maintenance","rooms.read"]'
-WHERE NOT EXISTS (SELECT 1 FROM staff_roles WHERE client_id='system' AND role_code='maintenance');
-
-INSERT INTO staff_roles (client_id, role_code, name_ar, permissions)
-SELECT 'system', 'accountant',   'محاسب',            '["pos","reports","invoices"]'
-WHERE NOT EXISTS (SELECT 1 FROM staff_roles WHERE client_id='system' AND role_code='accountant');
+VALUES
+    (NULL, 'owner',        'مالك المنشأة', '["*"]'::JSONB),
+    (NULL, 'gm',           'مدير عام',     '["rooms","housekeeping","bookings","guests","hr","pos","reports"]'::JSONB),
+    (NULL, 'receptionist', 'موظف استقبال', '["rooms","bookings","guests","pos","checkout"]'::JSONB),
+    (NULL, 'housekeeper',  'موظف نظافة',   '["housekeeping","rooms.read"]'::JSONB),
+    (NULL, 'maintenance',  'موظف صيانة',   '["maintenance","rooms.read"]'::JSONB),
+    (NULL, 'accountant',   'محاسب',        '["pos","reports","invoices"]'::JSONB)
+ON CONFLICT DO NOTHING;
 
 -- دالة التحقق من الصلاحية (Finding #2: row-level RBAC guard)
 CREATE OR REPLACE FUNCTION app_has_perm(
@@ -81,19 +79,30 @@ CREATE OR REPLACE FUNCTION app_has_perm(
 )
 RETURNS BOOLEAN LANGUAGE plpgsql STABLE SET search_path = public AS $$
 DECLARE
-    v_perms JSONB;
+    v_granted BOOLEAN;
 BEGIN
-    -- owner/gm لهم كل الصلاحيات
-    SELECT r.permissions INTO v_perms
-    FROM staff_role_assignments a
-    JOIN staff_roles r ON r.role_code = a.role_code AND r.client_id IN (a.client_id, 'system')
-    WHERE a.client_id = p_client_id
-      AND a.employee_id = p_employee_id
-    LIMIT 1;
+    -- يجمع صلاحيات كل الأدوار المُسندة للموظف، لا دوراً واحداً عشوائياً.
+    -- الإصدار السابق كان يستخدم LIMIT 1 بلا ترتيب، فموظف يحمل دورين
+    -- يحصل على صلاحيات أحدهما فقط — ولا يمكن التنبؤ بأيّهما.
+    WITH effective AS (
+        SELECT DISTINCT ON (a.role_code) r.permissions
+        FROM staff_role_assignments a
+        JOIN staff_roles r
+          ON r.role_code = a.role_code
+         AND (r.client_id = a.client_id OR r.client_id IS NULL)
+        WHERE a.client_id   = p_client_id
+          AND a.employee_id = p_employee_id
+        -- تعريف المنشأة لدور ما يَجُبّ القالب العام لنفس الدور
+        ORDER BY a.role_code, (r.client_id IS NULL)
+    )
+    SELECT EXISTS (
+        SELECT 1 FROM effective, LATERAL jsonb_array_elements_text(permissions) AS perm
+        WHERE perm = '*'                       -- صلاحية مطلقة
+           OR perm = p_permission               -- تطابق تام
+           OR p_permission LIKE perm || '.%'    -- «rooms» تمنح «rooms.read»
+    ) INTO v_granted;
 
-    IF v_perms IS NULL THEN RETURN FALSE; END IF;
-    IF v_perms ? '*' THEN RETURN TRUE; END IF;
-    RETURN v_perms ? p_permission;
+    RETURN COALESCE(v_granted, FALSE);
 END;
 $$;
 
@@ -273,5 +282,5 @@ RETURNS TEXT LANGUAGE sql IMMUTABLE SET search_path = public AS $$
     );
 $$;
 
-COMMENT ON FUNCTION mask_serial_id IS
+COMMENT ON FUNCTION mask_serial_id(BIGINT, TEXT) IS
     'Finding #10: يُحوّل BIGSERIAL إلى hash آمن قبل كشفه في الـ API العام';

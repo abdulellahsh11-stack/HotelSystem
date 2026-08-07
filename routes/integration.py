@@ -20,6 +20,8 @@ import logging
 from datetime import date
 from fastapi import APIRouter, Request, Depends, HTTPException
 
+from db.sqlsplit import has_executable_sql, split_sql
+
 router = APIRouter(prefix="/api/integration", tags=["Integration"])
 logger = logging.getLogger("dheuof")
 
@@ -54,9 +56,9 @@ def _ensure_tables(db) -> None:
     global _migration_done
     if _migration_done or not db.use_postgres:
         return
-    for stmt in _MIGRATION.split(";"):
+    for stmt in split_sql(_MIGRATION):
         s = stmt.strip()
-        if s:
+        if has_executable_sql(s):
             try:
                 db.execute(s)
             except Exception as e:
