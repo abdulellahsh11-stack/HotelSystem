@@ -3,13 +3,27 @@
     {
       "id": "ep_test",
       "name": "فندق الاختبار",
-      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$B0hXyPVxgWO2fYCm11fuww$TwAFnQnFZrNLS3y8+7ALdxCYvTc3MNc8A4njTTPAzDI",
+      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$FO6Tyt5TzZhwCI5MLn8PmQ$BW0oG7LcuUqAZpSB0R+ieeznn3xkcnu1U5fvCNSFlmw",
       "pass_salt": "",
       "status": "active",
       "plan": "pro",
       "guests": [
         {
           "full_name": "نزيل الاختبار"
+        }
+      ]
+    },
+    {
+      "id": "smoke_test",
+      "name": "فندق الدخان",
+      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$IUxPREriAvDxdnBrbNzZVQ$YSb9V8tvOlpEbG/HsmbC1DSasI9/36xND02DwHNGBZ0",
+      "pass_salt": "",
+      "status": "active",
+      "plan": "pro",
+      "guests": [
+        {
+          "full_name": "نزيل الدخان",
+          "id_number": "1098765432"
         }
       ]
     }

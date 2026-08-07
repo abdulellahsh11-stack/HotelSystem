@@ -82,18 +82,11 @@ class ChannelManager:
                 UNIQUE (client_id, channel_code)
             )
         """)
-        self.db.execute("""
-            CREATE TABLE IF NOT EXISTS channel_sync_log (
-                id           SERIAL PRIMARY KEY,
-                client_id    VARCHAR(50) NOT NULL,
-                channel_code VARCHAR(30) NOT NULL,
-                action       VARCHAR(30) NOT NULL,
-                rooms_count  INTEGER DEFAULT 0,
-                ok           BOOLEAN DEFAULT TRUE,
-                detail       TEXT DEFAULT '',
-                created_at   TIMESTAMPTZ DEFAULT NOW()
-            )
-        """)
+        # channel_sync_log يُنشأ في db/migrations.py وهو التعريف الوحيد.
+        # كان هنا تعريف ثانٍ بأسماء أعمدة مختلفة، لكن
+        # CREATE TABLE IF NOT EXISTS لا يُعدّل جدولاً قائماً — فبقي
+        # التعريف الأول ساري المفعول وفشل كل استعلام مكتوب على الثاني.
+        # تعريف واحد للجدول الواحد.
         self.db.execute("""
             CREATE TABLE IF NOT EXISTS channel_reservations (
                 id           SERIAL PRIMARY KEY,
@@ -127,14 +120,25 @@ class ChannelManager:
         return [dict(c) for c in SUPPORTED_CHANNELS]
 
     def _log(self, client_id, channel_code, action, rooms=0, ok=True, detail=""):
+        """يُسجّل عملية مزامنة في channel_sync_log.
+
+        أسماء الأعمدة هي أسماء db/migrations.py — وهو ما يُنشئ الجدول
+        فعلياً عند الإقلاع. كان هذا الملف يُعرّف الجدول ثانيةً بأسماء
+        مختلفة (channel_code, action, rooms_count, ok, detail)، لكن
+        CREATE TABLE IF NOT EXISTS لا يُعدّل جدولاً قائماً — فالتعريف
+        الثاني لم يُطبَّق قط، وكل كتابة وقراءة هنا كانت تفشل بـ
+        «column channel_code does not exist».
+        """
         if not getattr(self.db, "use_postgres", False):
             return
         try:
             self.db.execute(
                 """INSERT INTO channel_sync_log
-                   (client_id, channel_code, action, rooms_count, ok, detail)
+                   (client_id, channel_name, sync_type, records_synced,
+                    status, error_message)
                    VALUES (%s,%s,%s,%s,%s,%s)""",
-                (client_id, channel_code, action, rooms, ok, detail[:500]))
+                (client_id, channel_code, action, rooms,
+                 "success" if ok else "failed", (detail or "")[:500]))
         except Exception as e:  # pragma: no cover
             log.warning(f"تعذّر تسجيل المزامنة: {e}")
 
@@ -268,8 +272,15 @@ class ChannelManager:
     def sync_log(self, client_id: str, limit: int = 50) -> list:
         if not getattr(self.db, "use_postgres", False):
             return []
+        # تُعاد بالأسماء التي يتوقّعها المستهلك، مع الحفاظ على أسماء
+        # الأعمدة الفعلية في الاستعلام
         rows = self.db.execute(
-            """SELECT channel_code, action, rooms_count, ok, detail, created_at
+            """SELECT channel_name           AS channel_code,
+                      sync_type              AS action,
+                      records_synced         AS rooms_count,
+                      (status = 'success')   AS ok,
+                      error_message          AS detail,
+                      created_at
                FROM channel_sync_log WHERE client_id=%s
                ORDER BY created_at DESC LIMIT %s""",
             (client_id, limit), fetch="all")
