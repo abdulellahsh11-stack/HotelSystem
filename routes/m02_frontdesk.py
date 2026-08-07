@@ -7,9 +7,21 @@ from fastapi import APIRouter, Request, Depends, HTTPException
 
 from services.tax_config import get_client_tax_config, calculate_tax as _calc_tax
 
+from db.crypto import decrypt_pii
+
 router = APIRouter(prefix="/api/m02", tags=["FrontDesk"])
 
 logger = logging.getLogger("dheuof")
+
+
+def _decrypt_id_number(row: dict) -> dict:
+    """يفكّ رقم هوية النزيل ويُخفي عمود التخزين المشفَّر عن الاستجابة."""
+    enc = row.pop("id_number_enc", None)
+    if enc:
+        plain = decrypt_pii(enc)
+        if plain is not None:
+            row["id_number"] = plain
+    return row
 
 
 def _require_client(request: Request) -> dict:
@@ -30,14 +42,15 @@ async def today_arrivals(request: Request, session=Depends(_require_client)):
                        COALESCE(b.vat_amount, 0)         AS vat_amount,
                        COALESCE(b.tourism_tax_amount, 0) AS tourism_tax_amount,
                        COALESCE(b.tax_mode, 'MODE_A')    AS tax_mode,
-                       g.full_name, g.id_number, r.room_number
+                       g.full_name, g.id_number, g.id_number_enc, r.room_number
                 FROM bookings b
                 LEFT JOIN guests g ON b.guest_id = g.id
                 LEFT JOIN rooms r ON b.room_id = r.id
                 WHERE b.client_id=%s AND b.check_in=%s AND b.status='confirmed'
                 ORDER BY b.check_in
             """, (cid, today), fetch="all")
-            return {"success": True, "data": [dict(r) for r in (rows or [])]}
+            return {"success": True,
+                    "data": [_decrypt_id_number(dict(r)) for r in (rows or [])]}
         return {"success": True, "data": []}
     except HTTPException:
         raise

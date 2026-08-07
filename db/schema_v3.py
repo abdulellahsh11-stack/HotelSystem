@@ -1112,6 +1112,34 @@ def run_v4_migrations(db) -> None:
             if "already exists" not in str(e).lower():
                 log.warning(f"bookings tax col {col_name}: {e}")
 
+    # ── تشفير حقول الهوية — أعمدة النص المشفَّر والفهرس الأعمى ────
+    # النص المشفَّر بـ AES-GCM يطول عن VARCHAR(20) فيحتاج عموداً خاصاً،
+    # والفهرس الأعمى (HMAC-SHA256) يتيح البحث بالمساواة دون فكّ تشفير.
+    _pii_cols = [
+        ("guests",    "id_number_enc",       "TEXT"),
+        ("guests",    "id_number_bidx",      "VARCHAR(64)"),
+        ("employees", "national_id_enc",     "TEXT"),
+        ("employees", "national_id_bidx",    "VARCHAR(64)"),
+        ("employees", "iqama_number_enc",    "TEXT"),
+        ("employees", "iqama_number_bidx",   "VARCHAR(64)"),
+    ]
+    for _tbl, _col, _type in _pii_cols:
+        try:
+            db.execute(f"ALTER TABLE {_tbl} ADD COLUMN IF NOT EXISTS {_col} {_type}")
+        except Exception as e:
+            if "already exists" not in str(e).lower():
+                log.warning(f"PII col {_tbl}.{_col}: {e}")
+    for _tbl, _col in (("guests", "id_number_bidx"),
+                       ("employees", "national_id_bidx"),
+                       ("employees", "iqama_number_bidx")):
+        try:
+            db.execute(
+                f"CREATE INDEX IF NOT EXISTS idx_{_tbl}_{_col} "
+                f"ON {_tbl}(client_id, {_col})"
+            )
+        except Exception as e:
+            log.warning(f"PII index {_tbl}.{_col}: {e}")
+
     # ── أعمدة الضريبة المركزية — pos_sales ───────────────────────
     # يُنشأ الجدول هنا لا في routes/m07_pos.py فقط: الإنشاء الكسول كان
     # يعني أن الجدول لا يوجد حتى يزور أحدهم مسار نقاط البيع، فتفشل

@@ -7,9 +7,38 @@ from datetime import datetime
 from typing import Optional
 from fastapi import APIRouter, Request, Depends, HTTPException
 
+from db.crypto import blind_index, decrypt_pii, encrypt_pii, is_encrypted
+
 router = APIRouter(prefix="/api/m06", tags=["HR"])
 
 logger = logging.getLogger("dheuof")
+
+# حقول الهوية المشفَّرة: (الحقل المقروء، عمود النص المشفَّر، عمود الفهرس)
+_PII_FIELDS = (
+    ("national_id",  "national_id_enc",  "national_id_bidx"),
+    ("iqama_number", "iqama_number_enc", "iqama_number_bidx"),
+)
+
+
+def _plain_or_blank(value):
+    """يُبقي النص الصريح فقط حين يتعذّر التشفير — وإلا تضيع القيمة."""
+    if not value:
+        return value
+    return "" if is_encrypted(encrypt_pii(value)) else value
+
+
+def _decrypt_employee(emp: dict) -> dict:
+    """يُظهر حقول الهوية مفكوكة ويُخفي أعمدة التخزين عن الاستجابة."""
+    if not emp:
+        return emp
+    for field, enc_col, bidx_col in _PII_FIELDS:
+        enc = emp.pop(enc_col, None)
+        emp.pop(bidx_col, None)
+        if enc:
+            plain = decrypt_pii(enc)
+            if plain is not None:
+                emp[field] = plain
+    return emp
 
 
 def _require_client(request: Request) -> dict:
@@ -35,7 +64,9 @@ async def list_employees(request: Request, status: Optional[str] = None, page: i
             q += " ORDER BY full_name_ar LIMIT %s OFFSET %s"
             params.extend([limit, offset])
             rows = db.execute(q, params, fetch="all")
-            return {"success": True, "data": [dict(r) for r in (rows or [])], "page": page, "per_page": limit, "total": total}
+            return {"success": True,
+                    "data": [_decrypt_employee(dict(r)) for r in (rows or [])],
+                    "page": page, "per_page": limit, "total": total}
         return {"success": True, "data": [], "page": page, "per_page": per_page, "total": 0}
     except HTTPException:
         raise
@@ -55,19 +86,26 @@ async def create_employee(request: Request, session=Depends(_require_client)):
         if db.use_postgres:
             if not data.get("employee_id"):
                 data["employee_id"] = f"EMP-{secrets.token_hex(4).upper()}"
+            # الهوية الوطنية ورقم الإقامة بيانات شخصية حسّاسة: تُخزَّن
+            # مشفّرة مع فهرس أعمى للبحث، ويبقى العمود الصريح فارغاً.
+            nat, iqama = data.get("national_id"), data.get("iqama_number")
             row = db.execute("""
                 INSERT INTO employees (client_id,employee_id,full_name_ar,full_name_en,
-                    national_id,iqama_number,nationality,position,department,
+                    national_id,national_id_enc,national_id_bidx,
+                    iqama_number,iqama_number_enc,iqama_number_bidx,
+                    nationality,position,department,
                     phone,email,hire_date,basic_salary,housing_allow,transport_allow,status)
-                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING *
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING *
             """, (cid, data.get("employee_id"), data["full_name_ar"],
-                  data.get("full_name_en"), data.get("national_id"), data.get("iqama_number"),
+                  data.get("full_name_en"),
+                  _plain_or_blank(nat), encrypt_pii(nat), blind_index(nat),
+                  _plain_or_blank(iqama), encrypt_pii(iqama), blind_index(iqama),
                   data.get("nationality", "سعودي"), data.get("position", "موظف"),
                   data.get("department"), data.get("phone"), data.get("email"),
                   data.get("hire_date"), float(data.get("basic_salary", 0)),
                   float(data.get("housing_allow", 0)), float(data.get("transport_allow", 0)),
                   data.get("status", "active")), fetch="one")
-            return {"success": True, "data": dict(row)}
+            return {"success": True, "data": _decrypt_employee(dict(row))}
         return {"success": True, "data": data}
     except HTTPException:
         raise

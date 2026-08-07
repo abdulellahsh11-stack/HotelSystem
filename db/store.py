@@ -11,8 +11,27 @@ from datetime import datetime, date
 from typing import Any, List, Optional
 
 from db.connection import DatabasePool
+from db.crypto import blind_index, decrypt_pii, encrypt_pii, is_encrypted
 
 log = logging.getLogger("dheuof.db.store")
+
+
+def _decrypt_guest(guest: dict) -> dict:
+    """يُعيد رقم الهوية إلى صورته المقروءة ويُخفي أعمدة التخزين.
+
+    الصفوف القديمة تحمل القيمة في id_number الصريح، والجديدة في
+    id_number_enc. تُقرأ الأولى كما هي وتُفكّ الثانية، فيرى المُستدعي
+    حقلاً واحداً بغضّ النظر عن زمن إنشاء الصف.
+    """
+    if not guest:
+        return guest
+    enc = guest.pop("id_number_enc", None)
+    guest.pop("id_number_bidx", None)
+    if enc:
+        plain = decrypt_pii(enc)
+        if plain is not None:
+            guest["id_number"] = plain
+    return guest
 
 # ── حقول الحساب التي لا تملك أعمدةً في جدول clients ──────────────────
 # تُحفَظ داخل settings JSONB تحت المفتاح "_account" وتُرفَع للأعلى عند القراءة.
@@ -190,7 +209,7 @@ class DataStore:
                 "SELECT * FROM guests WHERE client_id = %s ORDER BY created_at DESC",
                 (client_id,), fetch="all"
             )
-            return _rows_to_list(rows)
+            return [_decrypt_guest(g) for g in _rows_to_list(rows)]
         return self._json_get_client_data(client_id, "guests")
 
     def get_guest(self, client_id: str, guest_id: Any) -> Optional[dict]:
@@ -199,22 +218,55 @@ class DataStore:
                 "SELECT * FROM guests WHERE client_id = %s AND id = %s",
                 (client_id, int(guest_id)), fetch="one"
             )
-            return _to_dict(row) if row else None
+            return _decrypt_guest(_to_dict(row)) if row else None
         guests = self._json_get_client_data(client_id, "guests")
         return next((g for g in guests if str(g.get("id")) == str(guest_id)), None)
+
+    def find_guest_by_id_number(self, client_id: str, id_number: str) -> Optional[dict]:
+        """يبحث عن نزيل برقم هويته عبر الفهرس الأعمى.
+
+        لا يفكّ تشفير أي صف أثناء البحث: يُحسب HMAC للقيمة المطلوبة
+        ويُطابَق مع العمود المفهرس. يعود إلى العمود الصريح للصفوف التي
+        لم تُرحَّل بعد.
+        """
+        if not self._use_pg or not id_number:
+            return None
+        bidx = blind_index(id_number)
+        if bidx:
+            row = self.db.execute(
+                "SELECT * FROM guests WHERE client_id = %s AND id_number_bidx = %s LIMIT 1",
+                (client_id, bidx), fetch="one",
+            )
+            if row:
+                return _decrypt_guest(_to_dict(row))
+        row = self.db.execute(
+            "SELECT * FROM guests WHERE client_id = %s AND id_number = %s LIMIT 1",
+            (client_id, id_number), fetch="one",
+        )
+        return _decrypt_guest(_to_dict(row)) if row else None
 
     def save_guest(self, client_id: str, guest: dict) -> dict:
         if self._use_pg:
             guest_id = guest.get("id")
+            # رقم الهوية بيان شخصي حسّاس: يُخزَّن مشفّراً، ومعه فهرس أعمى
+            # يتيح البحث بالمساواة دون فكّ التشفير. عمود id_number يبقى
+            # فارغاً في الصفوف الجديدة ويُزال بعد ترحيل البيانات القائمة.
+            raw_id = guest.get("id_number", "")
+            enc_id = encrypt_pii(raw_id) if raw_id else None
+            bidx_id = blind_index(raw_id) if raw_id else None
+            # نُبقي النص الصريح فقط حين يتعذّر التشفير (لا مفتاح مضبوط)،
+            # وإلا فقدنا القيمة كلياً
+            plain_id = "" if (enc_id and is_encrypted(enc_id)) else raw_id
+
             if guest_id and self.get_guest(client_id, guest_id):
                 self.db.execute("""
                     UPDATE guests SET
-                        id_type=%s, id_number=%s, full_name=%s,
-                        absher_phone=%s, nationality=%s,
+                        id_type=%s, id_number=%s, id_number_enc=%s, id_number_bidx=%s,
+                        full_name=%s, absher_phone=%s, nationality=%s,
                         data_status=%s, source=%s, notes=%s
                     WHERE client_id=%s AND id=%s
                 """, (
-                    guest.get("id_type", ""), guest.get("id_number", ""),
+                    guest.get("id_type", ""), plain_id, enc_id, bidx_id,
                     guest.get("full_name", guest.get("name", "")),
                     guest.get("absher_phone", guest.get("phone", "")),
                     guest.get("nationality", ""), guest.get("data_status", "incomplete"),
@@ -224,12 +276,12 @@ class DataStore:
             else:
                 self.db.execute("""
                     INSERT INTO guests
-                        (client_id, id_type, id_number, full_name,
-                         absher_phone, nationality, data_status, source, notes)
-                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                        (client_id, id_type, id_number, id_number_enc, id_number_bidx,
+                         full_name, absher_phone, nationality, data_status, source, notes)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
                 """, (
                     client_id,
-                    guest.get("id_type", ""), guest.get("id_number", ""),
+                    guest.get("id_type", ""), plain_id, enc_id, bidx_id,
                     guest.get("full_name", guest.get("name", "")),
                     guest.get("absher_phone", guest.get("phone", "")),
                     guest.get("nationality", ""), guest.get("data_status", "incomplete"),
