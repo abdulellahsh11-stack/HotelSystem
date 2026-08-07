@@ -609,43 +609,190 @@ def run_sessions_migration(db) -> None:
     log.info("✅ client_sessions table ready")
 
 
-# ── Row Level Security — defense-in-depth for multi-tenant isolation ────────
+# ── Row Level Security — عزل المستأجرين على مستوى قاعدة البيانات ───────────
 
-RLS_POLICIES = """
--- ================================================================
--- Row Level Security — enforced at DB layer (defense in depth)
--- Note: app layer already enforces client_id; RLS adds DB-layer guarantee
--- ================================================================
-ALTER TABLE guests ENABLE ROW LEVEL SECURITY;
-ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
-ALTER TABLE employees ENABLE ROW LEVEL SECURITY;
-ALTER TABLE rooms ENABLE ROW LEVEL SECURITY;
-ALTER TABLE invoices ENABLE ROW LEVEL SECURITY;
-ALTER TABLE warehouse_items ENABLE ROW LEVEL SECURITY;
-ALTER TABLE maintenance_orders ENABLE ROW LEVEL SECURITY;
+# الدور المُقيَّد الذي يسري عليه RLS. المالك يتجاوز السياسات دائماً ما لم
+# تُفرَض بـ FORCE، لذلك التطبيق في الإنتاج يجب أن يتصل بهذا الدور.
+APP_ROLE = "dheuof_app"
 
--- Application role must SET app.current_client_id before queries
--- CREATE POLICY guest_isolation ON guests USING (client_id = current_setting('app.current_client_id', true));
--- (Commented: enable when app sets session variable per request)
+# جداول لا تحمل client_id ولا تخضع للعزل الصفّي
+_RLS_EXEMPT = {"po_items", "marketers"}
 
--- For now, ensure all tables have RLS enabled (blocks direct DB access without policy)
-"""
+# جداول يجوز أن يكون client_id فيها NULL بمعنى «قالب عام مقروء للجميع»
+_RLS_GLOBAL_TEMPLATE = {"staff_roles"}
+
+
+def _tenant_tables(db) -> list:
+    """يستخرج من الكتالوج كل جدول يحمل عمود client_id.
+
+    الاستخراج من الكتالوج لا من قائمة ثابتة: أي جدول جديد يُضاف لاحقاً
+    يُحمى تلقائياً بدل أن يُنسى. القائمة الثابتة القديمة كانت تغطي 7
+    جداول من أصل 67.
+    """
+    rows = db.execute(
+        """
+        SELECT c.relname AS t
+        FROM pg_class c
+        JOIN pg_namespace n ON n.oid = c.relnamespace
+        WHERE n.nspname = 'public'
+          AND c.relkind = 'r'
+          AND EXISTS (
+              SELECT 1 FROM information_schema.columns col
+              WHERE col.table_schema = 'public'
+                AND col.table_name   = c.relname
+                AND col.column_name  = 'client_id'
+          )
+        ORDER BY c.relname
+        """,
+        fetch="all",
+    ) or []
+    return [r["t"] for r in rows if r["t"] not in _RLS_EXEMPT]
+
+
+def apply_tenant_rls(db, table: str, key: str = "client_id") -> bool:
+    """يُطبّق سياسة العزل على جدول واحد — للجداول التي تُنشأ بعد الإقلاع.
+
+    عدة جداول تُنشأ كسولاً عند أول استخدام (api_keys، channel_connections،
+    channel_reservations). لو انتظرنا ترحيل الإقلاع التالي لبقيت بلا
+    سياسة طوال عمر العملية الحالية. يُستدعى هذا مباشرة بعد CREATE TABLE.
+
+    يُعيد True عند النجاح.
+    """
+    if not db or not db.use_postgres:
+        return False
+    import logging
+    import os
+    log = logging.getLogger("dheuof.db.rls")
+    enforce = os.environ.get("RLS_ENFORCE", "").strip().lower() in ("1", "true", "yes")
+    predicate = f"{key} = current_setting('app.tenant_id', true)"
+    try:
+        db.execute(f"ALTER TABLE {table} ENABLE ROW LEVEL SECURITY")
+        db.execute(
+            f"ALTER TABLE {table} {'FORCE' if enforce else 'NO FORCE'} ROW LEVEL SECURITY"
+        )
+        db.execute(f"DROP POLICY IF EXISTS tenant_isolation ON {table}")
+        db.execute(
+            f"CREATE POLICY tenant_isolation ON {table} "
+            f"USING ({predicate}) WITH CHECK ({predicate})"
+        )
+        return True
+    except Exception as e:
+        log.warning(f"apply_tenant_rls({table}): {e}")
+        return False
 
 
 def run_rls_migration(db) -> None:
-    """Enable RLS on all tenant tables (idempotent — ALTER TABLE ... ENABLE is safe to re-run)."""
+    """يُنشئ سياسات عزل حقيقية لكل جدول مستأجر.
+
+    الحالة السابقة: RLS مُفعَّل على 7 جداول بصفر سياسات، والسياسة الوحيدة
+    مكتوبة كتعليق. تفعيل RLS بلا سياسة يعني في PostgreSQL منع كل الصفوف
+    عن غير المالك — لكن التطبيق يتصل بالمالك، والمالك يتجاوز RLS. أي أن
+    العزل الفعلي كان صفراً بينما يبدو الجدول «مؤمَّناً».
+
+    التطبيق هنا:
+      • سياسة tenant_isolation على كل جدول يحمل client_id (67 جدولاً)
+      • سياسة على clients نفسه عبر عمود id
+      • FORCE ROW LEVEL SECURITY حين RLS_ENFORCE=1 — يجعل السياسات تسري
+        على المالك أيضاً، وهو ما يلزم لأن التطبيق يتصل بالمالك حالياً
+    """
     if not db.use_postgres:
         return
-    for stmt in RLS_POLICIES.strip().split("\n"):
-        stmt = stmt.strip()
-        if stmt and not stmt.startswith("--") and not stmt.startswith("CREATE"):
-            try:
-                db.execute(stmt)
-            except Exception as e:
-                err = str(e).lower()
-                if "does not exist" not in err:
-                    import logging
-                    logging.getLogger("dheuof").warning(f"RLS migration: {e}")
+    import logging
+    import os
+    log = logging.getLogger("dheuof.db.rls")
+
+    enforce = os.environ.get("RLS_ENFORCE", "").strip().lower() in ("1", "true", "yes")
+    tables = _tenant_tables(db)
+    applied = 0
+
+    for table in tables:
+        key = "client_id"
+        predicate = f"{key} = current_setting('app.tenant_id', true)"
+        if table in _RLS_GLOBAL_TEMPLATE:
+            # القوالب العامة (client_id IS NULL) مقروءة للجميع
+            predicate = f"({predicate} OR {key} IS NULL)"
+        try:
+            db.execute(f"ALTER TABLE {table} ENABLE ROW LEVEL SECURITY")
+            db.execute(
+                f"ALTER TABLE {table} "
+                f"{'FORCE' if enforce else 'NO FORCE'} ROW LEVEL SECURITY"
+            )
+            db.execute(f"DROP POLICY IF EXISTS tenant_isolation ON {table}")
+            db.execute(
+                f"CREATE POLICY tenant_isolation ON {table} "
+                f"USING ({predicate}) WITH CHECK ({predicate})"
+            )
+            applied += 1
+        except Exception as e:
+            log.warning(f"RLS {table}: {e}")
+
+    # جدول clients يستخدم id لا client_id
+    try:
+        db.execute("ALTER TABLE clients ENABLE ROW LEVEL SECURITY")
+        db.execute(
+            f"ALTER TABLE clients {'FORCE' if enforce else 'NO FORCE'} ROW LEVEL SECURITY"
+        )
+        db.execute("DROP POLICY IF EXISTS tenant_isolation ON clients")
+        db.execute(
+            "CREATE POLICY tenant_isolation ON clients "
+            "USING (id = current_setting('app.tenant_id', true)) "
+            "WITH CHECK (id = current_setting('app.tenant_id', true))"
+        )
+        applied += 1
+    except Exception as e:
+        log.warning(f"RLS clients: {e}")
+
+    mode = "مفروضة على المالك (FORCE)" if enforce else "غير مفروضة على المالك"
+    log.info(f"✅ RLS — {applied} جدولاً بسياسة عزل، {mode}")
+    if not enforce:
+        log.warning(
+            "⚠️  RLS_ENFORCE غير مضبوط: التطبيق يتصل بمالك الجداول فيتجاوز "
+            "السياسات. العزل يعتمد حالياً على طبقة التطبيق وحدها."
+        )
+
+
+def run_app_role_migration(db) -> None:
+    """يُنشئ الدور المُقيَّد dheuof_app بأقل امتيازات ممكنة.
+
+    لم يكن في المستودع أي CREATE ROLE أو GRANT قابل للتنفيذ — القسم 13.8
+    من وثيقة التصميم يعرضها كمثال في Markdown فقط. هذا الدور هو ما يجب
+    أن يتصل به التطبيق في الإنتاج كي تسري عليه سياسات RLS.
+    """
+    if not db.use_postgres:
+        return
+    import logging
+    log = logging.getLogger("dheuof.db.roles")
+
+    try:
+        db.execute(f"""
+            DO $$
+            BEGIN
+                IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = '{APP_ROLE}') THEN
+                    CREATE ROLE {APP_ROLE} NOLOGIN;
+                END IF;
+            END
+            $$
+        """)
+        # قراءة/كتابة البيانات فقط — لا DDL ولا حذف جداول
+        db.execute(f"GRANT USAGE ON SCHEMA public TO {APP_ROLE}")
+        db.execute(
+            f"GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO {APP_ROLE}"
+        )
+        db.execute(f"GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO {APP_ROLE}")
+        # الجداول المستقبلية ترث نفس الامتيازات تلقائياً
+        db.execute(
+            f"ALTER DEFAULT PRIVILEGES IN SCHEMA public "
+            f"GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO {APP_ROLE}"
+        )
+        db.execute(
+            f"ALTER DEFAULT PRIVILEGES IN SCHEMA public "
+            f"GRANT USAGE, SELECT ON SEQUENCES TO {APP_ROLE}"
+        )
+        # سجل المراجعة لا يُعدَّل ولا يُحذف — إضافة فقط
+        db.execute(f"REVOKE UPDATE, DELETE ON audit_log FROM {APP_ROLE}")
+        log.info(f"✅ الدور {APP_ROLE} جاهز بأقل الامتيازات")
+    except Exception as e:
+        log.warning(f"app role migration: {e}")
 
 
 # ── Performance indexes for hot multi-tenant query paths ────────────────────

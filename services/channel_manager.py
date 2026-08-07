@@ -115,6 +115,11 @@ class ChannelManager:
         """)
         self.db.execute(
             "CREATE INDEX IF NOT EXISTS idx_chres_client ON channel_reservations(client_id, status)")
+        # هذه الجداول تُنشأ بعد ترحيل الإقلاع، فلا يشملها مسحُ RLS العام
+        # حتى الإقلاع التالي — نُطبّق السياسة فوراً.
+        from db.schema_v3 import apply_tenant_rls
+        for _t in ("channel_connections", "channel_sync_log", "channel_reservations"):
+            apply_tenant_rls(self.db, _t)
 
     # ── القنوات المدعومة ──────────────────────────────────────
     @staticmethod

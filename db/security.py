@@ -10,6 +10,8 @@ import threading
 from datetime import datetime, timedelta
 from typing import Optional
 
+from db.tenant_context import set_current_tenant, tenant_scope  # noqa: F401 — يُعاد تصديرها
+
 log = logging.getLogger("dheuof.security")
 
 # ── Constants ─────────────────────────────────────────────────
@@ -214,17 +216,25 @@ def cache_key(tenant_id: str, resource: str, identifier: str = "") -> str:
 
 def set_event_context(db, tenant_id: str) -> None:
     """
-    Finding #6: set app.tenant_id in PostgreSQL session before processing
-    any event (NATS / background jobs). Must be called before any write.
+    Finding #6: set app.tenant_id before processing any event
+    (NATS / background jobs). Must be called before any write.
+
+    كانت هذه الدالة تنفّذ set_config(..., is_local=True) عبر db.execute،
+    وهو ضبط محلي للمعاملة — وdb.execute يُنفّذ COMMIT فور العبارة ثم
+    يُعيد الاتصال للمجمّع، فيُمحى الضبط قبل أن يستفيد منه أي استعلام.
+    كانت الدالة بلا أثر إطلاقاً.
+
+    صارت تكتب في ContextVar، ويتولّى DatabasePool ربطه بكل اتصال
+    يُستعار — فيسري السياق على كل الاستعلامات التالية في نفس السياق.
+
+    للحصول على نطاق محدود ينتهي تلقائياً، استخدم tenant_scope:
+
+        with tenant_scope(tenant_id):
+            ...
     """
     if not tenant_id:
         raise ValueError("tenant_id مطلوب لضبط سياق الحدث")
-    if db and db.use_postgres:
-        try:
-            # H4 fix: استخدم set_config المُمعلَّم بدل إقحام النص (يمنع حقن SQL)
-            db.execute("SELECT set_config('app.tenant_id', %s, true)", (str(tenant_id),))
-        except Exception as e:
-            log.warning(f"set_event_context failed: {e}")
+    set_current_tenant(str(tenant_id))
 
 
 # ── Finding #7: Secure File Links ─────────────────────────────

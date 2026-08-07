@@ -12,7 +12,13 @@ import logging
 from contextlib import contextmanager
 from typing import Any, Optional
 
+from db.tenant_context import GUC_NAME, get_current_tenant
+
 log = logging.getLogger("dheuof.db")
+
+# الدور المُقيَّد الذي تُنفَّذ به استعلامات المستأجرين — يجب أن يطابق
+# APP_ROLE في db/schema_v3.py
+APP_ROLE = "dheuof_app"
 
 try:
     import psycopg2
@@ -59,6 +65,13 @@ class DatabasePool:
         self._pool = None
         self._json_path = json_path
         self._json_lock = threading.Lock()
+        # التحوّل إلى الدور المُقيَّد يُفعَّل بـ RLS_ENFORCE=1 فقط. الإبقاء
+        # عليه مطفأً افتراضياً يجعل السلوك مطابقاً تماماً لما قبل إضافة
+        # العزل، فلا ينكسر مسار قائم عند الترقية. يُطفأ أيضاً عند أول
+        # فشل في SET ROLE كي لا يتكرّر التحذير في كل طلب.
+        self._app_role_available = os.environ.get(
+            "RLS_ENFORCE", ""
+        ).strip().lower() in ("1", "true", "yes")
 
         if self.use_postgres:
             try:
@@ -87,18 +100,61 @@ class DatabasePool:
 
     @contextmanager
     def _get_conn(self):
-        """Context manager لإدارة الاتصال تلقائياً"""
+        """Context manager لإدارة الاتصال تلقائياً.
+
+        يربط سياق المستأجر الحالي بالاتصال المُستعار قبل تسليمه، ويمسحه
+        قبل إعادته للمجمّع. الضبط على مستوى الجلسة (is_local=False) لا
+        محلياً للمعاملة، لأن db.execute() يُنفّذ COMMIT بعد كل عبارة —
+        والضبط المحلي يُمحى عندها فيصبح app_tenant() بلا قيمة.
+        """
         if not self._pool:
             raise RuntimeError("PostgreSQL Pool غير مهيّأ")
         conn = self._pool.getconn()
         try:
+            self._bind_tenant(conn, get_current_tenant())
             yield conn
             conn.commit()
         except Exception:
             conn.rollback()
             raise
         finally:
+            # المسح إلزامي: بدونه يرث الطلبُ التالي الذي يستعير هذا
+            # الاتصال سياقَ المستأجر السابق.
+            try:
+                self._bind_tenant(conn, None)
+                conn.commit()
+            except Exception:
+                conn.rollback()
             self._pool.putconn(conn)
+
+    def _bind_tenant(self, conn, tenant: Optional[str]) -> None:
+        """يربط سياق المستأجر بالاتصال، ويختار الدور المناسب.
+
+        الدور يتبع السياق:
+          • يوجد مستأجر  → SET ROLE dheuof_app، وهو دور مُقيَّد تسري عليه
+            سياسات RLS فيتحقّق العزل فعلياً.
+          • لا يوجد مستأجر → RESET ROLE، فيبقى الاتصال بالمالك. هذا ما
+            تحتاجه الترحيلات ولوحة المالك والتقارير العابرة للمنشآت.
+
+        بدون هذا التبديل يكون أمامنا خياران سيّئان: إمّا أن يتصل التطبيق
+        كله بالمالك فيتجاوز RLS ويصبح العزل وهماً، أو أن نفرض RLS على
+        المالك فتعود كل استعلامات الإدارة فارغة.
+        """
+        with conn.cursor() as cur:
+            cur.execute("RESET ROLE")
+            cur.execute("SELECT set_config(%s, %s, false)", (GUC_NAME, tenant or ""))
+            if tenant and self._app_role_available:
+                try:
+                    cur.execute(f"SET ROLE {APP_ROLE}")
+                except Exception as e:
+                    # الدور غير موجود (قاعدة قديمة) — نُسجّل مرة واحدة
+                    # ونواصل بالمالك بدل إسقاط الطلب.
+                    self._app_role_available = False
+                    log.warning(
+                        f"تعذّر التحوّل إلى الدور {APP_ROLE} ({e}) — "
+                        "الاستعلامات تعمل بصلاحيات المالك، وسياسات RLS "
+                        "لن تسري عليها."
+                    )
 
     def execute(
         self,

@@ -69,6 +69,10 @@ class APIKeyManager:
         """)
         self.db.execute(
             "CREATE INDEX IF NOT EXISTS idx_apikeys_client ON api_keys(client_id)")
+        # الجدول يُنشأ بعد انتهاء ترحيل الإقلاع، فلن يشمله مسحُ RLS العام
+        # حتى الإقلاع التالي — نُطبّق السياسة فوراً.
+        from db.schema_v3 import apply_tenant_rls
+        apply_tenant_rls(self.db, "api_keys")
 
     # ── إصدار مفتاح ───────────────────────────────────────────
     def issue_key(self, client_id: str, name: str = "", scopes=None) -> dict:

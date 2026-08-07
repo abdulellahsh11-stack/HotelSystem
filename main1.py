@@ -135,49 +135,45 @@ async def lifespan(app_: FastAPI):
     app_.state.db = db
     app_.state.store = store
 
-    # ── v3 migrations — جميع الوحدات الـ 15 + وجهات سياحية ──
-    try:
-        from db.migrations import run_all_migrations
-        run_all_migrations(db)
-    except Exception as e:
-        log.warning(f"v1 migrations: {e}")
-    try:
-        from db.schema_v3 import run_v3_migrations
-        run_v3_migrations(db)
-    except Exception as e:
-        log.warning(f"v3 migrations: {e}")
-    try:
-        from db.schema_v3 import run_staff_app_migrations
-        run_staff_app_migrations(db)
-    except Exception as e:
-        log.warning(f"staff_app migrations: {e}")
-    try:
-        from db.schema_v3 import run_security_hardening
-        run_security_hardening(db)
-    except Exception as e:
-        log.warning(f"security hardening migrations: {e}")
-    try:
-        from db.schema_v3 import run_sessions_migration
-        run_sessions_migration(db)
-    except Exception as e:
-        log.warning(f"sessions migration: {e}")
-    try:
-        from db.schema_v3 import run_rls_migration
-        run_rls_migration(db)
-    except Exception as e:
-        log.warning(f"RLS migration: {e}")
-    try:
-        from db.schema_v3 import run_perf_indexes
-        run_perf_indexes(db)
-        log.info("✓ Performance indexes ready")
-    except Exception as e:
-        log.warning(f"perf indexes: {e}")
-    try:
-        from db.schema_v3 import run_v4_migrations
-        run_v4_migrations(db)
-        log.info("✓ v4 migrations (ZATCA + Night Audit + Reviews) ready")
-    except Exception as e:
-        log.warning(f"v4 migrations: {e}")
+    # ── الترحيلات — الترتيب مقصود ─────────────────────────────────────────
+    #
+    # كل خطوة تفترض أن ما قبلها أنشأ جداوله. تحديداً:
+    #   • التحصين الأمني يضيف branch_id إلى جداول تُنشئها v3
+    #   • الأدوار والعزل الصفّي يجب أن يكونا في النهاية بعد وجود كل
+    #     الجداول — كان ترتيبهما قبل v4، فلا تنال جداولُ v4 سياسة عزل
+    #   • الفهارس بعد كل شيء لأنها تمسّ أعمدة أضافتها خطوات لاحقة
+    from db.migrations import run_all_migrations
+    from db.schema_v3 import (
+        run_app_role_migration, run_perf_indexes, run_rls_migration,
+        run_security_hardening, run_sessions_migration, run_staff_app_migrations,
+        run_v3_migrations, run_v4_migrations,
+    )
+
+    _MIGRATION_STEPS = [
+        ("v1 schema",          run_all_migrations),
+        ("v3 modules",         run_v3_migrations),
+        ("staff app",          run_staff_app_migrations),
+        ("v4 (ZATCA/audit)",   run_v4_migrations),
+        ("sessions",           run_sessions_migration),
+        ("security hardening", run_security_hardening),
+        ("app role",           run_app_role_migration),
+        ("row level security", run_rls_migration),
+        ("perf indexes",       run_perf_indexes),
+    ]
+
+    _strict = os.environ.get("STRICT_MIGRATIONS", "").strip().lower() in ("1", "true", "yes")
+    app_.state.migration_failures = []
+
+    for _label, _step in _MIGRATION_STEPS:
+        try:
+            _step(db)
+        except Exception as e:
+            app_.state.migration_failures.append(_label)
+            # الترحيلات الأمنية لا تُبتلع كتحذير: فشلها يعني عزل مستأجرين
+            # ناقصاً، وهو ما يجب أن يُرى في السجل وفي /health.
+            log.error(f"❌ ترحيل «{_label}» فشل: {e}")
+            if _strict:
+                raise
 
     # ── Sentry (APM / error tracking) ──────────────────────────────────────
     if cfg.has_sentry:
@@ -558,6 +554,13 @@ def require_client(request: Request) -> dict:
     # Finding #3: enforce non-empty client_id
     if not session.get("client_id", "").strip():
         raise HTTPException(status_code=401, detail="جلسة غير صالحة — client_id مفقود")
+
+    # يربط المستأجر بسياق الطلب، فيضبطه DatabasePool على كل اتصال
+    # يُستعار بعد هذه النقطة. بدونه تبقى app_tenant() بلا قيمة وترفض
+    # سياساتُ RLS كلَّ الصفوف.
+    from db.tenant_context import set_current_tenant
+    set_current_tenant(session["client_id"].strip())
+
     return session
 
 
