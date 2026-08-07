@@ -1266,6 +1266,27 @@ def run_v4_migrations(db) -> None:
             if "already exists" not in str(e).lower():
                 log.warning(f"bookings tax col {col_name}: {e}")
 
+    # ── guest_profiles: قيد فريد لكل نزيل في كل منشأة ────────────
+    # مسار منح نقاط الولاء ينفّذ ON CONFLICT (client_id, guest_id)
+    # والقيد غير موجود، فيفشل الاستعلام دائماً بـ «there is no unique
+    # or exclusion constraint matching the ON CONFLICT specification» —
+    # أي أن منح النقاط كان معطَّلاً كلياً لا عند مدخل خاطئ فحسب.
+    # القيد صحيح دلالياً: ملف تعريف واحد لكل نزيل في كل منشأة.
+    try:
+        db.execute("""
+            DELETE FROM guest_profiles a USING guest_profiles b
+            WHERE a.id > b.id
+              AND a.client_id IS NOT DISTINCT FROM b.client_id
+              AND a.guest_id  IS NOT DISTINCT FROM b.guest_id
+        """)
+        db.execute(
+            "CREATE UNIQUE INDEX IF NOT EXISTS uq_guest_profiles_client_guest "
+            "ON guest_profiles(client_id, guest_id)"
+        )
+    except Exception as e:
+        if "already exists" not in str(e).lower():
+            log.warning(f"guest_profiles unique: {e}")
+
     # ── rooms.is_deleted ─────────────────────────────────────────
     # محرك التسعير الديناميكي يُرشّح به في موضعين، والعمود غير موجود —
     # فكل استدعاء لـ _get_rooms_with_rules و count_rooms كان يفشل بـ

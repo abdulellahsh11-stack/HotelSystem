@@ -219,6 +219,8 @@ async def book_destination(request: Request, session=Depends(_require_client)):
             dest = db.execute(
                 "SELECT * FROM tourist_destinations WHERE id=%s AND client_id=%s",
                 (data.get("destination_id"), cid), fetch="one")
+            if not data.get("visit_date"):
+                raise HTTPException(422, "visit_date مطلوب")
             adults = int(data.get("adults_count", 1))
             children = int(data.get("children_count", 0))
             if dest:

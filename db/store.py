@@ -247,7 +247,17 @@ class DataStore:
 
     def save_guest(self, client_id: str, guest: dict) -> dict:
         if self._use_pg:
+            # guests.id عمود SERIAL، لكن مسار /api/guests كان يُولّد
+            # معرّفاً سداسي عشري (secrets.token_hex) ويضعه هنا — فينهار
+            # int(guest_id) بـ ValueError ويسقط الطلب بـ 500. أي أن
+            # إضافة نزيل عبر الواجهة كانت معطَّلة كلياً.
+            # المعرّف غير الرقمي يعني صفّاً جديداً تُسنِد قاعدة البيانات
+            # رقمه.
             guest_id = guest.get("id")
+            try:
+                guest_id = int(guest_id) if guest_id not in (None, "") else None
+            except (TypeError, ValueError):
+                guest_id = None
             # رقم الهوية بيان شخصي حسّاس: يُخزَّن مشفّراً، ومعه فهرس أعمى
             # يتيح البحث بالمساواة دون فكّ التشفير. عمود id_number يبقى
             # فارغاً في الصفوف الجديدة ويُزال بعد ترحيل البيانات القائمة.
@@ -271,14 +281,15 @@ class DataStore:
                     guest.get("absher_phone", guest.get("phone", "")),
                     guest.get("nationality", ""), guest.get("data_status", "incomplete"),
                     guest.get("source", ""), guest.get("notes", ""),
-                    client_id, int(guest_id),
+                    client_id, guest_id,
                 ))
             else:
-                self.db.execute("""
+                row = self.db.execute("""
                     INSERT INTO guests
                         (client_id, id_type, id_number, id_number_enc, id_number_bidx,
                          full_name, absher_phone, nationality, data_status, source, notes)
                     VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    RETURNING id
                 """, (
                     client_id,
                     guest.get("id_type", ""), plain_id, enc_id, bidx_id,
@@ -286,7 +297,11 @@ class DataStore:
                     guest.get("absher_phone", guest.get("phone", "")),
                     guest.get("nationality", ""), guest.get("data_status", "incomplete"),
                     guest.get("source", ""), guest.get("notes", ""),
-                ))
+                ), fetch="one")
+                # يُعاد المعرّف الذي أسندته قاعدة البيانات، وإلا حمل
+                # المستدعي معرّفاً مُختلقاً لا يقابله أي صف
+                if row:
+                    guest["id"] = row["id"]
 
         if not self._use_pg or self.dual_write:
             self._json_upsert_in_client(client_id, "guests", guest)

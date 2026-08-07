@@ -188,6 +188,8 @@ async def record_attendance(request: Request, session=Depends(_require_client)):
         data = await request.json()
         db = request.app.state.db
         cid = session["client_id"]
+        if not data.get("employee_id") or not data.get("work_date"):
+            raise HTTPException(422, "employee_id و work_date مطلوبان")
         if db.use_postgres:
             row = db.execute("""
                 INSERT INTO attendance (client_id,employee_id,work_date,check_in_time,

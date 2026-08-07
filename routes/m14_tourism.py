@@ -122,6 +122,8 @@ async def book_tour(request: Request, session=Depends(_require_client)):
         db = request.app.state.db
         cid = session["client_id"]
         if db.use_postgres:
+            if not data.get("tour_date"):
+                raise HTTPException(422, "tour_date مطلوب")
             tour = db.execute(
                 "SELECT * FROM tour_catalog WHERE id=%s AND client_id=%s",
                 (data.get("tour_id"), cid), fetch="one")

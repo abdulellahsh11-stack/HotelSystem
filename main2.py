@@ -608,8 +608,11 @@ async def get_guests(request: Request, limit: int = 100, session=Depends(require
 async def save_guest(request: Request, session=Depends(require_client)):
     data = await request.json()
     store = request.app.state.store
-    if not data.get("id"):
-        data["id"] = secrets.token_hex(8)
+    if not str(data.get("full_name") or data.get("name") or "").strip():
+        raise HTTPException(status_code=422, detail="اسم النزيل مطلوب")
+    # لا نُولّد معرّفاً هنا: guests.id عمود SERIAL تُسنِده قاعدة البيانات.
+    # كان يُوضع هنا معرّف سداسي عشري فينهار تحويله إلى عدد صحيح في طبقة
+    # التخزين ويسقط الطلب بـ 500 — أي أن إضافة نزيل كانت معطَّلة كلياً.
     data["client_id"] = session["client_id"]
     data.setdefault("created_at", datetime.now().isoformat())
     guest = store.save_guest(session["client_id"], data)
@@ -643,8 +646,12 @@ async def get_bookings(
 async def save_booking(request: Request, session=Depends(require_client)):
     data = await request.json()
     store = request.app.state.store
+    # التحقّق قبل الوصول لقاعدة البيانات: بدونه يتسرّب نص خطأ PostgreSQL
+    # إلى العميل («null value in column check_in …») ويكشف أسماء الأعمدة
+    if not data.get("check_in") or not data.get("check_out"):
+        raise HTTPException(status_code=422, detail="تاريخا الوصول والمغادرة مطلوبان")
     if not data.get("id"):
-        data["id"] = secrets.token_hex(8)
+        data["id"] = secrets.token_hex(8)   # bookings.id عمود VARCHAR
     data["client_id"] = session["client_id"]
     data.setdefault("status", "confirmed")
     data.setdefault("created_at", datetime.now().isoformat())
@@ -753,6 +760,8 @@ async def save_room(request: Request, session=Depends(require_client)):
     data = await request.json()
     db = request.app.state.db
     cid = session["client_id"]
+    if not str(data.get("room_number") or "").strip():
+        raise HTTPException(status_code=422, detail="رقم الغرفة مطلوب")
     room_id = data.get("id")
     try:
         if room_id:

@@ -3,37 +3,142 @@
     {
       "id": "ep_test",
       "name": "فندق الاختبار",
-      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$A9zSpikIXg90cLe5ZGUAOA$AvKchBO8QVWoeM0YvI8Up8uaRYnge7mj6prb1IrVwaw",
+      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$HKXU0iox2ymdFOXyZG6A7Q$nXo4YHT4VGOk+a7SUWNcGK+yQnjLK/MMD4Z1fE6xA+0",
       "pass_salt": "",
       "status": "active",
       "plan": "pro",
       "guests": [
         {
-          "full_name": "نزيل الاختبار"
+          "full_name": "نزيل الاختبار",
+          "id": 1
         }
       ]
     },
     {
       "id": "smoke_test",
       "name": "فندق الدخان",
-      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$xLVYaYJ0X/RlUyetXP4E2A$sT9vSMUrAF5EvpvvC1WxBg9M03hLBMTqnfw+BvpyDPg",
+      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$PSiF3a7CPgXMp7pSs+y0Sg$M+Wk/g34eeYce5byoCIPGFfUtVitYAijufsV5ZX/S8Q",
       "pass_salt": "",
       "status": "active",
       "plan": "pro",
       "guests": [
         {
           "full_name": "نزيل الدخان",
-          "id_number": "1098765432"
+          "id_number": "1098765432",
+          "id": 2
         }
       ]
     },
     {
       "id": "sess_test",
       "name": "فندق الجلسة",
-      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$NFflyi/keB4rfEJHzJcTtw$NdPC0sLpvIfIGGwjq6cEUdAIQ0jMO9YuLUUryImv07U",
+      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$d9hj+zDA4ruScuwqNY3YSg$Igf+J+5Z+OwSjdeHnp+6fAhG+kirF9Bc0lqKFKvr3mE",
       "pass_salt": "",
       "status": "active",
       "plan": "pro"
+    },
+    {
+      "id": "write_test",
+      "name": "فندق الكتابة",
+      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$+rP6r5s7PFCCa+dOWOtJWA$pQNd0aeG7gzWhIgFrwnY+bU8H5poKcQ5ZMqeJ/ZoceU",
+      "pass_salt": "",
+      "status": "active",
+      "plan": "pro",
+      "invoices": [
+        {
+          "id": "INV-00001",
+          "client_id": "write_test",
+          "created_at": "2026-08-07T14:16:29.397506"
+        }
+      ],
+      "pos_transactions": [
+        {
+          "id": "3bd4890daa2b9888",
+          "client_id": "write_test",
+          "created_at": "2026-08-07T14:16:29.403379"
+        }
+      ],
+      "guests": [
+        {
+          "full_name": "عبدالله السالم",
+          "id_number": "1098765432",
+          "client_id": "write_test",
+          "created_at": "2026-08-07T14:16:29.481727",
+          "id": 8
+        },
+        {
+          "full_name": "نزيل الاسترجاع",
+          "client_id": "write_test",
+          "created_at": "2026-08-07T14:16:29.488503",
+          "id": 9
+        },
+        {
+          "full_name": "نزيل الولاء",
+          "client_id": "write_test",
+          "created_at": "2026-08-07T14:16:29.503350",
+          "id": 10
+        },
+        {
+          "full_name": "نزيل التراكم",
+          "client_id": "write_test",
+          "created_at": "2026-08-07T14:16:29.516802",
+          "id": 11
+        }
+      ]
+    }
+  ],
+  "activation_keys": [
+    {
+      "key": "4F3741A8-B6B4A99C-AB13C2CA-3D162450",
+      "plan": "trial",
+      "days": 30,
+      "used": false,
+      "created_at": "2026-08-07T14:16:17.837151"
+    },
+    {
+      "key": "0F653EBD-D1370D97-E6E9E975-535D883F",
+      "plan": "trial",
+      "days": 30,
+      "used": false,
+      "created_at": "2026-08-07T14:16:29.432033"
+    }
+  ],
+  "payments": [
+    {
+      "id": "ed0d9906d329abd2",
+      "client_id": "",
+      "amount": 0.0,
+      "plan": "",
+      "date": "2026-08-07T14:16:17.844198"
+    },
+    {
+      "id": "817e9e23558dbb6c",
+      "client_id": "",
+      "amount": 0.0,
+      "plan": "",
+      "date": "2026-08-07T14:16:29.439157"
+    }
+  ],
+  "settings": {},
+  "public_packages": [],
+  "tickets": [
+    {
+      "id": "34c3a4a5b31b041b",
+      "client_id": "write_test",
+      "subject": "",
+      "body": "",
+      "status": "open",
+      "created_at": "2026-08-07T14:16:17.865838",
+      "replies": []
+    },
+    {
+      "id": "7bae1fad33ba8103",
+      "client_id": "write_test",
+      "subject": "",
+      "body": "",
+      "status": "open",
+      "created_at": "2026-08-07T14:16:29.461350",
+      "replies": []
     }
   ]
 }
