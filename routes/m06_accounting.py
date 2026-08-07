@@ -6,6 +6,8 @@ import logging
 from typing import Optional
 from fastapi import APIRouter, Request, Depends, HTTPException, Header
 
+from db.rows import count_of
+
 router = APIRouter(prefix="/api/m06acc", tags=["Accounting"])
 
 logger = logging.getLogger("dheuof")
@@ -186,7 +188,7 @@ async def list_invoices(
                 SELECT
                     b.id,
                     b.booking_number,
-                    COALESCE(g.full_name, g.name, '') AS guest_name,
+                    COALESCE(g.full_name, '') AS guest_name,
                     r.room_number,
                     b.check_in,
                     b.check_out,
@@ -214,7 +216,7 @@ async def list_invoices(
                 params.append(date_to)
             count_q = f"SELECT COUNT(*) FROM ({q}) AS _sub"
             count_result = db.execute(count_q, params, fetch="one")
-            total = count_result[0] if count_result else 0
+            total = count_of(count_result)
             q += " ORDER BY b.created_at DESC LIMIT %s OFFSET %s"
             params.extend([limit, offset])
             rows = db.execute(q, params, fetch="all")
@@ -327,7 +329,7 @@ async def list_outstanding(request: Request, session=Depends(_require_client)):
                 SELECT
                     b.id,
                     b.booking_number,
-                    COALESCE(g.full_name, g.name, '') AS guest_name,
+                    COALESCE(g.full_name, '') AS guest_name,
                     r.room_number,
                     b.check_in,
                     b.check_out,
@@ -512,7 +514,7 @@ async def open_list_transactions(
                 SELECT
                     b.id,
                     b.booking_number,
-                    COALESCE(g.full_name, g.name, '')          AS guest_name,
+                    COALESCE(g.full_name, '')          AS guest_name,
                     r.room_number,
                     b.check_in,
                     b.check_out,
@@ -543,7 +545,7 @@ async def open_list_transactions(
                 q += " AND b.source = %s"
                 params.append(source)
             count_row = db.execute(f"SELECT COUNT(*) FROM ({q}) AS _s", params, fetch="one")
-            total = count_row[0] if count_row else 0
+            total = count_of(count_row)
             q += " ORDER BY b.created_at DESC LIMIT %s OFFSET %s"
             params.extend([limit, offset])
             rows = db.execute(q, params, fetch="all")

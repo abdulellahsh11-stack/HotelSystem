@@ -1,0 +1,17 @@
+{
+  "clients": [
+    {
+      "id": "ep_test",
+      "name": "فندق الاختبار",
+      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$B0hXyPVxgWO2fYCm11fuww$TwAFnQnFZrNLS3y8+7ALdxCYvTc3MNc8A4njTTPAzDI",
+      "pass_salt": "",
+      "status": "active",
+      "plan": "pro",
+      "guests": [
+        {
+          "full_name": "نزيل الاختبار"
+        }
+      ]
+    }
+  ]
+}

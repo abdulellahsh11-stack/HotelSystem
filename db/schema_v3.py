@@ -1266,6 +1266,39 @@ def run_v4_migrations(db) -> None:
             if "already exists" not in str(e).lower():
                 log.warning(f"bookings tax col {col_name}: {e}")
 
+    # ── rooms.is_deleted ─────────────────────────────────────────
+    # محرك التسعير الديناميكي يُرشّح به في موضعين، والعمود غير موجود —
+    # فكل استدعاء لـ _get_rooms_with_rules و count_rooms كان يفشل بـ
+    # «column r.is_deleted does not exist». الحذف الناعم نمط قائم سلفاً
+    # في zatca_invoices و payment_devices.
+    try:
+        db.execute("ALTER TABLE rooms ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE")
+        db.execute("UPDATE rooms SET is_deleted = FALSE WHERE is_deleted IS NULL")
+    except Exception as e:
+        if "already exists" not in str(e).lower():
+            log.warning(f"rooms.is_deleted: {e}")
+
+    # ── bookings.booking_number ──────────────────────────────────
+    # يشير إليه الكود في أربعة ملفات (m17_bookings، m06_accounting،
+    # integration) لكنه لم يوجد قط في المخطط. النتيجة أن إنشاء الحجز
+    # وتسجيل الوصول والمغادرة وقائمة حجوزات القنوات والفواتير
+    # المحاسبية كانت كلها تفشل بـ «column b.booking_number does not
+    # exist». رقم مقروء للبشر مستقل عن المفتاح الأساسي (BK-XXXXXXXX).
+    try:
+        db.execute("ALTER TABLE bookings ADD COLUMN IF NOT EXISTS booking_number VARCHAR(30)")
+        # ملء الحجوزات القائمة برقم مشتق من معرّفها
+        db.execute(
+            "UPDATE bookings SET booking_number = 'BK-' || UPPER(LEFT(MD5(id), 8)) "
+            "WHERE booking_number IS NULL"
+        )
+        db.execute(
+            "CREATE UNIQUE INDEX IF NOT EXISTS uq_bookings_number "
+            "ON bookings(client_id, booking_number)"
+        )
+    except Exception as e:
+        if "already exists" not in str(e).lower():
+            log.warning(f"bookings.booking_number: {e}")
+
     # ── أعمدة ZATCA على invoices ─────────────────────────────────
     # كانت تُضاف كسولاً من services/zatca.py عند أول استخدام، فلا توجد
     # عند الإقلاع — وطرق العرض التقريرية التي تشير إليها تفشل.

@@ -7,6 +7,8 @@ from fastapi import APIRouter, Request, Depends, HTTPException
 
 from services.tax_config import get_client_tax_config, calculate_tax as _calc_tax
 
+from db.rows import count_of
+
 router = APIRouter(prefix="/api/m17", tags=["ChannelBookings"])
 
 # أعمدة الضريبة — تُضاف تلقائياً عند أول استخدام
@@ -91,7 +93,7 @@ async def list_reservations(
                 params.append(source)
             count_q = f"SELECT COUNT(*) FROM ({q}) AS _sub"
             count_result = db.execute(count_q, params, fetch="one")
-            total = count_result[0] if count_result else 0
+            total = count_of(count_result)
             q += " ORDER BY b.created_at DESC LIMIT %s OFFSET %s"
             params.extend([limit, offset])
             rows = db.execute(q, params, fetch="all")

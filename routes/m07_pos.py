@@ -11,6 +11,8 @@ from db.sqlsplit import has_executable_sql, split_sql
 
 from services.tax_config import get_client_tax_config, calculate_tax as _calc_tax
 
+from db.rows import count_of
+
 router = APIRouter(prefix="/api/m07", tags=["POS"])
 
 logger = logging.getLogger("dheuof")
@@ -102,7 +104,7 @@ async def list_sales(
                 params.append(date_to)
             count_q = f"SELECT COUNT(*) FROM ({q}) AS _sub"
             count_result = db.execute(count_q, params, fetch="one")
-            total = count_result[0] if count_result else 0
+            total = count_of(count_result)
             q += " ORDER BY created_at DESC LIMIT %s OFFSET %s"
             params.extend([limit, offset])
             rows = db.execute(q, params, fetch="all")
