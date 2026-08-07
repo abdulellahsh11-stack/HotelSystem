@@ -3,7 +3,7 @@
     {
       "id": "ep_test",
       "name": "فندق الاختبار",
-      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$HKXU0iox2ymdFOXyZG6A7Q$nXo4YHT4VGOk+a7SUWNcGK+yQnjLK/MMD4Z1fE6xA+0",
+      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$0YpKKpZv0q7e5GuI7Y+KQA$aFw2JLAc6sa2SxrjOc7A/Tx6Fc4nfmPzBQMr9NUiNl4",
       "pass_salt": "",
       "status": "active",
       "plan": "pro",
@@ -17,7 +17,7 @@
     {
       "id": "smoke_test",
       "name": "فندق الدخان",
-      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$PSiF3a7CPgXMp7pSs+y0Sg$M+Wk/g34eeYce5byoCIPGFfUtVitYAijufsV5ZX/S8Q",
+      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$Rore/4GKNcbOt3Ysh4hYuQ$oG7VbgF8jhGKKpzcnWhUfgcZE/SDUqEqF/pw9lmDsKo",
       "pass_salt": "",
       "status": "active",
       "plan": "pro",
@@ -32,7 +32,7 @@
     {
       "id": "sess_test",
       "name": "فندق الجلسة",
-      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$d9hj+zDA4ruScuwqNY3YSg$Igf+J+5Z+OwSjdeHnp+6fAhG+kirF9Bc0lqKFKvr3mE",
+      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$wYHQmpUsL7Y0L7RCfopfCw$jtLwMc7WLpdbTUWEMIEJcktpcH50mQqiuwWBV2JqrTg",
       "pass_salt": "",
       "status": "active",
       "plan": "pro"
@@ -40,7 +40,7 @@
     {
       "id": "write_test",
       "name": "فندق الكتابة",
-      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$+rP6r5s7PFCCa+dOWOtJWA$pQNd0aeG7gzWhIgFrwnY+bU8H5poKcQ5ZMqeJ/ZoceU",
+      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$0tidvLnb5b/guI0p60gbIw$q5HaUVx3T3dWeiZnYnjpyrkQOJNL9j1Q287SfhuMqWU",
       "pass_salt": "",
       "status": "active",
       "plan": "pro",
@@ -48,14 +48,14 @@
         {
           "id": "INV-00001",
           "client_id": "write_test",
-          "created_at": "2026-08-07T14:16:29.397506"
+          "created_at": "2026-08-07T14:20:36.267417"
         }
       ],
       "pos_transactions": [
         {
-          "id": "3bd4890daa2b9888",
+          "id": "562955e7646315eb",
           "client_id": "write_test",
-          "created_at": "2026-08-07T14:16:29.403379"
+          "created_at": "2026-08-07T14:20:36.274258"
         }
       ],
       "guests": [
@@ -63,25 +63,25 @@
           "full_name": "عبدالله السالم",
           "id_number": "1098765432",
           "client_id": "write_test",
-          "created_at": "2026-08-07T14:16:29.481727",
+          "created_at": "2026-08-07T14:20:36.354694",
           "id": 8
         },
         {
           "full_name": "نزيل الاسترجاع",
           "client_id": "write_test",
-          "created_at": "2026-08-07T14:16:29.488503",
+          "created_at": "2026-08-07T14:20:36.361863",
           "id": 9
         },
         {
           "full_name": "نزيل الولاء",
           "client_id": "write_test",
-          "created_at": "2026-08-07T14:16:29.503350",
+          "created_at": "2026-08-07T14:20:36.377435",
           "id": 10
         },
         {
           "full_name": "نزيل التراكم",
           "client_id": "write_test",
-          "created_at": "2026-08-07T14:16:29.516802",
+          "created_at": "2026-08-07T14:20:36.390826",
           "id": 11
         }
       ]
@@ -101,6 +101,13 @@
       "days": 30,
       "used": false,
       "created_at": "2026-08-07T14:16:29.432033"
+    },
+    {
+      "key": "2FAF6C29-BFE8BF4E-92F9FC8C-3D95CA4A",
+      "plan": "trial",
+      "days": 30,
+      "used": false,
+      "created_at": "2026-08-07T14:20:36.303741"
     }
   ],
   "payments": [
@@ -117,6 +124,13 @@
       "amount": 0.0,
       "plan": "",
       "date": "2026-08-07T14:16:29.439157"
+    },
+    {
+      "id": "72053ef4c4eba87b",
+      "client_id": "",
+      "amount": 0.0,
+      "plan": "",
+      "date": "2026-08-07T14:20:36.310962"
     }
   ],
   "settings": {},
@@ -138,6 +152,15 @@
       "body": "",
       "status": "open",
       "created_at": "2026-08-07T14:16:29.461350",
+      "replies": []
+    },
+    {
+      "id": "3a1394d812cdc377",
+      "client_id": "write_test",
+      "subject": "",
+      "body": "",
+      "status": "open",
+      "created_at": "2026-08-07T14:20:36.334831",
       "replies": []
     }
   ]

@@ -140,3 +140,47 @@ def test_owner_can_reach_manager_endpoints(logged_in, method, path, body):
     """كانت تُعيد 403 لمالك المنشأة نفسه."""
     resp = logged_in.request(method, path, json=body)
     assert resp.status_code != 403, f"{path} محجوب عن المالك: {resp.text[:150]}"
+
+
+# ── حماية الدخول من التخمين ───────────────────────────────────────────────────
+
+@skip_no_db
+def test_admin_login_is_rate_limited(test_client):
+    """دخول مالك المنصة كان بلا حماية بينما دخول المنشأة محميّ — وهو
+    الحساب الأعلى امتيازاً: كلمة مرور واحدة تفتح كل المنشآت."""
+    import main1
+
+    with main1._lock:
+        main1._login_attempts.clear()
+
+    limit = main1._LOGIN_MAX_PER_MINUTE
+    codes = [
+        test_client.post("/api/admin/login", data={"password": f"تخمين-{i}"},
+                         follow_redirects=False).status_code
+        for i in range(limit + 3)
+    ]
+
+    assert 429 in codes, f"لا حدّ لمحاولات دخول المالك: {codes}"
+    assert codes.index(429) <= limit + 1, f"الحدّ تأخّر كثيراً: {codes}"
+
+    with main1._lock:
+        main1._login_attempts.clear()
+
+
+@skip_no_db
+def test_tenant_login_is_rate_limited(test_client):
+    import main1
+
+    with main1._lock:
+        main1._login_attempts.clear()
+
+    codes = [
+        test_client.post("/api/login",
+                         data={"client_id": "لا-يوجد", "password": f"تخمين-{i}"},
+                         follow_redirects=False).status_code
+        for i in range(main1._LOGIN_MAX_PER_MINUTE + 3)
+    ]
+    assert 429 in codes, f"لا حدّ لمحاولات دخول المنشأة: {codes}"
+
+    with main1._lock:
+        main1._login_attempts.clear()

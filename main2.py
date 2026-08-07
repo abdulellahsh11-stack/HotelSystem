@@ -334,6 +334,20 @@ async def admin_login(request: Request):
     password = form.get("password", "")
     cfg = request.app.state.cfg
 
+    # دخول المنشأة كان محميّاً من التخمين ودخول مالك المنصة بلا حماية —
+    # وهو الحساب الأعلى امتيازاً في المنصة كلها: كلمة مرور واحدة تفتح
+    # كل المنشآت. المفتاح مسبوق بـ admin: كي لا يتشارك عدّاده مع دخول
+    # المنشآت من نفس العنوان.
+    client_ip = request.client.host if request.client else "unknown"
+    if not _login_rate_ok(f"admin:{client_ip}"):
+        if request.headers.get("content-type", "").startswith("application/json"):
+            return JSONResponse(
+                {"success": False, "error": "محاولات كثيرة — انتظر دقيقة"}, status_code=429
+            )
+        return HTMLResponse(
+            _admin_login_page("محاولات كثيرة — انتظر دقيقة"), status_code=429
+        )
+
     if not _verify_admin_password(str(password), cfg):
         if request.headers.get("content-type", "").startswith("application/json"):
             return JSONResponse({"success": False, "error": "كلمة المرور خاطئة"}, status_code=401)
