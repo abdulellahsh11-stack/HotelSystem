@@ -26,15 +26,28 @@ _revoke_lock = threading.Lock()
 # ── Finding #8: Session TTL Enforcement ───────────────────────
 
 def session_is_expired(session: dict) -> bool:
-    """Return True if the session has exceeded SESSION_TTL_HOURS."""
+    """Return True if the session has exceeded SESSION_TTL_HOURS.
+
+    يتعامل مع الطابعين الزمنيين معاً: الجلسة في الذاكرة تُخزَّن بـ
+    datetime.now().isoformat() وهو بلا منطقة زمنية، بينما الجلسة
+    المُستعادة من PostgreSQL تحمل منطقة زمنية (TIMESTAMPTZ).
+
+    كان الطرح يتم دائماً مقابل datetime.now() المجرَّدة، فطرحُ وقتٍ
+    يحمل منطقة زمنية من وقتٍ لا يحملها يرفع TypeError، وكان يُلتقط في
+    except ويُعيد True. النتيجة أن كل جلسة تُستعاد من قاعدة البيانات
+    تُعتبر منتهية فوراً — فيخرج كل المستخدمين من حساباتهم عند كل إعادة
+    تشغيل، ويتكرر ذلك مع تعدّد العمليات إذ يهبط الطلب على عملية لا
+    تحمل الجلسة في ذاكرتها.
+    """
     created = session.get("created_at")
     if not created:
         return True
     try:
-        ts = datetime.fromisoformat(created)
-        return datetime.now() - ts > timedelta(hours=SESSION_TTL_HOURS)
+        ts = datetime.fromisoformat(str(created))
     except (ValueError, TypeError):
         return True
+    now = datetime.now(ts.tzinfo) if ts.tzinfo else datetime.now()
+    return now - ts > timedelta(hours=SESSION_TTL_HOURS)
 
 
 def token_hash(token: str) -> str:

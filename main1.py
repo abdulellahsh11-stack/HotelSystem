@@ -563,8 +563,14 @@ def get_client_session(request: Request) -> Optional[dict]:
                     (token,), fetch="one"
                 )
                 if row:
+                    # نفس دور جلسة تسجيل الدخول: هذه جلسة حساب المنشأة،
+                    # فصاحبها مالكها. بدون إعادة الدور هنا تفقد الجلسة
+                    # المُستعادة بعد إعادة التشغيل صلاحياتها وتُرفض في
+                    # المسارات المحروسة بالدور.
                     session = {"client_id": row["client_id"],
-                               "created_at": str(row["created_at"])}
+                               "created_at": str(row["created_at"]),
+                               "role": "owner",
+                               "permissions": ["*"]}
                     with _lock:
                         _client_sessions[token] = session
         except Exception:

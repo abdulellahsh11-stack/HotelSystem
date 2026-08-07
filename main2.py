@@ -535,6 +535,13 @@ async def client_login(request: Request):
     session_data = {
         "client_id": client_id,
         "created_at": datetime.now().isoformat(),
+        # تسجيل الدخول هنا يخصّ حساب المنشأة نفسه، فصاحبه مالكها.
+        # كانت الجلسة تخلو من أي دور، و_require_manager في وحدتَي تدقيق
+        # الليل والتقييمات يُسقط الدور الغائب إلى "employee" — فكانت سبعة
+        # مسارات كتابة تُعيد 403 للمالك نفسه، منها إعدادات تدقيق الليل
+        # وتشغيله وهو عملية فندقية أساسية.
+        "role": "owner",
+        "permissions": ["*"],
     }
     with _lock:
         _client_sessions[token] = session_data

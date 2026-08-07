@@ -3,7 +3,7 @@
     {
       "id": "ep_test",
       "name": "فندق الاختبار",
-      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$FO6Tyt5TzZhwCI5MLn8PmQ$BW0oG7LcuUqAZpSB0R+ieeznn3xkcnu1U5fvCNSFlmw",
+      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$A9zSpikIXg90cLe5ZGUAOA$AvKchBO8QVWoeM0YvI8Up8uaRYnge7mj6prb1IrVwaw",
       "pass_salt": "",
       "status": "active",
       "plan": "pro",
@@ -16,7 +16,7 @@
     {
       "id": "smoke_test",
       "name": "فندق الدخان",
-      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$IUxPREriAvDxdnBrbNzZVQ$YSb9V8tvOlpEbG/HsmbC1DSasI9/36xND02DwHNGBZ0",
+      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$xLVYaYJ0X/RlUyetXP4E2A$sT9vSMUrAF5EvpvvC1WxBg9M03hLBMTqnfw+BvpyDPg",
       "pass_salt": "",
       "status": "active",
       "plan": "pro",
@@ -26,6 +26,14 @@
           "id_number": "1098765432"
         }
       ]
+    },
+    {
+      "id": "sess_test",
+      "name": "فندق الجلسة",
+      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$NFflyi/keB4rfEJHzJcTtw$NdPC0sLpvIfIGGwjq6cEUdAIQ0jMO9YuLUUryImv07U",
+      "pass_salt": "",
+      "status": "active",
+      "plan": "pro"
     }
   ]
 }
