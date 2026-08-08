@@ -12,7 +12,9 @@ import logging
 from contextlib import contextmanager
 from typing import Any, Optional
 
-from db.tenant_context import GUC_NAME, get_current_tenant
+from db.tenant_context import (
+    BRANCH_GUC_NAME, GUC_NAME, get_current_branches, get_current_tenant,
+)
 
 log = logging.getLogger("dheuof.db")
 
@@ -140,9 +142,16 @@ class DatabasePool:
         كله بالمالك فيتجاوز RLS ويصبح العزل وهماً، أو أن نفرض RLS على
         المالك فتعود كل استعلامات الإدارة فارغة.
         """
+        branches = get_current_branches()
         with conn.cursor() as cur:
             cur.execute("RESET ROLE")
             cur.execute("SELECT set_config(%s, %s, false)", (GUC_NAME, tenant or ""))
+            # قيد الفروع يُضبط دائماً — فراغه يعني «كل الفروع»، وتركه من
+            # الاستعارة السابقة يُسرّب قيداً لا يخصّ هذا الطلب
+            cur.execute(
+                "SELECT set_config(%s, %s, false)",
+                (BRANCH_GUC_NAME, ",".join(branches) if branches else ""),
+            )
             if tenant and self._app_role_available:
                 try:
                     cur.execute(f"SET ROLE {APP_ROLE}")

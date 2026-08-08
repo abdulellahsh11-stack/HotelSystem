@@ -682,8 +682,12 @@ def require_client(request: Request) -> dict:
     # يربط المستأجر بسياق الطلب، فيضبطه DatabasePool على كل اتصال
     # يُستعار بعد هذه النقطة. بدونه تبقى app_tenant() بلا قيمة وترفض
     # سياساتُ RLS كلَّ الصفوف.
-    from db.tenant_context import set_current_tenant
+    from db.tenant_context import set_current_branches, set_current_tenant
     set_current_tenant(session["client_id"].strip())
+    # قيد الفروع من الجلسة: None يعني كل الفروع (المالك والمدير العام)،
+    # وقائمة تعني فروعاً بعينها. يُضبط في كل طلب — تركه يعني وراثة قيد
+    # طلب سابق.
+    set_current_branches(session.get("branch_ids"))
 
     return session
 

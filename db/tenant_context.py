@@ -31,8 +31,18 @@ from typing import Iterator, Optional
 # اسم إعداد الجلسة في PostgreSQL — يجب أن يطابق app_tenant() وسياسات RLS
 GUC_NAME = "app.tenant_id"
 
+# قيد الفروع: قائمة معرّفات مفصولة بفواصل، أو فراغ بمعنى «كل الفروع».
+# العزل على مستوى قاعدة البيانات لا في كل استعلام على حدة — إضافة شرط
+# الفرع يدوياً إلى عشرات الاستعلامات تعني أن أحدها سيُنسى، وهو بالضبط
+# ما حدث مع شرط client_id.
+BRANCH_GUC_NAME = "app.branch_ids"
+
 _current_tenant: contextvars.ContextVar[Optional[str]] = contextvars.ContextVar(
     "dheuof_current_tenant", default=None
+)
+
+_current_branches: contextvars.ContextVar[Optional[list]] = contextvars.ContextVar(
+    "dheuof_current_branches", default=None
 )
 
 
@@ -53,6 +63,33 @@ def get_current_tenant() -> Optional[str]:
 def reset_current_tenant(token: contextvars.Token) -> None:
     """يُعيد السياق إلى ما كان عليه قبل set_current_tenant."""
     _current_tenant.reset(token)
+
+
+def set_current_branches(branch_ids: Optional[list]) -> contextvars.Token:
+    """يُقيّد الرؤية بفروع بعينها. None تعني كل فروع المنشأة."""
+    if branch_ids is not None:
+        branch_ids = [str(b) for b in branch_ids if b not in (None, "")]
+        if not branch_ids:
+            branch_ids = None
+    return _current_branches.set(branch_ids)
+
+
+def get_current_branches() -> Optional[list]:
+    return _current_branches.get()
+
+
+def reset_current_branches(token: contextvars.Token) -> None:
+    _current_branches.reset(token)
+
+
+@contextmanager
+def branch_scope(branch_ids: Optional[list]) -> Iterator[Optional[list]]:
+    """يُثبّت قيد الفروع داخل الكتلة ثم يستعيد ما كان."""
+    token = set_current_branches(branch_ids)
+    try:
+        yield branch_ids
+    finally:
+        reset_current_branches(token)
 
 
 @contextmanager

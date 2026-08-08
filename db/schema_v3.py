@@ -840,6 +840,27 @@ def apply_tenant_rls(db, table: str, key: str = "client_id") -> bool:
         return False
 
 
+def _branch_tables(db) -> set:
+    """الجداول التي تحمل branch_id — يُستخرج من الكتالوج لا من قائمة ثابتة."""
+    rows = db.execute(
+        """
+        SELECT c.relname AS t
+        FROM pg_class c
+        JOIN pg_namespace n ON n.oid = c.relnamespace
+        WHERE n.nspname = 'public' AND c.relkind = 'r'
+          AND EXISTS (
+              SELECT 1 FROM information_schema.columns col
+              WHERE col.table_schema = 'public'
+                AND col.table_name   = c.relname
+                AND col.column_name  = 'branch_id')
+        """,
+        fetch="all",
+    ) or []
+    # جداول الأدوار والروابط لا تخضع لعزل الفروع: إسناد الدور نفسه يحمل
+    # الفرع، وتقييده بالفرع يمنع المالك من إدارة أدوار فروعه
+    return {r["t"] for r in rows} - {"staff_role_assignments", "secure_file_links"}
+
+
 def run_rls_migration(db) -> None:
     """يُنشئ سياسات عزل حقيقية لكل جدول مستأجر.
 
@@ -864,12 +885,27 @@ def run_rls_migration(db) -> None:
     tables = _tenant_tables(db)
     applied = 0
 
+    branch_tables = _branch_tables(db)
+
     for table in tables:
         key = "client_id"
         predicate = f"{key} = current_setting('app.tenant_id', true)"
         if table in _RLS_GLOBAL_TEMPLATE:
             # القوالب العامة (client_id IS NULL) مقروءة للجميع
             predicate = f"({predicate} OR {key} IS NULL)"
+        elif table in branch_tables:
+            # عزل الفروع في نفس الطبقة التي تعزل المستأجرين. إضافة شرط
+            # الفرع يدوياً إلى عشرات الاستعلامات تعني أن أحدها سيُنسى —
+            # وهو بالضبط ما حدث مع شرط client_id.
+            # فراغ app.branch_ids يعني «كل الفروع» (المالك والمدير العام)،
+            # وbranch_id الفارغ يعني صفّاً غير منسوب لفرع فيراه الجميع.
+            predicate = (
+                f"({predicate} AND ("
+                f"coalesce(current_setting('app.branch_ids', true), '') = '' "
+                f"OR branch_id IS NULL "
+                f"OR branch_id::text = ANY(string_to_array("
+                f"current_setting('app.branch_ids', true), ','))))"
+            )
         try:
             db.execute(f"ALTER TABLE {table} ENABLE ROW LEVEL SECURITY")
             db.execute(
