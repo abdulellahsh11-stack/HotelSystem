@@ -3,7 +3,7 @@
     {
       "id": "ep_test",
       "name": "فندق الاختبار",
-      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$slW71p7/Ry7RqkVoChjtJA$xXypIxTSQRqizChZWDF1hpUJXWuEsqVtUpzv6Pe7mhU",
+      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$5QbilKNtby7m4luQUjvPwQ$zJHoLYW/zhG4LkpIgLah0XnsYHcZyEdoUEYRKKKpSqY",
       "pass_salt": "",
       "status": "active",
       "plan": "pro",
@@ -17,7 +17,7 @@
     {
       "id": "smoke_test",
       "name": "فندق الدخان",
-      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$4DfLCX+7KwuyPGezYdB+1w$R8kTxIObhLM64JSIggFh3nuk3Iwscgq2QC8x9G3bMxE",
+      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$qIpJ+yFeTaA7r+pq2T4pXw$NVRDa9GesQnI4rLiwSuRYVgH3qblo2BhKwtBHRnNBR8",
       "pass_salt": "",
       "status": "active",
       "plan": "pro",
@@ -32,7 +32,7 @@
     {
       "id": "sess_test",
       "name": "فندق الجلسة",
-      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$BxwRmD85MYZUWpfTpgn2zw$xYbfnXNMg64UnmSE0XsKvm38M6wBlPF+40PCCNi39SY",
+      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$fvDYOf7jMiLBULxFCWO8Iw$VfkBceyGaUbMf2IMn4dDCbU5x+lhCydghWakJsjOUAQ",
       "pass_salt": "",
       "status": "active",
       "plan": "pro"
@@ -40,7 +40,7 @@
     {
       "id": "write_test",
       "name": "فندق الكتابة",
-      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$RQXsUW3pG+kyQtTJvldPOQ$mWpbxT6R6heO6LmqWQerdGJsr3161Jy3BCX4ljeWBII",
+      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$lS7/SokWJ7ABPxWrxUBRlA$iJzPbHSBT+PZ9D8Vzzxx1B/iQdZXJo8Te0SBxVFJa3s",
       "pass_salt": "",
       "status": "active",
       "plan": "pro",
@@ -48,14 +48,14 @@
         {
           "id": "INV-00001",
           "client_id": "write_test",
-          "created_at": "2026-08-08T04:11:38.475349"
+          "created_at": "2026-08-08T04:15:16.195888"
         }
       ],
       "pos_transactions": [
         {
-          "id": "8c0999310b84cc89",
+          "id": "da0bd8db39b7ae91",
           "client_id": "write_test",
-          "created_at": "2026-08-08T04:11:38.486174"
+          "created_at": "2026-08-08T04:15:16.206196"
         }
       ],
       "guests": [
@@ -63,25 +63,25 @@
           "full_name": "عبدالله السالم",
           "id_number": "1098765432",
           "client_id": "write_test",
-          "created_at": "2026-08-08T04:11:38.634878",
+          "created_at": "2026-08-08T04:15:16.371190",
           "id": 9
         },
         {
           "full_name": "نزيل الاسترجاع",
           "client_id": "write_test",
-          "created_at": "2026-08-08T04:11:38.645796",
+          "created_at": "2026-08-08T04:15:16.384088",
           "id": 10
         },
         {
           "full_name": "نزيل الولاء",
           "client_id": "write_test",
-          "created_at": "2026-08-08T04:11:38.672992",
+          "created_at": "2026-08-08T04:15:16.413141",
           "id": 11
         },
         {
           "full_name": "نزيل التراكم",
           "client_id": "write_test",
-          "created_at": "2026-08-08T04:11:38.696494",
+          "created_at": "2026-08-08T04:15:16.437983",
           "id": 12
         }
       ]
@@ -89,7 +89,7 @@
     {
       "id": "audit_test",
       "name": "فندق التدقيق",
-      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$OJ/fyjVh3RtbXFqDjo1lbQ$hG+ypmCSM7vZQ8DaDJQoAyrgYgMM3Gpff/b9GCxS8MY",
+      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$nHZIHLwsnaxqXYVAqfpx/w$MYhiAbJ6JPpv/7FT3p6FPNWs3IsXsgmwLmAmGdzvbuo",
       "pass_salt": "",
       "status": "active",
       "plan": "pro",
@@ -98,7 +98,7 @@
           "full_name": "نزيل",
           "password": "كلمة-تدقيق-2026",
           "client_id": "audit_test",
-          "created_at": "2026-08-08T04:11:29.588516",
+          "created_at": "2026-08-08T04:15:06.886827",
           "id": 1
         }
       ]
@@ -106,7 +106,7 @@
     {
       "id": "rbac_test",
       "name": "فندق الصلاحيات",
-      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$42oBLGJfX/wzS2u8W9aYwA$ujTrVd7LjddPl+5+yZwGtHG8mCRlICFDSh1k2tbBsrU",
+      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$+SnTc7wUivRk/gdVjchAKg$y+eT/sFBP/v11na3QXjiDOuzb3DEp+5s0XlsMd7NNqM",
       "pass_salt": "",
       "status": "active",
       "plan": "pro"
@@ -114,7 +114,31 @@
     {
       "id": "branch_test",
       "name": "سلسلة الاختبار",
-      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$QSzwXqXzSSo7mLQB8bC3IQ$3GiPHZWxtx/Aqkyrx1Hds0JmTKjqWralebG+5kOAhXs",
+      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$8ajF4zLpBUVqnqtQ03FyLQ$3WZ2ABRoJz+mRgI2yQ4v8uoLlgBlWrPfACSdEDgRKeg",
+      "pass_salt": "",
+      "status": "active",
+      "plan": "pro"
+    },
+    {
+      "id": "rl_test",
+      "name": "فندق الحدّ",
+      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$vn/UZAT58zCnGlYh8wUK7w$0vrwPls1+hy/4ZIAhv19gPXypjc0Tl/+FX8GrsWCENs",
+      "pass_salt": "",
+      "status": "active",
+      "plan": "pro"
+    },
+    {
+      "id": "rl_a",
+      "name": "rl_a",
+      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$y735G7M/bT3mHgxuIcshVg$BuDJ9zBXSQIr4HK1n6XD3w+f9Q+zNUkF9DK+4TXGGoo",
+      "pass_salt": "",
+      "status": "active",
+      "plan": "pro"
+    },
+    {
+      "id": "rl_b",
+      "name": "rl_b",
+      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$ZlOh6RGdZ89DS1Whz889Jw$qFh5E0yLpMpasnCkYOkUnB0mr+sQwxQPJbPaw6S28SM",
       "pass_salt": "",
       "status": "active",
       "plan": "pro"
@@ -253,6 +277,24 @@
       "body": "",
       "status": "open",
       "created_at": "2026-08-08T04:11:38.597841",
+      "replies": []
+    },
+    {
+      "id": "449bb067b1ee8c2d",
+      "client_id": "write_test",
+      "subject": "",
+      "body": "",
+      "status": "open",
+      "created_at": "2026-08-08T04:13:34.567994",
+      "replies": []
+    },
+    {
+      "id": "c6bf5705c68fa2d0",
+      "client_id": "write_test",
+      "subject": "",
+      "body": "",
+      "status": "open",
+      "created_at": "2026-08-08T04:15:16.328144",
       "replies": []
     }
   ]

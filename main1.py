@@ -65,10 +65,33 @@ _login_attempts: dict = {}   # ip → [timestamps]
 _LOGIN_MAX_PER_MINUTE = int(os.environ.get("LOGIN_MAX_PER_MINUTE", "10"))
 
 
+# سقف عدد المفاتيح المحفوظة في عدّادي المحاولات. بدونه يبقى كل عنوان
+# رآه الخادم في القاموس إلى الأبد، فمُهاجم يُدوّر العناوين يُنمّي القاموس
+# حتى تنفد الذاكرة — أي أن أداة الحماية من الإساءة تصير مساراً للإساءة.
+_ATTEMPTS_MAX_KEYS = int(os.environ.get("ATTEMPTS_MAX_KEYS", "20000"))
+
+
+def _prune_attempts(store: dict, now: float, window: int) -> None:
+    """يُزيل المفاتيح المنتهية نافذتها، ويفرض سقفاً على العدد.
+
+    يُستدعى تحت القفل. الفحص محدود بعدد ثابت كي تبقى الكلفة ثابتة مهما
+    كبر القاموس.
+    """
+    for key in list(store.keys())[:64]:
+        stamps = store.get(key)
+        if not stamps or now - stamps[-1] > window:
+            store.pop(key, None)
+    if len(store) > _ATTEMPTS_MAX_KEYS:
+        oldest = sorted(store.items(), key=lambda kv: kv[1][-1] if kv[1] else 0)
+        for key, _ in oldest[: len(store) - _ATTEMPTS_MAX_KEYS]:
+            store.pop(key, None)
+
+
 def _reg_rate_ok(ip: str) -> bool:
     """يسمح بحد أقصى REG_MAX_PER_HOUR تسجيلات لكل IP في الساعة."""
     now = datetime.now().timestamp()
     with _lock:
+        _prune_attempts(_reg_attempts, now, 3600)
         hits = [t for t in _reg_attempts.get(ip, []) if now - t < 3600]
         if len(hits) >= _REG_MAX_PER_HOUR:
             _reg_attempts[ip] = hits
@@ -82,6 +105,7 @@ def _login_rate_ok(ip: str) -> bool:
     """Allow at most LOGIN_MAX_PER_MINUTE login attempts per IP per minute (brute-force guard)."""
     now = datetime.now().timestamp()
     with _lock:
+        _prune_attempts(_login_attempts, now, 60)
         hits = [t for t in _login_attempts.get(ip, []) if now - t < 60]
         if len(hits) >= _LOGIN_MAX_PER_MINUTE:
             _login_attempts[ip] = hits
@@ -338,6 +362,48 @@ _AUDIT_SKIP_PREFIXES = ("/api/health", "/api/status", "/static", "/api/telemetry
 
 # الدخول والخروج يُسجَّلان في مواضعهما بتفصيل أدق (نجاح/فشل/تجاوز حدّ)
 _AUDIT_SKIP_EXACT = ("/api/login", "/api/admin/login")
+
+
+@app.middleware("http")
+async def rate_limit_api(request: Request, call_next):
+    """يحدّ معدّل طلبات الـ API لكل منشأة أو عنوان.
+
+    كانت الحماية على ثلاثة مسارات فقط (الدخول والتسجيل)، وأكثر من مئة
+    وستين مساراً بلا أي حدّ — فيستنزف حسابٌ واحد مجمّعَ الاتصالات
+    ويُعطّل المنصة على بقية المنشآت.
+
+    المفتاح هو المنشأة لا العنوان حين تتوفّر جلسة: موظفو الفندق خلف
+    عنوان واحد، فالتحديد بالعنوان يجعل نشاط موظف يخنق زملاءه. والحدود
+    سخيّة عمداً — حدٌّ يُعطّل عميلاً شرعياً أسوأ من غيابه.
+    """
+    path = request.url.path
+    if not path.startswith("/api/") or path.startswith(_AUDIT_SKIP_PREFIXES):
+        return await call_next(request)
+
+    from services.rate_limit import ANON_LIMIT, READ_LIMIT, WRITE_LIMIT, check
+
+    session = None
+    try:
+        session = get_client_session(request)
+    except Exception:
+        pass
+
+    if session:
+        key = f"tenant:{session.get('client_id')}"
+        limit = WRITE_LIMIT if request.method in ("POST", "PUT", "PATCH", "DELETE") else READ_LIMIT
+    else:
+        # غير المصادَق أضيق حدّاً: لا سبب مشروع لطلبات كثيرة قبل الدخول،
+        # ومسارات الدخول لها حدّها الخاص الأشدّ
+        key = f"ip:{request.client.host if request.client else 'unknown'}"
+        limit = ANON_LIMIT
+
+    if not check(key, limit):
+        return JSONResponse(
+            {"success": False, "error": "طلبات كثيرة — أعد المحاولة بعد قليل"},
+            status_code=429, headers={"Retry-After": "60"},
+        )
+
+    return await call_next(request)
 
 
 @app.middleware("http")
