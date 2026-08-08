@@ -3,7 +3,7 @@
     {
       "id": "ep_test",
       "name": "فندق الاختبار",
-      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$cOSzZL2jkwQlp2MR6mwZyw$JDN+G19vgeoWrwr4Dhd9stVWC4YKDItwcBskKyBr63k",
+      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$va+7Cmjz3HZyJU0TNjyuxg$kk8H7V2koyGRzAHsCP8aTGKcTEM+NGwlhsNt0YjOOgQ",
       "pass_salt": "",
       "status": "active",
       "plan": "pro",
@@ -17,7 +17,7 @@
     {
       "id": "smoke_test",
       "name": "فندق الدخان",
-      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$dDlZtMAkJFyX40C7OVWhfg$uJYtDqqwJJX09VgYlAdYrd/rJcmuoUd0wkvTyjeDt58",
+      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$nOzUqlSRMVYw2WEr0EC7aw$HI9STu3SIearUFeDwaVehgj6wzGQbrGfwDLTjkG/oV8",
       "pass_salt": "",
       "status": "active",
       "plan": "pro",
@@ -32,7 +32,7 @@
     {
       "id": "sess_test",
       "name": "فندق الجلسة",
-      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$an546KBgP4r17t6tAbv+jg$9nqNcQErSglIssHczpQ3xW69pTIlHApBKw1iDeXiHW8",
+      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$cYJ3fyBlwuukTB+lNTWK2A$bRgHdkLLgFp932kc89GkugksrCHI+oJvLvkOiW+uBlQ",
       "pass_salt": "",
       "status": "active",
       "plan": "pro"
@@ -40,7 +40,7 @@
     {
       "id": "write_test",
       "name": "فندق الكتابة",
-      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$eYQFEUK9SbaUDoL2EwHY1g$IxotKckX3KLHcZaD2QSgrxnjEK6QAjLDWJpxiJAvLXU",
+      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$MfvLcZcYiuvDNVZFjdewOA$YJcuiuXDc0RRtdyxiqFF1YbSbqH7eIED2+QjzYy3IQM",
       "pass_salt": "",
       "status": "active",
       "plan": "pro",
@@ -48,14 +48,14 @@
         {
           "id": "INV-00001",
           "client_id": "write_test",
-          "created_at": "2026-08-08T04:17:41.624570"
+          "created_at": "2026-08-08T04:22:46.090346"
         }
       ],
       "pos_transactions": [
         {
-          "id": "d34afcb8f38250fc",
+          "id": "947ca23948895d4e",
           "client_id": "write_test",
-          "created_at": "2026-08-08T04:17:41.635626"
+          "created_at": "2026-08-08T04:22:46.101962"
         }
       ],
       "guests": [
@@ -63,25 +63,25 @@
           "full_name": "عبدالله السالم",
           "id_number": "1098765432",
           "client_id": "write_test",
-          "created_at": "2026-08-08T04:17:41.795904",
+          "created_at": "2026-08-08T04:22:46.256392",
           "id": 9
         },
         {
           "full_name": "نزيل الاسترجاع",
           "client_id": "write_test",
-          "created_at": "2026-08-08T04:17:41.806992",
+          "created_at": "2026-08-08T04:22:46.267041",
           "id": 10
         },
         {
           "full_name": "نزيل الولاء",
           "client_id": "write_test",
-          "created_at": "2026-08-08T04:17:41.832028",
+          "created_at": "2026-08-08T04:22:46.292967",
           "id": 11
         },
         {
           "full_name": "نزيل التراكم",
           "client_id": "write_test",
-          "created_at": "2026-08-08T04:17:41.855440",
+          "created_at": "2026-08-08T04:22:46.316736",
           "id": 12
         }
       ]
@@ -89,7 +89,7 @@
     {
       "id": "audit_test",
       "name": "فندق التدقيق",
-      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$azE+ehvWgZsuOVNO7akG6Q$xzEzQZGWVGm1ce38NQeLFdTjJZapcegrM2egFQGDUYw",
+      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$stevgJyEpUKcc4Dpco+4kQ$R6NHvYJXk5BruIOjhAXw9P7p0SV3J+f5ho4GRemrjAU",
       "pass_salt": "",
       "status": "active",
       "plan": "pro",
@@ -98,7 +98,7 @@
           "full_name": "نزيل",
           "password": "كلمة-تدقيق-2026",
           "client_id": "audit_test",
-          "created_at": "2026-08-08T04:17:31.933222",
+          "created_at": "2026-08-08T04:22:29.145274",
           "id": 1
         }
       ]
@@ -106,7 +106,7 @@
     {
       "id": "rbac_test",
       "name": "فندق الصلاحيات",
-      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$4qSNzFJ3QxxiZy23f2jmNw$TFwGKrcmHpjBbFWLq6GYOVhtBO0/gMuYauj/oA3/kao",
+      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$Q7kg95A3vBejOPwtfEUHcA$b7oA7J+A6f4y5xFM7sbDCI1/xVY8A6vhy97HcNEO/nM",
       "pass_salt": "",
       "status": "active",
       "plan": "pro"
@@ -114,7 +114,7 @@
     {
       "id": "branch_test",
       "name": "سلسلة الاختبار",
-      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$bH66/3dSiwZWLPeArShIrg$AGN9O3eXknTuUDogoErcoJ2ycBLjmxG96yAQRL/T97Q",
+      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$T00P0jK9UzROciPqF5RxmQ$AH5fOSG/mmfzAEQordobWXe+3HY7UYtX8j3XWcsll2Q",
       "pass_salt": "",
       "status": "active",
       "plan": "pro"
@@ -122,7 +122,7 @@
     {
       "id": "rl_test",
       "name": "فندق الحدّ",
-      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$CCzDtqdGnpjeRkRsRQD2Sw$QmfU+qTENsFW718vGj4yNb4mAJJLnlol3aqACxLAq3c",
+      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$xhzn62AFfdAJA7h4FkEYfg$lYnQYjCdr1FECI4VKU0Bipg/lJiKQ7D6Wp2MZonNEjs",
       "pass_salt": "",
       "status": "active",
       "plan": "pro"
@@ -130,7 +130,7 @@
     {
       "id": "rl_a",
       "name": "rl_a",
-      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$JfTuYYSkSVoVnU5GkBaO/A$z3U1JRrVc3TELLTZX2gYV17b8r7Y12qJPHXDET41R/E",
+      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$QrK6VPAQfCzezc8JUxeXgA$rU7Ankf6oG46iQW4DUWuz51OciLuF2HG/3FQl+Cjp0E",
       "pass_salt": "",
       "status": "active",
       "plan": "pro"
@@ -138,7 +138,7 @@
     {
       "id": "rl_b",
       "name": "rl_b",
-      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$RLkPWF1ZXgMEUlYcsVYVxA$GFXQWAh0KbfD1jqngMugFOuTBzgqtTmW75TNPR6BeY0",
+      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$CfWptNRx+cWz/lP+gV4ZiQ$i5TvIIvx1neMqUpNIf3BzNme6XUOFcCVAyTzmGuVAA4",
       "pass_salt": "",
       "status": "active",
       "plan": "pro"
@@ -304,6 +304,24 @@
       "body": "",
       "status": "open",
       "created_at": "2026-08-08T04:17:41.758244",
+      "replies": []
+    },
+    {
+      "id": "2447908e70f132b9",
+      "client_id": "write_test",
+      "subject": "",
+      "body": "",
+      "status": "open",
+      "created_at": "2026-08-08T04:22:25.218696",
+      "replies": []
+    },
+    {
+      "id": "ad2548f005303834",
+      "client_id": "write_test",
+      "subject": "",
+      "body": "",
+      "status": "open",
+      "created_at": "2026-08-08T04:22:46.214797",
       "replies": []
     }
   ]

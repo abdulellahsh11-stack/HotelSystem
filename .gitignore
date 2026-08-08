@@ -16,3 +16,7 @@ reports/
 *.bundle
 test_results/
 scripts/generate_*.py
+
+# النسخ الاحتياطية — لا تدخل المستودع بحال: تحوي بيانات نزلاء ومنشآت
+backups/
+*.dump
