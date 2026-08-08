@@ -11,6 +11,8 @@ from db.crypto import blind_index, decrypt_pii, encrypt_pii, is_encrypted
 
 from db.rows import count_of
 
+from services.permissions import require_permission
+
 router = APIRouter(prefix="/api/m06", tags=["HR"])
 
 logger = logging.getLogger("dheuof")
@@ -48,7 +50,7 @@ def _require_client(request: Request) -> dict:
     return require_client(request)
 
 
-@router.get("/employees")
+@router.get("/employees", dependencies=[Depends(require_permission("hr"))])
 async def list_employees(request: Request, status: Optional[str] = None, page: int = 1, per_page: int = 50, session=Depends(_require_client)):
     try:
         db = request.app.state.db
@@ -77,7 +79,7 @@ async def list_employees(request: Request, status: Optional[str] = None, page: i
         raise HTTPException(status_code=500, detail=f"خطأ في الخادم: {str(e)}")
 
 
-@router.post("/employees")
+@router.post("/employees", dependencies=[Depends(require_permission("hr"))])
 async def create_employee(request: Request, session=Depends(_require_client)):
     try:
         data = await request.json()
@@ -116,7 +118,7 @@ async def create_employee(request: Request, session=Depends(_require_client)):
         raise HTTPException(status_code=500, detail=f"خطأ في الخادم: {str(e)}")
 
 
-@router.put("/employees/{emp_id}")
+@router.put("/employees/{emp_id}", dependencies=[Depends(require_permission("hr"))])
 async def update_employee(emp_id: int, request: Request, session=Depends(_require_client)):
     try:
         data = await request.json()
@@ -141,7 +143,7 @@ async def update_employee(emp_id: int, request: Request, session=Depends(_requir
         raise HTTPException(status_code=500, detail=f"خطأ في الخادم: {str(e)}")
 
 
-@router.delete("/employees/{emp_id}")
+@router.delete("/employees/{emp_id}", dependencies=[Depends(require_permission("hr"))])
 async def delete_employee(emp_id: int, request: Request, session=Depends(_require_client)):
     try:
         db = request.app.state.db
@@ -156,7 +158,7 @@ async def delete_employee(emp_id: int, request: Request, session=Depends(_requir
         raise HTTPException(status_code=500, detail=f"خطأ في الخادم: {str(e)}")
 
 
-@router.get("/attendance")
+@router.get("/attendance", dependencies=[Depends(require_permission("hr"))])
 async def list_attendance(request: Request, date_from: Optional[str] = None,
                           date_to: Optional[str] = None, session=Depends(_require_client)):
     try:
@@ -182,7 +184,7 @@ async def list_attendance(request: Request, date_from: Optional[str] = None,
         raise HTTPException(status_code=500, detail=f"خطأ في الخادم: {str(e)}")
 
 
-@router.post("/attendance")
+@router.post("/attendance", dependencies=[Depends(require_permission("hr"))])
 async def record_attendance(request: Request, session=Depends(_require_client)):
     try:
         data = await request.json()
@@ -213,7 +215,7 @@ async def record_attendance(request: Request, session=Depends(_require_client)):
         raise HTTPException(status_code=500, detail=f"خطأ في الخادم: {str(e)}")
 
 
-@router.get("/payroll")
+@router.get("/payroll", dependencies=[Depends(require_permission("payroll"))])
 async def list_payroll(request: Request, year: Optional[int] = None,
                        month: Optional[int] = None, session=Depends(_require_client)):
     try:
@@ -237,7 +239,7 @@ async def list_payroll(request: Request, year: Optional[int] = None,
         raise HTTPException(status_code=500, detail=f"خطأ في الخادم: {str(e)}")
 
 
-@router.post("/payroll/generate")
+@router.post("/payroll/generate", dependencies=[Depends(require_permission("payroll"))])
 async def generate_payroll(request: Request, session=Depends(_require_client)):
     try:
         data = await request.json()

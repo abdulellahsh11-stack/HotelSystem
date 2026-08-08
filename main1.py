@@ -573,6 +573,13 @@ except Exception as e:
     log.warning(f"Reviews: {e}")
 
 try:
+    from routes.staff_auth import router as staff_auth_router
+    app.include_router(staff_auth_router)
+    log.info("✓ Staff Auth (دخول الموظفين والأدوار)")
+except Exception as e:
+    log.warning(f"Staff Auth: {e}")
+
+try:
     from routes.pricing import router as pricing_router
     app.include_router(pricing_router)
     log.info("✓ Dynamic Pricing (التسعير الديناميكي)")

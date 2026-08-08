@@ -8,6 +8,8 @@ from fastapi import APIRouter, Request, Depends, HTTPException, Header
 
 from db.rows import count_of
 
+from services.permissions import require_permission
+
 router = APIRouter(prefix="/api/m06acc", tags=["Accounting"])
 
 logger = logging.getLogger("dheuof")
@@ -120,7 +122,7 @@ async def get_tax_config(request: Request, session=Depends(_require_client)):
         raise HTTPException(status_code=500, detail=f"خطأ في الخادم: {str(e)}")
 
 
-@router.post("/tax-config")
+@router.post("/tax-config", dependencies=[Depends(require_permission("settings"))])
 async def set_tax_config(request: Request, session=Depends(_require_client)):
     """يحفظ إعدادات الضريبة — يُدمج مع invoice_settings الموجودة.
 
@@ -169,7 +171,7 @@ async def set_tax_config(request: Request, session=Depends(_require_client)):
 
 # ── Invoices ──────────────────────────────────────────────────────────────────
 
-@router.get("/invoices")
+@router.get("/invoices", dependencies=[Depends(require_permission("invoices"))])
 async def list_invoices(
     request: Request,
     date_from: Optional[str] = None,
@@ -229,7 +231,7 @@ async def list_invoices(
         raise HTTPException(status_code=500, detail=f"خطأ في الخادم: {str(e)}")
 
 
-@router.get("/revenue/summary")
+@router.get("/revenue/summary", dependencies=[Depends(require_permission("reports"))])
 async def revenue_summary(request: Request, session=Depends(_require_client)):
     try:
         db = request.app.state.db
@@ -279,7 +281,7 @@ async def revenue_summary(request: Request, session=Depends(_require_client)):
         raise HTTPException(status_code=500, detail=f"خطأ في الخادم: {str(e)}")
 
 
-@router.get("/revenue/by-month")
+@router.get("/revenue/by-month", dependencies=[Depends(require_permission("reports"))])
 async def revenue_by_month(request: Request, session=Depends(_require_client)):
     try:
         db = request.app.state.db
@@ -317,7 +319,7 @@ async def revenue_by_month(request: Request, session=Depends(_require_client)):
         raise HTTPException(status_code=500, detail=f"خطأ في الخادم: {str(e)}")
 
 
-@router.get("/outstanding")
+@router.get("/outstanding", dependencies=[Depends(require_permission("reports"))])
 async def list_outstanding(request: Request, session=Depends(_require_client)):
     """Bookings that are confirmed but check-out date has passed (overdue checkout)."""
     try:
@@ -359,7 +361,7 @@ async def list_outstanding(request: Request, session=Depends(_require_client)):
         raise HTTPException(status_code=500, detail=f"خطأ في الخادم: {str(e)}")
 
 
-@router.post("/payment")
+@router.post("/payment", dependencies=[Depends(require_permission("invoices"))])
 async def record_payment(request: Request, session=Depends(_require_client)):
     """Record a payment against a booking: update status and append notes."""
     try:
@@ -418,7 +420,7 @@ async def record_payment(request: Request, session=Depends(_require_client)):
 
 # ── مفتاح API للربط بالأنظمة الخارجية ───────────────────────────────────────
 
-@router.get("/api-key")
+@router.get("/api-key", dependencies=[Depends(require_permission("settings"))])
 async def get_api_key(request: Request, session=Depends(_require_client)):
     """يُعيد مفتاح API الحالي للمنشأة (أو يُنشئ واحداً جديداً)."""
     try:
@@ -440,7 +442,7 @@ async def get_api_key(request: Request, session=Depends(_require_client)):
         raise HTTPException(status_code=500, detail=f"خطأ في الخادم: {str(e)}")
 
 
-@router.post("/api-key/rotate")
+@router.post("/api-key/rotate", dependencies=[Depends(require_permission("settings"))])
 async def rotate_api_key(request: Request, session=Depends(_require_client)):
     """يُولّد مفتاح API جديداً (يُبطل القديم فوراً)."""
     try:

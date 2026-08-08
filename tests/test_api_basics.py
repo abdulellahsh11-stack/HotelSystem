@@ -213,8 +213,12 @@ class TestMultiTenantIsolation:
         """
         from datetime import datetime
         now_iso = datetime.now().isoformat()
-        _client_sessions[self.TOKEN_A] = {"client_id": self.CID_A, "created_at": now_iso}
-        _client_sessions[self.TOKEN_B] = {"client_id": self.CID_B, "created_at": now_iso}
+        # جلسة حساب المنشأة تحمل الآن دور owner: مسارات الموارد البشرية
+        # صارت محروسة بـ require_permission("hr")، وجلسة بلا دور تُرفض
+        # بـ 403 قبل بلوغ منطق العزل المقصود اختباره هنا.
+        owner = {"role": "owner", "permissions": ["*"]}
+        _client_sessions[self.TOKEN_A] = {"client_id": self.CID_A, "created_at": now_iso, **owner}
+        _client_sessions[self.TOKEN_B] = {"client_id": self.CID_B, "created_at": now_iso, **owner}
         yield
         _client_sessions.pop(self.TOKEN_A, None)
         _client_sessions.pop(self.TOKEN_B, None)

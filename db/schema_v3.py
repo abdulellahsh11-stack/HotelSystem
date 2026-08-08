@@ -1286,6 +1286,74 @@ def run_v4_migrations(db) -> None:
             if "already exists" not in str(e).lower():
                 log.warning(f"bookings tax col {col_name}: {e}")
 
+    # ── employees.updated_at ─────────────────────────────────────
+    # المُشغّل trg_emp_updated يُنفّذ update_updated_at() التي تُسنِد
+    # NEW.updated_at، والعمود غير موجود في employees. النتيجة أن كل
+    # UPDATE على جدول الموظفين يفشل بـ «record "new" has no field
+    # updated_at» — أي أن تعديل بيانات موظف وإنهاء خدمته كانا معطَّلين.
+    try:
+        db.execute("ALTER TABLE employees ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW()")
+    except Exception as e:
+        if "already exists" not in str(e).lower():
+            log.warning(f"employees.updated_at: {e}")
+
+    # حارس عام: أي جدول عليه مُشغّل التحديث ولا يحمل العمود سيفشل عند
+    # أول UPDATE. الفحص هنا يكشفه عند الإقلاع بدل أن يكتشفه مستخدم.
+    try:
+        mismatched = db.execute(
+            """
+            SELECT DISTINCT t.event_object_table AS t
+            FROM information_schema.triggers t
+            WHERE t.action_statement LIKE '%%update_updated_at%%'
+              AND NOT EXISTS (
+                  SELECT 1 FROM information_schema.columns c
+                  WHERE c.table_schema = 'public'
+                    AND c.table_name = t.event_object_table
+                    AND c.column_name = 'updated_at')
+            """,
+            fetch="all",
+        ) or []
+        for row in mismatched:
+            try:
+                db.execute(
+                    f"ALTER TABLE {row['t']} ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW()"
+                )
+                log.warning(f"أُضيف updated_at إلى {row['t']} — مُشغّل بلا عمود")
+            except Exception as e:
+                log.error(f"جدول {row['t']} عليه مُشغّل تحديث بلا عمود updated_at: {e}")
+    except Exception as e:
+        log.warning(f"فحص مُشغّلات updated_at: {e}")
+
+    # ── دخول الموظفين ────────────────────────────────────────────
+    # كانت هوية الموظف تُمرَّر كنص staff_name في جسم الطلب — أي أن أي
+    # مستخدم للمنشأة ينسب أي عملية لأي موظف. لا مصادقة ولا مساءلة.
+    _staff_auth_cols = [
+        ("pass_hash",     "TEXT"),
+        ("last_login_at", "TIMESTAMPTZ"),
+        ("can_login",     "BOOLEAN DEFAULT FALSE"),
+    ]
+    for _col, _type in _staff_auth_cols:
+        try:
+            db.execute(f"ALTER TABLE employees ADD COLUMN IF NOT EXISTS {_col} {_type}")
+        except Exception as e:
+            if "already exists" not in str(e).lower():
+                log.warning(f"employees.{_col}: {e}")
+    try:
+        # employee_id هو ما يكتبه الموظف عند الدخول، فيجب أن يكون فريداً
+        # داخل المنشأة الواحدة
+        db.execute("""
+            DELETE FROM employees a USING employees b
+            WHERE a.id > b.id AND a.client_id = b.client_id
+              AND a.employee_id = b.employee_id
+        """)
+        db.execute(
+            "CREATE UNIQUE INDEX IF NOT EXISTS uq_employees_client_empid "
+            "ON employees(client_id, employee_id)"
+        )
+    except Exception as e:
+        if "already exists" not in str(e).lower():
+            log.warning(f"employees unique: {e}")
+
     # ── guest_profiles: قيد فريد لكل نزيل في كل منشأة ────────────
     # مسار منح نقاط الولاء ينفّذ ON CONFLICT (client_id, guest_id)
     # والقيد غير موجود، فيفشل الاستعلام دائماً بـ «there is no unique
