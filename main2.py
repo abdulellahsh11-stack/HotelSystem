@@ -25,6 +25,24 @@ from html_pages import (
     _login_page, _admin_login_page, _admin_dashboard, _client_dashboard,
 )
 
+
+def _audit(request: Request, **kwargs) -> None:
+    """يكتب حدثاً في سجل المراجعة دون أن يُسقط الطلب عند الفشل.
+
+    الوسيط يُسجّل كل عملية تغيير تلقائياً؛ هذا للأحداث التي تحتاج تفصيلاً
+    أدق — تمييز نجاح الدخول من فشله، وحفظ حالة الصف قبل حذفه.
+    """
+    try:
+        from services.audit import audit
+        db = getattr(request.app.state, "db", None)
+        ip = kwargs.pop("ip", None)
+        if ip is None and request.client:
+            ip = request.client.host
+        audit(db, ip_address=ip, **kwargs)
+    except Exception:
+        pass
+
+
 # ──────────────────────────────────────────────────────────────
 #  Public routes
 # ──────────────────────────────────────────────────────────────
@@ -340,6 +358,8 @@ async def admin_login(request: Request):
     # المنشآت من نفس العنوان.
     client_ip = request.client.host if request.client else "unknown"
     if not _login_rate_ok(f"admin:{client_ip}"):
+        _audit(request, action="admin.login.rate_limited", actor_type="anonymous",
+               client_id=None, ip=client_ip)
         if request.headers.get("content-type", "").startswith("application/json"):
             return JSONResponse(
                 {"success": False, "error": "محاولات كثيرة — انتظر دقيقة"}, status_code=429
@@ -349,10 +369,14 @@ async def admin_login(request: Request):
         )
 
     if not _verify_admin_password(str(password), cfg):
+        _audit(request, action="admin.login.failure", actor_type="anonymous",
+               client_id=None, ip=client_ip)
         if request.headers.get("content-type", "").startswith("application/json"):
             return JSONResponse({"success": False, "error": "كلمة المرور خاطئة"}, status_code=401)
         return HTMLResponse(_admin_login_page("كلمة المرور خاطئة"), status_code=401)
 
+    _audit(request, action="admin.login.success", actor_type="admin",
+           actor_id="platform_owner", client_id=None, ip=client_ip)
     token = _new_token()
     with _lock:
         _admin_sessions[token] = {"created_at": datetime.now().isoformat()}
@@ -506,6 +530,9 @@ async def admin_update_client(client_id: str, request: Request, _=Depends(requir
         # الذي جُزّئت به كلمة المرور — أي أن إعادة التعيين كانت تُخرج
         # المنشأة من حسابها بصمت. _make_password يُحدّث الحقلين معاً.
         client["pass_hash"], client["pass_salt"] = _make_password(str(data["password"]))
+        _audit(request, action="password.reset", actor_type="admin",
+               actor_id="platform_owner", client_id=client_id,
+               table_name="clients", record_id=client_id)
     store.save_client(client)
     return {"success": True, "client": client}
 
@@ -513,6 +540,13 @@ async def admin_update_client(client_id: str, request: Request, _=Depends(requir
 @app.delete("/api/admin/clients/{client_id}")
 async def admin_delete_client(client_id: str, request: Request, _=Depends(require_admin)):
     store = request.app.state.store
+    # يُسجَّل قبل الحذف: بعده تختفي بيانات المنشأة ولا يبقى ما يُوصَف
+    existing = store.get_client(client_id)
+    _audit(request, action="client.delete", actor_type="admin",
+           actor_id="platform_owner", client_id=client_id,
+           table_name="clients", record_id=client_id,
+           old_data={"name": (existing or {}).get("name"),
+                     "plan": (existing or {}).get("plan")})
     store.delete_client(client_id)
     return {"success": True}
 
@@ -529,6 +563,8 @@ async def client_login(request: Request):
     # Rate-limit: block IPs that exceed LOGIN_MAX_PER_MINUTE attempts per minute
     client_ip = (request.client.host if request.client else "?")
     if not _login_rate_ok(client_ip):
+        _audit(request, action="login.rate_limited", actor_type="anonymous",
+               client_id=client_id or None, ip=client_ip)
         return HTMLResponse(_login_page("محاولات تسجيل دخول كثيرة — حاول لاحقاً"), status_code=429)
 
     if not client_id or not password:
@@ -543,7 +579,12 @@ async def client_login(request: Request):
 
     # تمرير store يُفعّل ترقية الهاش القديم إلى Argon2id عند نجاح الدخول
     if not _verify_password(password, client, cfg, store=store):
+        _audit(request, action="login.failure", actor_type="anonymous",
+               client_id=client_id, ip=client_ip)
         return HTMLResponse(_login_page("كلمة المرور خاطئة"), status_code=401)
+
+    _audit(request, action="login.success", actor_type="staff",
+           actor_id=client_id, client_id=client_id, ip=client_ip)
 
     token = _new_token()
     session_data = {
@@ -1529,6 +1570,23 @@ async def pay_invoice(invoice_id: str, request: Request, session=Depends(require
 # ──────────────────────────────────────────────────────────────
 #  Tickets (client side)
 # ──────────────────────────────────────────────────────────────
+@app.get("/api/audit-log")
+async def get_audit_log(
+    request: Request,
+    limit: int = 100,
+    action: Optional[str] = None,
+    session=Depends(require_client),
+):
+    """أحدث أحداث المراجعة للمنشأة — «من فعل هذا ومتى».
+
+    السجل غير قابل للتعديل ولا الحذف: مُشغّل على مستوى الصف يمنعهما،
+    والدور المُقيَّد مسحوبة منه صلاحيتاهما.
+    """
+    from services.audit import read_audit
+    events = read_audit(request.app.state.db, session["client_id"], limit, action)
+    return {"success": True, "data": events, "total": len(events)}
+
+
 @app.get("/api/tickets")
 async def get_tickets(request: Request, session=Depends(require_client)):
     store = request.app.state.store

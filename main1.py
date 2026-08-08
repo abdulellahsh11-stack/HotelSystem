@@ -333,6 +333,71 @@ async def add_security_and_cache_headers(request: Request, call_next):
     return response
 
 
+# مسارات لا تُسجَّل في سجل المراجعة: ضجيج تشغيلي لا قيمة تدقيقية له
+_AUDIT_SKIP_PREFIXES = ("/api/health", "/api/status", "/static", "/api/telemetry")
+
+# الدخول والخروج يُسجَّلان في مواضعهما بتفصيل أدق (نجاح/فشل/تجاوز حدّ)
+_AUDIT_SKIP_EXACT = ("/api/login", "/api/admin/login")
+
+
+@app.middleware("http")
+async def audit_mutations(request: Request, call_next):
+    """يُسجّل كل عملية تغيير في سجل المراجعة.
+
+    الاعتماد على استدعاءات صريحة في كل مسار يعني أن أي مسار جديد يُنسى.
+    الوسيط يضمن التغطية بحكم موقعه: ما يمرّ عبر HTTP يُسجَّل. الاستدعاءات
+    الصريحة تبقى للأحداث التي تحتاج تفصيل «قبل/بعد».
+
+    لا يُسجَّل إلا ما غيّر حالة فعلاً (استجابة أقل من 400)، وما عدا ذلك
+    يُسجَّل كمحاولة فاشلة — وهي بدورها إشارة تحقيق مفيدة.
+    """
+    response = await call_next(request)
+
+    method = request.method
+    path = request.url.path
+    if method not in ("POST", "PUT", "PATCH", "DELETE"):
+        return response
+    if path in _AUDIT_SKIP_EXACT or path.startswith(_AUDIT_SKIP_PREFIXES):
+        return response
+
+    try:
+        db = getattr(request.app.state, "db", None)
+        if not db or not getattr(db, "use_postgres", False):
+            return response
+
+        from services.audit import actor_from_session, audit
+
+        session = None
+        try:
+            session = get_client_session(request)
+        except Exception:
+            pass
+        is_admin = bool(_admin_sessions.get(_get_admin_token(request) or ""))
+        if is_admin and not session:
+            session = {"is_admin": True}
+
+        actor_type, actor_id = actor_from_session(session)
+        outcome = "ok" if response.status_code < 400 else "failed"
+
+        audit(
+            db,
+            client_id=(session or {}).get("client_id"),
+            action=f"{method.lower()}.{outcome}",
+            actor_id=actor_id,
+            actor_type=actor_type,
+            table_name=None,
+            record_id=path,
+            new_data={"path": path, "status": response.status_code,
+                      "query": str(request.url.query)[:500]},
+            ip_address=request.client.host if request.client else None,
+        )
+    except Exception as e:
+        # سجل المراجعة لا يُسقط الطلب بحال
+        log.debug(f"audit middleware skipped: {e}")
+
+    return response
+
+
 # Module shortcut paths that must be locked behind login (server-side gate)
 _PROTECTED_PAGE_PREFIXES = (
     "/dheuof", "/guests-module", "/shumus", "/tourism", "/inventory",

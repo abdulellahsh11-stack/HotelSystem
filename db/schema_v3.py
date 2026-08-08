@@ -621,6 +621,11 @@ _RLS_EXEMPT = {"po_items", "marketers"}
 # جداول يجوز أن يكون client_id فيها NULL بمعنى «قالب عام مقروء للجميع»
 _RLS_GLOBAL_TEMPLATE = {"staff_roles"}
 
+# سجل المراجعة: القراءة مقصورة على صفوف المنشأة، أما الإضافة فمسموحة
+# دائماً. سياسة القراءة وحدها كانت ستمنع تسجيل عمليات مالك المنصة —
+# فهي بلا سياق مستأجر، فيفشل شرط WITH CHECK ويضيع أثر أخطر العمليات.
+_RLS_APPEND_ONLY = {"audit_log"}
+
 
 def _tenant_tables(db) -> list:
     """يستخرج من الكتالوج كل جدول يحمل عمود client_id.
@@ -872,10 +877,25 @@ def run_rls_migration(db) -> None:
                 f"{'FORCE' if enforce else 'NO FORCE'} ROW LEVEL SECURITY"
             )
             db.execute(f"DROP POLICY IF EXISTS tenant_isolation ON {table}")
-            db.execute(
-                f"CREATE POLICY tenant_isolation ON {table} "
-                f"USING ({predicate}) WITH CHECK ({predicate})"
-            )
+            db.execute(f"DROP POLICY IF EXISTS audit_append ON {table}")
+
+            if table in _RLS_APPEND_ONLY:
+                # القراءة مقصورة على صفوف المنشأة، والإضافة مسموحة دائماً.
+                # لولا ذلك لتعذّر تسجيل عمليات مالك المنصة — فهي بلا سياق
+                # مستأجر، فيفشل شرط WITH CHECK ويضيع أثر أخطر العمليات.
+                db.execute(
+                    f"CREATE POLICY tenant_isolation ON {table} "
+                    f"FOR SELECT USING ({predicate})"
+                )
+                db.execute(
+                    f"CREATE POLICY audit_append ON {table} "
+                    f"FOR INSERT WITH CHECK (true)"
+                )
+            else:
+                db.execute(
+                    f"CREATE POLICY tenant_isolation ON {table} "
+                    f"USING ({predicate}) WITH CHECK ({predicate})"
+                )
             applied += 1
         except Exception as e:
             log.warning(f"RLS {table}: {e}")

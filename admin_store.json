@@ -3,21 +3,21 @@
     {
       "id": "ep_test",
       "name": "فندق الاختبار",
-      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$0YpKKpZv0q7e5GuI7Y+KQA$aFw2JLAc6sa2SxrjOc7A/Tx6Fc4nfmPzBQMr9NUiNl4",
+      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$MUbSRG1HBZx54tJTgeuPoA$jzc03uAlmaKQPXciFcVl2IkwiM5ik6tJDwOoH8b+k0o",
       "pass_salt": "",
       "status": "active",
       "plan": "pro",
       "guests": [
         {
           "full_name": "نزيل الاختبار",
-          "id": 1
+          "id": 2
         }
       ]
     },
     {
       "id": "smoke_test",
       "name": "فندق الدخان",
-      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$Rore/4GKNcbOt3Ysh4hYuQ$oG7VbgF8jhGKKpzcnWhUfgcZE/SDUqEqF/pw9lmDsKo",
+      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$9rKyMPBcqIoO59WDveCrFg$EtNy2N0hEimnCMOWHLSgdEcwi2Um89EppmUvt1B3kqg",
       "pass_salt": "",
       "status": "active",
       "plan": "pro",
@@ -25,14 +25,14 @@
         {
           "full_name": "نزيل الدخان",
           "id_number": "1098765432",
-          "id": 2
+          "id": 3
         }
       ]
     },
     {
       "id": "sess_test",
       "name": "فندق الجلسة",
-      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$wYHQmpUsL7Y0L7RCfopfCw$jtLwMc7WLpdbTUWEMIEJcktpcH50mQqiuwWBV2JqrTg",
+      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$hpX5aOSmtNWY3S30uXtfJA$cPgUH2tmPQDgngo5olQGJTPg74f5B3cBAGZkY/JEkZ8",
       "pass_salt": "",
       "status": "active",
       "plan": "pro"
@@ -40,7 +40,7 @@
     {
       "id": "write_test",
       "name": "فندق الكتابة",
-      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$0tidvLnb5b/guI0p60gbIw$q5HaUVx3T3dWeiZnYnjpyrkQOJNL9j1Q287SfhuMqWU",
+      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$ihPKpWedM3TZyjWjKyGc+Q$Kn93Jl8Pk+aNs0i7jVJiPXUT0tfC+DRJnt1Ru0FqVUY",
       "pass_salt": "",
       "status": "active",
       "plan": "pro",
@@ -48,14 +48,14 @@
         {
           "id": "INV-00001",
           "client_id": "write_test",
-          "created_at": "2026-08-07T14:20:36.267417"
+          "created_at": "2026-08-08T03:59:02.760536"
         }
       ],
       "pos_transactions": [
         {
-          "id": "562955e7646315eb",
+          "id": "de922bbb6c58a5af",
           "client_id": "write_test",
-          "created_at": "2026-08-07T14:20:36.274258"
+          "created_at": "2026-08-08T03:59:02.768915"
         }
       ],
       "guests": [
@@ -63,26 +63,43 @@
           "full_name": "عبدالله السالم",
           "id_number": "1098765432",
           "client_id": "write_test",
-          "created_at": "2026-08-07T14:20:36.354694",
-          "id": 8
+          "created_at": "2026-08-08T03:59:02.890960",
+          "id": 9
         },
         {
           "full_name": "نزيل الاسترجاع",
           "client_id": "write_test",
-          "created_at": "2026-08-07T14:20:36.361863",
-          "id": 9
+          "created_at": "2026-08-08T03:59:02.899779",
+          "id": 10
         },
         {
           "full_name": "نزيل الولاء",
           "client_id": "write_test",
-          "created_at": "2026-08-07T14:20:36.377435",
-          "id": 10
+          "created_at": "2026-08-08T03:59:02.918866",
+          "id": 11
         },
         {
           "full_name": "نزيل التراكم",
           "client_id": "write_test",
-          "created_at": "2026-08-07T14:20:36.390826",
-          "id": 11
+          "created_at": "2026-08-08T03:59:02.935362",
+          "id": 12
+        }
+      ]
+    },
+    {
+      "id": "audit_test",
+      "name": "فندق التدقيق",
+      "pass_hash": "$argon2id$v=19$m=19456,t=2,p=1$iG7JAvkZDpzbUeSwJNq8lw$R4VbCBnnfDDTi3Bri3ob3Jgq1ZOL6eFpbywdrkSCtU4",
+      "pass_salt": "",
+      "status": "active",
+      "plan": "pro",
+      "guests": [
+        {
+          "full_name": "نزيل",
+          "password": "كلمة-تدقيق-2026",
+          "client_id": "audit_test",
+          "created_at": "2026-08-08T03:58:56.714814",
+          "id": 1
         }
       ]
     }
@@ -108,6 +125,13 @@
       "days": 30,
       "used": false,
       "created_at": "2026-08-07T14:20:36.303741"
+    },
+    {
+      "key": "BA790CC0-6446A3F1-5F9EFF23-9C523E22",
+      "plan": "trial",
+      "days": 30,
+      "used": false,
+      "created_at": "2026-08-08T03:59:02.813725"
     }
   ],
   "payments": [
@@ -131,6 +155,13 @@
       "amount": 0.0,
       "plan": "",
       "date": "2026-08-07T14:20:36.310962"
+    },
+    {
+      "id": "ac233539520d2fc7",
+      "client_id": "",
+      "amount": 0.0,
+      "plan": "",
+      "date": "2026-08-08T03:59:02.825692"
     }
   ],
   "settings": {},
@@ -161,6 +192,15 @@
       "body": "",
       "status": "open",
       "created_at": "2026-08-07T14:20:36.334831",
+      "replies": []
+    },
+    {
+      "id": "011029a50619ac08",
+      "client_id": "write_test",
+      "subject": "",
+      "body": "",
+      "status": "open",
+      "created_at": "2026-08-08T03:59:02.861179",
       "replies": []
     }
   ]
