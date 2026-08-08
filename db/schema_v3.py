@@ -961,6 +961,66 @@ def run_rls_migration(db) -> None:
         )
 
 
+def run_tenant_not_null(db) -> None:
+    """يفرض NOT NULL على client_id حيثما أمكن بأمان.
+
+    كان 69 عموداً يقبل الفراغ. وصفٌّ بـ client_id فارغ لا يخصّ أي منشأة:
+    لا تراه سياسة العزل (المقارنة بـ NULL لا تُطابق شيئاً)، ولا يظهر في
+    أي تقرير، ولا يُحذف مع المنشأة — يبقى بياناً يتيماً يشغل مساحة ولا
+    يملكه أحد. والأخطر أن خطأً برمجياً ينسى client_id يمرّ بصمت بدل أن
+    يُرفض عند الكتابة.
+
+    السلامة أولاً: الجدول الذي يحوي صفوفاً يتيمة **لا يُعدَّل** — تُحذف
+    البيانات بقرار بشري لا بترحيل تلقائي. يُسجَّل تحذير باسم الجدول وعدد
+    صفوفه كي يُراجعها المشغّل بـ scripts/find_orphan_rows.py.
+    """
+    if not db.use_postgres:
+        return
+    import logging
+    log = logging.getLogger("dheuof.db.notnull")
+
+    # staff_roles: client_id فارغ يعني قالباً عاماً — وهو تصميم مقصود
+    exempt = {"staff_roles"}
+
+    rows = db.execute(
+        """
+        SELECT c.table_name AS t
+        FROM information_schema.columns c
+        JOIN pg_class pc ON pc.relname = c.table_name
+        JOIN pg_namespace n ON n.oid = pc.relnamespace AND n.nspname = 'public'
+        WHERE c.table_schema = 'public' AND c.column_name = 'client_id'
+          AND c.is_nullable = 'YES' AND pc.relkind = 'r'
+        ORDER BY c.table_name
+        """,
+        fetch="all",
+    ) or []
+
+    tightened, orphaned = 0, []
+    for row in rows:
+        table = row["t"]
+        if table in exempt:
+            continue
+        try:
+            n = db.execute(
+                f"SELECT COUNT(*) AS n FROM {table} WHERE client_id IS NULL", fetch="one"
+            )["n"]
+            if n:
+                orphaned.append((table, n))
+                continue
+            db.execute(f"ALTER TABLE {table} ALTER COLUMN client_id SET NOT NULL")
+            tightened += 1
+        except Exception as e:
+            log.warning(f"NOT NULL على {table}.client_id: {e}")
+
+    log.info(f"✅ client_id إلزامي في {tightened} جدولاً")
+    if orphaned:
+        detail = "، ".join(f"{t} ({n} صفاً)" for t, n in orphaned)
+        log.warning(
+            f"⚠️  صفوف يتيمة بلا منشأة تمنع فرض NOT NULL على: {detail}. "
+            "راجعها بـ scripts/find_orphan_rows.py — لا تُحذف تلقائياً."
+        )
+
+
 def run_app_role_migration(db) -> None:
     """يُنشئ الدور المُقيَّد dheuof_app بأقل امتيازات ممكنة.
 
