@@ -53,6 +53,10 @@ async def client_login(request: Request):
     session_data = {
         "client_id": client_id,
         "created_at": datetime.now().isoformat(),
+        # صاحب المنشأة — الدور الذي تفحصه db.security.check_permission.
+        # بدونه يُرفض المالكُ نفسه عن كل مسار محكوم بصلاحية.
+        "role": "owner",
+        "permissions": ["*"],
     }
     with _lock:
         _client_sessions[token] = session_data
@@ -197,7 +201,12 @@ async def client_register(request: Request):
 
     token = _new_token()
     with _lock:
-        _client_sessions[token] = {"client_id": client_id, "created_at": datetime.now().isoformat()}
+        _client_sessions[token] = {
+            "client_id": client_id,
+            "created_at": datetime.now().isoformat(),
+            "role": "owner",
+            "permissions": ["*"],
+        }
 
     # إرسال المعرّف الرقمي عبر البريد الإلكتروني
     if reg_email:

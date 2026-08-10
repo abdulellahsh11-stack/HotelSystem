@@ -4,14 +4,11 @@
 routes/system.py — الصحة والحالة والنسخ الاحتياطي والتحليل الذكي
 مُستخرَج ضمن تقسيم ملف المسارات الكبير لتسهيل الصيانة.
 """
-import json
 import os
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import (
-    JSONResponse,
-)
+from fastapi.responses import JSONResponse, Response
 
 from app_core import (
     log, _lock, _client_sessions,
@@ -189,36 +186,103 @@ async def ai_analyze(request: Request, session=Depends(require_client)):
 # ──────────────────────────────────────────────────────────────
 #  Backup
 # ──────────────────────────────────────────────────────────────
+def _require_backup_access(session: dict) -> None:
+    """
+    سياسة الوصول للنسخ الاحتياطي.
+
+    النسخة تحوي بيانات المنشأة كاملةً — نزلاء وأرقام هوية ورواتب — فلا
+    تُفتح لكل موظف مسجَّل. صاحب المنشأة والمدير العام يمرّان دائماً،
+    وغيرهما يحتاج صلاحية `backup` صريحة.
+
+    عند غياب نظام أدوار الموظفين تكون الجلسة جلسةَ مالك المنشأة، فيمرّ
+    عبر الدور `owner` — أي أن السياسة تعمل اليوم وتتشدّد تلقائياً حين
+    تُضاف حسابات الموظفين.
+    """
+    from db.security import enforce_permission
+
+    try:
+        enforce_permission(session, "backup")
+    except PermissionError as exc:
+        # enforce_permission يرمي PermissionError وهو ليس HTTPException،
+        # فبدون هذا التحويل يتحوّل رفضُ الصلاحية إلى خطأ خادم 500.
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+
+
 @router.post("/api/backup/create")
 async def backup_create(request: Request, session=Depends(require_client)):
-    store = request.app.state.store
+    """يُنشئ نسخة شهرية مضغوطة للمنشأة الحالية ويعيد بيانها."""
+    from services.backup_archive import archive_filename, build_archive
+
+    _require_backup_access(session)
     cid = session["client_id"]
-    backup_data = {
-        "client_id": cid,
-        "timestamp": datetime.now().isoformat(),
-        "guests": store.get_guests(cid),
-        "bookings": store.get_bookings(cid),
-        "invoices": store.get_invoices(cid),
-        "pos": store.get_pos_transactions(cid),
-    }
-    os.makedirs("backups", exist_ok=True)
-    filename = f"backup_{cid}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-    filepath = os.path.join("backups", filename)
+    period = datetime.now().strftime("%Y-%m")
+
     try:
-        with open(filepath, "w", encoding="utf-8") as f:
-            json.dump(backup_data, f, ensure_ascii=False, indent=2, default=str)
-        return {"success": True, "filename": filename}
-    except Exception as e:
-        return JSONResponse({"success": False, "error": str(e)}, status_code=500)
+        content, manifest = build_archive(request.app.state.db, cid, period)
+    except Exception as exc:
+        log.error("فشل بناء النسخة الاحتياطية للمنشأة %s: %s", cid, exc, exc_info=True)
+        return JSONResponse(
+            {"success": False, "error": "تعذّر بناء النسخة الاحتياطية"}, status_code=500
+        )
+
+    os.makedirs("backups", exist_ok=True)
+    filename = archive_filename(cid, period)
+    try:
+        with open(os.path.join("backups", filename), "wb") as fh:
+            fh.write(content)
+    except Exception as exc:
+        # القرص مؤقّت على أي حال — الفشل في الحفظ لا يمنع التحميل المباشر
+        log.warning("تعذّر حفظ النسخة على القرص: %s", exc)
+
+    return {"success": True, "filename": filename, "manifest": manifest}
+
+
+@router.get("/api/backup/download")
+async def backup_download(request: Request, session=Depends(require_client)):
+    """
+    يبني النسخة ويُرسلها للتحميل مباشرةً إلى جهاز صاحب المنشأة.
+
+    تُبنى عند الطلب لا تُقرأ من القرص: قرص الحاوية مؤقّت ويُمحى عند كل
+    نشر، فالقراءة منه تُعيد «غير موجود» بعد أول إعادة تشغيل.
+    """
+    from services.backup_archive import archive_filename, build_archive
+
+    _require_backup_access(session)
+    cid = session["client_id"]
+    period = request.query_params.get("period") or datetime.now().strftime("%Y-%m")
+
+    content, manifest = build_archive(request.app.state.db, cid, period)
+    filename = archive_filename(cid, period)
+    log.info(
+        "تحميل نسخة احتياطية — منشأة=%s شهر=%s صفوف=%s",
+        cid, period, manifest["total_rows"],
+    )
+    return Response(
+        content=content,
+        media_type="application/zip",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+            "X-Backup-SHA256": manifest["sha256"],
+            "X-Backup-Rows": str(manifest["total_rows"]),
+        },
+    )
 
 
 @router.get("/api/backup/list")
 async def backup_list(request: Request, session=Depends(require_client)):
+    """يسرد النسخ المحفوظة على القرص المؤقّت لهذه المنشأة وحدها."""
+    _require_backup_access(session)
     cid = session["client_id"]
-    backup_dir = "backups"
-    if not os.path.isdir(backup_dir):
-        return {"success": True, "backups": []}
-    files = sorted([f for f in os.listdir(backup_dir) if f.startswith(f"backup_{cid}_")], reverse=True)
-    return {"success": True, "backups": files}
+    prefix = f"duyuf_backup_{cid}_"
+    if not os.path.isdir("backups"):
+        return {"success": True, "backups": [], "note": "لا نسخ محفوظة بعد"}
+    files = sorted(
+        (f for f in os.listdir("backups") if f.startswith(prefix)), reverse=True
+    )
+    return {
+        "success": True,
+        "backups": files,
+        "note": "القرص مؤقّت — نزّل النسخة إلى جهازك للحفظ الدائم",
+    }
 
 

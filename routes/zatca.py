@@ -318,8 +318,10 @@ async def verify_qr(body: VerifyQrRequest, request: Request):
             "issue_date": timestamp,
             "total": total,
             "vat_amount": vat_amount,
-            "invoice_number": invoice.get("invoice_number") if invoice else None,
-            "booking_id": invoice.get("booking_id") if invoice else None,
+            # لا تُعاد المعرّفات الداخلية (invoice_number · booking_id):
+            # هذه نقطة عامة بلا مصادقة تبحث في فواتير كل المنشآت، فإعادة
+            # معرّف داخلي منها تكشف بيانات منشأة لمن يحمل رمز QR فقط.
+            # المطلوب للتحقق هو الصحة لا الهوية.
             "zatca_status": invoice.get("zatca_status") if invoice else "NOT_FOUND",
             "message": "فاتورة صحيحة ومعتمدة ✅" if is_valid else "فاتورة غير معروفة ❌",
         },

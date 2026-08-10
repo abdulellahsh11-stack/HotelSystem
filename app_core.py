@@ -374,8 +374,13 @@ def get_client_session(request: Request) -> Optional[dict]:
                     (token,), fetch="one"
                 )
                 if row:
+                    # الدور يُعاد بناؤه هنا أيضاً: جدول client_sessions لا
+                    # يخزّنه، والجلسة المُستعادة بعد إعادة التشغيل بلا دور
+                    # تُرفض عن كل مسار محكوم بصلاحية.
                     session = {"client_id": row["client_id"],
-                               "created_at": str(row["created_at"])}
+                               "created_at": str(row["created_at"]),
+                               "role": "owner",
+                               "permissions": ["*"]}
                     with _lock:
                         _client_sessions[token] = session
         except Exception:
