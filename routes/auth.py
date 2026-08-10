@@ -25,6 +25,36 @@ router = APIRouter()
 # ──────────────────────────────────────────────────────────────
 #  Client Auth
 # ──────────────────────────────────────────────────────────────
+def _upgrade_password_if_weak(request: Request, client_id: str,
+                              client: dict, password: str) -> None:
+    """
+    يرفع تجزئة كلمة المرور إلى المعيار الحالي بعد تحقّق ناجح.
+
+    الترقية ممكنة هنا فقط لأن كلمة المرور الأصلية متاحة في هذه اللحظة
+    وحدها — التجزئة لا تُحوَّل بلا معرفة أصلها. فالمنصة تنتقل تدريجياً
+    بلا إعادة تعيين تُطلب من العملاء.
+
+    الفشل لا يمنع الدخول: المستخدم أثبت هويته، وتعذّر الترقية شأن
+    تشغيلي يُسجَّل ويُعاد في المرة القادمة.
+    """
+    from app_core import _make_password, password_needs_upgrade
+
+    if not password_needs_upgrade(client.get("pass_hash", "")):
+        return
+    try:
+        db = request.app.state.db
+        if not getattr(db, "use_postgres", False):
+            return
+        new_hash, new_salt = _make_password(password)
+        db.execute(
+            "UPDATE clients SET pass_hash=%s, pass_salt=%s WHERE id=%s",
+            (new_hash, new_salt, client_id),
+        )
+        log.info("رُقّيت تجزئة كلمة المرور للمنشأة %s", client_id)
+    except Exception as exc:
+        log.warning("تعذّرت ترقية التجزئة للمنشأة %s: %s", client_id, exc)
+
+
 @router.post("/api/login")
 async def client_login(request: Request):
     form = await request.form()
@@ -48,6 +78,8 @@ async def client_login(request: Request):
 
     if not _verify_password(password, client, cfg):
         return HTMLResponse(_login_page("كلمة المرور خاطئة"), status_code=401)
+
+    _upgrade_password_if_weak(request, client_id, client, password)
 
     token = _new_token()
     session_data = {

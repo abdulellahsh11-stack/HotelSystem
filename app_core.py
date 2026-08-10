@@ -67,6 +67,7 @@ def _reg_rate_ok(ip: str) -> bool:
     """يسمح بحد أقصى REG_MAX_PER_HOUR تسجيلات لكل IP في الساعة."""
     now = datetime.now().timestamp()
     with _lock:
+        _prune_attempts(_reg_attempts, now, 3600)
         hits = [t for t in _reg_attempts.get(ip, []) if now - t < 3600]
         if len(hits) >= _REG_MAX_PER_HOUR:
             _reg_attempts[ip] = hits
@@ -76,10 +77,25 @@ def _reg_rate_ok(ip: str) -> bool:
         return True
 
 
+# حدٌّ يُشغّل التنظيف. كل عنوان جديد يضيف مفتاحاً لا يُحذف أبداً، فالقاموس
+# ينمو بعدد العناوين التي زارت المنصة منذ آخر إعادة تشغيل — تسريبُ ذاكرةٍ
+# بطيء يستغلّه من يوزّع محاولاته على عناوين كثيرة.
+_ATTEMPTS_PRUNE_THRESHOLD = 10_000
+
+
+def _prune_attempts(bucket: dict, now: float, window: int) -> None:
+    """يحذف المفاتيح التي انقضت نافذتها. يُستدعى تحت القفل."""
+    if len(bucket) < _ATTEMPTS_PRUNE_THRESHOLD:
+        return
+    for key in [k for k, v in bucket.items() if not v or now - max(v) >= window]:
+        bucket.pop(key, None)
+
+
 def _login_rate_ok(ip: str) -> bool:
     """Allow at most LOGIN_MAX_PER_MINUTE login attempts per IP per minute (brute-force guard)."""
     now = datetime.now().timestamp()
     with _lock:
+        _prune_attempts(_login_attempts, now, 60)
         hits = [t for t in _login_attempts.get(ip, []) if now - t < 60]
         if len(hits) >= _LOGIN_MAX_PER_MINUTE:
             _login_attempts[ip] = hits
@@ -93,25 +109,69 @@ def _new_token() -> str:
     return secrets.token_urlsafe(32)
 
 
-def _hash_password(password: str, salt: str) -> str:
+# عدد دورات PBKDF2.
+#   LEGACY — ما بُنيت به كل التجزئات القائمة. يبقى للتحقق منها فقط.
+#   CURRENT — توصية OWASP لـ PBKDF2-SHA256؛ يُستخدم لكل تجزئة جديدة.
+# لا تُرفع LEGACY: رفعه يمنع كل عميل قائم من الدخول لأن تجزئته العارية
+# لا تحمل عدد دوراتها. الترقية تتم فرداً فرداً عند أول دخول ناجح.
+PBKDF2_ITERATIONS_LEGACY = 100_000
+PBKDF2_ITERATIONS_CURRENT = 600_000
+
+_HASH_PREFIX = "pbkdf2_sha256"
+
+
+def _hash_password(password: str, salt: str,
+                   iterations: int = PBKDF2_ITERATIONS_LEGACY) -> str:
+    """
+    يُعيد تجزئة عارية (hex) بلا وسم.
+
+    الافتراضي يبقى LEGACY عمداً: مسارات المشرف تقارن ناتج هذه الدالة
+    بتجزئات مخزَّنة قديمة، فتغيير الافتراضي يكسر دخول المشرف صامتاً.
+    """
     return hashlib.pbkdf2_hmac(
-        "sha256", password.encode(), salt.encode(), 100_000
+        "sha256", password.encode(), salt.encode(), iterations
     ).hex()
 
 
 def _make_password(password: str) -> tuple[str, str]:
-    """C2 fix: يُنشئ ملحاً عشوائياً فريداً لكل حساب ويعيد (hash, salt)."""
+    """
+    يُنشئ ملحاً فريداً ويعيد (تجزئة مُوسَّمة، ملح).
+
+    الصيغة `pbkdf2_sha256$<دورات>$<hex>` تحمل عدد دوراتها معها، فترفع
+    المنصة العدد مستقبلاً دون إبطال ما هو مخزَّن.
+    """
     salt = secrets.token_hex(16)
-    return _hash_password(password, salt), salt
+    digest = _hash_password(password, salt, PBKDF2_ITERATIONS_CURRENT)
+    return f"{_HASH_PREFIX}${PBKDF2_ITERATIONS_CURRENT}${digest}", salt
+
+
+def _parse_stored_hash(stored: str) -> tuple[int, str]:
+    """يُفكّك المخزَّن إلى (دورات، تجزئة). العاري يُعامَل كقديم."""
+    if stored.startswith(_HASH_PREFIX + "$"):
+        try:
+            _, iters, digest = stored.split("$", 2)
+            return int(iters), digest
+        except (ValueError, TypeError):
+            pass  # مُشوَّه — يسقط إلى القديم فيفشل التحقق بأمان
+    return PBKDF2_ITERATIONS_LEGACY, stored
 
 
 def _verify_password(password: str, client: dict, cfg) -> bool:
-    """يتحقق من كلمة المرور بملح الحساب، مع توافق خلفي مع الملح العام القديم."""
+    """يتحقق بملح الحساب، ويقبل الصيغتين المُوسَّمة والعارية القديمة."""
     stored = client.get("pass_hash", "") or ""
     if not stored:
         return False
     salt = client.get("pass_salt") or cfg.pass_salt   # legacy fallback
-    return secrets.compare_digest(_hash_password(password, salt), stored)
+    iterations, digest = _parse_stored_hash(stored)
+    return secrets.compare_digest(
+        _hash_password(password, salt, iterations), digest
+    )
+
+
+def password_needs_upgrade(stored: str) -> bool:
+    """هل التجزئة المخزَّنة أضعف من المعيار الحالي؟"""
+    iterations, _ = _parse_stored_hash(stored or "")
+    return iterations < PBKDF2_ITERATIONS_CURRENT
 
 
 # ──────────────────────────────────────────────────────────────

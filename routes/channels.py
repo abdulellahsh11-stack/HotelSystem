@@ -130,18 +130,75 @@ async def sync_log(request: Request, session=Depends(_require_client)):
         raise HTTPException(status_code=500, detail=f"خطأ في الخادم: {str(e)}")
 
 
+@router.post("/channel-secret/rotate")
+async def rotate_channel_secret(request: Request, session=Depends(_require_client)):
+    """
+    يُنشئ سرّ توقيع جديداً للقنوات ويعرضه **مرة واحدة**.
+
+    لا يُقرأ بعدها: يُخزَّن كما هو ليُقارن به، ونقطةُ قراءةٍ دائمة تعني
+    أن أي ثغرة قراءة تكشفه. من فقده يُدوّره من جديد.
+    """
+    from services.channel_auth import generate_secret
+
+    db = request.app.state.db
+    cid = session["client_id"]
+    if not getattr(db, "use_postgres", False):
+        raise HTTPException(status_code=503, detail="قاعدة البيانات غير متاحة")
+
+    secret = generate_secret()
+    db.execute("UPDATE clients SET channel_secret=%s WHERE id=%s", (secret, cid))
+    logger.info("دُوِّر سرّ القناة للمنشأة %s", cid)
+    return {
+        "success": True,
+        "secret": secret,
+        "note": "احفظه الآن — لن يُعرض مرة أخرى",
+        "headers": {
+            "X-Channel-Token": cid,
+            "X-Channel-Timestamp": "<طابع يونكس بالثواني>",
+            "X-Channel-Signature": "hmac_sha256(secret, '<timestamp>.<body>')",
+        },
+    }
+
+
 @router.post("/webhook/{channel_code}")
 async def webhook(channel_code: str, request: Request):
     """
     نقطة استقبال حجوزات القناة (webhook).
-    يُؤمَّن عبر رأس X-Channel-Token = client_id (مبسّط — استبدله بتوقيع HMAC في الإنتاج).
+
+    تُوثَّق بتوقيع HMAC على جسم الطلب. الرأس `X-Channel-Token` صار
+    مُعرِّفاً للمنشأة لا اعتماداً — الاعتماد هو التوقيع، لأن رقم
+    المنشأة يُرسل بالبريد ويظهر في الواجهة فليس سراً.
     """
+    from services.channel_auth import ChannelAuthError, verify_request
+
     try:
         client_id = request.headers.get("X-Channel-Token", "").strip()
         if not client_id:
             raise HTTPException(status_code=401, detail="رمز القناة مفقود")
+
+        # الجسم الخام قبل أي تحليل: التوقيع محسوب على البايتات كما أُرسلت،
+        # وإعادةُ ترميز JSON تُغيّرها فيفشل تحقّقٌ صحيح.
+        raw_body = await request.body()
+
+        db = request.app.state.db
+        row = db.execute(
+            "SELECT channel_secret FROM clients WHERE id=%s", (client_id,), fetch="one"
+        ) if getattr(db, "use_postgres", False) else None
+        secret = (row or {}).get("channel_secret") or ""
+
         try:
-            payload = await request.json()
+            verify_request(
+                secret,
+                request.headers.get("X-Channel-Timestamp", ""),
+                request.headers.get("X-Channel-Signature", ""),
+                raw_body,
+            )
+        except ChannelAuthError as exc:
+            logger.warning("رُفض webhook للمنشأة %s: %s", client_id, exc)
+            raise HTTPException(status_code=401, detail=str(exc)) from exc
+
+        try:
+            payload = json.loads(raw_body)
         except Exception:
             raise HTTPException(status_code=400, detail="حمولة غير صالحة")
         try:
