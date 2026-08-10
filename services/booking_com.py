@@ -10,7 +10,6 @@ Booking.com يستخدم XML API في الـ supply side (ليس JSON).
 import urllib.request
 import urllib.error
 import base64
-import json
 import os
 from dataclasses import dataclass
 from datetime import datetime, timedelta

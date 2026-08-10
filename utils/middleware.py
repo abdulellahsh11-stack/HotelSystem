@@ -8,7 +8,7 @@ import time
 import secrets
 import logging
 import functools
-from typing import Callable, Any
+from typing import Callable
 
 from utils.monitoring import log_error, log_event
 

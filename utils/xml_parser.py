@@ -6,7 +6,6 @@ stdlib فقط — لا lxml
 
 import xml.etree.ElementTree as ET
 from datetime import datetime
-from typing import Optional
 
 
 # Namespaces المستخدمة في Booking.com

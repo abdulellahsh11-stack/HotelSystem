@@ -4,7 +4,7 @@
 utils/validators.py — Saudi ID validation + Phone normalization
 """
 import re
-from typing import Tuple, Optional
+from typing import Tuple
 
 
 def validate_saudi_id(id_number: str) -> Tuple[bool, str]:

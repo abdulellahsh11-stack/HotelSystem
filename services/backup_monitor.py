@@ -10,7 +10,7 @@ import logging
 import urllib.request
 import urllib.error
 import json
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from utils.monitoring import log_error, log_event
 from utils.date_utils import sa_now

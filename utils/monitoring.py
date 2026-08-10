@@ -9,7 +9,7 @@ import time
 import logging
 import traceback
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any
 
 log = logging.getLogger("dheuof.monitoring")
 

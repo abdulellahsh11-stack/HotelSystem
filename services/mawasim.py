@@ -18,7 +18,7 @@ import urllib.request
 import urllib.error
 import os
 from dataclasses import dataclass
-from datetime import datetime, timedelta, date
+from datetime import datetime, date
 from typing import Optional
 
 from services.base_channel import BaseChannel, ChannelResult
