@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-main1.py — قلب التطبيق: الإعداد، الـ middleware، المصادقة
-يُستورد من main.py (نقطة الدخول) و main2.py (الـ routes)
+app_core.py — قلب التطبيق: الإعداد، الـ middleware، المصادقة
+يُستورد من main.py (نقطة الدخول لـ uvicorn)
 """
 
 import decimal
@@ -324,153 +324,6 @@ async def server_side_auth_gate(request: Request, call_next):
     return await call_next(request)
 
 
-# ── Module Routers — جميع الوحدات الـ 15 + وجهات سياحية ─────
-try:
-    from routes.m02_frontdesk import router as m02_router
-    app.include_router(m02_router)
-    log.info("✓ M02 Front Desk")
-except Exception as e:
-    log.warning(f"M02: {e}")
-
-try:
-    from routes.m06_hr import router as m06_router
-    app.include_router(m06_router)
-    log.info("✓ M06 HR")
-except Exception as e:
-    log.warning(f"M06: {e}")
-
-try:
-    from routes.m07_housekeeping import router as m07_router
-    app.include_router(m07_router)
-    log.info("✓ M07 Housekeeping")
-except Exception as e:
-    log.warning(f"M07: {e}")
-
-try:
-    from routes.m08_maintenance import router as m08_router
-    app.include_router(m08_router)
-    log.info("✓ M08 Maintenance")
-except Exception as e:
-    log.warning(f"M08: {e}")
-
-try:
-    from routes.m10_crm import router as m10_router
-    app.include_router(m10_router)
-    log.info("✓ M10 CRM")
-except Exception as e:
-    log.warning(f"M10: {e}")
-
-try:
-    from routes.m11_kpi import router as m11_router
-    app.include_router(m11_router)
-    log.info("✓ M11 KPI")
-except Exception as e:
-    log.warning(f"M11: {e}")
-
-try:
-    from routes.m13_warehouses import router as m13_router
-    app.include_router(m13_router)
-    log.info("✓ M13 Warehouses")
-except Exception as e:
-    log.warning(f"M13: {e}")
-
-try:
-    from routes.m14_tourism import router as m14_router
-    app.include_router(m14_router)
-    log.info("✓ M14 Tourism Tours")
-except Exception as e:
-    log.warning(f"M14: {e}")
-
-try:
-    from routes.m14b_destinations import router as m14b_router
-    app.include_router(m14b_router)
-    log.info("✓ M14b Tourist Destinations")
-except Exception as e:
-    log.warning(f"M14b: {e}")
-
-try:
-    from routes.channels import router as channels_router
-    app.include_router(channels_router)
-    log.info("✓ Channel Manager (OTA)")
-except Exception as e:
-    log.warning(f"Channels: {e}")
-
-try:
-    from routes.open_api import router as open_api_router
-    app.include_router(open_api_router)
-    log.info("✓ Open API (modules + ZATCA accounting)")
-except Exception as e:
-    log.warning(f"Open API: {e}")
-
-try:
-    from routes.m04_inventory import router as m04_router
-    app.include_router(m04_router)
-    log.info("✓ M04 Inventory")
-except Exception as e:
-    log.warning(f"M04: {e}")
-
-try:
-    from routes.m17_bookings import router as m17_router
-    app.include_router(m17_router)
-    log.info("✓ M17 Bookings")
-except Exception as e:
-    log.warning(f"M17: {e}")
-
-try:
-    from routes.m06_accounting import router as m06acc_router
-    app.include_router(m06acc_router)
-    log.info("✓ M06acc Accounting")
-except Exception as e:
-    log.warning(f"M06acc: {e}")
-
-try:
-    from routes.m07_pos import router as m07_router
-    app.include_router(m07_router)
-    log.info("✓ M07 POS")
-except Exception as e:
-    log.warning(f"M07: {e}")
-
-try:
-    from routes.m_analytics import router as analytics_router
-    app.include_router(analytics_router)
-    log.info("✓ Analytics cross-module")
-except Exception as e:
-    log.warning(f"Analytics: {e}")
-
-try:
-    from routes.integration import router as integration_router
-    app.include_router(integration_router)
-    log.info("✓ Integration (cross-module orchestration)")
-except Exception as e:
-    log.warning(f"Integration: {e}")
-
-try:
-    from routes.m_zatca import router as zatca_router
-    app.include_router(zatca_router)
-    log.info("✓ ZATCA (فواتير إلكترونية + QR Code)")
-except Exception as e:
-    log.warning(f"ZATCA: {e}")
-
-try:
-    from routes.m_night_audit import router as night_audit_router
-    app.include_router(night_audit_router)
-    log.info("✓ Night Audit (إغلاق اليوم + أجهزة الدفع)")
-except Exception as e:
-    log.warning(f"NightAudit: {e}")
-
-try:
-    from routes.m_reviews import router as reviews_router
-    app.include_router(reviews_router)
-    log.info("✓ Reviews (تقييمات الحجوزات)")
-except Exception as e:
-    log.warning(f"Reviews: {e}")
-
-try:
-    from routes.pricing import router as pricing_router
-    app.include_router(pricing_router)
-    log.info("✓ Dynamic Pricing (التسعير الديناميكي)")
-except Exception as e:
-    log.warning(f"DynamicPricing router: {e}")
 
 
 # ──────────────────────────────────────────────────────────────
@@ -566,3 +419,66 @@ def require_client(request: Request) -> dict:
 # ──────────────────────────────────────────────────────────────
 
 from html_pages import _login_page, _admin_login_page, _admin_dashboard, _client_dashboard  # noqa: E402, F401
+
+
+# ──────────────────────────────────────────────────────────────
+#  تسجيل وحدات المسارات — سجلٌّ واحد لكل الوحدات
+#  يُنفَّذ في آخر الملف ليكون كل ما تحتاجه الوحدات معرَّفاً
+#  الترتيب لا يؤثر — كل وحدة تحمل بادئتها في APIRouter(prefix=…)
+#  فشل وحدة لا يُسقط التطبيق، ويظهر في ملخّص الإقلاع أدناه.
+# ──────────────────────────────────────────────────────────────
+ROUTE_MODULES: list[tuple[str, str]] = [
+    ("frontdesk",    "الاستقبال"),
+    ("bookings",     "الحجوزات"),
+    ("housekeeping", "التدبير الفندقي"),
+    ("maintenance",  "الصيانة"),
+    ("inventory",    "المخزون"),
+    ("warehouses",   "المستودعات"),
+    ("pos",          "نقاط البيع"),
+    ("accounting",   "المحاسبة"),
+    ("hr",           "الموارد البشرية"),
+    ("crm",          "علاقات العملاء"),
+    ("kpi",          "مؤشرات الأداء"),
+    ("analytics",    "التحليلات عبر الوحدات"),
+    ("reviews",      "التقييمات"),
+    ("night_audit",  "تدقيق الليل"),
+    ("zatca",        "الفوترة الإلكترونية"),
+    ("tourism",      "الرحلات السياحية"),
+    ("destinations", "الوجهات السياحية"),
+    ("channels",     "قنوات التوزيع"),
+    ("pricing",      "التسعير الديناميكي"),
+    ("integration",  "التنسيق عبر الوحدات"),
+    ("open_api",     "الـ Open API"),
+    # وحدات كانت معرَّفة على app مباشرةً قبل التقسيم
+    ("pages",        "الصفحات العامة و PWA و SEO"),
+    ("system",       "الصحة والحالة والنسخ الاحتياطي"),
+    ("admin",        "لوحة مالك المنصة"),
+    ("auth",         "دخول المنشأة وتسجيلها"),
+    ("hotel_ops",    "العمليات الفندقية"),
+    ("insights",     "المؤشرات والتحليلات"),
+    ("commerce",     "الباقات والدفع والتذاكر"),
+]
+
+
+def _register_route_modules() -> None:
+    """يستورد كل وحدة ويُركّبها، ويسجّل ملخّصاً بما نجح وما فشل."""
+    import importlib
+
+    loaded: list[str] = []
+    failed: list[tuple[str, str]] = []
+
+    for name, label in ROUTE_MODULES:
+        try:
+            module = importlib.import_module(f"routes.{name}")
+            app.include_router(module.router)
+            loaded.append(name)
+        except Exception as exc:
+            failed.append((name, f"{type(exc).__name__}: {exc}"))
+            log.warning("✗ تعذّر تحميل وحدة %s (%s) — %s", name, label, exc)
+
+    log.info("✓ وحدات المسارات: %d/%d محمَّلة", len(loaded), len(ROUTE_MODULES))
+    if failed:
+        log.error("✗ وحدات فاشلة (%d): %s", len(failed), ", ".join(n for n, _ in failed))
+
+
+_register_route_modules()
