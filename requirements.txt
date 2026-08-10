@@ -40,3 +40,7 @@ APScheduler>=3.10.0
 # Arabic reshaping (PDF generation)
 arabic-reshaper>=3.0.0
 python-bidi>=0.4.2
+
+# ── مدمج من HotelSystem1: محوّلات القنوات (Booking.com / مواسم) والتقارير ──
+requests>=2.31.0          # services/booking_com.py, services/mawasim.py
+reportlab>=4.0.0          # توليد تقارير PDF
