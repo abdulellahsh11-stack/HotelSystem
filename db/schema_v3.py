@@ -542,6 +542,31 @@ CREATE INDEX IF NOT EXISTS idx_room_actions_client ON room_actions(client_id, ro
 CREATE INDEX IF NOT EXISTS idx_room_actions_staff  ON room_actions(performed_by)
 """
 
+STAFF_ACCOUNTS_SCHEMA = """
+-- حسابات دخول الموظفين. منفصلة عن جدول employees عمداً: ذاك سجلٌّ
+-- للموارد البشرية (راتب، حضور) وقد يخصّ من لا يستخدم النظام إطلاقاً،
+-- وهذا اعتمادُ دخول. خلطهما يعني أن كل موظف مُسجَّل يصير له حساب.
+CREATE TABLE IF NOT EXISTS staff_users (
+    id           SERIAL PRIMARY KEY,
+    client_id    VARCHAR(50) NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
+    username     VARCHAR(60)  NOT NULL,
+    full_name    VARCHAR(200) NOT NULL,
+    pass_hash    VARCHAR(255) NOT NULL,
+    pass_salt    VARCHAR(64)  NOT NULL,
+    role         VARCHAR(40)  NOT NULL,
+    extra_perms  TEXT,
+    employee_id  INTEGER,
+    is_active    BOOLEAN     DEFAULT TRUE,
+    last_login   TIMESTAMPTZ,
+    created_at   TIMESTAMPTZ DEFAULT NOW(),
+    created_by   VARCHAR(60),
+    -- اسم المستخدم فريد داخل المنشأة لا عبر المنصة: فندقان مختلفان
+    -- يجوز أن يكون في كلٍّ منهما «reception».
+    UNIQUE(client_id, username)
+);
+CREATE INDEX IF NOT EXISTS idx_staff_users_client ON staff_users(client_id, is_active)
+"""
+
 STAFF_APP_ALTER = [
     "ALTER TABLE rooms ADD COLUMN IF NOT EXISTS last_action_by  VARCHAR(100)",
     "ALTER TABLE rooms ADD COLUMN IF NOT EXISTS last_action_at  TIMESTAMPTZ",
@@ -572,7 +597,15 @@ def run_staff_app_migrations(db) -> None:
         except Exception as e:
             if "already exists" not in str(e).lower():
                 log.warning(f"ALTER rooms: {e}")
-    log.info("✅ Staff App migrations — room_actions + accountability columns")
+    for stmt in STAFF_ACCOUNTS_SCHEMA.split(";"):
+        s = stmt.strip()
+        if s:
+            try:
+                db.execute(s)
+            except Exception as e:
+                if "already exists" not in str(e).lower():
+                    log.warning(f"staff_users migration: {e}")
+    log.info("✅ Staff App migrations — room_actions + accountability + staff_users")
 
 
 NEW_TRIGGERS = [

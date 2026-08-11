@@ -27,6 +27,7 @@ TENANT_TABLES = {
     "booking_reviews", "attendance", "payroll", "channel_configs",
     "channel_reservations", "pricing_rules", "tourism_trips", "destinations",
     "crm_contacts", "check_in_log", "zatca_invoices", "revenue_transactions",
+    "staff_users",
 }
 
 # استثناءات مُبرَّرة — كل واحد يحمل سبباً، ولا يُضاف إليها بلا مراجعة
