@@ -575,6 +575,13 @@ STAFF_APP_ALTER = [
     # سرّ توقيع حجوزات القنوات. عمودٌ مستقل لا مفتاحٌ في settings، لأن
     # settings تُعاد كاملةً إلى الواجهة فيخرج السرّ معها.
     "ALTER TABLE clients ADD COLUMN IF NOT EXISTS channel_secret VARCHAR(64)",
+    # هوية صاحب الجلسة. بدونها تُعاد بناء الجلسة المستعادة بدورٍ مُثبَّت
+    # في الكود، فيصير كل من يستعيد جلسته مالكاً.
+    "ALTER TABLE client_sessions ADD COLUMN IF NOT EXISTS role VARCHAR(40)",
+    "ALTER TABLE client_sessions ADD COLUMN IF NOT EXISTS staff_id INTEGER",
+    "ALTER TABLE client_sessions ADD COLUMN IF NOT EXISTS username VARCHAR(60)",
+    "ALTER TABLE client_sessions ADD COLUMN IF NOT EXISTS full_name VARCHAR(200)",
+    "ALTER TABLE client_sessions ADD COLUMN IF NOT EXISTS permissions TEXT",
 ]
 
 

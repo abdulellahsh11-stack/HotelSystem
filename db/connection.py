@@ -12,6 +12,10 @@ import logging
 from contextlib import contextmanager
 from typing import Any, Optional
 
+# مفتاح هروبٍ للتطوير المحلي وحده. في الإنتاج يبقى مطفأً، فيتوقّف
+# الإقلاع عند فشل قاعدة البيانات بدل التدهور صامتاً إلى مخزن مؤقّت.
+ALLOW_JSON_FALLBACK = os.environ.get("ALLOW_JSON_FALLBACK", "").lower() in ("1", "true", "yes")
+
 log = logging.getLogger("dheuof.db")
 
 try:
@@ -75,9 +79,27 @@ class DatabasePool:
                 )
                 log.info(f"✅ PostgreSQL Pool جاهز — {min_conn}..{max_conn} اتصال")
             except Exception as e:
-                log.error(f"❌ فشل اتصال PostgreSQL: {e} — يعود لـ JSON Fallback")
-                self.use_postgres = False
-                self._pool = None
+                # لا سقوطَ صامت إلى JSON.
+                # كان الفشل هنا يُحوِّل المنصة كلها إلى مخزن JSON بلا إنذار
+                # سوى سطر في السجل: بيانات المنشآت في PostgreSQL تختفي عن
+                # الواجهة، وما يُكتب يذهب إلى ملف يُمحى مع الحاوية. انقطاعٌ
+                # لحظي وقت النشر كان يكفي لذلك.
+                # العمل بقاعدة بيانات خاطئة أسوأ من التوقف: التوقف يُلاحَظ
+                # ويُصلَح، والتدهور الصامت يُكتشف بعد ضياع البيانات.
+                log.critical("❌ فشل اتصال PostgreSQL: %s", e)
+                if ALLOW_JSON_FALLBACK:
+                    log.warning(
+                        "⚠️  ALLOW_JSON_FALLBACK مُفعَّل — المتابعة بمخزن JSON. "
+                        "للتطوير المحلي فقط، لا للإنتاج."
+                    )
+                    self.use_postgres = False
+                    self._pool = None
+                else:
+                    raise RuntimeError(
+                        "تعذّر الاتصال بقاعدة البيانات وDATABASE_URL مضبوط. "
+                        "أُوقف الإقلاع بدل العمل على مخزن مؤقّت. "
+                        "للتطوير المحلي اضبط ALLOW_JSON_FALLBACK=1."
+                    ) from e
         else:
             log.warning(
                 "⚠️  JSON Fallback — أضف DATABASE_URL في Railway Variables لتفعيل PostgreSQL"

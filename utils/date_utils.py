@@ -4,10 +4,14 @@
 utils/date_utils.py — Saudi Timezone Helpers
 توقيت الرياض: UTC+3 — بدون DST
 """
+import logging
 from datetime import datetime, date, timedelta, timezone
 
 # توقيت المملكة العربية السعودية — UTC+3 ثابت (لا DST)
 SA_TZ = timezone(timedelta(hours=3))
+
+
+log = logging.getLogger("dheuof.dates")
 
 
 def sa_now() -> datetime:
@@ -41,7 +45,12 @@ def nights_between(check_in: str, check_out: str) -> int:
 
 
 def days_until(target_date: str) -> int:
-    """عدد الأيام المتبقية حتى تاريخ معين"""
+    """
+    الأيام المتبقية حتى تاريخ. صفر لما مضى أو لتاريخ غير صالح.
+
+    لا تُبنَ عليها صلاحيةُ اشتراك: الصفر هنا يعني ثلاثة أشياء مختلفة
+    (اليوم، وما مضى، وتاريخ فاسد). استعمل `is_expired`.
+    """
     try:
         target = date.fromisoformat(str(target_date))
         return max(0, (target - date.today()).days)
@@ -50,8 +59,21 @@ def days_until(target_date: str) -> int:
 
 
 def is_expired(target_date: str) -> bool:
-    """هل انتهت صلاحية التاريخ؟"""
-    return days_until(target_date) == 0 and bool(target_date)
+    """
+    هل انقضى التاريخ؟ اشتراكٌ ينتهي اليوم ما زال سارياً حتى نهايته.
+
+    كانت تُبنى على `days_until`، وهي تُصفّر ما مضى **وتُصفّر التاريخ
+    الفاسد أيضاً** — فتُنهي اشتراك من ينتهي اليوم قبل أوانه، وتُنهي
+    اشتراك من حُفظ تاريخه بصيغة خاطئة بلا سبب. المقارنة هنا مباشرة،
+    والتاريخ غير الصالح لا يُعدّ منتهياً لأنه خطأ بيانات لا انقضاء.
+    """
+    if not target_date:
+        return False
+    try:
+        return date.fromisoformat(str(target_date)) < date.today()
+    except (ValueError, TypeError):
+        log.warning("تاريخ انتهاء غير صالح: %r — لا يُعدّ منتهياً", target_date)
+        return False
 
 
 def format_arabic_date(d: str) -> str:

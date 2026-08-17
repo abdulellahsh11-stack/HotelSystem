@@ -142,9 +142,11 @@ async def save_pos(request: Request, session=Depends(require_client)):
 # ──────────────────────────────────────────────────────────────
 @router.get("/api/settings")
 async def get_settings(request: Request, session=Depends(require_client)):
+    from db.store import public_settings
+
     store = request.app.state.store
     client = store.get_client(session["client_id"]) or {}
-    return {"success": True, "data": client.get("settings", {})}
+    return {"success": True, "data": public_settings(client)}
 
 
 @router.post("/api/settings")

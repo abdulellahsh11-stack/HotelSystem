@@ -417,6 +417,44 @@ def require_admin(request: Request):
     return session
 
 
+def _session_from_row(row: dict) -> dict:
+    """
+    يبني جلسةً من صفّ client_sessions.
+
+    غياب الدور يعني صفّاً كُتب قبل إضافة أعمدة الهوية — وتلك جلسات
+    مالكٍ حصراً، إذ لم تكن هناك جلسات موظفين آنذاك. يُفترض `owner`
+    لتلك وحدها، ولا يُفترض شيء لصفّ يحمل دوراً.
+    """
+    import json as _json
+
+    role = row.get("role") or "owner"
+    raw = row.get("permissions")
+    permissions: list = []
+    if raw:
+        try:
+            parsed = _json.loads(raw)
+            # `json.loads("null")` يُعيد None لا قائمة، و`"*" in None`
+            # يرمي TypeError داخل فحص الصلاحيات — أي عطل خادم بدل رفض.
+            # يُقبل ما كان قائمةً فقط.
+            if isinstance(parsed, list):
+                permissions = [p for p in parsed if isinstance(p, str)]
+        except (ValueError, TypeError):
+            permissions = []
+    elif role in ("owner", "gm"):
+        permissions = ["*"]
+
+    session = {
+        "client_id": row["client_id"],
+        "created_at": str(row.get("created_at") or ""),
+        "role": role,
+        "permissions": permissions,
+    }
+    for key in ("staff_id", "username", "full_name"):
+        if row.get(key) is not None:
+            session[key] = row[key]
+    return session
+
+
 def get_client_session(request: Request) -> Optional[dict]:
     token = _get_client_token(request)
     if not token:
@@ -429,18 +467,18 @@ def get_client_session(request: Request) -> Optional[dict]:
             db = getattr(request.app.state, "db", None)
             if db and db.use_postgres:
                 row = db.execute(
-                    """SELECT client_id, created_at FROM client_sessions
+                    """SELECT client_id, created_at, role, staff_id,
+                              username, full_name, permissions
+                       FROM client_sessions
                        WHERE token=%s AND expires_at > NOW()""",
                     (token,), fetch="one"
                 )
                 if row:
-                    # الدور يُعاد بناؤه هنا أيضاً: جدول client_sessions لا
-                    # يخزّنه، والجلسة المُستعادة بعد إعادة التشغيل بلا دور
-                    # تُرفض عن كل مسار محكوم بصلاحية.
-                    session = {"client_id": row["client_id"],
-                               "created_at": str(row["created_at"]),
-                               "role": "owner",
-                               "permissions": ["*"]}
+                    # الهوية تُقرأ كما حُفظت.
+                    # كانت تُبنى بـ role="owner" و["*"] مهما كان صاحبها،
+                    # فأيّ جلسة تُستعاد بعد إعادة تشغيل تصير جلسةَ مالك —
+                    # تصعيدُ صلاحيات كامل لكل موظف.
+                    session = _session_from_row(dict(row))
                     with _lock:
                         _client_sessions[token] = session
         except Exception:

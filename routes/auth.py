@@ -4,6 +4,7 @@
 routes/auth.py — دخول المنشأة وتسجيلها
 مُستخرَج ضمن تقسيم ملف المسارات الكبير لتسهيل الصيانة.
 """
+import json
 from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Request
@@ -100,10 +101,13 @@ async def client_login(request: Request):
             ua = request.headers.get("user-agent", "")[:200]
             expires = datetime.now() + timedelta(days=7)
             db.execute(
-                """INSERT INTO client_sessions (token, client_id, expires_at, ip_address, user_agent)
-                   VALUES (%s, %s, %s, %s, %s)
+                """INSERT INTO client_sessions
+                       (token, client_id, expires_at, ip_address, user_agent,
+                        role, permissions)
+                   VALUES (%s, %s, %s, %s, %s, %s, %s)
                    ON CONFLICT (token) DO NOTHING""",
-                (token, client_id, expires.isoformat(), ip, ua)
+                (token, client_id, expires.isoformat(), ip, ua,
+                 "owner", json.dumps(["*"]))
             )
     except Exception as _e:
         log.debug(f"session persist skipped: {_e}")

@@ -19,6 +19,7 @@ from app_core import (
     require_admin,
     _get_admin_token,
 )
+from db.store import public_settings
 from html_pages import (
     _admin_login_page,
 )
@@ -35,7 +36,10 @@ async def admin_login(request: Request):
     cfg = request.app.state.cfg
 
     h = _hash_password(str(password), cfg.pass_salt)
-    if h != cfg.admin_pass_hash:
+    # compare_digest لا «!=»: المقارنة العادية تنتهي عند أول اختلاف،
+    # فيتسرّب من زمنها ما يُستدلّ به على التجزئة. وهذه كلمة مرور مالك
+    # المنصة كلها.
+    if not secrets.compare_digest(h, str(cfg.admin_pass_hash or "")):
         if request.headers.get("content-type", "").startswith("application/json"):
             return JSONResponse({"success": False, "error": "كلمة المرور خاطئة"}, status_code=401)
         return HTMLResponse(_admin_login_page("كلمة المرور خاطئة"), status_code=401)
@@ -157,7 +161,7 @@ async def admin_owner_setup(request: Request, _=Depends(require_admin)):
         "sub_start": datetime.now().strftime("%Y-%m-%d"),
         "sub_price": 0,
         "is_owner_account": True,
-        "settings": client.get("settings", {}),
+        "settings": public_settings(client),
         "created_at": client.get("created_at", datetime.now().isoformat()),
     })
     store.save_client(client)
@@ -188,8 +192,11 @@ async def admin_update_client(client_id: str, request: Request, _=Depends(requir
         if k in data:
             client[k] = data[k]
     if "password" in data and data["password"]:
-        cfg = request.app.state.cfg
-        client["pass_hash"] = _hash_password(str(data["password"]), cfg.pass_salt)
+        # يجب أن يُكتب الملح مع التجزئة معاً.
+        # كان يُكتب pass_hash بالملح العام بينما pass_salt القديم باقٍ،
+        # و_verify_password يتحقق بملح الحساب — فلا تُطابق التجزئةُ أبداً
+        # وتُقفَل المنشأة نهائياً بلا وسيلة استرداد.
+        client["pass_hash"], client["pass_salt"] = _make_password(str(data["password"]))
     store.save_client(client)
     return {"success": True, "client": client}
 

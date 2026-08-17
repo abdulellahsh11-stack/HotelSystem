@@ -188,13 +188,23 @@ def test_wrong_password_and_unknown_user_give_the_same_answer(client):
 
 
 def test_a_deactivated_account_cannot_log_in(client):
+    """
+    الحساب المُوقَف يُرفض بنفس ردّ أي فشل آخر.
+
+    ردٌّ مميّز («الحساب مُوقَف») يُخبر المهاجم أن اسم المستخدم صحيح
+    وكلمة المرور صحيحة أيضاً — وهو أكثر مما يكشفه أي خطأ آخر.
+    """
     _create(client)
     account_id = app.state.db.rows[0]["id"]
     assert client.patch(f"/api/staff/accounts/{account_id}",
                         json={"is_active": False}, cookies=OWNER).status_code == 200
-    r = client.post("/api/staff/login", json={
+
+    disabled = client.post("/api/staff/login", json={
         "client_id": "hotel_A", "username": "reception1", "password": "كلمة-سر-طويلة"})
-    assert r.status_code == 403
+    unknown = client.post("/api/staff/login", json={
+        "client_id": "hotel_A", "username": "لا-أحد", "password": "أياً-كانت"})
+    assert disabled.status_code == 401
+    assert disabled.json() == unknown.json(), "الردّ يميّز الحساب المُوقَف"
 
 
 def test_staff_of_one_hotel_cannot_log_into_another(client):

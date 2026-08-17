@@ -207,10 +207,11 @@ async def update_account(account_id: int, request: Request, session=Depends(requ
         tuple(params),
     )
 
-    # إيقاف الحساب يجب أن يقطع جلساته القائمة فوراً، وإلا بقي الموظف
-    # المُوقَف يعمل حتى انتهاء جلسته.
-    if data.get("is_active") is False:
-        _revoke_staff_sessions(cid, account_id)
+    # الصلاحيات تُحسب عند الدخول وتُخزَّن في الجلسة، فأي تعديل عليها لا
+    # يسري على جلسة قائمة. تخفيضُ دورٍ بلا إبطال يعني أن المدير المُنزَّل
+    # يحتفظ بصلاحيات مديرٍ حتى تنتهي جلسته (١٢ ساعة).
+    if any(k in data for k in ("is_active", "role", "extra_permissions")):
+        _revoke_staff_sessions(request, cid, account_id)
 
     log.info("عُدّل حساب الموظف %s للمنشأة %s", account_id, cid)
     return {"success": True}
@@ -229,12 +230,21 @@ async def reset_password(account_id: int, request: Request, session=Depends(requ
 
     db = _db(request)
     cid = session["client_id"]
+    # التحقق من الوجود أولاً: بدونه يُعاد «تم» لمعرّف وهمي أو لحساب في
+    # منشأة أخرى، فيظنّ المالك أنه غيّر كلمة مرور ولم يتغيّر شيء —
+    # ويكشف الردّ الناجح وجود حسابات غيره.
+    if not db.execute(
+        "SELECT id FROM staff_users WHERE id=%s AND client_id=%s",
+        (account_id, cid), fetch="one",
+    ):
+        raise HTTPException(status_code=404, detail="الحساب غير موجود")
+
     pass_hash, pass_salt = _make_password(password)
     db.execute(
         "UPDATE staff_users SET pass_hash=%s, pass_salt=%s WHERE id=%s AND client_id=%s",
         (pass_hash, pass_salt, account_id, cid),
     )
-    _revoke_staff_sessions(cid, account_id)
+    _revoke_staff_sessions(request, cid, account_id)
     log.info("أُعيدت كلمة مرور الموظف %s للمنشأة %s", account_id, cid)
     return {"success": True, "note": "سلّم كلمة المرور الجديدة للموظف"}
 
@@ -245,20 +255,39 @@ async def delete_account(account_id: int, request: Request, session=Depends(requ
     _require_staff_manage(session)
     db = _db(request)
     cid = session["client_id"]
+    if not db.execute(
+        "SELECT id FROM staff_users WHERE id=%s AND client_id=%s",
+        (account_id, cid), fetch="one",
+    ):
+        raise HTTPException(status_code=404, detail="الحساب غير موجود")
     db.execute("DELETE FROM staff_users WHERE id=%s AND client_id=%s", (account_id, cid))
-    _revoke_staff_sessions(cid, account_id)
+    _revoke_staff_sessions(request, cid, account_id)
     log.info("حُذف حساب الموظف %s للمنشأة %s", account_id, cid)
     return {"success": True}
 
 
-def _revoke_staff_sessions(client_id: str, account_id: int) -> None:
-    """يُسقط جلسات موظف بعينه من الذاكرة."""
+def _revoke_staff_sessions(request: Request, client_id: str, account_id: int) -> None:
+    """
+    يُسقط جلسات موظف بعينه من الذاكرة **ومن الجدول**.
+
+    الاكتفاء بالذاكرة يعني أن الجلسة تُستعاد من قاعدة البيانات عند أول
+    طلب بعدها، فيعود الموظفُ المُوقَف كأن شيئاً لم يكن.
+    """
     with _lock:
         for token in [
             t for t, s in _client_sessions.items()
             if s.get("client_id") == client_id and s.get("staff_id") == account_id
         ]:
             _client_sessions.pop(token, None)
+    try:
+        db = request.app.state.db
+        if getattr(db, "use_postgres", False):
+            db.execute(
+                "DELETE FROM client_sessions WHERE client_id=%s AND staff_id=%s",
+                (client_id, account_id),
+            )
+    except Exception as exc:
+        log.warning("تعذّر إبطال جلسات الموظف %s: %s", account_id, exc)
 
 
 # ──────────────────────────────────────────────────────────────
@@ -298,10 +327,15 @@ async def staff_login(request: Request):
         raise invalid
 
     account = dict(row)
-    if not _verify_password(password, account, _NO_GLOBAL_SALT):
+    password_ok = _verify_password(password, account, _NO_GLOBAL_SALT)
+    if not password_ok:
         raise invalid
     if not account.get("is_active"):
-        raise HTTPException(status_code=403, detail="الحساب مُوقَف — راجع إدارة المنشأة")
+        # نفس ردّ الفشل الموحَّد عمداً: ردٌّ مميّز للحساب المُوقَف يُخبر
+        # المهاجم أن اسم المستخدم صحيح وكلمة المرور صحيحة أيضاً — وهو
+        # أكثر مما يكشفه أي خطأ آخر. يُسجَّل الحدث للإدارة بدل عرضه.
+        log.info("محاولة دخول لحساب مُوقَف: %s / %s", client_id, username)
+        raise invalid
 
     try:
         extra = json.loads(account.get("extra_perms") or "[]")
@@ -320,6 +354,27 @@ async def staff_login(request: Request):
     }
     with _lock:
         _client_sessions[token] = session_data
+
+    # تُحفظ الجلسة بهويتها الكاملة.
+    # بلا حفظ، يُطرد كل الموظفين مع أي إعادة تشغيل أو نشر. وبحفظٍ بلا
+    # دور، تُستعاد الجلسة بصلاحية مالك — ولهذا يُكتب الدور والصلاحيات
+    # هنا معاً لا أحدهما.
+    try:
+        db.execute(
+            """INSERT INTO client_sessions
+                   (token, client_id, expires_at, ip_address, user_agent,
+                    role, staff_id, username, full_name, permissions)
+               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+               ON CONFLICT (token) DO NOTHING""",
+            (token, account["client_id"],
+             (datetime.now() + timedelta(hours=12)).isoformat(),
+             request.client.host if request.client else "",
+             request.headers.get("user-agent", "")[:200],
+             account["role"], account["id"], account["username"],
+             account["full_name"], json.dumps(session_data["permissions"])),
+        )
+    except Exception as exc:
+        log.warning("تعذّر حفظ جلسة الموظف %s: %s", account["id"], exc)
 
     try:
         # client_id هنا زائدٌ منطقياً — الصفّ جُلب بشرطه أصلاً — لكن كل
