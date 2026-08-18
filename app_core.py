@@ -211,6 +211,17 @@ async def lifespan(app_: FastAPI):
         run_staff_app_migrations(db)
     except Exception as e:
         log.warning(f"staff_app migrations: {e}")
+    # RLS: تُطبَّق السياسات عند الإقلاع حين يُطلب ذلك صراحةً. تحتاج
+    # مستخدماً يملك الجداول، فتُشغَّل مرة ثم يُحوَّل الاتصال إلى دور
+    # التطبيق. لا تعمل تلقائياً: تطبيقها بلا الخطوتين الأخريين يوقف
+    # المنصة.
+    if os.environ.get("RLS_APPLY_ON_STARTUP", "").lower() in ("1", "true", "yes"):
+        try:
+            from db.rls import enable_rls
+            result = enable_rls(db)
+            log.info("RLS: طُبّقت على %s", ", ".join(result["applied"]) or "لا شيء")
+        except Exception as e:
+            log.error("فشل تطبيق RLS: %s", e)
     try:
         from db.schema_v3 import run_security_hardening
         run_security_hardening(db)
@@ -332,6 +343,32 @@ app.add_middleware(
 
 os.makedirs("static", exist_ok=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+
+@app.middleware("http")
+async def bind_tenant_context(request: Request, call_next):
+    """
+    يربط مستأجر الطلب بسياق التنفيذ، فتقرأه طبقة الاتصال وتضبطه داخل
+    معاملة كل استعلام (RLS).
+
+    يُقرأ من الجلسة على الخادم لا من أي مُدخل. وهذه هي النقطة الوحيدة
+    التي تُحدَّد فيها هوية المستأجر لعمر الطلب.
+
+    التنظيف في finally شرط لا احتياط: خيوط الخادم مُعاد استعمالها،
+    وسياقٌ يبقى بعد الطلب يُورَّث لطلب منشأة أخرى.
+    """
+    from db.tenant_context import clear_tenant, set_tenant
+
+    try:
+        session = get_client_session(request)
+    except Exception:
+        session = None
+
+    set_tenant((session or {}).get("client_id"))
+    try:
+        return await call_next(request)
+    finally:
+        clear_tenant()
 
 
 @app.middleware("http")

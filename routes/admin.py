@@ -19,7 +19,7 @@ from app_core import (
     require_admin,
     _get_admin_token,
 )
-from db.store import public_settings
+from db.store import public_client, public_settings
 from html_pages import (
     _admin_login_page,
 )
@@ -83,6 +83,7 @@ async def admin_clients(request: Request, _=Depends(require_admin)):
     store = request.app.state.store
     clients = store.get_all_clients()
     owner_id = getattr(cfg, "owner_client_id", "") or ""
+    clients = [public_client(c) for c in clients]
     for c in clients:
         c.setdefault("sub_end", c.get("subscription_expires", c.get("trial_end", "")))
         c.setdefault("sub_start", "")
@@ -127,7 +128,7 @@ async def admin_create_client(request: Request, _=Depends(require_admin)):
         "settings": {},
     }
     store.save_client(client)
-    return JSONResponse({"success": True, "client": client})
+    return JSONResponse({"success": True, "client": public_client(client)})
 
 
 @router.post("/api/admin/owner-setup")
@@ -178,7 +179,7 @@ async def admin_get_client(client_id: str, request: Request, _=Depends(require_a
     client = store.get_client(client_id)
     if not client:
         raise HTTPException(status_code=404, detail="المنشأة غير موجودة")
-    return {"success": True, "client": client}
+    return {"success": True, "client": public_client(client)}
 
 
 @router.put("/api/admin/clients/{client_id}")
@@ -198,7 +199,7 @@ async def admin_update_client(client_id: str, request: Request, _=Depends(requir
         # وتُقفَل المنشأة نهائياً بلا وسيلة استرداد.
         client["pass_hash"], client["pass_salt"] = _make_password(str(data["password"]))
     store.save_client(client)
-    return {"success": True, "client": client}
+    return {"success": True, "client": public_client(client)}
 
 
 @router.delete("/api/admin/clients/{client_id}")
@@ -415,42 +416,51 @@ async def admin_list_employees(request: Request, client_id: Optional[str] = None
     store = request.app.state.store
     if not db.use_postgres:
         return {"success": True, "employees": []}
+    # نطاق مالك المنصة: هذه القائمة تعبر المنشآت بحكم وظيفتها، وRLS
+    # تمنع ذلك على جلسة منشأة. يُفتح النطاق هنا وحده — بعد require_admin
+    # — ويُغلق بانتهاء الكتلة ولو وقع استثناء.
     try:
-        if client_id:
-            rows = db.execute("""
-                SELECT e.client_id, e.id,
-                       COALESCE(e.full_name_ar, e.full_name_en, '') AS name,
-                       COALESCE(e.position, '') AS role,
-                       MAX(ra.created_at) as last_active,
-                       COUNT(ra.id) as task_count
-                FROM employees e
-                LEFT JOIN room_actions ra ON ra.client_id=e.client_id AND ra.performed_by=COALESCE(e.full_name_ar, e.full_name_en)
-                WHERE e.client_id=%s
-                GROUP BY e.client_id, e.id, e.full_name_ar, e.full_name_en, e.position
-                ORDER BY last_active DESC NULLS LAST
-            """, (client_id,), fetch="all")
-        else:
-            rows = db.execute("""
-                SELECT e.client_id, e.id,
-                       COALESCE(e.full_name_ar, e.full_name_en, '') AS name,
-                       COALESCE(e.position, '') AS role,
-                       MAX(ra.created_at) as last_active,
-                       COUNT(ra.id) as task_count
-                FROM employees e
-                LEFT JOIN room_actions ra ON ra.client_id=e.client_id AND ra.performed_by=COALESCE(e.full_name_ar, e.full_name_en)
-                GROUP BY e.client_id, e.id, e.full_name_ar, e.full_name_en, e.position
-                ORDER BY last_active DESC NULLS LAST
-                LIMIT 200
-            """, fetch="all")
-        clients_map = {c["id"]: c.get("name", c.get("hotel_name", c["id"])) for c in store.get_all_clients()}
-        result = []
-        for r in (rows or []):
-            d = dict(r)
-            d["client_name"] = clients_map.get(d.get("client_id", ""), d.get("client_id", ""))
-            if d.get("last_active"):
-                d["last_active"] = str(d["last_active"])
-            result.append(d)
-        return {"success": True, "employees": result}
+        from db.tenant_context import platform_scope
+    except Exception:
+        from contextlib import nullcontext as platform_scope
+
+    try:
+      with platform_scope():
+          if client_id:
+              rows = db.execute("""
+                  SELECT e.client_id, e.id,
+                         COALESCE(e.full_name_ar, e.full_name_en, '') AS name,
+                         COALESCE(e.position, '') AS role,
+                         MAX(ra.created_at) as last_active,
+                         COUNT(ra.id) as task_count
+                  FROM employees e
+                  LEFT JOIN room_actions ra ON ra.client_id=e.client_id AND ra.performed_by=COALESCE(e.full_name_ar, e.full_name_en)
+                  WHERE e.client_id=%s
+                  GROUP BY e.client_id, e.id, e.full_name_ar, e.full_name_en, e.position
+                  ORDER BY last_active DESC NULLS LAST
+              """, (client_id,), fetch="all")
+          else:
+              rows = db.execute("""
+                  SELECT e.client_id, e.id,
+                         COALESCE(e.full_name_ar, e.full_name_en, '') AS name,
+                         COALESCE(e.position, '') AS role,
+                         MAX(ra.created_at) as last_active,
+                         COUNT(ra.id) as task_count
+                  FROM employees e
+                  LEFT JOIN room_actions ra ON ra.client_id=e.client_id AND ra.performed_by=COALESCE(e.full_name_ar, e.full_name_en)
+                  GROUP BY e.client_id, e.id, e.full_name_ar, e.full_name_en, e.position
+                  ORDER BY last_active DESC NULLS LAST
+                  LIMIT 200
+              """, fetch="all")
+          clients_map = {c["id"]: c.get("name", c.get("hotel_name", c["id"])) for c in store.get_all_clients()}
+          result = []
+          for r in (rows or []):
+              d = dict(r)
+              d["client_name"] = clients_map.get(d.get("client_id", ""), d.get("client_id", ""))
+              if d.get("last_active"):
+                  d["last_active"] = str(d["last_active"])
+              result.append(d)
+          return {"success": True, "employees": result}
     except Exception as e:
         return {"success": True, "employees": [], "warning": str(e)}
 

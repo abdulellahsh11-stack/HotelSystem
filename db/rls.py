@@ -18,9 +18,19 @@ db/rls.py — عزل المستأجرين على مستوى قاعدة البي�
 
 ٣ — ضبط سياق المستأجر داخل نفس المعاملة قبل الاستعلام.
 
-الشرط الثالث هو ما يمنع التفعيل اليوم: طبقة الاتصال هنا تُنفّذ كل
-`execute()` في معاملة مستقلة، فسياقٌ يُضبط بـ `set_config(..., true)`
-يضيع قبل الاستعلام التالي. راجع `apply_tenant_context` أدناه.
+الشرط الثالث كان يمنع التفعيل: طبقة الاتصال تُنفّذ كل `execute()` في
+معاملة مستقلة، فسياقٌ يُضبط بنداء منفصل يضيع قبل الاستعلام التالي.
+حُلَّ ذلك في `db/tenant_context.py` و`db._bind_tenant_context`: يُسجَّل
+المستأجر في ContextVar عند بداية الطلب، وتضبطه طبقة الاتصال داخل معاملة
+كل استعلام قبل تنفيذه.
+
+التشغيل يحتاج ثلاث خطوات بهذا الترتيب:
+  ١ — `enable_rls(db)` بمستخدمٍ يملك الجداول (مرة واحدة)
+  ٢ — تحويل `DATABASE_URL` إلى دور التطبيق (`app_role_sql`)
+  ٣ — `RLS_ENABLED=1`
+
+عكسُ الترتيب يُوقف المنصة: تفعيل المفتاح قبل تطبيق السياسات يجعل كل
+استعلام يُعيد صفراً.
 """
 from __future__ import annotations
 
@@ -33,6 +43,10 @@ log = logging.getLogger("dheuof.db.rls")
 # الكود كان يضبط `app.tenant_id` والسياسة المعطَّلة تقرأ
 # `app.current_client_id`.
 TENANT_SETTING = "app.current_client_id"
+
+# نطاق مالك المنصة — يرى كل المنشآت. متغيّر منفصل عن المستأجر عمداً:
+# لو كان قيمةً خاصة في نفس المتغيّر لأمكن بلوغه بتمرير تلك القيمة.
+PLATFORM_SETTING = "app.platform_admin"
 
 # الجداول التي تحمل client_id ويجب عزلها في قاعدة البيانات
 RLS_TABLES: tuple[str, ...] = (
@@ -58,9 +72,18 @@ def policy_sql(table: str) -> list[str]:
         # بدون FORCE يتجاوز مالكُ الجدول السياسةَ كلها
         f"ALTER TABLE {table} FORCE ROW LEVEL SECURITY",
         f"DROP POLICY IF EXISTS tenant_isolation ON {table}",
+        # شرط مالك المنصة: نطاقٌ يُفتح من مسارات المشرف وحدها بعد
+        # `require_admin`، ولا يبلغه مستأجر بتمرير معرّف. اتساعه يُلغي
+        # الحماية، فيُفتح لأضيق كتلة ممكنة.
         f"""CREATE POLICY tenant_isolation ON {table}
-                USING (client_id = current_setting('{TENANT_SETTING}', true))
-                WITH CHECK (client_id = current_setting('{TENANT_SETTING}', true))""",
+                USING (
+                    client_id = current_setting('{TENANT_SETTING}', true)
+                    OR current_setting('{PLATFORM_SETTING}', true) = 'on'
+                )
+                WITH CHECK (
+                    client_id = current_setting('{TENANT_SETTING}', true)
+                    OR current_setting('{PLATFORM_SETTING}', true) = 'on'
+                )""",
         # الفهرس شرط أداء لا رفاهية: كل استعلام صار يُصفّى بـ client_id
         f"CREATE INDEX IF NOT EXISTS idx_{table}_tenant ON {table} (client_id)",
     ]

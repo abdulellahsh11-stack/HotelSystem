@@ -41,6 +41,21 @@ def public_settings(client: dict) -> dict:
     return settings
 
 
+# أسرار الحساب — لا تخرج عبر HTTP لأحد، ولا لمالك المنصة.
+# ليست مسألة صلاحية بل مسألة انتشار: التجزئة تُكتب في سجلات الخادم
+# ووسطاء الشبكة وذاكرة المتصفح، وكل نسخة منها هدفٌ لهجومٍ دون اتصال.
+_SECRET_CLIENT_FIELDS = frozenset({"pass_hash", "pass_salt", "api_key", "channel_secret"})
+
+
+def public_client(client: dict) -> dict:
+    """سجل منشأة صالحٌ للعرض — بلا تجزئة ولا ملح ولا مفاتيح."""
+    if not client:
+        return {}
+    out = {k: v for k, v in client.items() if k not in _SECRET_CLIENT_FIELDS}
+    out["settings"] = public_settings(client)
+    return out
+
+
 def _lift_account(row: dict) -> dict:
     """يرفع حقول الحساب المخزّنة في settings._account إلى أعلى السجل."""
     if not row:
