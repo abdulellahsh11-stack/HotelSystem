@@ -846,3 +846,34 @@
 }
 .ap-fee .row.total .val { font-size: 15px; color: var(--gold-900); }
 .ap-fee .row.total .cur { font-family: var(--font-ar); font-size: 11px; font-weight: 400; color: var(--gold-700); }
+
+/* ── مُستخرَج من <style> المضمَّن في registration.html ── */
+/* ── Companions & payment layout fix: prevent overflow ─────── */
+.gr-comp { grid-template-columns: auto minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) 32px !important; }
+.gr-comp .gr-field { min-width: 0; }
+.gr-comp .gr-field input { min-width: 0; width: 100%; box-sizing: border-box; overflow: hidden; text-overflow: ellipsis; }
+
+.pay-row { grid-template-columns: 28px minmax(0,1.4fr) minmax(0,0.9fr) minmax(0,1.1fr) minmax(0,1fr) auto 28px !important; }
+.pay-row .gr-field { min-width: 0; }
+.pay-row .gr-field input, .pay-row .gr-field select { min-width: 0; width: 100%; box-sizing: border-box; }
+.pay-row .amt input { font-size: 12px; }
+
+/* ── Tax toggles ─────────────────────────────────────────────── */
+#vat-on:checked + #vat-track  { background: var(--brand-600) }
+#vat-on:not(:checked) + #vat-track { background: var(--ink-100) }
+#tour-on:checked + #tour-track { background: #0284C7 }
+#tour-on:not(:checked) + #tour-track { background: var(--ink-100) }
+
+/* ── Payment method multi-select grid ─────────────────────────── */
+.pmm-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 13px; border-radius: 7px; border: 1.5px solid var(--hairline);
+  background: var(--white); font-family: var(--font-ar); font-size: 12px;
+  font-weight: 500; cursor: pointer; transition: all 140ms; color: var(--fg-2);
+}
+.pmm-btn:hover { border-color: var(--brand-400); color: var(--brand-700); background: var(--brand-50); }
+.pmm-btn.is-on {
+  background: var(--brand-700); color: var(--paper);
+  border-color: var(--brand-700); font-weight: 600;
+}
+.pmm-btn.pmm-add-btn { border-style: dashed; }
