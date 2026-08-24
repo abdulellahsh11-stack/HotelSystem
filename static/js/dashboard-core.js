@@ -78,7 +78,8 @@ function loadSection(id){
     m04:'loadAccounting',pos:'loadPOS',m05:'loadRoomsStatus',m06:'loadHR',
     m07:'loadHousekeeping',m08:'loadMaintenance',m09:'loadSmartKey',m10:'loadCRM',
     m11:'loadKPI',analytics:'loadAnalytics',m12:'loadInsights',m13:'loadWarehouses',
-    m14:'loadTourism',m14b:'loadDestinations',m15:'loadStaffApp',staff:'loadStaffAccounts'};
+    m14:'loadTourism',m14b:'loadDestinations',m15:'loadStaffApp',staff:'loadStaffAccounts',
+    services:'loadDailyServices'};
   const fn = map[id] && window[map[id]];
   if(typeof fn === 'function'){
     try{ fn(); }

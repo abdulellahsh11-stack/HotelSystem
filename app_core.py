@@ -211,6 +211,11 @@ async def lifespan(app_: FastAPI):
         run_staff_app_migrations(db)
     except Exception as e:
         log.warning(f"staff_app migrations: {e}")
+    try:
+        from db.schema_services import run_services_migration
+        run_services_migration(db)
+    except Exception as e:
+        log.warning(f"services migration: {e}")
     # RLS: تُطبَّق السياسات عند الإقلاع حين يُطلب ذلك صراحةً. تحتاج
     # مستخدماً يملك الجداول، فتُشغَّل مرة ثم يُحوَّل الاتصال إلى دور
     # التطبيق. لا تعمل تلقائياً: تطبيقها بلا الخطوتين الأخريين يوقف
@@ -596,6 +601,7 @@ ROUTE_MODULES: list[tuple[str, str]] = [
     ("auth",         "دخول المنشأة وتسجيلها"),
     ("hotel_ops",    "العمليات الفندقية"),
     ("staff_accounts", "حسابات دخول الموظفين"),
+    ("booking_services", "الإفطار والتوصيل"),
     ("insights",     "المؤشرات والتحليلات"),
     ("commerce",     "الباقات والدفع والتذاكر"),
 ]

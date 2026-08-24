@@ -64,6 +64,7 @@
       <div class="dh-nav-item" onclick="showSection('m04',this)"><span class="ic">💳</span>المحاسبة</div>
       <div class="dh-nav-item" onclick="showSection('pos',this)"><span class="ic">🛒</span>نقطة البيع POS</div>
       <div class="dh-nav-item" onclick="showSection('m05',this)"><span class="ic">🛏️</span>حالة الغرف</div>
+      <div class="dh-nav-item" onclick="showSection('services',this)"><span class="ic">🍳</span>الإفطار والتوصيل</div>
       <div class="dh-nav-item" onclick="showSection('m06',this)"><span class="ic">👥</span>الموارد البشرية</div>
     </div>
     <div class="dh-nav-group">
@@ -291,6 +292,19 @@
       <div class="mod-card-head"><div class="ttl">الأدوار وصلاحياتها</div></div>
       <div id="rolesHelp"><div class="mod-empty">جارٍ التحميل…</div></div>
     </div>
+  </div>
+
+
+  <!-- ═ الإفطار والتوصيل ═ -->
+  <div id="section-services" class="section">
+    <div class="mod-head">
+      <div class="left"><span class="mod-num">🍳</span><h1>الإفطار والتوصيل</h1><div class="sub">Breakfast &amp; Delivery</div></div>
+      <div class="mod-actions">
+        <input type="date" id="svcDay" onchange="loadDailyServices()" style="padding:8px;border-radius:6px;border:1px solid var(--hairline)">
+        <button class="nz-btn is-secondary" onclick="loadDailyServices()">↻ تحديث</button>
+      </div>
+    </div>
+    <div id="dailyServices"><div class="mod-empty">جارٍ التحميل…</div></div>
   </div>
 
   <!-- ═ M06 HR ═ -->
@@ -901,6 +915,7 @@
 <script src="/static/js/dashboard-core.js"></script>
 <script src="/static/js/dashboard-rooms.js"></script>
 <script src="/static/js/dashboard-staff.js"></script>
+<script src="/static/js/dashboard-services.js"></script>
 <script src="/static/js/dashboard-modules.js"></script>
 </body>
 </html>
