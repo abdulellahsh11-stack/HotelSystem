@@ -69,13 +69,6 @@ STAFF_APP_ALTER = [
     "ALTER TABLE bookings ADD COLUMN IF NOT EXISTS booking_number VARCHAR(50)",
     # الصفوف القائمة تأخذ معرّفها رقماً لها، فلا يبقى حجزٌ بلا رقم
     "UPDATE bookings SET booking_number = id WHERE booking_number IS NULL",
-    # هوية صاحب الجلسة. بدونها تُعاد بناء الجلسة المستعادة بدورٍ مُثبَّت
-    # في الكود، فيصير كل من يستعيد جلسته مالكاً.
-    "ALTER TABLE client_sessions ADD COLUMN IF NOT EXISTS role VARCHAR(40)",
-    "ALTER TABLE client_sessions ADD COLUMN IF NOT EXISTS staff_id INTEGER",
-    "ALTER TABLE client_sessions ADD COLUMN IF NOT EXISTS username VARCHAR(60)",
-    "ALTER TABLE client_sessions ADD COLUMN IF NOT EXISTS full_name VARCHAR(200)",
-    "ALTER TABLE client_sessions ADD COLUMN IF NOT EXISTS permissions TEXT",
 ]
 
 
@@ -129,6 +122,17 @@ CREATE INDEX IF NOT EXISTS idx_csess_exp    ON client_sessions(expires_at)
 """
 
 
+# هوية صاحب الجلسة. بدونها تُبنى الجلسة المستعادة بدورٍ مُثبَّت في
+# الكود، فيصير كل من يستعيد جلسته مالكاً.
+SESSION_IDENTITY_COLUMNS = [
+    "ALTER TABLE client_sessions ADD COLUMN IF NOT EXISTS role VARCHAR(40)",
+    "ALTER TABLE client_sessions ADD COLUMN IF NOT EXISTS staff_id INTEGER",
+    "ALTER TABLE client_sessions ADD COLUMN IF NOT EXISTS username VARCHAR(60)",
+    "ALTER TABLE client_sessions ADD COLUMN IF NOT EXISTS full_name VARCHAR(200)",
+    "ALTER TABLE client_sessions ADD COLUMN IF NOT EXISTS permissions TEXT",
+]
+
+
 def run_sessions_migration(db) -> None:
     import logging
     log = logging.getLogger("dheuof.db.sessions")
@@ -142,6 +146,16 @@ def run_sessions_migration(db) -> None:
             except Exception as e:
                 if "already exists" not in str(e).lower():
                     log.warning(f"sessions migration: {e}")
+    # أعمدة الهوية **بعد** إنشاء الجدول لا قبله.
+    # كانت في ترحيل تطبيق الموظفين الذي يسبقه، فتفشل كلها على قاعدة
+    # جديدة ولا تُضاف أبداً — فلا تُحفظ جلسة ولا تُستعاد، ويُطرد
+    # المستخدمون مع كل إعادة تشغيل بلا سبب ظاهر.
+    for stmt in SESSION_IDENTITY_COLUMNS:
+        try:
+            db.execute(stmt)
+        except Exception as e:
+            if "already exists" not in str(e).lower():
+                log.warning(f"sessions identity columns: {e}")
     log.info("✅ client_sessions table ready")
 
 
