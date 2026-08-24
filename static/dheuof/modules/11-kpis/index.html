@@ -930,6 +930,7 @@ function buildOccBars(valuesByYYYYMM){
 // ── Load KPI dashboard from API ───────────────────────────────────────────
 async function loadKpiDashboard(){
   try {
+    loadRevenueByRoomType();   // للتصدير — لا تُعطّل رسم اللوحة
     var res = await fetch('/api/m11/dashboard');
     var json = await res.json();
     if (!json.success || !json.data) { buildOccBars({}); return; }
@@ -1090,6 +1091,15 @@ var KPI_DATA = [
 ];
 
 var ROOM_DATA = [];
+
+/* الإيراد حسب نوع الغرفة — يُغذّي ورقتَي Excel وPDF.
+   كانت ROOM_DATA فارغةً أبداً فتُصدَّر ورقةٌ بعنوانٍ بلا صفوف. */
+function loadRevenueByRoomType(){
+  return fetch('/api/m11/revenue-by-room-type')
+    .then(function(r){ return r.json(); })
+    .then(function(res){ ROOM_DATA = (res && res.data) || []; })
+    .catch(function(){ ROOM_DATA = []; });
+}
 
 window.kpiExportExcel = function(){
   var kpiHeaders = ['المؤشر','الوصف','القيمة','الوحدة','التغيير','الفترة'];
