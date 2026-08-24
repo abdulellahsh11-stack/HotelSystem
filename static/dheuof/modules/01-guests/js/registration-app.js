@@ -78,11 +78,149 @@ async function loadRooms(){
         })
         .map(function (r) {
           var t = ROOM_TYPE_AR[r.room_type] || r.room_type || '';
-          return '<option value="' + r.id + '" data-room="' + r.room_number + '">'
+          var price = Number(r.base_price || 0);
+          return '<option value="' + r.id + '" data-room="' + r.room_number + '"'
+               + ' data-price="' + price + '" data-type="' + (t || '') + '">'
                + r.room_number + (t ? ' — ' + t : '') + '</option>';
         }).join('');
       return '<optgroup label="' + label + '">' + opts + '</optgroup>';
     }).join('');
+  computeInvoice();   // السعر الحقيقي للغرفة المختارة يدخل الفاتورة فور تحميلها
+}
+
+/* ═══════════════════════════════════════════════
+   الفاتورة الحيّة — تتحدّث مع كل مُدخَل
+   كانت أرقاماً ثابتة (٧٧٤٠) لا تتأثر بالغرفة ولا الليالي ولا الوجبات.
+   هنا تُحسب من: سعر الغرفة × الليالي + الوجبة × الأيام × النزلاء.
+   منطق الضرائب يبقى في registration-form.js؛ نحن نُغذّيه بالأساس فقط.
+═══════════════════════════════════════════════ */
+
+// أسعار احتياطية بالريال حين لا يأتي سعرٌ من سجلّ الغرف (خيارات العرض
+// قبل تحميل /api/rooms). الغرفة الحقيقية تُقدَّم دائماً بسعرها المسجَّل.
+var FALLBACK_ROOM_PRICE = [
+  { re: /ملكي|royal/i, price: 2400 },
+  { re: /جناح|suite/i, price: 1200 },
+  { re: /ديلوكس|deluxe/i, price: 720 },
+  { re: /ستاندرد|standard/i, price: 480 }
+];
+
+// سعر الوجبة للفرد في اليوم، حسب خطة الوجبات.
+var MEAL_RATE = [
+  { re: /بدون فطور|room only/i, rate: 0, name: 'بدون وجبات' },
+  { re: /نصف إقامة|half board/i, rate: 120, name: 'نصف إقامة' },
+  { re: /كاملة|full board/i, rate: 180, name: 'إقامة كاملة' },
+  { re: /شامل كل شيء|all inclusive/i, rate: 250, name: 'شامل كل شيء' },
+  { re: /فطور|breakfast/i, rate: 60, name: 'فطور' }
+];
+
+function toArabicNum(n){
+  var s = Number(n || 0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, '٬').replace('.', '٫');
+  return s.replace(/[0-9]/g, function (d) { return '٠١٢٣٤٥٦٧٨٩'[d]; });
+}
+
+function intVal(name, dflt){
+  var v = parseInt(val(name), 10);
+  return (isNaN(v) || v < 1) ? dflt : v;
+}
+
+function roomPrice(){
+  var sel = q('#room-number-sel');
+  var opt = sel && sel.selectedOptions && sel.selectedOptions[0];
+  if (opt) {
+    var p = Number(opt.getAttribute('data-price'));
+    if (p > 0) return p;
+  }
+  var typeSel = q('#room-type-sel');
+  var text = (typeSel && typeSel.value) || (opt && opt.textContent) || '';
+  var hit = FALLBACK_ROOM_PRICE.find(function (m) { return m.re.test(text); });
+  return hit ? hit.price : 480;
+}
+
+function mealRate(){
+  var sel = q('#meal-plan-sel');
+  var text = (sel && sel.value) || '';
+  var hit = MEAL_RATE.find(function (m) { return m.re.test(text); });
+  return hit || { rate: 0, name: 'بدون وجبات' };
+}
+
+function computeInvoice(){
+  if (!q('#inv-subtotal')) return;   // لا فاتورة في هذه الصفحة
+  var nights = intVal('nights', 1);
+  var guests = intVal('guests', 1);
+  var rp = roomPrice();
+  var meal = mealRate();
+
+  var roomTotal = rp * nights;
+  var mealTotal = meal.rate * nights * guests;
+
+  var roomLabel = q('#inv-room-label');
+  var opt = (q('#room-number-sel') || {}).selectedOptions;
+  var typeName = (opt && opt[0] && opt[0].getAttribute('data-type'))
+              || (q('#room-type-sel') && q('#room-type-sel').value) || '';
+  if (roomLabel) {
+    roomLabel.textContent = 'سعر الغرفة × ' + toArabicNum(nights).replace('٫٠٠', '')
+      + ' ليالٍ' + (typeName ? ' (' + typeName + ')' : '');
+  }
+  var roomAmt = q('#inv-room-amt');
+  if (roomAmt) roomAmt.textContent = toArabicNum(roomTotal);
+
+  var mealRow = q('#inv-meal-row');
+  var mealLabel = q('#inv-meal-label');
+  var mealAmt = q('#inv-meal-amt');
+  if (meal.rate <= 0) {
+    if (mealRow) mealRow.style.display = 'none';
+  } else {
+    if (mealRow) mealRow.style.display = '';
+    if (mealLabel) {
+      mealLabel.textContent = meal.name + ' × ' + toArabicNum(nights).replace('٫٠٠', '')
+        + ' أيام × ' + toArabicNum(guests).replace('٫٠٠', '') + ' أشخاص';
+    }
+    if (mealAmt) mealAmt.textContent = toArabicNum(mealTotal);
+  }
+
+  var base = roomTotal + mealTotal;
+  var sub = q('#inv-subtotal');
+  if (sub) sub.textContent = toArabicNum(base);
+
+  window.GR_INV_BASE = base;
+  if (typeof window.recalcInvoice === 'function') window.recalcInvoice();
+  updateSettlement();
+}
+
+/* التسوية النهائية = الإجمالي − الدفعات المُدخَلة قبلها.
+   الدفعات المبكرة يُدخلها الموظف؛ الصفّ الأخير يُحسب لا يُكتب يدوياً. */
+function updateSettlement(){
+  var rows = Array.prototype.slice.call(document.querySelectorAll('.pay-row'));
+  if (rows.length < 2) return;
+  var total = Number(window.GR_INV_TOTAL || 0);
+  if (!total) return;
+
+  function amtInput(row){ return row.querySelector('.amt input'); }
+  function num(inp){ return inp ? Number(String(inp.value).replace(/[^\d.]/g, '')) || 0 : 0; }
+
+  var prior = 0;
+  for (var i = 0; i < rows.length - 1; i++) prior += num(amtInput(rows[i]));
+
+  var last = amtInput(rows[rows.length - 1]);
+  if (last) {
+    var settle = Math.max(0, total - prior);
+    last.value = settle.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+}
+
+function wireInvoiceInputs(){
+  ['#room-number-sel', '#room-type-sel', '#meal-plan-sel'].forEach(function (s) {
+    var el = q(s); if (el) el.addEventListener('change', computeInvoice);
+  });
+  ['nights', 'guests', 'checkin', 'checkout'].forEach(function (f) {
+    var el = field(f);
+    if (el) { el.addEventListener('input', computeInvoice); el.addEventListener('change', computeInvoice); }
+  });
+  // تعديل الموظف لأي دفعةٍ مبكرة يُعيد حساب التسوية
+  document.querySelectorAll('.pay-row .amt input').forEach(function (inp, idx, all) {
+    if (idx < all.length - 1) inp.addEventListener('input', updateSettlement);
+  });
+  computeInvoice();
 }
 
 /* ═══════════════════════════════════════════════
@@ -338,6 +476,7 @@ document.addEventListener('DOMContentLoaded', function () {
   setupOptionalSections();
   setupExtension();
   wireSaveButtons();
+  wireInvoiceInputs();
   loadRooms();
 });
 
@@ -346,7 +485,9 @@ window.RegistrationApp = {
   collect: collect, validate: validate, saveGuest: saveGuest,
   loadRooms: loadRooms, fixBirthDate: fixBirthDate,
   setupOptionalSections: setupOptionalSections, setupExtension: setupExtension,
-  wireSaveButtons: wireSaveButtons
+  wireSaveButtons: wireSaveButtons,
+  computeInvoice: computeInvoice, updateSettlement: updateSettlement,
+  roomPrice: roomPrice, mealRate: mealRate
 };
 
 })();

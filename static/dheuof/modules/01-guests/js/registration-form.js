@@ -715,7 +715,13 @@ window.GR.selectRoom = function(num){
    TAX ENGINE — ضريبة القيمة المضافة ١٥٪ + ضريبة السياحة ٢٫٥٪
 ═══════════════════════════════════════════════════════════════ */
 (function(){
-  var INV_BASE = 7740; // المجموع قبل الضرائب
+  // المجموع قبل الضرائب — يُحسب حيّاً من المدخلات في registration-app.js
+  // (`window.GR_INV_BASE`)، وإلا رجع إلى الرقم التوضيحي. جعلُه دالةً لا
+  // ثابتاً هو ما يجعل الفاتورة تتحدّث مع كل تغيير غرفةٍ أو ليلةٍ أو وجبة.
+  function INV_BASE(){
+    var b = window.GR_INV_BASE;
+    return (typeof b === 'number' && isFinite(b) && b >= 0) ? b : 7740;
+  }
 
   var TAX = {
     vat:     { rate: 0.15,  mode: 'added', labelAr: 'VAT ١٥٪' },
@@ -761,19 +767,19 @@ window.GR.selectRoom = function(num){
     /* ── VAT ── */
     if(vatOn){
       if(TAX.vat.mode === 'added'){
-        vatAmt = INV_BASE * TAX.vat.rate;
+        vatAmt = INV_BASE() * TAX.vat.rate;
       } else {
         /* شاملة: السعر يتضمن الضريبة، نُظهرها استخلاصاً فقط */
-        vatAmt = INV_BASE - (INV_BASE / (1 + TAX.vat.rate));
+        vatAmt = INV_BASE() - (INV_BASE() / (1 + TAX.vat.rate));
       }
     }
 
     /* ── السياحة ── */
     if(tourOn){
       if(TAX.tourism.mode === 'added'){
-        tourAmt = INV_BASE * TAX.tourism.rate;
+        tourAmt = INV_BASE() * TAX.tourism.rate;
       } else {
-        tourAmt = INV_BASE - (INV_BASE / (1 + TAX.tourism.rate));
+        tourAmt = INV_BASE() - (INV_BASE() / (1 + TAX.tourism.rate));
       }
     }
 
@@ -784,12 +790,16 @@ window.GR.selectRoom = function(num){
     if(tourAmtEl) tourAmtEl.textContent = tourOn ? toSAR(tourAmt) : '—';
 
     /* الإجمالي */
-    var total = INV_BASE;
+    var total = INV_BASE();
     if(vatOn  && TAX.vat.mode  === 'added') total += vatAmt;
     if(tourOn && TAX.tourism.mode === 'added') total += tourAmt;
 
     var totalEl = getEl('inv-total');
     if(totalEl) totalEl.innerHTML = toSAR(total) + ' <span style="font-size:12px;color:var(--gold-700);font-family:var(--font-ar);font-weight:400">ر.س</span>';
+
+    // يُنشر الإجمالي الرقمي ليقرأه جدول الدفعات (registration-app.js)
+    window.GR_INV_TOTAL = total;
+    if (typeof window.GR_onInvoiceTotal === 'function') { try { window.GR_onInvoiceTotal(total); } catch(e){} }
 
     /* ملاحظة الإجمالي */
     var noteEl = getEl('inv-tax-note');

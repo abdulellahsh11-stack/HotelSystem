@@ -220,6 +220,11 @@
                 <span class="hint">أدخل الليالي أو تاريخ الخروج</span>
               </div>
               <div class="gr-field">
+                <label>عدد النزلاء</label>
+                <input type="number" class="is-mono" data-field="guests" value="2" min="1" />
+                <span class="hint">يُحتسب في سعر الوجبات</span>
+              </div>
+              <div class="gr-field">
                 <label>وقت الوصول المتوقع</label>
                 <input type="time" class="is-mono" data-field="arr-time" value="14:00" />
                 <span class="hint" id="arr-time-hint">سياسة المنشأة: الدخول من <strong>٢:٠٠م</strong></span>
@@ -229,7 +234,7 @@
             <div class="gr-grid c3" style="margin-top: 12px">
               <div class="gr-field">
                 <label>نوع الغرفة <span class="req">*</span></label>
-                <select><option>جناح ملكي — Royal Suite</option><option>جناح — Suite</option><option>ديلوكس — Deluxe</option><option>ستاندرد</option></select>
+                <select id="room-type-sel"><option>جناح ملكي — Royal Suite</option><option>جناح — Suite</option><option>ديلوكس — Deluxe</option><option>ستاندرد</option></select>
               </div>
               <div class="gr-field">
                 <label style="display:flex;align-items:center;justify-content:space-between">
@@ -247,7 +252,7 @@
             <div class="gr-grid c2" style="margin-top: 12px">
               <div class="gr-field">
                 <label>خطة الوجبات <span class="req">*</span></label>
-                <select>
+                <select id="meal-plan-sel">
                   <option>🍳 مع فطور (Bed &amp; Breakfast)</option>
                   <option>🛏 بدون فطور (Room Only)</option>
                   <option>🍽 نصف إقامة — فطور + عشاء (Half Board)</option>
@@ -700,16 +705,16 @@
               <div style="padding: 6px 18px;">
                 <!-- Base lines -->
                 <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--hairline);font-size:13px">
-                  <span>سعر الغرفة × ٣ ليالٍ (جناح ملكي)</span>
-                  <span style="font-family:var(--font-mono);font-weight:600">٧٬٢٠٠٫٠٠</span>
+                  <span id="inv-room-label">سعر الغرفة × ٣ ليالٍ (جناح ملكي)</span>
+                  <span id="inv-room-amt" style="font-family:var(--font-mono);font-weight:600">٧٬٢٠٠٫٠٠</span>
                 </div>
-                <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--hairline);font-size:13px">
-                  <span>فطور بوفيه × ٣ أيام × ٣ أشخاص</span>
-                  <span style="font-family:var(--font-mono);font-weight:600">٥٤٠٫٠٠</span>
+                <div id="inv-meal-row" style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--hairline);font-size:13px">
+                  <span id="inv-meal-label">فطور بوفيه × ٣ أيام × ٣ أشخاص</span>
+                  <span id="inv-meal-amt" style="font-family:var(--font-mono);font-weight:600">٥٤٠٫٠٠</span>
                 </div>
                 <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:2px solid var(--hairline);font-size:13px">
                   <span style="color:var(--fg-2)">المجموع قبل الضرائب</span>
-                  <span style="font-family:var(--font-mono);font-weight:600">٧٬٧٤٠٫٠٠</span>
+                  <span id="inv-subtotal" style="font-family:var(--font-mono);font-weight:600">٧٬٧٤٠٫٠٠</span>
                 </div>
 
                 <!-- ── ضريبة القيمة المضافة ── -->
