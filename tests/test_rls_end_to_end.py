@@ -33,9 +33,11 @@ pytestmark = pytest.mark.skipif(
 A, B = "hotel_A", "hotel_B"
 OWNER_ROLE, APP_ROLE = "e2e_owner", "e2e_app"
 ROLE_PASSWORD = os.environ.get("TEST_APP_PASSWORD", "rls-test-only")
+# قاعدة مستقلة تماماً عن قاعدة التطبيق — تُنشأ وتُحذف مع الوحدة
+TEST_DB = "rls_e2e_scratch"
 
 
-def _dsn_as(role: str, password: str = ROLE_PASSWORD) -> str:
+def _dsn_as(role: str, password: str = ROLE_PASSWORD, dbname: str = "") -> str:
     """
     يُعيد نفس عنوان الاتصال بمستخدمٍ آخر.
 
@@ -54,7 +56,8 @@ def _dsn_as(role: str, password: str = ROLE_PASSWORD) -> str:
         netloc = f"{role}:{password}@{host}"
         if parts.port:
             netloc += f":{parts.port}"
-        return urlunsplit((parts.scheme, netloc, parts.path, parts.query, parts.fragment))
+        path = f"/{dbname}" if dbname else parts.path
+        return urlunsplit((parts.scheme, netloc, path, parts.query, parts.fragment))
 
     fields = {}
     for token in ADMIN_DSN.split():
@@ -63,12 +66,23 @@ def _dsn_as(role: str, password: str = ROLE_PASSWORD) -> str:
             fields[key] = value
     fields["user"] = role
     fields["password"] = password
+    if dbname:
+        fields["dbname"] = dbname
     return " ".join(f"{k}={v}" for k, v in fields.items())
 
 
 @pytest.fixture(scope="module")
 def rls_db():
-    """قاعدة بها جدول غرفٍ محمي بـ RLS، ودورُ تطبيقٍ لا يتجاوزها."""
+    """
+    قاعدة بيانات **مستقلة** بجدول غرفٍ محمي بـ RLS ودورِ تطبيقٍ لا
+    يتجاوزها.
+
+    لماذا قاعدة منفصلة لا جدولٌ في القاعدة القائمة؟ لأن `TEST_DATABASE_URL`
+    و`DATABASE_URL` يشيران إلى نفس القاعدة في CI. والاختبار يحتاج جدولاً
+    اسمه `rooms` تحديداً (المسار `/api/rooms` يستعلم عنه)، فإنشاؤه هنا
+    كان يعني حذف جدول التطبيق الحقيقي واستبداله — تدميرُ المخطط وسط
+    التشغيل. أوقف ذلك خطأُ ملكيةٍ لا تصميمٌ سليم.
+    """
     import sys
 
     sys.path.insert(0, os.getcwd())
@@ -77,20 +91,22 @@ def rls_db():
     adm = psycopg2.connect(ADMIN_DSN)
     adm.autocommit = True
     with adm.cursor() as c:
+        c.execute(f"DROP DATABASE IF EXISTS {TEST_DB}")
         for role in (OWNER_ROLE, APP_ROLE):
             c.execute("SELECT 1 FROM pg_roles WHERE rolname=%s", (role,))
             if c.fetchone():
                 c.execute(f"DROP OWNED BY {role} CASCADE")
                 c.execute(f"DROP ROLE {role}")
-        c.execute(f"CREATE ROLE {OWNER_ROLE} LOGIN PASSWORD %s NOSUPERUSER NOBYPASSRLS", (ROLE_PASSWORD,))
-        c.execute(f"CREATE ROLE {APP_ROLE} LOGIN PASSWORD %s NOSUPERUSER NOBYPASSRLS", (ROLE_PASSWORD,))
-        c.execute(f"GRANT USAGE, CREATE ON SCHEMA public TO {OWNER_ROLE}")
-        c.execute(f"GRANT USAGE ON SCHEMA public TO {APP_ROLE}")
+        c.execute(f"CREATE ROLE {OWNER_ROLE} LOGIN PASSWORD %s NOSUPERUSER NOBYPASSRLS",
+                  (ROLE_PASSWORD,))
+        c.execute(f"CREATE ROLE {APP_ROLE} LOGIN PASSWORD %s NOSUPERUSER NOBYPASSRLS",
+                  (ROLE_PASSWORD,))
+        c.execute(f"CREATE DATABASE {TEST_DB} OWNER {OWNER_ROLE}")
 
-    owner = psycopg2.connect(_dsn_as(OWNER_ROLE))
+    owner = psycopg2.connect(_dsn_as(OWNER_ROLE, dbname=TEST_DB))
     owner.autocommit = True
     with owner.cursor() as c:
-        c.execute("DROP TABLE IF EXISTS rooms CASCADE")
+        c.execute(f"GRANT USAGE ON SCHEMA public TO {APP_ROLE}")
         c.execute("""
             CREATE TABLE rooms(
                 id SERIAL PRIMARY KEY, client_id VARCHAR(50) NOT NULL,
@@ -108,10 +124,10 @@ def rls_db():
         c.execute(f"GRANT USAGE,SELECT ON SEQUENCE rooms_id_seq TO {APP_ROLE}")
     owner.close()
 
-    yield _dsn_as(APP_ROLE)
+    yield _dsn_as(APP_ROLE, dbname=TEST_DB)
 
     with adm.cursor() as c:
-        c.execute("DROP TABLE IF EXISTS rooms CASCADE")
+        c.execute(f"DROP DATABASE IF EXISTS {TEST_DB}")
         for role in (APP_ROLE, OWNER_ROLE):
             c.execute("SELECT 1 FROM pg_roles WHERE rolname=%s", (role,))
             if c.fetchone():
