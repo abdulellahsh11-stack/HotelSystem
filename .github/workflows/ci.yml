@@ -56,6 +56,10 @@ jobs:
 
     env:
       DATABASE_URL: postgresql://dheuof:testpass123@localhost:5432/dheuof_test
+      # يُشغّل اختبارات عزل RLS. بدونه تُتخطّى صامتةً رغم توفّر الخادم —
+      # واختبارٌ متخطّى لا يحمي شيئاً. يحتاج مستخدماً يستطيع CREATE ROLE
+      # لأنه يبني دورَ تطبيقٍ لا يتجاوز RLS ثم يحذفه.
+      TEST_DATABASE_URL: postgresql://dheuof:testpass123@localhost:5432/dheuof_test
       ADMIN_PASS_HASH: ${{ secrets.ADMIN_PASS_HASH || 'test_hash_for_ci' }}
       SECRET_KEY: ci_test_secret_key_32chars_minimum
       REDIS_URL: ""

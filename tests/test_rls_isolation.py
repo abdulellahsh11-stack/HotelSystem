@@ -34,6 +34,37 @@ pytestmark = pytest.mark.skipif(
 A, B = "hotel_A", "hotel_B"
 
 
+def _dsn_as(role: str, password: str = APP_PASSWORD) -> str:
+    """
+    يُعيد نفس عنوان الاتصال بمستخدمٍ آخر.
+
+    يفهم الصيغتين: URL (`postgresql://user:pass@host/db`) و
+    key=value (`host=… user=… dbname=…`).
+
+    الاستبدال النصّي الساذج لا يكفي: عنوان CI مستخدمُه `dheuof` لا
+    `postgres`، فيمرّ بلا تغيير وتعمل الاختبارات بمستخدمٍ مالك — أي
+    تمرّ بلا أن تفحص شيئاً.
+    """
+    from urllib.parse import urlsplit, urlunsplit
+
+    if "://" in ADMIN_DSN:
+        parts = urlsplit(ADMIN_DSN)
+        host = parts.hostname or "localhost"
+        netloc = f"{role}:{password}@{host}"
+        if parts.port:
+            netloc += f":{parts.port}"
+        return urlunsplit((parts.scheme, netloc, parts.path, parts.query, parts.fragment))
+
+    fields = {}
+    for token in ADMIN_DSN.split():
+        if "=" in token:
+            key, _, value = token.partition("=")
+            fields[key] = value
+    fields["user"] = role
+    fields["password"] = password
+    return " ".join(f"{k}={v}" for k, v in fields.items())
+
+
 def _role_exists(cur) -> bool:
     cur.execute("SELECT 1 FROM pg_roles WHERE rolname=%s", (APP_ROLE,))
     return cur.fetchone() is not None
@@ -76,11 +107,7 @@ def app_dsn():
         cur.execute(
             f"GRANT USAGE, SELECT ON SEQUENCE rls_facilities_id_seq TO {APP_ROLE}")
 
-    base = ADMIN_DSN
-    dsn = base.replace("user=postgres", f"user={APP_ROLE}")
-    if dsn == base:  # صيغة URL
-        dsn = base.replace("://postgres", f"://{APP_ROLE}")
-    yield dsn
+    yield _dsn_as(APP_ROLE)
 
     with admin.cursor() as cur:
         cur.execute("DROP TABLE IF EXISTS rls_facilities")

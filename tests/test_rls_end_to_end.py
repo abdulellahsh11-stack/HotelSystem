@@ -32,12 +32,38 @@ pytestmark = pytest.mark.skipif(
 
 A, B = "hotel_A", "hotel_B"
 OWNER_ROLE, APP_ROLE = "e2e_owner", "e2e_app"
+ROLE_PASSWORD = os.environ.get("TEST_APP_PASSWORD", "rls-test-only")
 
 
-def _dsn_as(role: str) -> str:
-    base = ADMIN_DSN
-    out = base.replace("user=postgres", f"user={role}")
-    return out if out != base else base.replace("://postgres", f"://{role}")
+def _dsn_as(role: str, password: str = ROLE_PASSWORD) -> str:
+    """
+    يُعيد نفس عنوان الاتصال بمستخدمٍ آخر.
+
+    يفهم الصيغتين: URL (`postgresql://user:pass@host/db`) و
+    key=value (`host=… user=… dbname=…`).
+
+    الاستبدال النصّي الساذج لا يكفي: عنوان CI مستخدمُه `dheuof` لا
+    `postgres`، فيمرّ بلا تغيير وتعمل الاختبارات بمستخدمٍ مالك — أي
+    تمرّ بلا أن تفحص شيئاً.
+    """
+    from urllib.parse import urlsplit, urlunsplit
+
+    if "://" in ADMIN_DSN:
+        parts = urlsplit(ADMIN_DSN)
+        host = parts.hostname or "localhost"
+        netloc = f"{role}:{password}@{host}"
+        if parts.port:
+            netloc += f":{parts.port}"
+        return urlunsplit((parts.scheme, netloc, parts.path, parts.query, parts.fragment))
+
+    fields = {}
+    for token in ADMIN_DSN.split():
+        if "=" in token:
+            key, _, value = token.partition("=")
+            fields[key] = value
+    fields["user"] = role
+    fields["password"] = password
+    return " ".join(f"{k}={v}" for k, v in fields.items())
 
 
 @pytest.fixture(scope="module")
@@ -56,8 +82,8 @@ def rls_db():
             if c.fetchone():
                 c.execute(f"DROP OWNED BY {role} CASCADE")
                 c.execute(f"DROP ROLE {role}")
-        c.execute(f"CREATE ROLE {OWNER_ROLE} LOGIN NOSUPERUSER NOBYPASSRLS")
-        c.execute(f"CREATE ROLE {APP_ROLE} LOGIN NOSUPERUSER NOBYPASSRLS")
+        c.execute(f"CREATE ROLE {OWNER_ROLE} LOGIN PASSWORD %s NOSUPERUSER NOBYPASSRLS", (ROLE_PASSWORD,))
+        c.execute(f"CREATE ROLE {APP_ROLE} LOGIN PASSWORD %s NOSUPERUSER NOBYPASSRLS", (ROLE_PASSWORD,))
         c.execute(f"GRANT USAGE, CREATE ON SCHEMA public TO {OWNER_ROLE}")
         c.execute(f"GRANT USAGE ON SCHEMA public TO {APP_ROLE}")
 
