@@ -62,6 +62,13 @@ STAFF_APP_ALTER = [
     # سرّ توقيع حجوزات القنوات. عمودٌ مستقل لا مفتاحٌ في settings، لأن
     # settings تُعاد كاملةً إلى الواجهة فيخرج السرّ معها.
     "ALTER TABLE clients ADD COLUMN IF NOT EXISTS channel_secret VARCHAR(64)",
+    # رقم الحجز المقروء. غيابه كان يُفشل **كل** تسجيل دخول ومغادرة:
+    # سلسلة التكامل تطلبه بـ RETURNING، والمحاسبة تختاره في استعلاماتها.
+    # ولأن السلسلة داخل معاملة، كان الفشل يُرجع كل شيء: الغرفة لا تصير
+    # مشغولة ولا يُسجَّل إيراد ولا يُخصم من المستودع.
+    "ALTER TABLE bookings ADD COLUMN IF NOT EXISTS booking_number VARCHAR(50)",
+    # الصفوف القائمة تأخذ معرّفها رقماً لها، فلا يبقى حجزٌ بلا رقم
+    "UPDATE bookings SET booking_number = id WHERE booking_number IS NULL",
     # هوية صاحب الجلسة. بدونها تُعاد بناء الجلسة المستعادة بدورٍ مُثبَّت
     # في الكود، فيصير كل من يستعيد جلسته مالكاً.
     "ALTER TABLE client_sessions ADD COLUMN IF NOT EXISTS role VARCHAR(40)",
