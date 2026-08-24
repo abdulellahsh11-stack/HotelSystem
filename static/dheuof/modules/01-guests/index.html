@@ -621,6 +621,9 @@ document.querySelectorAll('.tab-btn').forEach(function(btn){
     btn.classList.add('is-on');
     var pane = document.getElementById('tab-'+btn.dataset.tab);
     if(pane) pane.classList.add('is-on');
+    // تُحمَّل الخريطة عند فتح تبويبها لا عند فتح الصفحة: تحميلُ ما لا
+    // يُنظَر إليه يُبطئ أول عرض بلا فائدة.
+    if(btn.dataset.tab === 'rooms' && !FLOORS.length) loadRoomMap();
   });
 });
 
@@ -886,9 +889,84 @@ window.showGuestDetail = function(gid){
 };
 
 /* ═══════════════════════════════════════════════
+   تحميل خريطة الغرف من سجلّ الغرف الحقيقي
+
+   كانت FLOORS مصفوفةً فارغة لا يملؤها شيء، فالخريطة تُرسم خاويةً مهما
+   سجّل المشترك من غرف. وسجلّ الغرف (/api/rooms) كان يعيش في اللوحة
+   الرئيسية وحدها — تطبيقان لا يريان بعضهما.
+
+   الأدوار تُشتق من حقل floor في كل غرفة: لا يُطلب عددها من المستخدم
+   لأن رقم الدور مُسجَّل مع كل غرفة أصلاً، وطلبُه مرتين يفتح باب
+   التناقض بينهما.
+═══════════════════════════════════════════════ */
+var ROOM_STATUS_MAP = {
+  available:'available', occupied:'occupied', dirty:'hk-needed',
+  maintenance:'maintenance', blocked:'out-of-order'
+};
+
+function floorLabel(n){
+  if(n === 0) return 'الدور الأرضي';
+  if(n === -1) return 'القبو';
+  return 'الدور ' + n;
+}
+
+function buildFloorsFromRooms(rooms){
+  var byFloor = {};
+  rooms.forEach(function(r){
+    var f = (r.floor === null || r.floor === undefined) ? 0 : Number(r.floor);
+    (byFloor[f] = byFloor[f] || []).push({
+      num: r.room_number,
+      type: r.room_type || '—',
+      status: ROOM_STATUS_MAP[r.status] || 'available',
+      guest: null,
+      checkin: null,
+      id: r.id
+    });
+  });
+  return Object.keys(byFloor)
+    .map(Number)
+    .sort(function(a, b){ return a - b; })
+    .map(function(f){
+      return {
+        num: f,
+        label: floorLabel(f),
+        rooms: byFloor[f].sort(function(a, b){
+          return String(a.num).localeCompare(String(b.num), 'ar', {numeric:true});
+        })
+      };
+    });
+}
+
+function loadRoomMap(){
+  var c = document.getElementById('floors-container');
+  if(c && !FLOORS.length){
+    c.innerHTML = '<div class="mod-empty" style="padding:24px;text-align:center">⏳ جارٍ تحميل خريطة الغرف…</div>';
+  }
+  return fetch('/api/rooms')
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      var rooms = (res && res.data) || [];
+      FLOORS = buildFloorsFromRooms(rooms);
+      // كل دور مفتوح افتراضياً — الخريطة تُقرأ دفعةً واحدة عادةً
+      floorOpen = FLOORS.map(function(){ return true; });
+      if(!FLOORS.length && c){
+        c.innerHTML = '<div class="mod-empty" style="padding:24px;text-align:center">'
+          + 'لا غرف مسجَّلة بعد — سجّلها من «حالة الغرف» في لوحة التحكم</div>';
+        return;
+      }
+      renderFloors();
+      updateBadges();
+    })
+    .catch(function(){
+      if(c) c.innerHTML = '<div class="mod-empty" style="padding:24px;text-align:center;color:#b91c1c">'
+        + 'تعذّر تحميل خريطة الغرف</div>';
+    });
+}
+
+/* ═══════════════════════════════════════════════
    TAB 3 — ROOMS
 ═══════════════════════════════════════════════ */
-var floorOpen = [true,true,true,true];
+var floorOpen = [];   // يُبنى من عدد الأدوار الفعلي عند التحميل
 
 function statusLabel(s){
   return {occupied:'مشغولة',available:'متاحة','hk-needed':'يحتاج تنظيف',maintenance:'صيانة',reserved:'محجوزة','out-of-order':'خارج الخدمة',cleaning:'تنظيف جارٍ'}[s]||s;
