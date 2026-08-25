@@ -593,40 +593,60 @@ setTimeout(function(){
 })();
 
 /* ── Room map modal for registration form ── */
-window.showRoomMapModal = function(){
-  var RFLOORS = [
-    {label:'F1 — ستاندرد',rooms:[
-      {num:'١٠١',status:'occupied'},{num:'١٠٢',status:'available'},
-      {num:'١٠٣',status:'hk-needed'},{num:'١٠٤',status:'occupied'},
-      {num:'١٠٥',status:'available'},{num:'١٠٦',status:'reserved'},
-      {num:'١٠٧',status:'hk-needed'},{num:'١٠٨',status:'occupied'},
-      {num:'١٠٩',status:'available'},{num:'١١٠',status:'maintenance'},
-      {num:'١١١',status:'available'},{num:'١١٢',status:'hk-needed'},
-      {num:'١١٣',status:'available'},{num:'١١٤',status:'occupied'},
-      {num:'١١٥',status:'available'}
-    ]},
-    {label:'F2 — ديلوكس',rooms:[
-      {num:'٢٠١',status:'hk-needed'},{num:'٢٠٢',status:'occupied'},
-      {num:'٢٠٣',status:'available'},{num:'٢٠٤',status:'occupied'},
-      {num:'٢٠٥',status:'available'},{num:'٢٠٦',status:'available'},
-      {num:'٢٠٧',status:'hk-needed'},{num:'٢٠٨',status:'occupied'},
-      {num:'٢٠٩',status:'maintenance'},{num:'٢١٠',status:'available'},
-      {num:'٢١١',status:'available'},{num:'٢١٢',status:'occupied'},
-      {num:'٢١٣',status:'available'},{num:'٢١٨',status:'reserved'},
-      {num:'٢٢٥',status:'reserved'}
-    ]},
-    {label:'F3 — أجنحة',rooms:[
-      {num:'٣٠١',status:'hk-needed'},{num:'٣٠٢',status:'available'},
-      {num:'٣٠٣',status:'occupied'},{num:'٣٠٤',status:'available'},
-      {num:'٣٠٥',status:'occupied'},{num:'٣٠٦',status:'hk-needed'},
-      {num:'٣٠٧',status:'reserved'},{num:'٣٠٨',status:'available'},
-      {num:'٣٠٩',status:'reserved'},{num:'٣١٢',status:'reserved'}
-    ]},
-    {label:'F4 — الأجنحة الملكية',rooms:[
-      {num:'٤٠١',status:'reserved'},{num:'٤٠٢',status:'occupied'},
-      {num:'٤٠٣',status:'occupied'},{num:'٤١٠',status:'reserved'}
-    ]}
-  ];
+
+// يبني أدوار الخريطة من سجلّ الغرف الحقيقي. الأدوار تُشتق من حقل floor
+// في كل غرفة — لا تُكتب يدوياً ولا تُطلب من المستخدم.
+window.loadRoomMapFloors = async function(){
+  var res, rooms;
+  try {
+    res = await fetch('/api/rooms', { headers: { 'Accept': 'application/json' } });
+    rooms = ((await res.json()) || {}).data || [];
+  } catch (e) { return null; }          // فشل الشبكة يُميَّز عن «لا غرف»
+  if (!res.ok) return null;
+
+  var TYPE_AR = { standard:'ستاندرد', double:'مزدوجة', twin:'سريران',
+                  suite:'جناح', family:'عائلية' };
+  var byFloor = {};
+  rooms.forEach(function(r){
+    var f = (r.floor === null || r.floor === undefined) ? 0 : Number(r.floor);
+    (byFloor[f] = byFloor[f] || []).push(r);
+  });
+  return Object.keys(byFloor).map(Number).sort(function(a,b){ return a-b; })
+    .map(function(f){
+      var types = {};
+      byFloor[f].forEach(function(r){ types[TYPE_AR[r.room_type]||r.room_type||''] = 1; });
+      var names = Object.keys(types).filter(Boolean).join(' · ');
+      return {
+        label: (f === 0 ? 'الدور الأرضي' : 'الدور ' + f) + (names ? ' — ' + names : ''),
+        rooms: byFloor[f]
+          .sort(function(a,b){
+            return String(a.room_number).localeCompare(String(b.room_number),'ar',{numeric:true});
+          })
+          .map(function(r){ return { num: String(r.room_number), status: r.status || 'available' }; })
+      };
+    });
+};
+
+window.showRoomMapModal = async function(){
+  window.__ROOM_MAP_FLOORS = await window.loadRoomMapFloors();
+  if (window.__ROOM_MAP_FLOORS === null) {
+    window.GR.modal('🏨 خريطة الغرف',
+      '<p style="padding:20px;text-align:center;color:var(--danger-700)">تعذّر تحميل الغرف من الخادم.</p>');
+    return;
+  }
+  if (!window.__ROOM_MAP_FLOORS.length) {
+    window.GR.modal('🏨 خريطة الغرف',
+      '<p style="padding:20px;text-align:center;line-height:1.9">لا غرف مسجَّلة بعد.<br>'
+      + '<span style="font-size:12px;color:var(--fg-3)">سجّلها من: لوحة التحكم ← حالة الغرف ← «🏢 تسجيل أدوار وغرف»</span></p>');
+    return;
+  }
+  window.__renderRoomMapModal();
+};
+
+window.__renderRoomMapModal = function(){
+  // الغرف تُحمَّل من سجلّ المنشأة الحقيقي لا من قائمة مكتوبة.
+  // كانت هنا ٤٧ غرفةً وهمية (١٠١…٤١٠) تُعرض لكل منشأة مهما كانت غرفها.
+  var RFLOORS = window.__ROOM_MAP_FLOORS || [];
   var BG   = {occupied:'#DBEAFE','hk-needed':'#FEF3C7',maintenance:'#FEE2E2',reserved:'#FEF9C3',available:'#DCFCE7',cleaning:'#fae8ff','out-of-order':'#f1f5f9'};
   var LBL  = {occupied:'مشغولة','hk-needed':'تنظيف',maintenance:'صيانة',reserved:'محجوزة',available:'متاحة ✓',cleaning:'تنظيف جارٍ','out-of-order':'خارج الخدمة'};
   var BC   = {occupied:'#93c5fd','hk-needed':'#fcd34d',maintenance:'#fca5a5',reserved:'#fde047',available:'#86efac',cleaning:'#d8b4fe','out-of-order':'#cbd5e1'};
