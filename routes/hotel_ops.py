@@ -190,8 +190,150 @@ async def save_settings(request: Request, session=Depends(require_client)):
 # ──────────────────────────────────────────────────────────────
 #  Rooms
 # ──────────────────────────────────────────────────────────────
+def _require(session: dict, permission: str) -> None:
+    """
+    يمنع من لا يملك الصلاحية.
+
+    مسارات الغرف كانت مفتوحةً لأي جلسة: موظف نظافة يستطيع حذف غرفة، وكاشير
+    يستطيع تغيير الأسعار. الجلسة تُثبت **من** أنت لا **ماذا يحقّ لك**.
+    """
+    from db.security import check_permission
+
+    if not check_permission(session, permission):
+        raise HTTPException(status_code=403, detail=f"الصلاحية '{permission}' مطلوبة")
+
+
+# ── خريطة الغرف: التخصيص ───────────────────────────────────────
+ROOM_MAP_MAX_LABEL = 80
+
+
+def _floor_prefs(db, client_id: str) -> dict:
+    """تخصيص الأدوار كما ضبطه المشترك. الغياب يعني «الافتراضي» لا «مخفي»."""
+    try:
+        rows = db.execute(
+            "SELECT floor, label, sort_order, is_hidden FROM room_map_floors "
+            "WHERE client_id=%s", (client_id,), fetch="all") or []
+    except Exception:
+        return {}                       # الجدول لم يُرحَّل بعد — الافتراضي يكفي
+    return {int(r["floor"]): dict(r) for r in rows}
+
+
+@router.get("/api/rooms/map")
+async def get_room_map(request: Request, session=Depends(require_client)):
+    """
+    الخريطة جاهزةً للعرض: أدوارٌ مرتَّبة بأسمائها المخصَّصة وغرفها.
+
+    يُبنى هنا لا في المتصفّح، فتراه كل شاشة بنفس الترتيب والأسماء —
+    شاشة التسجيل والاستقبال ولوحة التحكم.
+    """
+    _require(session, "rooms.read")
+    db = request.app.state.db
+    cid = session["client_id"]
+
+    rows = db.execute(
+        "SELECT id, room_number, room_type, floor, capacity, base_price, status, notes "
+        "FROM rooms WHERE client_id=%s ORDER BY room_number", (cid,), fetch="all") or []
+    prefs = _floor_prefs(db, cid)
+
+    by_floor: dict = {}
+    for row in rows:
+        room = dict(row)
+        floor = 0 if room.get("floor") is None else int(room["floor"])
+        by_floor.setdefault(floor, []).append(room)
+
+    can_edit = False
+    from db.security import check_permission
+    can_edit = check_permission(session, "rooms.write")
+
+    floors = []
+    for floor in sorted(by_floor):
+        pref = prefs.get(floor, {})
+        if pref.get("is_hidden"):
+            continue
+        floors.append({
+            "floor": floor,
+            "label": pref.get("label") or ("الدور الأرضي" if floor == 0 else f"الدور {floor}"),
+            "customized": bool(pref.get("label")),
+            "sort_order": pref.get("sort_order") if pref.get("sort_order") is not None else floor,
+            "rooms": sorted(by_floor[floor],
+                            key=lambda r: str(r.get("room_number") or "")),
+        })
+    floors.sort(key=lambda f: (f["sort_order"], f["floor"]))
+
+    hidden = [f for f in prefs.values() if f.get("is_hidden")]
+    return {
+        "success": True,
+        "data": {"floors": floors, "can_edit": can_edit,
+                 "hidden_count": len(hidden), "total_rooms": len(rows)},
+    }
+
+
+@router.put("/api/rooms/map/floors")
+async def save_room_map(request: Request, session=Depends(require_client)):
+    """
+    يحفظ تخصيص الأدوار: الاسم والترتيب والإخفاء.
+
+    الإخفاء عرضٌ لا حذف — الغرف تبقى وتُحجز وتُحاسَب، ولا تُعرض في
+    الخريطة. من أراد إيقاف غرفة فعلياً يُغيّر حالتها إلى «موقوفة».
+    """
+    _require(session, "rooms.write")
+    data = await request.json()
+    floors = data.get("floors")
+    if not isinstance(floors, list):
+        raise HTTPException(status_code=400, detail="يلزم إرسال قائمة الأدوار")
+    if len(floors) > 200:
+        raise HTTPException(status_code=400, detail="عدد الأدوار أكبر من المعقول")
+
+    db = request.app.state.db
+    cid = session["client_id"]
+    saved = 0
+    for item in floors:
+        if not isinstance(item, dict):
+            continue
+        try:
+            floor = int(item.get("floor"))
+        except (TypeError, ValueError):
+            raise HTTPException(status_code=400, detail="رقم الدور يجب أن يكون عدداً") from None
+        label = str(item.get("label") or "").strip()[:ROOM_MAP_MAX_LABEL]
+        try:
+            order = int(item.get("sort_order") if item.get("sort_order") is not None else floor)
+        except (TypeError, ValueError):
+            order = floor
+        db.execute(
+            """INSERT INTO room_map_floors (client_id, floor, label, sort_order, is_hidden, updated_at)
+               VALUES (%s,%s,%s,%s,%s,NOW())
+               ON CONFLICT (client_id, floor) DO UPDATE
+                   SET label=EXCLUDED.label, sort_order=EXCLUDED.sort_order,
+                       is_hidden=EXCLUDED.is_hidden, updated_at=NOW()""",
+            (cid, floor, label or None, order, bool(item.get("is_hidden"))))
+        saved += 1
+
+    log.info("حُفظ تخصيص خريطة الغرف (%s دور) للمنشأة %s", saved, cid)
+    return {"success": True, "data": {"saved": saved}}
+
+
+@router.patch("/api/rooms/{room_id}/status")
+async def set_room_status(room_id: int, request: Request,
+                          session=Depends(require_client)):
+    """تغيير حالة غرفة من الخريطة مباشرةً — بصلاحية الكتابة لا بالعرض."""
+    _require(session, "rooms.write")
+    data = await request.json()
+    status = str(data.get("status") or "").strip()
+    if status not in ROOM_STATUSES:
+        raise HTTPException(status_code=400,
+                            detail=f"حالة غير معروفة. المسموح: {'، '.join(ROOM_STATUSES)}")
+    db = request.app.state.db
+    affected = db.execute(
+        "UPDATE rooms SET status=%s WHERE id=%s AND client_id=%s",
+        (status, room_id, session["client_id"]))
+    if not affected:
+        raise HTTPException(status_code=404, detail="الغرفة غير موجودة")
+    return {"success": True, "data": {"id": room_id, "status": status}}
+
+
 @router.get("/api/rooms")
 async def get_rooms(request: Request, session=Depends(require_client)):
+    _require(session, "rooms.read")
     db = request.app.state.db
     cid = session["client_id"]
     try:

@@ -26,6 +26,17 @@ from fastapi.testclient import TestClient
 
 warnings.filterwarnings("ignore")
 
+from app_core import _client_sessions, _lock  # noqa: E402
+from main import app  # noqa: E402
+from services import guest_crypto as gc  # noqa: E402
+from services.staff_roles import permissions_for  # noqa: E402
+
+A, B = "hotel_A", "hotel_B"
+ID_NUMBER = "1098765432"
+PHONE = "+966552184422"
+NAME = "سالم عبدالله العتيبي"
+
+
 def test_the_crypto_library_is_actually_installed():
     """
     حارسٌ ضد التخطّي الصامت.
@@ -44,16 +55,6 @@ def test_the_crypto_library_is_actually_installed():
     nonce = os.urandom(12)
     blob = AESGCM(key).encrypt(nonce, b"probe", None)
     assert AESGCM(key).decrypt(nonce, blob, None) == b"probe"
-
-from app_core import _client_sessions, _lock  # noqa: E402
-from main import app  # noqa: E402
-from services import guest_crypto as gc  # noqa: E402
-from services.staff_roles import permissions_for  # noqa: E402
-
-A, B = "hotel_A", "hotel_B"
-ID_NUMBER = "1098765432"
-PHONE = "+966552184422"
-NAME = "سالم عبدالله العتيبي"
 
 
 @pytest.fixture
@@ -247,16 +248,16 @@ def test_a_round_trip_survives_every_field(client):
 
 
 # ── الصلاحيات: من يرى ماذا ─────────────────────────────────────
-@pytest.mark.parametrize("token", ["owner", "recep"])
-def test_the_owner_and_reception_see_the_full_record(client, token):
-    """المالك والمدير والاستقبال — تسجيل الوصول لا يتمّ بلا هوية."""
+@pytest.mark.parametrize("token", ["owner"])
+def test_only_the_owner_sees_the_full_record_by_default(client, token):
+    """مالك المنشأة ومديرها العام وحدهما — وهما من يمنح غيرهما."""
     c, _, _ = client
     _add(c)
     g = c.get("/api/guests", cookies={"client_token": token}).json()["data"][0]
     assert g["id_number"] == ID_NUMBER, f"{token} لا يرى الهوية وهو مخوَّل"
 
 
-@pytest.mark.parametrize("token", ["hk", "acct"])
+@pytest.mark.parametrize("token", ["hk", "acct", "recep"])
 def test_unauthorised_roles_get_a_masked_record(client, token):
     """الإشراف الداخلي والمحاسب: لا التنظيف ولا الفاتورة تحتاج هوية."""
     c, _, _ = client

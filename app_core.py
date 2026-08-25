@@ -275,6 +275,11 @@ async def lifespan(app_: FastAPI):
     except Exception as e:
         log.warning(f"sessions migration: {e}")
     try:
+        from db.schema_room_map import run_room_map_migration
+        run_room_map_migration(db)
+    except Exception as e:
+        log.warning(f"room map migration: {e}")
+    try:
         from db.schema_guest_crypto import run_guest_crypto_migration
         run_guest_crypto_migration(db)
     except Exception as e:

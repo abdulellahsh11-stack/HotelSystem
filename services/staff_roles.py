@@ -20,7 +20,7 @@ PERMISSIONS: dict[str, str] = {
     "bookings.write":   "إنشاء وتعديل الحجوزات",
     "guests.read":      "عرض بيانات النزلاء",
     "guests.write":     "إضافة وتعديل النزلاء",
-    "guests.pii":       "كشف بيانات النزيل الكاملة (الهوية والجوال)",
+    "guests.pii":       "كشف بيانات النزيل الكاملة (الهوية والجوال) — يمنحها مالك المنشأة",
     "rooms.read":       "عرض الغرف وحالتها",
     "rooms.write":      "تسجيل وتعديل الغرف",
     "housekeeping":     "مهام الإشراف الداخلي",
@@ -69,7 +69,6 @@ ROLES: dict[str, dict] = {
         "label": "مدير مناوبة",
         "permissions": [
             "bookings.read", "bookings.write", "guests.read", "guests.write",
-            "guests.pii",
             "rooms.read", "rooms.write", "housekeeping", "maintenance",
             "pos", "invoices.read", "invoices.write", "reports",
         ],
@@ -79,11 +78,10 @@ ROLES: dict[str, dict] = {
         "label": "موظف استقبال",
         "permissions": [
             "bookings.read", "bookings.write", "guests.read", "guests.write",
-            "guests.pii",
             "rooms.read", "invoices.read", "pos",
         ],
-        "note": "يستقبل ويحجز — ويرى الهوية لأن تسجيل الوصول يتطلّبها. "
-                "لا يُعدّل الغرف ولا يرى الرواتب.",
+        "note": "يستقبل ويحجز. يرى بيانات النزيل مُقنَّعة — ومدير المنشأة "
+                "يمنحه `guests.pii` فرداً فرداً إن احتاج الهوية كاملة.",
     },
     "housekeeping": {
         "label": "إشراف داخلي",
