@@ -202,9 +202,30 @@ function updateSettlement(){
   for (var i = 0; i < rows.length - 1; i++) prior += num(amtInput(rows[i]));
 
   var last = amtInput(rows[rows.length - 1]);
-  if (last) {
-    var settle = Math.max(0, total - prior);
-    last.value = settle.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  if (!last) return;
+  var settle = total - prior;
+  last.value = Math.max(0, settle).toLocaleString('en-US',
+    { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  // الدفعات المبكرة قد تتجاوز الإجمالي بعد تقصير الإقامة أو تغيير الغرفة.
+  // إظهار «٠٫٠٠» وحده يُخفي الفائض ويبدو كأن الحساب مضبوط.
+  var warn = q('#pay-overpaid');
+  if (!warn) {
+    warn = document.createElement('div');
+    warn.id = 'pay-overpaid';
+    warn.style.cssText = 'margin-top:8px;padding:8px 12px;border-radius:6px;'
+      + 'background:#FEF3C7;color:#92400E;border:1px solid #FCD34D;'
+      + 'font-size:12px;font-weight:600;font-family:var(--font-ar)';
+    var list = q('.pay-rows');
+    if (list && list.parentElement) list.parentElement.insertBefore(warn, list.nextSibling);
+  }
+  if (settle < -0.005) {
+    warn.style.display = '';
+    warn.textContent = 'الدفعات المُدخَلة تتجاوز الإجمالي بمقدار '
+      + Math.abs(settle).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+      + ' ر.س — راجع الدفعات أو استرد الفرق للنزيل';
+  } else {
+    warn.style.display = 'none';
   }
 }
 
@@ -239,54 +260,14 @@ function fixBirthDate(){
 }
 
 /* ═══════════════════════════════════════════════
-   ٣ و٤ — أقسام اختيارية تُطوى بمربّع
-   القسم المفتوح دائماً يوحي بأنه مطلوب. الطيّ يجعل الاختياري يبدو
-   اختيارياً، ويُقصّر النموذج لمن لا يحتاجه.
+   ٣ و٤ — حقل الوجبات الاختياري
+   القسم المفتوح دائماً يوحي بأنه مطلوب. طيّ الأقسام كلها في
+   registration-sections.js؛ هنا حقل الوجبات وحده.
 ═══════════════════════════════════════════════ */
-function makeCollapsible(heading, key, openByDefault){
-  var section = heading && heading.closest ? heading.closest('.gr-sec') : null;
-  if (!section || section.dataset.collapsible === '1') return;
-  section.dataset.collapsible = '1';
-
-  var body = document.createElement('div');
-  while (heading.nextSibling) body.appendChild(heading.nextSibling);
-  section.appendChild(body);
-
-  var box = document.createElement('input');
-  box.type = 'checkbox';
-  box.id = 'opt-' + key;
-  box.checked = !!openByDefault;
-  box.style.cssText = 'margin-inline-end:8px;cursor:pointer;width:16px;height:16px';
-
-  var arrow = document.createElement('span');
-  arrow.textContent = '▼';
-  arrow.style.cssText = 'display:inline-block;margin-inline-start:8px;transition:transform 150ms;font-size:11px';
-
-  function apply(){
-    body.style.display = box.checked ? '' : 'none';
-    arrow.style.transform = box.checked ? '' : 'rotate(-90deg)';
-  }
-  box.addEventListener('change', apply);
-  // النقر على العنوان يطوي أيضاً — الهدف الأكبر أسهل إصابةً من مربّع صغير
-  heading.style.cursor = 'pointer';
-  heading.addEventListener('click', function (e) {
-    if (e.target === box) return;
-    box.checked = !box.checked;
-    apply();
-  });
-
-  heading.insertBefore(box, heading.firstChild);
-  heading.appendChild(arrow);
-  apply();
-}
-
 function setupOptionalSections(){
-  var headings = Array.prototype.slice.call(document.querySelectorAll('.gr-sec h4'));
-
-  var airport = headings.find(function (h) { return /المطار/.test(h.textContent); });
-  if (airport) makeCollapsible(airport, 'airport', false);
-
-  // الوجبات حقلٌ داخل قسمٍ أكبر، فيُلفّ في قسمٍ خاص ليُطوى وحده
+  // طيّ الأقسام كلها (المطار منها) صار في registration-sections.js بنمط
+  // زرّ قسم السائق الموحَّد. يبقى هنا طيُّ حقل الوجبات وحده — وهو حقل
+  // داخل قسمٍ أكبر لا قسمٌ قائم بذاته.
   var mealsLabel = Array.prototype.slice.call(document.querySelectorAll('.gr-field label'))
     .find(function (l) { return /خطة الوجبات/.test(l.textContent); });
   if (mealsLabel) {
@@ -419,6 +400,16 @@ async function saveGuest(alsoCheckIn){
   var data = collect();
   var problem = validate(data);
   if (problem) { toast(problem, true); return; }
+
+  // العقد يُوقَّع قبل تسجيل الدخول لا بعده: نزيلٌ دخل غرفته قبل أن
+  // يلتزم بشيء يجعل العقد ورقةً بلا أثر. الحفظ كمسوّدة يبقى متاحاً.
+  var sections = window.RegistrationSections;
+  if (alsoCheckIn && sections && !sections.isSigned()) {
+    toast('وقّع العقد قبل تسجيل الدخول — علّم «أقرّ النزيل ووقّع على العقد» في قسم العقد', true);
+    var mark = q('#ct-signed');
+    if (mark && mark.scrollIntoView) mark.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
 
   var guest = await send('/api/guests', {
     method: 'POST',

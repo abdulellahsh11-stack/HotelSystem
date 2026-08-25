@@ -259,6 +259,7 @@
       <div class="left"><span class="mod-num">M·05</span><h1>حالة الغرف</h1><div class="sub">Rooms Status</div></div>
       <div class="mod-actions">
         <button class="nz-btn is-secondary" onclick="loadRoomsStatus()">↻ تحديث</button>
+        <button class="nz-btn is-secondary" onclick="openBulkRoomModal()">🏢 تسجيل أدوار وغرف</button>
         <button class="nz-btn is-gold" onclick="openRoomModal()">+ تسجيل غرفة</button>
       </div>
     </div>
@@ -814,6 +815,50 @@
   </div>
 </div>
 
+
+<div class="modal-overlay" id="modal-bulk-rooms">
+  <div class="modal-box">
+    <h3>تسجيل أدوار وغرف دفعة واحدة</h3>
+    <p class="mod-empty" style="text-align:right;padding:0 0 10px;color:#6b7280">
+      صِف النمط مرةً واحدة بدل تسجيل كل غرفة على حدة. الغرف المسجَّلة مسبقاً تُتخطّى ولا تُستبدل.
+    </p>
+    <div class="nz-form-grid">
+      <div class="nz-field"><label>عدد الأدوار *</label>
+        <input type="number" id="bulkFloors" value="3" min="1" max="50" oninput="previewBulkRooms()"></div>
+      <div class="nz-field"><label>غرف كل دور *</label>
+        <input type="number" id="bulkPerFloor" value="10" min="1" max="100" oninput="previewBulkRooms()"></div>
+      <div class="nz-field"><label>رقم أول دور</label>
+        <input type="number" id="bulkFirstFloor" value="1" min="0" max="200" oninput="previewBulkRooms()"></div>
+      <div class="nz-field"><label>أول رقم غرفة في الدور</label>
+        <input type="number" id="bulkStart" value="1" min="1" max="99" oninput="previewBulkRooms()"></div>
+      <div class="nz-field"><label>خانات رقم الغرفة</label>
+        <select id="bulkDigits" onchange="previewBulkRooms()">
+          <option value="2" selected>خانتان — ١٠١</option>
+          <option value="3">ثلاث خانات — ١٠٠١</option>
+        </select>
+      </div>
+      <div class="nz-field"><label>النوع</label>
+        <select id="bulkType">
+          <option value="standard">عادية</option>
+          <option value="double">مزدوجة</option>
+          <option value="twin">سريران</option>
+          <option value="suite">جناح</option>
+          <option value="family">عائلية</option>
+        </select>
+      </div>
+      <div class="nz-field"><label>السعة (أشخاص)</label>
+        <input type="number" id="bulkCapacity" value="2" min="1" max="50"></div>
+      <div class="nz-field"><label>السعر الأساسي (ر.س)</label>
+        <input type="number" id="bulkPrice" value="0" min="0"></div>
+    </div>
+    <div id="bulkPreview" class="mod-empty" style="text-align:right;background:#f9fafb;border-radius:8px;padding:10px 12px"></div>
+    <div id="bulkError" class="mod-empty" style="display:none;color:#b91c1c"></div>
+    <div class="modal-actions">
+      <button class="nz-btn is-secondary" onclick="closeModal('modal-bulk-rooms')">إلغاء</button>
+      <button class="nz-btn is-gold" onclick="saveBulkRooms()">إنشاء الغرف</button>
+    </div>
+  </div>
+</div>
 
 <div class="modal-overlay" id="modal-room">
   <div class="modal-box">

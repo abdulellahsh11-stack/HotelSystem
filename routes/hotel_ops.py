@@ -273,6 +273,91 @@ async def save_room(request: Request, session=Depends(require_client)):
         )
 
 
+@router.post("/api/rooms/bulk")
+async def create_rooms_bulk(request: Request, session=Depends(require_client)):
+    """
+    ينشئ غرف عدّة أدوارٍ دفعةً واحدة بترقيمٍ منتظم.
+
+    تسجيل فندقٍ من أربعة أدوار × عشر غرف يدوياً أربعون نموذجاً — عملٌ
+    يُملّ فيُهجَر، فتبقى المنصة بلا غرف وتبدو معطّلة. هنا يُوصف النمط
+    مرةً واحدة: `floors=4, rooms_per_floor=10` يُنتج ١٠١…١١٠، ٢٠١…٢١٠…
+
+    الغرف الموجودة تُتخطّى ولا تُستبدل — إعادة التشغيل بعد إضافة دورٍ
+    جديد يجب أن تكون آمنة، وحذفُ غرفةٍ عليها حجزٌ قائم فسادُ بيانات.
+    """
+    data = await request.json()
+    db = request.app.state.db
+    cid = session["client_id"]
+
+    def _int(key, default, low, high, label):
+        try:
+            value = int(data.get(key) if data.get(key) is not None else default)
+        except (TypeError, ValueError):
+            raise ValueError(f"{label} يجب أن يكون رقماً") from None
+        if not low <= value <= high:
+            raise ValueError(f"{label} يجب أن يكون بين {low} و{high}")
+        return value
+
+    try:
+        floors = _int("floors", 1, 1, 50, "عدد الأدوار")
+        per_floor = _int("rooms_per_floor", 1, 1, 100, "عدد الغرف في الدور")
+        first_floor = _int("first_floor", 1, 0, 200, "رقم أول دور")
+        start = _int("start_number", 1, 1, 99, "رقم أول غرفة في الدور")
+        digits = _int("digits", 2, 1, 3, "خانات رقم الغرفة")
+        capacity = _int("capacity", 2, 1, 50, "السعة")
+        price = float(data.get("base_price") or 0)
+        if price < 0:
+            raise ValueError("السعر لا يكون سالباً")
+    except ValueError as exc:
+        return JSONResponse({"success": False, "error": str(exc)}, status_code=400)
+
+    if floors * per_floor > 500:
+        return JSONResponse(
+            {"success": False, "error": "الحدّ ٥٠٠ غرفة في العملية الواحدة"},
+            status_code=400,
+        )
+
+    room_type = str(data.get("room_type") or "standard").strip()[:100]
+
+    # الأرقام الموجودة تُقرأ مرةً واحدة: سؤال قاعدة البيانات لكل غرفة
+    # يعني مئات الرحلات لعملية واحدة.
+    existing = {
+        str(r["room_number"]) for r in (db.execute(
+            "SELECT room_number FROM rooms WHERE client_id=%s", (cid,), fetch="all"
+        ) or [])
+    }
+
+    created, skipped = [], []
+    for i in range(floors):
+        floor_no = first_floor + i
+        for j in range(per_floor):
+            number = f"{floor_no}{str(start + j).zfill(digits)}"
+            if number in existing:
+                skipped.append(number)
+                continue
+            try:
+                db.execute(
+                    """INSERT INTO rooms(client_id,room_number,room_type,floor,
+                                         capacity,base_price,status,notes)
+                       VALUES(%s,%s,%s,%s,%s,%s,'available','')""",
+                    (cid, number, room_type, floor_no, capacity, price),
+                )
+                created.append(number)
+                existing.add(number)
+            except Exception as exc:
+                # سباقٌ مع تسجيلٍ متزامن، أو قيدٌ آخر — تُتخطّى الغرفة
+                # ولا تُلغى العملية كلها: أربعون غرفةً تضيع بسبب واحدة.
+                log.warning("تعذّر إنشاء الغرفة %s للمنشأة %s: %s", number, cid, exc)
+                skipped.append(number)
+
+    log.info("أُنشئت %s غرفة للمنشأة %s (تُخطّيت %s)", len(created), cid, len(skipped))
+    return {
+        "success": True,
+        "data": {"created": created, "skipped": skipped,
+                 "created_count": len(created), "skipped_count": len(skipped)},
+    }
+
+
 @router.delete("/api/rooms/{room_id}")
 async def delete_room(room_id: int, request: Request, session=Depends(require_client)):
     """
