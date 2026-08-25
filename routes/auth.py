@@ -14,7 +14,7 @@ from fastapi.responses import (
 
 from app_core import (
     log, _lock, _client_sessions,
-    _COOKIE_SECURE, _reg_rate_ok, _login_rate_ok,
+    _COOKIE_SECURE, _reg_rate_ok, _login_rate_ok, client_ip as _client_ip,
     _new_token, _make_password, _verify_password, _get_client_token,
 )
 from html_pages import (
@@ -63,7 +63,7 @@ async def client_login(request: Request):
     password = str(form.get("password", "")).strip()
 
     # Rate-limit: block IPs that exceed LOGIN_MAX_PER_MINUTE attempts per minute
-    client_ip = (request.client.host if request.client else "?")
+    client_ip = _client_ip(request)
     if not _login_rate_ok(client_ip):
         return HTMLResponse(_login_page("محاولات تسجيل دخول كثيرة — حاول لاحقاً"), status_code=429)
 
@@ -97,7 +97,7 @@ async def client_login(request: Request):
     try:
         db = request.app.state.db
         if db.use_postgres:
-            ip = request.client.host if request.client else ""
+            ip = _client_ip(request)
             ua = request.headers.get("user-agent", "")[:200]
             expires = datetime.now() + timedelta(days=7)
             db.execute(
@@ -164,13 +164,28 @@ async def client_register(request: Request):
 
     if not hotel_name or not password:
         return JSONResponse({"success": False, "error": "اسم المنشأة وكلمة المرور مطلوبان"}, status_code=400)
-    # توليد معرّف رقمي تلقائي (8 أرقام) — فريد ولا يتكرر
+    # توليد معرّف رقمي تلقائي (٨ أرقام).
+    #
+    # `random` مولّدٌ غير تعمّي وبلا فحص تفرّد: تصادمٌ واحد كان يُنتج خطأ
+    # «معرّف المنشأة مستخدم بالفعل» لمعرّفٍ لم يختره المشترك أصلاً. الآن
+    # `secrets` مع محاولاتٍ حتى يخلو المعرّف.
     if not client_id:
-        import random as _rnd
-        client_id = str(_rnd.randint(10000000, 99999999))
+        import secrets as _sec
+
+        store_early = request.app.state.store
+        for _ in range(12):
+            candidate = str(_sec.randbelow(90000000) + 10000000)
+            if not store_early.get_client(candidate):
+                client_id = candidate
+                break
+        if not client_id:
+            log.error("تعذّر توليد معرّف منشأة فريد بعد ١٢ محاولة")
+            return JSONResponse(
+                {"success": False, "error": "تعذّر إنشاء الحساب — حاول مرة أخرى"},
+                status_code=503)
 
     # M3 mitigation: حدّ معدّل التسجيل لكل IP
-    client_ip = (request.client.host if request.client else "?")
+    client_ip = _client_ip(request)
     if not _reg_rate_ok(client_ip):
         return JSONResponse(
             {"success": False, "error": "محاولات تسجيل كثيرة — حاول لاحقاً"},
@@ -178,6 +193,15 @@ async def client_register(request: Request):
 
     cfg = request.app.state.cfg
     store = request.app.state.store
+
+    # التحقق من تكرار المعرّف **قبل** استهلاك مفتاح التفعيل.
+    #
+    # كان المفتاح يُعلَّم مستخدماً ويُحفظ ثم يُفحص التكرار: تسجيلٌ يفشل
+    # بـ«معرّف المنشأة مستخدم بالفعل» كان يحرق مفتاحاً دفع المشترك ثمنه،
+    # بلا حساب وبلا مفتاح.
+    existing = store.get_client(client_id)
+    if existing:
+        return JSONResponse({"success": False, "error": "معرّف المنشأة مستخدم بالفعل"}, status_code=400)
 
     # Validate activation key if provided
     plan = "trial"
@@ -191,10 +215,6 @@ async def client_register(request: Request):
             key_obj["used"] = True
             key_obj["used_by"] = client_id
             store.save_admin_data(data)
-
-    existing = store.get_client(client_id)
-    if existing:
-        return JSONResponse({"success": False, "error": "معرّف المنشأة مستخدم بالفعل"}, status_code=400)
 
     pass_hash, pass_salt = _make_password(password)
     client = {

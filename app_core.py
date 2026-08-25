@@ -63,6 +63,38 @@ _login_attempts: dict = {}   # ip → [timestamps]
 _LOGIN_MAX_PER_MINUTE = int(os.environ.get("LOGIN_MAX_PER_MINUTE", "10"))
 
 
+# خلف وسيطٍ عكسي (Railway وأمثاله) يكون `request.client.host` عنوان
+# الوسيط نفسه لكل الطلبات — فيتشارك كل المستأجرين دلواً واحداً: عشر
+# محاولات دخول في الدقيقة تُغلق المنصة على الجميع. وuvicorn لا يثق بترويسة
+# X-Forwarded-For إلا من 127.0.0.1 افتراضياً، والوسيط ليس كذلك.
+#
+# المقايضة صريحة: الوثوق بالترويسة يسمح بانتحال العنوان للتهرّب من الحدّ،
+# وعدمُ الوثوق يسمح بإغلاق المنصة على الجميع. الثاني أسوأ — تعطيلٌ تامّ
+# بعشرة طلبات — فالافتراض هو الوثوق بقفزةٍ واحدة، ويُطفأ بـTRUST_PROXY=0
+# عند التشغيل بلا وسيط.
+TRUST_PROXY = os.environ.get("TRUST_PROXY", "1") not in ("0", "false", "False", "")
+try:
+    TRUST_PROXY_HOPS = max(1, int(os.environ.get("TRUST_PROXY_HOPS", "1")))
+except ValueError:
+    TRUST_PROXY_HOPS = 1
+
+
+def client_ip(request) -> str:
+    """
+    عنوان الطالب الحقيقي لأغراض حدّ المعدّل.
+
+    يُؤخذ من X-Forwarded-For بعدّ القفزات من اليمين: الوسيط يُلحق العنوان
+    الحقيقي في آخر القائمة، وما قبله يكتبه العميل فيمكن انتحاله.
+    """
+    if TRUST_PROXY:
+        forwarded = request.headers.get("x-forwarded-for", "")
+        parts = [p.strip() for p in forwarded.split(",") if p.strip()]
+        if parts:
+            index = max(0, len(parts) - TRUST_PROXY_HOPS)
+            return parts[index]
+    return request.client.host if request.client else "?"
+
+
 def _reg_rate_ok(ip: str) -> bool:
     """يسمح بحد أقصى REG_MAX_PER_HOUR تسجيلات لكل IP في الساعة."""
     now = datetime.now().timestamp()
@@ -243,6 +275,16 @@ async def lifespan(app_: FastAPI):
     except Exception as e:
         log.warning(f"sessions migration: {e}")
     try:
+        from db.schema_room_map import run_room_map_migration
+        run_room_map_migration(db)
+    except Exception as e:
+        log.warning(f"room map migration: {e}")
+    try:
+        from db.schema_guest_crypto import run_guest_crypto_migration
+        run_guest_crypto_migration(db)
+    except Exception as e:
+        log.warning(f"guest crypto migration: {e}")
+    try:
         from db.schema_v3 import run_rls_migration
         run_rls_migration(db)
     except Exception as e:
@@ -406,6 +448,32 @@ _PROTECTED_PAGE_PREFIXES = (
     "/ota-bookings", "/trips", "/tourism-trips", "/guests", "/bookings",
 )
 
+# صفحات ثابتة محمية بمسارها الكامل. `dashboard.html` لوحة التحكم كاملةً،
+# وكانت تُخدَم لأي زائر: الشرط القديم لم يكن يفحص إلا صفحات الوحدات.
+_PROTECTED_STATIC_PAGES = ("/static/dashboard.html",)
+
+# صفحات وحدات مفتوحة عمداً: بوابة النزيل يفتحها الضيف نفسه ولا جلسة
+# منشأة له، فحجبها يمنع الغرض الذي بُنيت له.
+_PUBLIC_MODULE_PAGES = ("/static/dheuof/modules/01-guests/portal.html",)
+
+
+def _is_protected_page(path: str) -> bool:
+    """
+    هل هذا المسار صفحةَ برنامجٍ تحتاج جلسة؟
+
+    الشرط السابق كان `path.endswith("/index.html")` — فكل صفحة وحدةٍ لا
+    تُسمّى index (التسجيل · الاستقبال · المستخدمون) تُخدَم لأي زائر،
+    وكذلك لوحة التحكم. الفحص الآن بالامتداد لا بالاسم.
+    """
+    if path in _PUBLIC_MODULE_PAGES:
+        return False
+    if path in _PROTECTED_STATIC_PAGES:
+        return True
+    if path.startswith("/static/dheuof/modules/") and path.endswith(".html"):
+        return True
+    # اختصارات المسارات: مطابقة تامّة أو مع شرطة مائلة ختامية
+    return path in _PROTECTED_PAGE_PREFIXES or path.rstrip("/") in _PROTECTED_PAGE_PREFIXES
+
 
 @app.middleware("http")
 async def server_side_auth_gate(request: Request, call_next):
@@ -417,11 +485,7 @@ async def server_side_auth_gate(request: Request, call_next):
     wall could be bypassed by disabling JavaScript or hitting the static file.
     """
     path = request.url.path
-    is_module_html = (
-        path.startswith("/static/dheuof/modules/") and path.endswith("/index.html")
-    )
-    is_shortcut = path in _PROTECTED_PAGE_PREFIXES
-    if is_module_html or is_shortcut:
+    if _is_protected_page(path):
         if get_client_session(request) is None:
             # Browsers navigating get a redirect; programmatic/XHR get 401
             accept = request.headers.get("accept", "")

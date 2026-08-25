@@ -20,6 +20,7 @@ PERMISSIONS: dict[str, str] = {
     "bookings.write":   "إنشاء وتعديل الحجوزات",
     "guests.read":      "عرض بيانات النزلاء",
     "guests.write":     "إضافة وتعديل النزلاء",
+    "guests.pii":       "كشف بيانات النزيل الكاملة (الهوية والجوال) — يمنحها مالك المنشأة",
     "rooms.read":       "عرض الغرف وحالتها",
     "rooms.write":      "تسجيل وتعديل الغرف",
     "housekeeping":     "مهام الإشراف الداخلي",
@@ -79,7 +80,8 @@ ROLES: dict[str, dict] = {
             "bookings.read", "bookings.write", "guests.read", "guests.write",
             "rooms.read", "invoices.read", "pos",
         ],
-        "note": "يستقبل ويحجز. لا يُعدّل الغرف ولا يرى الرواتب.",
+        "note": "يستقبل ويحجز. يرى بيانات النزيل مُقنَّعة — ومدير المنشأة "
+                "يمنحه `guests.pii` فرداً فرداً إن احتاج الهوية كاملة.",
     },
     "housekeeping": {
         "label": "إشراف داخلي",
@@ -89,7 +91,8 @@ ROLES: dict[str, dict] = {
     "accountant": {
         "label": "محاسب",
         "permissions": ["invoices.read", "invoices.write", "reports", "bookings.read"],
-        "note": "المالية والتقارير. لا يُعدّل الحجوزات.",
+        "note": "المالية والتقارير. لا يُعدّل الحجوزات، ولا يرى هويات "
+                "النزلاء — الفاتورة لا تحتاج رقم الهوية.",
     },
     "pos_cashier": {
         "label": "كاشير",

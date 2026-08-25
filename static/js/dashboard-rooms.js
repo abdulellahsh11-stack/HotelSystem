@@ -41,6 +41,59 @@ async function saveRoom(){
   loadRoomsStatus();
 }
 
+// ======== تسجيل أدوار وغرف دفعة واحدة ========
+// تسجيل أربعين غرفةً نموذجاً نموذجاً عملٌ يُهجَر في منتصفه، فتبقى
+// المنصة بلا غرف — ولا شيء فيها يعمل بلا غرف: لا خريطة ولا حجز ولا فاتورة.
+function bulkParams(){
+  const v = id => document.getElementById(id).value;
+  return {
+    floors: parseInt(v('bulkFloors'), 10) || 0,
+    rooms_per_floor: parseInt(v('bulkPerFloor'), 10) || 0,
+    first_floor: parseInt(v('bulkFirstFloor'), 10) || 0,
+    start_number: parseInt(v('bulkStart'), 10) || 1,
+    digits: parseInt(v('bulkDigits'), 10) || 2,
+    room_type: v('bulkType'),
+    capacity: v('bulkCapacity'),
+    base_price: v('bulkPrice')
+  };
+}
+
+// المعاينة قبل الإنشاء: رؤية «١٠١ … ٣١٠» تكشف خطأ النمط قبل أن يُنشئ
+// المستخدم ثلاثين غرفةً بأرقام لا يريدها ثم يحذفها واحدةً واحدة.
+function previewBulkRooms(){
+  const el = document.getElementById('bulkPreview');
+  if(!el) return;
+  const p = bulkParams();
+  const total = p.floors * p.rooms_per_floor;
+  if(p.floors < 1 || p.rooms_per_floor < 1){ el.textContent = 'أدخل عدد الأدوار وعدد الغرف.'; return; }
+  if(total > 500){ el.textContent = 'الحدّ ٥٠٠ غرفة في العملية الواحدة — قلّل العدد.'; return; }
+  const num = (f, j) => String(f) + String(p.start_number + j).padStart(p.digits, '0');
+  const names = [];
+  for(let i = 0; i < p.floors; i++){
+    const f = p.first_floor + i;
+    names.push(num(f, 0) + '…' + num(f, p.rooms_per_floor - 1));
+  }
+  const shown = names.slice(0, 4).join(' · ') + (names.length > 4 ? ' …' : '');
+  el.textContent = 'ستُنشأ ' + total + ' غرفة: ' + shown;
+}
+
+async function saveBulkRooms(){
+  showFormError('bulkError','');
+  const res = await apiSend('/api/rooms/bulk', {method:'POST', body:JSON.stringify(bulkParams())});
+  if(!res.ok){ showFormError('bulkError', res.error); return; }
+  const d = (res.data && res.data.data) || {};
+  closeModal('modal-bulk-rooms');
+  showToast('أُنشئت ' + (d.created_count || 0) + ' غرفة' +
+    (d.skipped_count ? ' · تُخطّيت ' + d.skipped_count + ' مسجَّلة مسبقاً' : ''));
+  loadRoomsStatus();
+}
+
+function openBulkRoomModal(){
+  showFormError('bulkError','');
+  previewBulkRooms();
+  openModal('modal-bulk-rooms');
+}
+
 async function deleteRoom(id, number){
   if(!confirm('حذف الغرفة رقم '+number+'؟')) return;
   const res = await apiSend('/api/rooms/'+id, {method:'DELETE'});

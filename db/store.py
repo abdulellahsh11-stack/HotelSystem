@@ -215,60 +215,120 @@ class DataStore:
     #  GUESTS — النزلاء
     # ══════════════════════════════════════════════════════════
 
+    # ── التشفير عند حدّ التخزين ────────────────────────────────
+    #
+    # مكانه هنا لا في المسارات: كل قراءةٍ وكتابةٍ لبيانات النزلاء تمرّ
+    # بهذه الطبقة، فمسارٌ جديد يُكتب غداً يرث التشفير بلا أن ينتبه
+    # كاتبه. لو وُضع في المسارات لكان أولُ مسارٍ يُنسى ثغرةً صامتة.
+    @staticmethod
+    def _decrypt_guest_row(row: dict) -> dict:
+        from services import guest_crypto
+
+        if not guest_crypto.is_enabled():
+            return row
+        return guest_crypto.decrypt_guest(row)
+
     def get_guests(self, client_id: str) -> List[dict]:
         if self._use_pg:
             rows = self.db.execute(
                 "SELECT * FROM guests WHERE client_id = %s ORDER BY created_at DESC",
                 (client_id,), fetch="all"
             )
-            return _rows_to_list(rows)
-        return self._json_get_client_data(client_id, "guests")
+            return [self._decrypt_guest_row(g) for g in _rows_to_list(rows)]
+        return [self._decrypt_guest_row(g)
+                for g in self._json_get_client_data(client_id, "guests")]
 
     def get_guest(self, client_id: str, guest_id: Any) -> Optional[dict]:
         if self._use_pg:
+            # `guests.id` عمود SERIAL. معرّفٌ غير رقمي ليس «غير موجود» بل
+            # كان يرمي ValueError فيصير ٥٠٠ — وهذا ما كان يُسقط
+            # POST /api/guests بالكامل.
+            try:
+                numeric = int(guest_id)
+            except (TypeError, ValueError):
+                return None
             row = self.db.execute(
                 "SELECT * FROM guests WHERE client_id = %s AND id = %s",
-                (client_id, int(guest_id)), fetch="one"
+                (client_id, numeric), fetch="one"
             )
-            return _to_dict(row) if row else None
+            return self._decrypt_guest_row(_to_dict(row)) if row else None
         guests = self._json_get_client_data(client_id, "guests")
-        return next((g for g in guests if str(g.get("id")) == str(guest_id)), None)
+        found = next((g for g in guests if str(g.get("id")) == str(guest_id)), None)
+        return self._decrypt_guest_row(found) if found else None
+
+    def find_guest_by_id_number(self, client_id: str, id_number: str) -> Optional[dict]:
+        """
+        يبحث برقم الهوية عبر الفهرس الأعمى.
+
+        الرقم لا يُرسَل إلى قاعدة البيانات إطلاقاً — تُرسَل بصمتُه. فحتى
+        سجلّ الاستعلامات البطيئة لا يحوي أرقام هوية.
+        """
+        if not id_number:
+            return None
+        from services import guest_crypto
+
+        if not self._use_pg:
+            for g in self.get_guests(client_id):
+                if str(g.get("id_number") or "") == str(id_number):
+                    return g
+            return None
+
+        if guest_crypto.is_enabled():
+            row = self.db.execute(
+                "SELECT * FROM guests WHERE client_id=%s AND id_number_bidx=%s LIMIT 1",
+                (client_id, guest_crypto.blind_index(id_number)), fetch="one")
+        else:
+            row = self.db.execute(
+                "SELECT * FROM guests WHERE client_id=%s AND id_number=%s LIMIT 1",
+                (client_id, id_number), fetch="one")
+        return self._decrypt_guest_row(_to_dict(row)) if row else None
 
     def save_guest(self, client_id: str, guest: dict) -> dict:
+        from services import guest_crypto
+
+        # `birth_date` كان يُجمَع في نموذج التسجيل ولا يُكتب إطلاقاً —
+        # عمودٌ معرَّف في المخطط وغائب عن كلتا الجملتين. أُضيف هنا.
+        stored = guest_crypto.encrypt_guest(guest) if guest_crypto.is_enabled() else dict(guest)
+        values = (
+            stored.get("id_type", ""), stored.get("id_number", ""),
+            stored.get("full_name", stored.get("name", "")),
+            stored.get("absher_phone", stored.get("phone", "")),
+            stored.get("nationality", ""), stored.get("birth_date") or None,
+            stored.get("data_status", "incomplete"),
+            stored.get("source", ""), stored.get("notes", ""),
+            stored.get("id_number_bidx"),
+        )
+
         if self._use_pg:
             guest_id = guest.get("id")
             if guest_id and self.get_guest(client_id, guest_id):
                 self.db.execute("""
                     UPDATE guests SET
                         id_type=%s, id_number=%s, full_name=%s,
-                        absher_phone=%s, nationality=%s,
-                        data_status=%s, source=%s, notes=%s
+                        absher_phone=%s, nationality=%s, birth_date=%s,
+                        data_status=%s, source=%s, notes=%s, id_number_bidx=%s
                     WHERE client_id=%s AND id=%s
-                """, (
-                    guest.get("id_type", ""), guest.get("id_number", ""),
-                    guest.get("full_name", guest.get("name", "")),
-                    guest.get("absher_phone", guest.get("phone", "")),
-                    guest.get("nationality", ""), guest.get("data_status", "incomplete"),
-                    guest.get("source", ""), guest.get("notes", ""),
-                    client_id, int(guest_id),
-                ))
+                """, values + (client_id, int(guest_id)))
             else:
-                self.db.execute("""
+                # RETURNING id: المعرّف الحقيقي يُعيده الخادم. بدونه كان
+                # المستدعي يتلقّى المعرّف الوهمي الذي اخترعه المسار، فيُنشئ
+                # الحجزَ التالي مشيراً إلى نزيلٍ لا وجود له.
+                row = self.db.execute("""
                     INSERT INTO guests
                         (client_id, id_type, id_number, full_name,
-                         absher_phone, nationality, data_status, source, notes)
-                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
-                """, (
-                    client_id,
-                    guest.get("id_type", ""), guest.get("id_number", ""),
-                    guest.get("full_name", guest.get("name", "")),
-                    guest.get("absher_phone", guest.get("phone", "")),
-                    guest.get("nationality", ""), guest.get("data_status", "incomplete"),
-                    guest.get("source", ""), guest.get("notes", ""),
-                ))
+                         absher_phone, nationality, birth_date, data_status,
+                         source, notes, id_number_bidx)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    RETURNING id
+                """, (client_id,) + values, fetch="one")
+                if row:
+                    guest = dict(guest)
+                    guest["id"] = _to_dict(row).get("id")
 
         if not self._use_pg or self.dual_write:
-            self._json_upsert_in_client(client_id, "guests", guest)
+            # مخزن JSON يحفظ المشفَّر أيضاً: ملفٌّ يُنسَخ ويُرسَل بالبريد
+            # أسهل تسريباً من قاعدة بيانات.
+            self._json_upsert_in_client(client_id, "guests", stored)
 
         return guest
 

@@ -791,31 +791,47 @@ var RESERVATIONS = [];
 
 var GUESTS = [];
 
-var FLOORS = [
-  { floor:'F1', ar:'الطابق الأول',  rooms:[
-    {no:'١٠١',type:'ستاندرد',status:'clean'},{no:'١٠٢',type:'ستاندرد',status:'clean'},{no:'١٠٣',type:'ستاندرد',status:'clean'},
-    {no:'١٠٤',type:'ستاندرد',status:'clean'},{no:'١٠٥',type:'ستاندرد',status:'clean'},{no:'١٠٦',type:'ستاندرد',status:'clean'},
-    {no:'١٠٧',type:'ستاندرد',status:'clean'},{no:'١٠٨',type:'ستاندرد',status:'clean'},{no:'١٠٩',type:'ستاندرد',status:'clean'},
-    {no:'١١٠',type:'ستاندرد',status:'clean'},{no:'١١١',type:'ستاندرد',status:'clean'},{no:'١١٢',type:'ستاندرد',status:'clean'},
-    {no:'١١٦',type:'ستاندرد',status:'clean'},
-  ]},
-  { floor:'F2', ar:'الطابق الثاني', rooms:[
-    {no:'٢٠١',type:'ديلوكس',status:'clean'},{no:'٢٠٢',type:'ديلوكس',status:'clean'},{no:'٢٠٣',type:'ديلوكس',status:'clean'},
-    {no:'٢٠٤',type:'ديلوكس',status:'clean'},{no:'٢٠٥',type:'ديلوكس',status:'clean'},{no:'٢٠٦',type:'ديلوكس',status:'clean'},
-    {no:'٢١٢',type:'ديلوكس',status:'clean'},{no:'٢١٨',type:'ديلوكس',status:'clean'},
-    {no:'٢٢٤',type:'ديلوكس',status:'clean'},{no:'٢٢٥',type:'ديلوكس',status:'clean'},
-  ]},
-  { floor:'F3', ar:'الطابق الثالث', rooms:[
-    {no:'٣٠١',type:'جناح',status:'clean'},{no:'٣٠٢',type:'جناح',status:'clean'},{no:'٣٠٣',type:'جناح',status:'clean'},
-    {no:'٣٠٤',type:'جناح',status:'clean'},{no:'٣٠٧',type:'ديلوكس',status:'clean'},{no:'٣١٢',type:'ديلوكس',status:'clean'},
-    {no:'٣١٥',type:'ستاندرد',status:'clean'},
-  ]},
-  { floor:'F4', ar:'الطابق الرابع / جناح', rooms:[
-    {no:'٤٠٢',type:'جناح ملكي',status:'clean'},{no:'٤٠٤',type:'جناح ملكي',status:'clean'},
-    {no:'٤٠٦',type:'جناح ملكي',status:'clean'},{no:'٤٠٨',type:'جناح ملكي',status:'clean'},
-    {no:'٤١٠',type:'جناح',status:'clean'},{no:'٤١٢',type:'جناح',status:'clean'},
-  ]},
-];
+// الغرف من سجلّ المنشأة لا من قائمة مكتوبة. كانت هنا ٤٠ غرفةً وهمية
+// تُعرض لكل منشأة مهما كانت غرفها الحقيقية.
+var FLOORS = [];
+
+// مفردات هذه الصفحة: occ · clean · dirty · maint — لا أسماء الخادم
+var ROOM_STATUS_MAP = { available:'clean', occupied:'occ', dirty:'dirty',
+                        maintenance:'maint', blocked:'maint' };
+
+async function loadFloorsFromServer(){
+  var rooms;
+  try {
+    var res = await fetch('/api/rooms', { headers:{ 'Accept':'application/json' } });
+    if(!res.ok) throw new Error(res.status);
+    rooms = ((await res.json())||{}).data || [];
+  } catch(e){
+    // الفشل يُقال ولا يُترجَم إلى «لا غرف»
+    var c = document.getElementById('floors-container');
+    if(c) c.innerHTML = '<div style="padding:24px;text-align:center;color:#b91c1c">تعذّر تحميل الغرف من الخادم</div>';
+    return;
+  }
+  var TYPE_AR = { standard:'ستاندرد', double:'مزدوجة', twin:'سريران', suite:'جناح', family:'عائلية' };
+  var byFloor = {};
+  rooms.forEach(function(r){
+    var f = (r.floor===null||r.floor===undefined) ? 0 : Number(r.floor);
+    (byFloor[f] = byFloor[f] || []).push(r);
+  });
+  FLOORS = Object.keys(byFloor).map(Number).sort(function(a,b){return a-b;}).map(function(f){
+    return {
+      floor: 'F' + f,
+      ar: f===0 ? 'الدور الأرضي' : 'الدور ' + f,
+      rooms: byFloor[f].sort(function(a,b){
+        return String(a.room_number).localeCompare(String(b.room_number),'ar',{numeric:true});
+      }).map(function(r){
+        return { no:String(r.room_number),
+                 type: TYPE_AR[r.room_type]||r.room_type||'',
+                 status: ROOM_STATUS_MAP[r.status] || 'clean' };
+      })
+    };
+  });
+  if(typeof renderFloors==='function') renderFloors();
+}
 
 /* ════════════════════════════════════════
    STAFF ROLES (for auto-assignment)
@@ -1521,6 +1537,7 @@ renderResTable(RESERVATIONS);
 renderCIList('');
 renderGuests();
 renderFloors();
+loadFloorsFromServer();
 renderCalendar();
 // Init subtitle
 (function(){

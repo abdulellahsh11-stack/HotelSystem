@@ -22,7 +22,7 @@ from fastapi.responses import JSONResponse
 
 from app_core import (
     _COOKIE_SECURE, _client_sessions, _lock, _login_rate_ok, _make_password,
-    _new_token, _verify_password, log, require_client,
+    _new_token, _verify_password, client_ip as _client_ip, log, require_client,
 )
 from services.staff_roles import assignable_roles, is_valid_role, permissions_for
 
@@ -300,7 +300,7 @@ async def staff_login(request: Request):
 
     رقم المنشأة مطلوب لأن اسم المستخدم فريد داخلها لا عبر المنصة.
     """
-    ip = request.client.host if request.client else "unknown"
+    ip = _client_ip(request)
     if not _login_rate_ok(ip):
         raise HTTPException(status_code=429, detail="محاولات كثيرة — انتظر قليلاً")
 
@@ -368,7 +368,7 @@ async def staff_login(request: Request):
                ON CONFLICT (token) DO NOTHING""",
             (token, account["client_id"],
              (datetime.now() + timedelta(hours=12)).isoformat(),
-             request.client.host if request.client else "",
+             _client_ip(request),
              request.headers.get("user-agent", "")[:200],
              account["role"], account["id"], account["username"],
              account["full_name"], json.dumps(session_data["permissions"])),
