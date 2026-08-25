@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-main1.py — قلب التطبيق: الإعداد، الـ middleware، المصادقة
-يُستورد من main.py (نقطة الدخول) و main2.py (الـ routes)
+app_core.py — قلب التطبيق: الإعداد، الـ middleware، المصادقة
+يُستورد من main.py (نقطة الدخول لـ uvicorn)
 """
 
 import decimal
@@ -67,6 +67,7 @@ def _reg_rate_ok(ip: str) -> bool:
     """يسمح بحد أقصى REG_MAX_PER_HOUR تسجيلات لكل IP في الساعة."""
     now = datetime.now().timestamp()
     with _lock:
+        _prune_attempts(_reg_attempts, now, 3600)
         hits = [t for t in _reg_attempts.get(ip, []) if now - t < 3600]
         if len(hits) >= _REG_MAX_PER_HOUR:
             _reg_attempts[ip] = hits
@@ -76,10 +77,25 @@ def _reg_rate_ok(ip: str) -> bool:
         return True
 
 
+# حدٌّ يُشغّل التنظيف. كل عنوان جديد يضيف مفتاحاً لا يُحذف أبداً، فالقاموس
+# ينمو بعدد العناوين التي زارت المنصة منذ آخر إعادة تشغيل — تسريبُ ذاكرةٍ
+# بطيء يستغلّه من يوزّع محاولاته على عناوين كثيرة.
+_ATTEMPTS_PRUNE_THRESHOLD = 10_000
+
+
+def _prune_attempts(bucket: dict, now: float, window: int) -> None:
+    """يحذف المفاتيح التي انقضت نافذتها. يُستدعى تحت القفل."""
+    if len(bucket) < _ATTEMPTS_PRUNE_THRESHOLD:
+        return
+    for key in [k for k, v in bucket.items() if not v or now - max(v) >= window]:
+        bucket.pop(key, None)
+
+
 def _login_rate_ok(ip: str) -> bool:
     """Allow at most LOGIN_MAX_PER_MINUTE login attempts per IP per minute (brute-force guard)."""
     now = datetime.now().timestamp()
     with _lock:
+        _prune_attempts(_login_attempts, now, 60)
         hits = [t for t in _login_attempts.get(ip, []) if now - t < 60]
         if len(hits) >= _LOGIN_MAX_PER_MINUTE:
             _login_attempts[ip] = hits
@@ -93,25 +109,69 @@ def _new_token() -> str:
     return secrets.token_urlsafe(32)
 
 
-def _hash_password(password: str, salt: str) -> str:
+# عدد دورات PBKDF2.
+#   LEGACY — ما بُنيت به كل التجزئات القائمة. يبقى للتحقق منها فقط.
+#   CURRENT — توصية OWASP لـ PBKDF2-SHA256؛ يُستخدم لكل تجزئة جديدة.
+# لا تُرفع LEGACY: رفعه يمنع كل عميل قائم من الدخول لأن تجزئته العارية
+# لا تحمل عدد دوراتها. الترقية تتم فرداً فرداً عند أول دخول ناجح.
+PBKDF2_ITERATIONS_LEGACY = 100_000
+PBKDF2_ITERATIONS_CURRENT = 600_000
+
+_HASH_PREFIX = "pbkdf2_sha256"
+
+
+def _hash_password(password: str, salt: str,
+                   iterations: int = PBKDF2_ITERATIONS_LEGACY) -> str:
+    """
+    يُعيد تجزئة عارية (hex) بلا وسم.
+
+    الافتراضي يبقى LEGACY عمداً: مسارات المشرف تقارن ناتج هذه الدالة
+    بتجزئات مخزَّنة قديمة، فتغيير الافتراضي يكسر دخول المشرف صامتاً.
+    """
     return hashlib.pbkdf2_hmac(
-        "sha256", password.encode(), salt.encode(), 100_000
+        "sha256", password.encode(), salt.encode(), iterations
     ).hex()
 
 
 def _make_password(password: str) -> tuple[str, str]:
-    """C2 fix: يُنشئ ملحاً عشوائياً فريداً لكل حساب ويعيد (hash, salt)."""
+    """
+    يُنشئ ملحاً فريداً ويعيد (تجزئة مُوسَّمة، ملح).
+
+    الصيغة `pbkdf2_sha256$<دورات>$<hex>` تحمل عدد دوراتها معها، فترفع
+    المنصة العدد مستقبلاً دون إبطال ما هو مخزَّن.
+    """
     salt = secrets.token_hex(16)
-    return _hash_password(password, salt), salt
+    digest = _hash_password(password, salt, PBKDF2_ITERATIONS_CURRENT)
+    return f"{_HASH_PREFIX}${PBKDF2_ITERATIONS_CURRENT}${digest}", salt
+
+
+def _parse_stored_hash(stored: str) -> tuple[int, str]:
+    """يُفكّك المخزَّن إلى (دورات، تجزئة). العاري يُعامَل كقديم."""
+    if stored.startswith(_HASH_PREFIX + "$"):
+        try:
+            _, iters, digest = stored.split("$", 2)
+            return int(iters), digest
+        except (ValueError, TypeError):
+            pass  # مُشوَّه — يسقط إلى القديم فيفشل التحقق بأمان
+    return PBKDF2_ITERATIONS_LEGACY, stored
 
 
 def _verify_password(password: str, client: dict, cfg) -> bool:
-    """يتحقق من كلمة المرور بملح الحساب، مع توافق خلفي مع الملح العام القديم."""
+    """يتحقق بملح الحساب، ويقبل الصيغتين المُوسَّمة والعارية القديمة."""
     stored = client.get("pass_hash", "") or ""
     if not stored:
         return False
     salt = client.get("pass_salt") or cfg.pass_salt   # legacy fallback
-    return secrets.compare_digest(_hash_password(password, salt), stored)
+    iterations, digest = _parse_stored_hash(stored)
+    return secrets.compare_digest(
+        _hash_password(password, salt, iterations), digest
+    )
+
+
+def password_needs_upgrade(stored: str) -> bool:
+    """هل التجزئة المخزَّنة أضعف من المعيار الحالي؟"""
+    iterations, _ = _parse_stored_hash(stored or "")
+    return iterations < PBKDF2_ITERATIONS_CURRENT
 
 
 # ──────────────────────────────────────────────────────────────
@@ -151,6 +211,27 @@ async def lifespan(app_: FastAPI):
         run_staff_app_migrations(db)
     except Exception as e:
         log.warning(f"staff_app migrations: {e}")
+    try:
+        from db.schema_services import run_services_migration
+        run_services_migration(db)
+    except Exception as e:
+        log.warning(f"services migration: {e}")
+    try:
+        from db.schema_alerts import run_alerts_migration
+        run_alerts_migration(db)
+    except Exception as e:
+        log.warning(f"alerts migration: {e}")
+    # RLS: تُطبَّق السياسات عند الإقلاع حين يُطلب ذلك صراحةً. تحتاج
+    # مستخدماً يملك الجداول، فتُشغَّل مرة ثم يُحوَّل الاتصال إلى دور
+    # التطبيق. لا تعمل تلقائياً: تطبيقها بلا الخطوتين الأخريين يوقف
+    # المنصة.
+    if os.environ.get("RLS_APPLY_ON_STARTUP", "").lower() in ("1", "true", "yes"):
+        try:
+            from db.rls import enable_rls
+            result = enable_rls(db)
+            log.info("RLS: طُبّقت على %s", ", ".join(result["applied"]) or "لا شيء")
+        except Exception as e:
+            log.error("فشل تطبيق RLS: %s", e)
     try:
         from db.schema_v3 import run_security_hardening
         run_security_hardening(db)
@@ -275,6 +356,32 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 @app.middleware("http")
+async def bind_tenant_context(request: Request, call_next):
+    """
+    يربط مستأجر الطلب بسياق التنفيذ، فتقرأه طبقة الاتصال وتضبطه داخل
+    معاملة كل استعلام (RLS).
+
+    يُقرأ من الجلسة على الخادم لا من أي مُدخل. وهذه هي النقطة الوحيدة
+    التي تُحدَّد فيها هوية المستأجر لعمر الطلب.
+
+    التنظيف في finally شرط لا احتياط: خيوط الخادم مُعاد استعمالها،
+    وسياقٌ يبقى بعد الطلب يُورَّث لطلب منشأة أخرى.
+    """
+    from db.tenant_context import clear_tenant, set_tenant
+
+    try:
+        session = get_client_session(request)
+    except Exception:
+        session = None
+
+    set_tenant((session or {}).get("client_id"))
+    try:
+        return await call_next(request)
+    finally:
+        clear_tenant()
+
+
+@app.middleware("http")
 async def add_security_and_cache_headers(request: Request, call_next):
     response = await call_next(request)
     path = request.url.path
@@ -324,153 +431,6 @@ async def server_side_auth_gate(request: Request, call_next):
     return await call_next(request)
 
 
-# ── Module Routers — جميع الوحدات الـ 15 + وجهات سياحية ─────
-try:
-    from routes.m02_frontdesk import router as m02_router
-    app.include_router(m02_router)
-    log.info("✓ M02 Front Desk")
-except Exception as e:
-    log.warning(f"M02: {e}")
-
-try:
-    from routes.m06_hr import router as m06_router
-    app.include_router(m06_router)
-    log.info("✓ M06 HR")
-except Exception as e:
-    log.warning(f"M06: {e}")
-
-try:
-    from routes.m07_housekeeping import router as m07_router
-    app.include_router(m07_router)
-    log.info("✓ M07 Housekeeping")
-except Exception as e:
-    log.warning(f"M07: {e}")
-
-try:
-    from routes.m08_maintenance import router as m08_router
-    app.include_router(m08_router)
-    log.info("✓ M08 Maintenance")
-except Exception as e:
-    log.warning(f"M08: {e}")
-
-try:
-    from routes.m10_crm import router as m10_router
-    app.include_router(m10_router)
-    log.info("✓ M10 CRM")
-except Exception as e:
-    log.warning(f"M10: {e}")
-
-try:
-    from routes.m11_kpi import router as m11_router
-    app.include_router(m11_router)
-    log.info("✓ M11 KPI")
-except Exception as e:
-    log.warning(f"M11: {e}")
-
-try:
-    from routes.m13_warehouses import router as m13_router
-    app.include_router(m13_router)
-    log.info("✓ M13 Warehouses")
-except Exception as e:
-    log.warning(f"M13: {e}")
-
-try:
-    from routes.m14_tourism import router as m14_router
-    app.include_router(m14_router)
-    log.info("✓ M14 Tourism Tours")
-except Exception as e:
-    log.warning(f"M14: {e}")
-
-try:
-    from routes.m14b_destinations import router as m14b_router
-    app.include_router(m14b_router)
-    log.info("✓ M14b Tourist Destinations")
-except Exception as e:
-    log.warning(f"M14b: {e}")
-
-try:
-    from routes.channels import router as channels_router
-    app.include_router(channels_router)
-    log.info("✓ Channel Manager (OTA)")
-except Exception as e:
-    log.warning(f"Channels: {e}")
-
-try:
-    from routes.open_api import router as open_api_router
-    app.include_router(open_api_router)
-    log.info("✓ Open API (modules + ZATCA accounting)")
-except Exception as e:
-    log.warning(f"Open API: {e}")
-
-try:
-    from routes.m04_inventory import router as m04_router
-    app.include_router(m04_router)
-    log.info("✓ M04 Inventory")
-except Exception as e:
-    log.warning(f"M04: {e}")
-
-try:
-    from routes.m17_bookings import router as m17_router
-    app.include_router(m17_router)
-    log.info("✓ M17 Bookings")
-except Exception as e:
-    log.warning(f"M17: {e}")
-
-try:
-    from routes.m06_accounting import router as m06acc_router
-    app.include_router(m06acc_router)
-    log.info("✓ M06acc Accounting")
-except Exception as e:
-    log.warning(f"M06acc: {e}")
-
-try:
-    from routes.m07_pos import router as m07_router
-    app.include_router(m07_router)
-    log.info("✓ M07 POS")
-except Exception as e:
-    log.warning(f"M07: {e}")
-
-try:
-    from routes.m_analytics import router as analytics_router
-    app.include_router(analytics_router)
-    log.info("✓ Analytics cross-module")
-except Exception as e:
-    log.warning(f"Analytics: {e}")
-
-try:
-    from routes.integration import router as integration_router
-    app.include_router(integration_router)
-    log.info("✓ Integration (cross-module orchestration)")
-except Exception as e:
-    log.warning(f"Integration: {e}")
-
-try:
-    from routes.m_zatca import router as zatca_router
-    app.include_router(zatca_router)
-    log.info("✓ ZATCA (فواتير إلكترونية + QR Code)")
-except Exception as e:
-    log.warning(f"ZATCA: {e}")
-
-try:
-    from routes.m_night_audit import router as night_audit_router
-    app.include_router(night_audit_router)
-    log.info("✓ Night Audit (إغلاق اليوم + أجهزة الدفع)")
-except Exception as e:
-    log.warning(f"NightAudit: {e}")
-
-try:
-    from routes.m_reviews import router as reviews_router
-    app.include_router(reviews_router)
-    log.info("✓ Reviews (تقييمات الحجوزات)")
-except Exception as e:
-    log.warning(f"Reviews: {e}")
-
-try:
-    from routes.pricing import router as pricing_router
-    app.include_router(pricing_router)
-    log.info("✓ Dynamic Pricing (التسعير الديناميكي)")
-except Exception as e:
-    log.warning(f"DynamicPricing router: {e}")
 
 
 # ──────────────────────────────────────────────────────────────
@@ -504,6 +464,44 @@ def require_admin(request: Request):
     return session
 
 
+def _session_from_row(row: dict) -> dict:
+    """
+    يبني جلسةً من صفّ client_sessions.
+
+    غياب الدور يعني صفّاً كُتب قبل إضافة أعمدة الهوية — وتلك جلسات
+    مالكٍ حصراً، إذ لم تكن هناك جلسات موظفين آنذاك. يُفترض `owner`
+    لتلك وحدها، ولا يُفترض شيء لصفّ يحمل دوراً.
+    """
+    import json as _json
+
+    role = row.get("role") or "owner"
+    raw = row.get("permissions")
+    permissions: list = []
+    if raw:
+        try:
+            parsed = _json.loads(raw)
+            # `json.loads("null")` يُعيد None لا قائمة، و`"*" in None`
+            # يرمي TypeError داخل فحص الصلاحيات — أي عطل خادم بدل رفض.
+            # يُقبل ما كان قائمةً فقط.
+            if isinstance(parsed, list):
+                permissions = [p for p in parsed if isinstance(p, str)]
+        except (ValueError, TypeError):
+            permissions = []
+    elif role in ("owner", "gm"):
+        permissions = ["*"]
+
+    session = {
+        "client_id": row["client_id"],
+        "created_at": str(row.get("created_at") or ""),
+        "role": role,
+        "permissions": permissions,
+    }
+    for key in ("staff_id", "username", "full_name"):
+        if row.get(key) is not None:
+            session[key] = row[key]
+    return session
+
+
 def get_client_session(request: Request) -> Optional[dict]:
     token = _get_client_token(request)
     if not token:
@@ -516,13 +514,18 @@ def get_client_session(request: Request) -> Optional[dict]:
             db = getattr(request.app.state, "db", None)
             if db and db.use_postgres:
                 row = db.execute(
-                    """SELECT client_id, created_at FROM client_sessions
+                    """SELECT client_id, created_at, role, staff_id,
+                              username, full_name, permissions
+                       FROM client_sessions
                        WHERE token=%s AND expires_at > NOW()""",
                     (token,), fetch="one"
                 )
                 if row:
-                    session = {"client_id": row["client_id"],
-                               "created_at": str(row["created_at"])}
+                    # الهوية تُقرأ كما حُفظت.
+                    # كانت تُبنى بـ role="owner" و["*"] مهما كان صاحبها،
+                    # فأيّ جلسة تُستعاد بعد إعادة تشغيل تصير جلسةَ مالك —
+                    # تصعيدُ صلاحيات كامل لكل موظف.
+                    session = _session_from_row(dict(row))
                     with _lock:
                         _client_sessions[token] = session
         except Exception:
@@ -566,3 +569,69 @@ def require_client(request: Request) -> dict:
 # ──────────────────────────────────────────────────────────────
 
 from html_pages import _login_page, _admin_login_page, _admin_dashboard, _client_dashboard  # noqa: E402, F401
+
+
+# ──────────────────────────────────────────────────────────────
+#  تسجيل وحدات المسارات — سجلٌّ واحد لكل الوحدات
+#  يُنفَّذ في آخر الملف ليكون كل ما تحتاجه الوحدات معرَّفاً
+#  الترتيب لا يؤثر — كل وحدة تحمل بادئتها في APIRouter(prefix=…)
+#  فشل وحدة لا يُسقط التطبيق، ويظهر في ملخّص الإقلاع أدناه.
+# ──────────────────────────────────────────────────────────────
+ROUTE_MODULES: list[tuple[str, str]] = [
+    ("frontdesk",    "الاستقبال"),
+    ("bookings",     "الحجوزات"),
+    ("housekeeping", "التدبير الفندقي"),
+    ("maintenance",  "الصيانة"),
+    ("inventory",    "المخزون"),
+    ("warehouses",   "المستودعات"),
+    ("pos",          "نقاط البيع"),
+    ("accounting",   "المحاسبة"),
+    ("hr",           "الموارد البشرية"),
+    ("crm",          "علاقات العملاء"),
+    ("kpi",          "مؤشرات الأداء"),
+    ("analytics",    "التحليلات عبر الوحدات"),
+    ("reviews",      "التقييمات"),
+    ("night_audit",  "تدقيق الليل"),
+    ("zatca",        "الفوترة الإلكترونية"),
+    ("tourism",      "الرحلات السياحية"),
+    ("destinations", "الوجهات السياحية"),
+    ("channels",     "قنوات التوزيع"),
+    ("pricing",      "التسعير الديناميكي"),
+    ("integration",  "التنسيق عبر الوحدات"),
+    ("open_api",     "الـ Open API"),
+    # وحدات كانت معرَّفة على app مباشرةً قبل التقسيم
+    ("pages",        "الصفحات العامة و PWA و SEO"),
+    ("system",       "الصحة والحالة والنسخ الاحتياطي"),
+    ("admin",        "لوحة مالك المنصة"),
+    ("auth",         "دخول المنشأة وتسجيلها"),
+    ("hotel_ops",    "العمليات الفندقية"),
+    ("staff_accounts", "حسابات دخول الموظفين"),
+    ("booking_services", "الإفطار والتوصيل"),
+    ("smart_alerts",     "إنذارات المفتاح الذكي"),
+    ("insights",     "المؤشرات والتحليلات"),
+    ("commerce",     "الباقات والدفع والتذاكر"),
+]
+
+
+def _register_route_modules() -> None:
+    """يستورد كل وحدة ويُركّبها، ويسجّل ملخّصاً بما نجح وما فشل."""
+    import importlib
+
+    loaded: list[str] = []
+    failed: list[tuple[str, str]] = []
+
+    for name, label in ROUTE_MODULES:
+        try:
+            module = importlib.import_module(f"routes.{name}")
+            app.include_router(module.router)
+            loaded.append(name)
+        except Exception as exc:
+            failed.append((name, f"{type(exc).__name__}: {exc}"))
+            log.warning("✗ تعذّر تحميل وحدة %s (%s) — %s", name, label, exc)
+
+    log.info("✓ وحدات المسارات: %d/%d محمَّلة", len(loaded), len(ROUTE_MODULES))
+    if failed:
+        log.error("✗ وحدات فاشلة (%d): %s", len(failed), ", ".join(n for n, _ in failed))
+
+
+_register_route_modules()

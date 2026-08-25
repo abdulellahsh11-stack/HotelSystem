@@ -159,3 +159,76 @@ async def recalculate_kpis(request: Request, session=Depends(_require_client)):
     except Exception as e:
         logger.error(f"Error in recalculate_kpis: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"خطأ في الخادم: {str(e)}")
+
+
+@router.get("/revenue-by-room-type")
+async def revenue_by_room_type(request: Request, days: int = 30,
+                               session=Depends(_require_client)):
+    """
+    الإيراد وRevPAR وADR لكل نوع غرفة.
+
+    كان تصدير Excel وPDF يُخرج ورقةً فارغة بعنوان «الإيراد حسب الغرفة»
+    لأن مصدرها لم يكن موجوداً أصلاً — لا لأن الوصل نُسي.
+
+    التعريفات المستعملة، صريحةً لأن الخلط بينها شائع:
+      ADR    = الإيراد ÷ الليالي **المبيعة**
+      RevPAR = الإيراد ÷ الليالي **المتاحة** (الغرف × الأيام)
+    الأول يقيس سعر ما بيع، والثاني يقيس ما حقّقته الغرف كلها بما فيها
+    الفارغة — فالثاني أصغر دائماً، واختلافهما مقصود.
+    """
+    db = request.app.state.db
+    cid = session["client_id"]
+    window = max(1, min(int(days or 30), 365))
+
+    if not getattr(db, "use_postgres", False):
+        return {"success": True, "data": []}
+
+    try:
+        rows = db.execute(
+            """
+            WITH stock AS (
+                SELECT COALESCE(NULLIF(room_type, ''), 'غير مصنَّف') AS room_type,
+                       COUNT(*) AS rooms
+                FROM rooms WHERE client_id = %s
+                GROUP BY 1
+            ),
+            sold AS (
+                SELECT COALESCE(NULLIF(r.room_type, ''), 'غير مصنَّف') AS room_type,
+                       COALESCE(SUM(GREATEST(b.check_out - b.check_in, 0)), 0) AS nights,
+                       COALESCE(SUM(b.total_room), 0) AS revenue
+                FROM bookings b
+                JOIN rooms r ON r.id = b.room_id AND r.client_id = b.client_id
+                WHERE b.client_id = %s
+                  AND b.status IN ('confirmed', 'checked_in', 'checked_out')
+                  AND b.check_in >= CURRENT_DATE - %s::int
+                GROUP BY 1
+            )
+            SELECT stock.room_type,
+                   stock.rooms,
+                   COALESCE(sold.nights, 0)  AS nights,
+                   COALESCE(sold.revenue, 0) AS revenue
+            FROM stock LEFT JOIN sold USING (room_type)
+            ORDER BY revenue DESC
+            """,
+            (cid, cid, window), fetch="all") or []
+    except Exception as exc:
+        logger.error("revenue_by_room_type: %s", exc, exc_info=True)
+        raise HTTPException(status_code=500, detail="تعذّر حساب الإيراد حسب النوع") from None
+
+    data = []
+    for r in rows:
+        row = dict(r)
+        revenue = float(row.get("revenue") or 0)
+        nights = int(row.get("nights") or 0)
+        available = int(row.get("rooms") or 0) * window
+        data.append({
+            "type": row["room_type"],
+            "rooms": int(row.get("rooms") or 0),
+            "nights": nights,
+            "revenue": round(revenue, 2),
+            "adr": round(revenue / nights, 2) if nights else 0.0,
+            "revpar": round(revenue / available, 2) if available else 0.0,
+            # الإشغال نصّاً لأن الواجهة تعرضه كما هو في جدول التصدير
+            "occ": f"{round(nights / available * 100, 1)}%" if available else "0%",
+        })
+    return {"success": True, "data": data, "days": window}

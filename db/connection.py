@@ -5,12 +5,22 @@ db/connection.py — Connection Pool لـ PostgreSQL مع JSON Fallback
 Singleton — pool واحد للتطبيق كله
 """
 import asyncio
+import contextvars
 import os
 import json
 import threading
 import logging
 from contextlib import contextmanager
 from typing import Any, Optional
+
+# مفتاح هروبٍ للتطوير المحلي وحده. في الإنتاج يبقى مطفأً، فيتوقّف
+# الإقلاع عند فشل قاعدة البيانات بدل التدهور صامتاً إلى مخزن مؤقّت.
+ALLOW_JSON_FALLBACK = os.environ.get("ALLOW_JSON_FALLBACK", "").lower() in ("1", "true", "yes")
+
+# تفعيل عزل قاعدة البيانات (RLS). مُطفأ افتراضياً: تشغيله قبل تطبيق
+# السياسات على الجداول يجعل كل استعلام يُعيد صفراً. يُشغَّل بعد
+# `db.rls.enable_rls` وبمستخدم قاعدة بيانات لا يتجاوز RLS.
+RLS_ENABLED = os.environ.get("RLS_ENABLED", "").lower() in ("1", "true", "yes")
 
 log = logging.getLogger("dheuof.db")
 
@@ -22,6 +32,37 @@ try:
 except (ImportError, Exception) as e:
     POSTGRES_AVAILABLE = False
     print(f"⚠️ psycopg2 error: {type(e).__name__}: {e}")
+
+def _bind_tenant_context(cur) -> None:
+    """
+    يضبط سياق المستأجر داخل معاملة الاستعلام الجارية.
+
+    يجب أن يقع على **نفس الـ cursor** وقبل الاستعلام مباشرةً: السياق
+    محليٌّ للمعاملة، وكل `execute()` هنا معاملةٌ مستقلة. ضبطُه في نداء
+    منفصل يضيع قبل أن يصل الاستعلام — قِسنا ذلك على خادم حقيقي.
+
+    بلا سياق لا يُضبط شيء، فتتصرّف RLS كما صُمِّمت: لا بيانات. وهذا
+    مقصود — الفشل المغلق أفضل من تسريبٍ صامت.
+    """
+    if not RLS_ENABLED:
+        return
+    try:
+        from db.tenant_context import get_tenant, in_platform_scope
+
+        if in_platform_scope():
+            cur.execute("SELECT set_config('app.platform_admin', 'on', true)")
+            return
+        tenant = get_tenant()
+        if tenant:
+            cur.execute(
+                "SELECT set_config('app.current_client_id', %s, true)", (tenant,)
+            )
+    except Exception as exc:
+        # لا يُبتلع الفشل بصمت: بلا سياق تُعيد الاستعلامات صفراً، وتشخيص
+        # ذلك بلا هذا السطر يستغرق ساعات.
+        log.error("تعذّر ضبط سياق المستأجر: %s", exc)
+        raise
+
 
 class DatabasePool:
     """
@@ -75,9 +116,27 @@ class DatabasePool:
                 )
                 log.info(f"✅ PostgreSQL Pool جاهز — {min_conn}..{max_conn} اتصال")
             except Exception as e:
-                log.error(f"❌ فشل اتصال PostgreSQL: {e} — يعود لـ JSON Fallback")
-                self.use_postgres = False
-                self._pool = None
+                # لا سقوطَ صامت إلى JSON.
+                # كان الفشل هنا يُحوِّل المنصة كلها إلى مخزن JSON بلا إنذار
+                # سوى سطر في السجل: بيانات المنشآت في PostgreSQL تختفي عن
+                # الواجهة، وما يُكتب يذهب إلى ملف يُمحى مع الحاوية. انقطاعٌ
+                # لحظي وقت النشر كان يكفي لذلك.
+                # العمل بقاعدة بيانات خاطئة أسوأ من التوقف: التوقف يُلاحَظ
+                # ويُصلَح، والتدهور الصامت يُكتشف بعد ضياع البيانات.
+                log.critical("❌ فشل اتصال PostgreSQL: %s", e)
+                if ALLOW_JSON_FALLBACK:
+                    log.warning(
+                        "⚠️  ALLOW_JSON_FALLBACK مُفعَّل — المتابعة بمخزن JSON. "
+                        "للتطوير المحلي فقط، لا للإنتاج."
+                    )
+                    self.use_postgres = False
+                    self._pool = None
+                else:
+                    raise RuntimeError(
+                        "تعذّر الاتصال بقاعدة البيانات وDATABASE_URL مضبوط. "
+                        "أُوقف الإقلاع بدل العمل على مخزن مؤقّت. "
+                        "للتطوير المحلي اضبط ALLOW_JSON_FALLBACK=1."
+                    ) from e
         else:
             log.warning(
                 "⚠️  JSON Fallback — أضف DATABASE_URL في Railway Variables لتفعيل PostgreSQL"
@@ -120,6 +179,7 @@ class DatabasePool:
         def _run():
             with self._get_conn() as conn:
                 with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                    _bind_tenant_context(cur)
                     cur.execute(query, params)
                     if fetch == "one":
                         return cur.fetchone()
@@ -148,10 +208,19 @@ class DatabasePool:
         params: tuple = (),
         fetch: Optional[str] = None,
     ) -> Any:
-        """Non-blocking wrapper: runs db.execute in threadpool so asyncio event loop
-        is not blocked while psycopg2 waits for the database."""
+        """
+        غلافٌ غير حاجب: يُنفّذ execute في خيط منفصل حتى لا تتوقف حلقة
+        asyncio بانتظار psycopg2.
+
+        `copy_context` ضرورية: `run_in_executor` لا تنقل ContextVars إلى
+        الخيط، فيفقد الاستعلامُ سياقَ المستأجر وتُعيد RLS صفر صفوف —
+        عطلٌ يظهر في المسارات غير المتزامنة وحدها فيبدو عشوائياً.
+        """
         loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(None, self.execute, query, params, fetch)
+        ctx = contextvars.copy_context()
+        return await loop.run_in_executor(
+            None, lambda: ctx.run(self.execute, query, params, fetch)
+        )
 
     @contextmanager
     def transaction(self):
@@ -165,6 +234,7 @@ class DatabasePool:
         """
         with self._get_conn() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                _bind_tenant_context(cur)
                 yield cur
 
     def execute_many(self, query: str, params_list: list) -> int:

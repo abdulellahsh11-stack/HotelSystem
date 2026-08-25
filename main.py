@@ -2,15 +2,19 @@
 # -*- coding: utf-8 -*-
 """
 main.py — نقطة الدخول لـ uvicorn
-يستورد app من main1 ويُسجّل جميع الـ routes عبر استيراد main2
+
+`app_core.py` يُنشئ التطبيق ويُركّب كل وحدات `routes/` في آخره.
+يُعاد تصدير `require_client` و`_client_sessions` هنا لأن وحدات
+`routes/*.py` تستوردهما عبر «from main import …» كنقطة دخول موحَّدة.
 """
-# app + require_client يُعاد تصديرهما هنا حتى تستطيع وحدات routes/*.py
-# استيرادهما عبر «from main import require_client» (نقطة الدخول الموحَّدة).
-from main1 import app, require_client, _client_sessions  # noqa: F401 — الهدف: uvicorn main:app
-import main2           # noqa: F401 — يُسجّل جميع @app.get/post/put/delete
+from app_core import (  # noqa: F401 — الهدف: uvicorn main:app
+    app,
+    require_client,
+    _client_sessions,
+)
 
 if __name__ == "__main__":
     import os
     import uvicorn
-    port = int(os.environ.get("PORT", 5050))
-    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
+
+    uvicorn.run("main:app", host="0.0.0.0", port=int(os.environ.get("PORT", 5050)), reload=False)

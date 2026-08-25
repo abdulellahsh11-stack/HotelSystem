@@ -25,6 +25,37 @@ _ACCOUNT_FIELDS = (
 )
 
 
+def public_settings(client: dict) -> dict:
+    """
+    إعدادات المنشأة صالحةً للعرض — بلا حقول الحساب.
+
+    `settings` تحمل مفتاح `_account` وفيه `pass_hash` و`pass_salt`
+    (لأن جدول clients لا يملك أعمدةً لها). إعادة الكتلة كما هي عبر HTTP
+    تُخرج تجزئة كلمة المرور وملحها، فتُهاجَم دون اتصال؛ ومع حسابات
+    الموظفين يكفي أن يُمنح موظفٌ صلاحية `settings` ليقرأ تجزئة المالك.
+
+    التنقية هنا لا في المسار: كل ما يعرض الإعدادات يمرّ من هذا الباب.
+    """
+    settings = dict((client or {}).get("settings") or {})
+    settings.pop("_account", None)
+    return settings
+
+
+# أسرار الحساب — لا تخرج عبر HTTP لأحد، ولا لمالك المنصة.
+# ليست مسألة صلاحية بل مسألة انتشار: التجزئة تُكتب في سجلات الخادم
+# ووسطاء الشبكة وذاكرة المتصفح، وكل نسخة منها هدفٌ لهجومٍ دون اتصال.
+_SECRET_CLIENT_FIELDS = frozenset({"pass_hash", "pass_salt", "api_key", "channel_secret"})
+
+
+def public_client(client: dict) -> dict:
+    """سجل منشأة صالحٌ للعرض — بلا تجزئة ولا ملح ولا مفاتيح."""
+    if not client:
+        return {}
+    out = {k: v for k, v in client.items() if k not in _SECRET_CLIENT_FIELDS}
+    out["settings"] = public_settings(client)
+    return out
+
+
 def _lift_account(row: dict) -> dict:
     """يرفع حقول الحساب المخزّنة في settings._account إلى أعلى السجل."""
     if not row:
@@ -521,8 +552,11 @@ class DataStore:
         client = next((c for c in clients if str(c.get("id")) == str(client_id)), None)
         if client:
             return client.get(key, [])
-        # fallback: flat key مباشرة في الـ data
-        return data.get(key, [])
+        # منشأة غير موجودة تحصل على لا شيء.
+        # كان هنا سقوطٌ إلى `data.get(key)` — أي المفتاح العام المشترك —
+        # فتُعاد بياناتُ منشآت أخرى لمن لا سجلّ له. تسريبٌ عبر المستأجرين
+        # يظهر عند أول منشأة جديدة أو كتابة ناقصة.
+        return []
 
     def _json_upsert_client(self, client: dict) -> None:
         client_id = str(client.get("id", ""))

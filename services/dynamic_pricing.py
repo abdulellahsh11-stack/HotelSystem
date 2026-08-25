@@ -227,7 +227,7 @@ class DynamicPricingEngine:
                 SELECT b.id, b.room_id, b.check_in, b.check_out,
                        r.base_price
                 FROM bookings b
-                JOIN rooms r ON b.room_id = r.id
+                JOIN rooms r ON b.room_id = r.id AND r.client_id = b.client_id
                 WHERE b.client_id=%s AND b.status='confirmed'
                   AND b.check_in > CURRENT_DATE
                 """,
@@ -244,9 +244,12 @@ class DynamicPricingEngine:
                 new_price = float(Decimal(str(float(row["base_price"]) * season_f)).quantize(
                     Decimal("0.01"), rounding=ROUND_HALF_UP
                 ))
+                # client_id زائدٌ منطقياً — المعرّفات من استعلام مُصفّى —
+                # لكن كل استعلام يحمل عزله بنفسه، فلا يعتمد أمانُه على
+                # صحّة نداءٍ في مكان آخر قد يتغيّر لاحقاً.
                 self.db.execute(
-                    "UPDATE bookings SET total_room=%s WHERE id=%s",
-                    (new_price, row["id"]),
+                    "UPDATE bookings SET total_room=%s WHERE id=%s AND client_id=%s",
+                    (new_price, row["id"], client_id),
                 )
                 updated += 1
             return {"updated": updated, "message": f"تم تحديث {updated} حجز"}

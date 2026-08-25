@@ -4,7 +4,6 @@ psycopg2-binary>=2.9.9
 python-multipart>=0.0.9
 anthropic>=0.28.0
 sentry-sdk[fastapi]>=2.0.0
-redis>=5.0.0
 
 # ── تثبيت إصدارات آمنة للثغرات الأمنية (pip-audit) ────────────
 starlette>=1.3.1          # CVE-2026-54283, CVE-2026-54282
@@ -14,19 +13,6 @@ urllib3>=2.7.0            # PYSEC-2026-142, PYSEC-2026-141
 setuptools>=78.1.1        # PYSEC-2025-49, CVE-2024-6345
 wheel>=0.46.2             # CVE-2026-24049
 PyJWT>=2.13.0             # PYSEC-2026-120/175/177/179 (transitive dep)
-
-# ── توصية #5: CDN ──────────────────────────────────────────
-# (لا حاجة لحزم إضافية — Starlette مُضمَّنة مع FastAPI)
-
-# ── توصية #6: OpenTelemetry + Prometheus ───────────────────
-opentelemetry-api>=1.24.0
-opentelemetry-sdk>=1.24.0
-opentelemetry-instrumentation-fastapi>=0.45b0
-opentelemetry-instrumentation-psycopg2>=0.45b0
-opentelemetry-instrumentation-httpx>=0.45b0
-opentelemetry-exporter-otlp>=1.24.0
-prometheus-client>=0.20.0
-python-json-logger>=2.0.7
 
 # ── توصية #3: Playwright E2E Tests ─────────────────────────
 playwright>=1.44.0
@@ -40,3 +26,7 @@ APScheduler>=3.10.0
 # Arabic reshaping (PDF generation)
 arabic-reshaper>=3.0.0
 python-bidi>=0.4.2
+
+# ── مدمج من HotelSystem1: محوّلات القنوات (Booking.com / مواسم) والتقارير ──
+requests>=2.31.0          # services/booking_com.py, services/mawasim.py
+reportlab>=4.0.0          # توليد تقارير PDF

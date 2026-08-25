@@ -54,6 +54,7 @@ def _ensure_tables(db) -> None:
     global _migration_done
     if _migration_done or not db.use_postgres:
         return
+    failed = False
     for stmt in _MIGRATION.split(";"):
         s = stmt.strip()
         if s:
@@ -62,6 +63,14 @@ def _ensure_tables(db) -> None:
             except Exception as e:
                 if "already exists" not in str(e).lower():
                     logger.warning(f"integration migration: {e}")
+                    failed = True
+    # لا تُعلَّم منجزةً إلا إذا نجحت كلها.
+    # كان العلَم يُرفع ولو فشلت الجمل، فلا يُعاد المحاولة أبداً طوال
+    # عمر العملية: فشلٌ عابر عند أول استدعاء يُعطِّل التكامل كلّه حتى
+    # إعادة التشغيل، وكل تسجيل دخول بعده يُرجع 500.
+    if failed:
+        logger.warning("ترحيل التكامل لم يكتمل — سيُعاد في الاستدعاء التالي")
+        return
     _migration_done = True
 
 
