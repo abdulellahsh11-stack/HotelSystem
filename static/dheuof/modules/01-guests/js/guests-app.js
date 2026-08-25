@@ -147,12 +147,6 @@ document.querySelectorAll('[data-filter]').forEach(function(btn){
 var resSearch = document.getElementById('res-search');
 if(resSearch) resSearch.addEventListener('input', filterAndRenderRes);
 
-window.doCheckin = function(btn){
-  if(btn.disabled) return;
-  btn.disabled = true; btn.textContent = '✓ مسجَّل';
-  toast('تم تسجيل الدخول ✓');
-};
-
 window.showResDetail = function(rid){
   var r = RESERVATIONS.find(function(x){ return x.id===rid; });
   if(!r) return;
@@ -310,25 +304,6 @@ window.saveAlert = function(gid){
   filterAndRenderGuests();
   updateBadges();
   toast('تم إضافة التنبيه ✓');
-};
-
-window.doCheckout = function(gid){
-  var g = GUESTS.find(function(x){ return x.id===gid; });
-  if(!g) return;
-  if(!confirm('تسجيل خروج '+g.name+' من غرفة '+g.room+'؟')) return;
-  var roomNum = g.room;
-  FLOORS.forEach(function(fl){
-    fl.rooms.forEach(function(rm){
-      if(rm.num===roomNum && rm.status==='occupied'){
-        rm.status='hk-needed'; rm.guest=null;
-      }
-    });
-  });
-  GUESTS = GUESTS.filter(function(x){ return x.id!==gid; });
-  filterAndRenderGuests();
-  renderFloors();
-  updateBadges();
-  toast('تم تسجيل خروج '+g.name+' — غرفة '+roomNum+' بانتظار التنظيف ✓');
 };
 
 window.showGuestDetail = function(gid){
