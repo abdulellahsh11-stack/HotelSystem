@@ -398,6 +398,7 @@ def _clean_room_payload(data: dict) -> dict:
 @router.post("/api/rooms")
 async def save_room(request: Request, session=Depends(require_client)):
     """يُسجّل غرفة جديدة أو يُعدّل قائمة. `id` في الجسم يعني تعديلاً."""
+    _require(session, "rooms.write")
     data = await request.json()
     db = request.app.state.db
     cid = session["client_id"]
@@ -454,6 +455,7 @@ async def create_rooms_bulk(request: Request, session=Depends(require_client)):
     الغرف الموجودة تُتخطّى ولا تُستبدل — إعادة التشغيل بعد إضافة دورٍ
     جديد يجب أن تكون آمنة، وحذفُ غرفةٍ عليها حجزٌ قائم فسادُ بيانات.
     """
+    _require(session, "rooms.write")
     data = await request.json()
     db = request.app.state.db
     cid = session["client_id"]
@@ -535,6 +537,7 @@ async def delete_room(room_id: int, request: Request, session=Depends(require_cl
     الحذف الصامت لغرفة عليها حجز يترك الحجز معلّقاً بلا غرفة، وهو فساد
     بيانات يظهر متأخّراً عند وصول الضيف.
     """
+    _require(session, "rooms.write")
     db = request.app.state.db
     cid = session["client_id"]
     try:

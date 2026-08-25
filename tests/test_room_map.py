@@ -274,3 +274,45 @@ def test_a_status_change_cannot_reach_another_tenant(client):
 def test_the_map_requires_a_session(client):
     c, _ = client
     assert c.get("/api/rooms/map").status_code in (401, 403)
+
+
+# ── حارسٌ شامل: لا مسار غرفٍ بلا صلاحية ────────────────────────
+def test_every_room_route_declares_a_permission():
+    """
+    الحارس الذي كان ناقصاً.
+
+    حرستُ المسارات الجديدة وفاتتني `POST /api/rooms` و`/bulk` و`DELETE`
+    — فبقي موظف النظافة قادراً على حذف غرفة. فحصُ مسارٍ مسارٍ يدوياً
+    يُخطئ؛ هذا يفحصها كلها، ويفشل تلقائياً عند إضافة مسارٍ جديد بلا حارس.
+    """
+    import inspect
+    import re
+
+    import routes.hotel_ops as mod
+
+    source = inspect.getsource(mod)
+    unguarded = []
+    for m in re.finditer(
+            r'@router\.(get|post|put|patch|delete)\("(/api/rooms[^"]*)"\)'
+            r'(?P<body>.*?)(?=\n@router\.|\Z)', source, re.S):
+        if '_require(session,' not in m.group("body"):
+            unguarded.append(f"{m.group(1).upper()} {m.group(2)}")
+    assert not unguarded, "مسارات غرفٍ بلا فحص صلاحية: " + " · ".join(unguarded)
+
+
+@pytest.mark.parametrize("token", ["hk", "acct", "cashier"])
+def test_a_reader_cannot_delete_a_room(client, token):
+    """سؤال المستخدم بالضبط: هل يستطيع من لا يملك الكتابة حذف غرفة؟"""
+    c, _ = client
+    r = c.delete("/api/rooms/1", cookies={"client_token": token})
+    assert r.status_code == 403, f"{token} حذف غرفة بلا صلاحية ({r.status_code})"
+
+
+@pytest.mark.parametrize("token", ["hk", "acct", "cashier"])
+def test_a_reader_cannot_create_rooms(client, token):
+    c, _ = client
+    single = c.post("/api/rooms", json={"room_number": "X-1"},
+                    cookies={"client_token": token})
+    bulk = c.post("/api/rooms/bulk", json={"floors": 1, "rooms_per_floor": 1},
+                  cookies={"client_token": token})
+    assert single.status_code == 403 and bulk.status_code == 403

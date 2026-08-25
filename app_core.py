@@ -423,15 +423,61 @@ async def bind_tenant_context(request: Request, call_next):
         clear_tenant()
 
 
+async def _stamp_html_response(response):
+    """
+    يقرأ جسم صفحة HTML ويُلحق بصمة الإصدار بمراجع الملفات الثابتة.
+
+    الجسم يُجمَّع في الذاكرة لأن التعديل يحتاج النصّ كاملاً — وصفحات
+    هذه المنصة عشرات الكيلوبايتات لا أكثر. أي فشل يُعيد الاستجابة كما
+    هي: صفحةٌ بلا بصمة أهون من صفحةٍ لا تُعرض.
+    """
+    from starlette.responses import Response as _Response
+
+    try:
+        chunks = []
+        if hasattr(response, "body_iterator"):
+            async for chunk in response.body_iterator:
+                chunks.append(chunk if isinstance(chunk, bytes) else str(chunk).encode())
+            body = b"".join(chunks)
+        else:
+            body = response.body or b""
+        if not body:
+            return response
+
+        from services.asset_version import stamp_html
+
+        stamped = stamp_html(body.decode("utf-8")).encode("utf-8")
+        headers = {k: v for k, v in response.headers.items()
+                   if k.lower() != "content-length"}
+        return _Response(content=stamped, status_code=response.status_code,
+                         headers=headers, media_type=response.media_type)
+    except Exception as exc:
+        log.warning("تعذّر ختم صفحة HTML ببصمة الإصدار: %s", exc)
+        return response
+
+
 @app.middleware("http")
 async def add_security_and_cache_headers(request: Request, call_next):
     response = await call_next(request)
     path = request.url.path
-    # Cache headers
-    if path.startswith("/static/") and not path.endswith(".html"):
-        response.headers["Cache-Control"] = "public, max-age=604800, immutable"
-    elif path.startswith("/static/") and path.endswith(".html"):
-        response.headers["Cache-Control"] = "no-cache, must-revalidate"
+
+    # ترويسات التخزين.
+    #
+    # كانت كل ملفات JS/CSS تُخدَم بـ`immutable` لسبعة أيام بلا بصمة في
+    # عنوانها — و`immutable` تعني «لا تسأل عنه ثانيةً»، فيبقى المتصفّح
+    # على نسخةٍ قديمة أسبوعاً بعد كل نشر. الآن `immutable` تُمنح فقط
+    # لعنوانٍ يحمل البصمة الجارية، وهذا شرطُ صحّتها.
+    from services.asset_version import cache_header
+
+    response.headers["Cache-Control"] = cache_header(
+        path, request.query_params.get("v"))
+
+    # حقن البصمة في صفحات HTML: كل مرجع js/css فيها يخرج بـ`?v=`، فيتغيّر
+    # عنوانه عند كل نشر ويُحمَّل الجديد حتماً. الصفحة نفسها لا تُخزَّن،
+    # فهي التي تحمل البصمات الجديدة إلى المتصفّح.
+    if (response.status_code == 200
+            and "text/html" in response.headers.get("content-type", "")):
+        response = await _stamp_html_response(response)
     # Security headers on all responses
     response.headers.setdefault("X-Content-Type-Options", "nosniff")
     response.headers.setdefault("X-Frame-Options", "SAMEORIGIN")
