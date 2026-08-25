@@ -26,7 +26,24 @@ from fastapi.testclient import TestClient
 
 warnings.filterwarnings("ignore")
 
-pytest.importorskip("cryptography", reason="cryptography غير متاح")
+def test_the_crypto_library_is_actually_installed():
+    """
+    حارسٌ ضد التخطّي الصامت.
+
+    لو كُتب هذا الملف بـ`importorskip` لاختفت اختباراته كلها بلا ضجيج
+    حين تُكسَر مكتبة التشفير — و«CI أخضر» يعني حينها «لم يُفحص شيء».
+    وللمستودع سابقة: اختبارات RLS بقيت تُتخطّى صامتةً وهي تحمي صفراً.
+
+    `cryptography` مثبَّتة في requirements.txt، فغيابها عطلٌ يستحق
+    الصراخ لا التجاهل. (وقد وجدتُها فعلاً معطوبة محلياً — `_cffi_backend`
+    مفقود — وكان التخطّي الصامت سيُخفي ذلك.)
+    """
+    from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+
+    key = os.urandom(32)
+    nonce = os.urandom(12)
+    blob = AESGCM(key).encrypt(nonce, b"probe", None)
+    assert AESGCM(key).decrypt(nonce, blob, None) == b"probe"
 
 from app_core import _client_sessions, _lock  # noqa: E402
 from main import app  # noqa: E402
