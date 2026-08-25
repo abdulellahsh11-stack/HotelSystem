@@ -240,7 +240,10 @@ async def booking_com_webhook(request: Request):
     if not channels:
         return {"status": "ok"}
     body = await request.body()
-    src_ip = request.client.host if request.client else ""
+    # استيراد كسول كبقيّة الوحدة: app_core يستورد المسارات فيدور الاستيراد
+    from app_core import client_ip as _client_ip
+
+    src_ip = _client_ip(request)
 
     def _process():
         try:
