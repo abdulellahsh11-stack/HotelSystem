@@ -23,23 +23,50 @@ router = APIRouter()
 # ──────────────────────────────────────────────────────────────
 #  Guests
 # ──────────────────────────────────────────────────────────────
+def _may_see_pii(session: dict) -> bool:
+    """
+    من يرى بيانات النزيل كاملةً؟
+
+    مالك المنشأة ومديرها العام (`*`)، ومدير المناوبة وموظف الاستقبال —
+    لأن تسجيل الوصول لا يتمّ بلا رقم هوية. أما الإشراف الداخلي والمحاسب
+    والكاشير فيرون الاسم مُقنَّعاً: التنظيف لا يحتاج هوية، والفاتورة
+    تُصدَر برقم الحجز.
+    """
+    from db.security import check_permission
+
+    return check_permission(session, "guests.pii")
+
+
+def _present(guests: list, session: dict) -> list:
+    """يُقنّع ما لا يُصرَّح به. التقنيع عرضٌ لا تخزين."""
+    if _may_see_pii(session):
+        return guests
+    from services.guest_crypto import mask_guest
+
+    return [mask_guest(g) for g in guests]
+
+
 @router.get("/api/guests")
 async def get_guests(request: Request, limit: int = 100, session=Depends(require_client)):
     store = request.app.state.store
     guests = store.get_guests(session["client_id"])
-    return {"success": True, "data": guests[:limit]}
+    return {"success": True, "data": _present(guests[:limit], session)}
 
 
 @router.post("/api/guests")
 async def save_guest(request: Request, session=Depends(require_client)):
     data = await request.json()
     store = request.app.state.store
-    if not data.get("id"):
-        data["id"] = secrets.token_hex(8)
+    # `guests.id` عمود SERIAL تُسنده قاعدة البيانات — بخلاف `bookings.id`
+    # الذي هو VARCHAR فيصحّ فيه معرّفٌ مولَّد. اختراع معرّفٍ ست عشري هنا
+    # كان يُسقط الحفظ بـ٥٠٠ في كل مرة (`int()` على نصٍّ ست عشري داخل
+    # `get_guest`) — فلم يُحفظ نزيلٌ واحد عبر هذا المسار قط.
+    if not str(data.get("id") or "").isdigit():
+        data.pop("id", None)
     data["client_id"] = session["client_id"]
     data.setdefault("created_at", datetime.now().isoformat())
     guest = store.save_guest(session["client_id"], data)
-    return {"success": True, "data": guest}
+    return {"success": True, "data": _present([guest], session)[0]}
 
 
 @router.get("/api/guests/{guest_id}")
@@ -49,7 +76,7 @@ async def get_guest(guest_id: str, request: Request, session=Depends(require_cli
     guest = next((g for g in guests if str(g.get("id")) == guest_id), None)
     if not guest:
         raise HTTPException(status_code=404, detail="الضيف غير موجود")
-    return {"success": True, "data": guest}
+    return {"success": True, "data": _present([guest], session)[0]}
 
 
 # ──────────────────────────────────────────────────────────────
