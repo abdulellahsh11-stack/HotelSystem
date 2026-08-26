@@ -134,3 +134,103 @@ def test_the_stamp_uses_the_current_version_by_default():
     reset_version()
     out = stamp_html('<script src="/static/js/a.js"></script>')
     assert f"v={get_version()}" in out
+
+
+# ── الصفحة تصل كاملةً حتى مع الضغط ─────────────────────────────
+#
+# عطلٌ أوقف الموقع بالكامل: ختمُ البصمة كان يعمل **بعد** GZip، فيتلقّى
+# جسماً مضغوطاً ويحاول فكّه كنصّ — وقد استهلك المُكرِّر حينها، فتخرج
+# الصفحة **فارغة**. وكل متصفّح يطلب gzip، فسقط الموقع للجميع.
+#
+# ولم تكشفه اختباراتي لأن `curl` لا يطلب الضغط افتراضياً، ولا `TestClient`.
+# فهذه الاختبارات تطلبه صراحةً.
+import warnings as _w  # noqa: E402
+
+_w.filterwarnings("ignore")
+
+from fastapi.testclient import TestClient  # noqa: E402
+
+
+@pytest.fixture
+def app_client():
+    from app_core import _client_sessions, _lock
+    from main import app
+
+    class _DB:
+        use_postgres = True
+
+        def health(self):
+            return {"ok": True}
+
+        def execute(self, *a, **k):
+            return None if k.get("fetch") == "one" else []
+
+    app.state.db = _DB()
+
+    class _Cfg:
+        pass_salt = "s"
+        admin_pass_hash = ""
+        owner_client_id = ""
+
+    app.state.cfg = _Cfg()
+    with _lock:
+        _client_sessions.clear()
+    yield TestClient(app, raise_server_exceptions=False)
+    with _lock:
+        _client_sessions.clear()
+
+
+GZIP = {"accept-encoding": "gzip, deflate, br", "accept": "text/html"}
+
+
+@pytest.mark.parametrize("path", ["/", "/static/index.html"])
+def test_a_page_is_not_empty_when_the_browser_asks_for_gzip(app_client, path):
+    """
+    الحارس الذي كان ناقصاً — وغيابُه أسقط الموقع.
+
+    الصفحة يجب أن تصل بجسمٍ حقيقي حين يُطلب الضغط، تماماً كما يطلبه كل
+    متصفّح. صفرُ بايت باستجابة ٢٠٠ هو بالضبط ما رآه المستخدم.
+    """
+    r = app_client.get(path, headers=GZIP)
+    assert r.status_code == 200
+    assert len(r.content) > 0, f"{path} خرجت فارغة مع gzip"
+    assert "<" in r.text, f"{path} ليست HTML صالحة"
+
+
+@pytest.mark.parametrize("path", ["/", "/static/index.html"])
+def test_the_body_is_identical_with_and_without_compression(app_client, path):
+    """الضغط نقلٌ لا تغيير: المحتوى المفكوك يجب أن يطابق غير المضغوط."""
+    plain = app_client.get(path, headers={"accept-encoding": "identity"})
+    zipped = app_client.get(path, headers=GZIP)
+    assert plain.text == zipped.text
+
+
+def test_stamping_still_happens_under_compression(app_client):
+    """
+    الإصلاح الأول (تخطّي الجسم المضغوط) أعاد الصفحات لكنه ألغى الختم —
+    والصفحة هي التي تحمل البصمات. فالترتيب الصحيح: يُختَم ثم يُضغط.
+    """
+    body = app_client.get("/static/dheuof/modules/01-guests/portal.html",
+                          headers=GZIP).text
+    if "/static/" not in body:
+        pytest.skip("الصفحة بلا ملفات خارجية")
+    assert "?v=" in body, "لم تُختم الصفحة تحت الضغط"
+
+
+def test_gzip_is_registered_after_the_stamping_middleware():
+    """
+    يفشل إن أُعيد ترتيب الوسطاء يوماً.
+
+    Starlette يجعل آخر وسيطٍ يُسجَّل هو الأبعد عن التطبيق. فالضغط يجب أن
+    يكون الأخير تسجيلاً ليعمل الختم قبله على نصٍّ لا على بايتاتٍ مضغوطة.
+    """
+    from fastapi.middleware.gzip import GZipMiddleware
+
+    from main import app
+
+    classes = [m.cls for m in app.user_middleware]
+    assert GZipMiddleware in classes, "الضغط غير مُسجَّل"
+    # user_middleware[0] هو الأخير تسجيلاً = الأبعد = يضغط آخِراً
+    assert classes[0] is GZipMiddleware, (
+        "الضغط ليس الأبعد — سيرى الختمُ جسماً مضغوطاً وتخرج الصفحة فارغة"
+    )

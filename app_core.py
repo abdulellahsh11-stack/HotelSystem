@@ -377,9 +377,6 @@ async def lifespan(app_: FastAPI):
 # ──────────────────────────────────────────────────────────────
 app = FastAPI(title="ضيوف — Dheuof Hotel SaaS", version="3.0.0", lifespan=lifespan, docs_url=None, redoc_url=None)
 
-# GZip compression for all text responses ≥ 1 KB
-app.add_middleware(GZipMiddleware, minimum_size=1000)
-
 # M4 fix: قصر CORS على نطاقات ضيوف المعروفة بدل "*" مع بقاء credentials
 _ALLOWED_ORIGINS = [o.strip() for o in os.environ.get(
     "CORS_ORIGINS",
@@ -433,8 +430,15 @@ async def _stamp_html_response(response):
     """
     from starlette.responses import Response as _Response
 
+    # لا يُلمس جسمٌ مُرمَّز (gzip وأمثاله): فكُّه كنصّ يفشل، وقد استُهلك
+    # المُكرِّر حينها فتخرج الصفحة **فارغة**. وهذا وقع فعلاً في الإنتاج:
+    # curl لا يطلب الضغط افتراضياً فبدا كل شيء سليماً، والمتصفّح يطلبه
+    # دائماً فرأى المستخدم صفحةً بيضاء.
+    if response.headers.get("content-encoding"):
+        return response
+
+    chunks: list = []
     try:
-        chunks = []
         if hasattr(response, "body_iterator"):
             async for chunk in response.body_iterator:
                 chunks.append(chunk if isinstance(chunk, bytes) else str(chunk).encode())
@@ -443,16 +447,33 @@ async def _stamp_html_response(response):
             body = response.body or b""
         if not body:
             return response
+        try:
+            text = body.decode("utf-8")
+        except UnicodeDecodeError:
+            # ليس نصّاً — يُعاد كما هو بدل أن يضيع
+            from starlette.responses import Response as _Raw
+
+            headers = {k: v for k, v in response.headers.items()
+                       if k.lower() != "content-length"}
+            return _Raw(content=body, status_code=response.status_code,
+                        headers=headers, media_type=response.media_type)
 
         from services.asset_version import stamp_html
 
-        stamped = stamp_html(body.decode("utf-8")).encode("utf-8")
+        stamped = stamp_html(text).encode("utf-8")
         headers = {k: v for k, v in response.headers.items()
                    if k.lower() != "content-length"}
         return _Response(content=stamped, status_code=response.status_code,
                          headers=headers, media_type=response.media_type)
     except Exception as exc:
+        # الجسم قد يكون استُهلك بالفعل — إعادة `response` هنا تُخرج صفحةً
+        # فارغة. يُعاد بناؤها ممّا جُمع، فأسوأ حالة صفحةٌ بلا بصمة.
         log.warning("تعذّر ختم صفحة HTML ببصمة الإصدار: %s", exc)
+        if chunks:
+            headers = {k: v for k, v in response.headers.items()
+                       if k.lower() != "content-length"}
+            return _Response(content=b"".join(chunks), status_code=response.status_code,
+                             headers=headers, media_type=response.media_type)
         return response
 
 
@@ -542,6 +563,16 @@ async def server_side_auth_gate(request: Request, call_next):
 
 
 
+
+# ── الضغط يُسجَّل **بعد** بقيّة الوسطاء عمداً ─────────────────
+#
+# Starlette يجعل آخر وسيطٍ يُسجَّل هو الأبعد عن التطبيق. فلو سُجّل الضغط
+# أولاً لصار ختمُ البصمة يعمل بعده، فيرى جسماً مضغوطاً لا نصّاً — وقد
+# وقع هذا فعلاً: كل صفحة خرجت **فارغة** لكل متصفّح يطلب gzip، بينما
+# curl (الذي لا يطلبه افتراضياً) يراها سليمة.
+#
+# بهذا الترتيب: يُختَم النصّ أولاً، ثم يُضغط المختوم.
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 # ──────────────────────────────────────────────────────────────
 #  Auth helpers
