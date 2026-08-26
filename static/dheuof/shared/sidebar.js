@@ -112,6 +112,12 @@
         '</div>'
       )) +
       '<div class="dh-side-foot">' +
+        // لوحة التحكم لم يكن يشير إليها رابطٌ واحد من أي وحدة، ومنها
+        // تُسجَّل الغرف والأدوار — فيصطدم المستخدم برسالة «سجّل غرفك من
+        // لوحة التحكم» ولا يجد إليها سبيلاً. وهنا يُرسم دائماً: وضعُه في
+        // فرع «مشترك نشط» يجعله يتبع `localStorage` وهو فارغ لمن يدخل
+        // من صفحة الدخول الحقيقية.
+        '<a href="/static/dashboard.html" class="dh-dashboard-link" style="display:block;text-decoration:none;text-align:center;padding:9px 12px;margin-bottom:10px;border-radius:8px;background:rgba(255,255,255,.12);color:var(--gold-200);font-size:12.5px;font-weight:600">⚙️ لوحة التحكم</a>' +
         '<div class="dh-property">' +
           '<div class="ar">' + esc(property.ar) + '</div>' +
           '<div class="en">' + esc(property.en || '') + '</div>' +

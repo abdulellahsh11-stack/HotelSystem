@@ -635,9 +635,19 @@ window.showRoomMapModal = async function(){
     return;
   }
   if (!window.__ROOM_MAP_FLOORS.length) {
+    // رابطٌ مباشر لا إرشادٌ نصّي: لوحة التحكم لا يشير إليها شيءٌ من
+    // الوحدات، فقولُ «اذهب إلى لوحة التحكم» يترك المستخدم يبحث عن بابٍ
+    // لا يراه.
     window.GR.modal('🏨 خريطة الغرف',
-      '<p style="padding:20px;text-align:center;line-height:1.9">لا غرف مسجَّلة بعد.<br>'
-      + '<span style="font-size:12px;color:var(--fg-3)">سجّلها من: لوحة التحكم ← حالة الغرف ← «🏢 تسجيل أدوار وغرف»</span></p>');
+      '<div style="padding:24px 20px;text-align:center;line-height:2">'
+      + '<div style="font-size:15px;font-weight:600;color:var(--ink-900)">لا غرف مسجَّلة بعد</div>'
+      + '<div style="font-size:12.5px;color:var(--fg-3);margin:8px 0 18px">'
+      + 'سجّل أدوار منشأتك وغرفها دفعةً واحدة، ثم عُد لاختيار الغرفة.</div>'
+      + '<a href="/static/dashboard.html#rooms" target="_blank" '
+      + 'style="display:inline-block;background:var(--brand-700);color:#fff;'
+      + 'text-decoration:none;padding:10px 22px;border-radius:8px;font-size:13px;'
+      + 'font-weight:600;font-family:var(--font-ar)">🏢 افتح تسجيل الأدوار والغرف ←</a>'
+      + '</div>');
     return;
   }
   window.__renderRoomMapModal();
