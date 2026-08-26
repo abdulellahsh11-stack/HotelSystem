@@ -57,267 +57,7 @@
   }
 
   /* ── Auth overlay (blocks page until logged in) ────────────────────────── */
-  function injectAuthStyles() {
-    if (document.getElementById('dh-auth-styles')) return;
-    var s = document.createElement('style');
-    s.id = 'dh-auth-styles';
-    s.textContent = [
-      '#dh-auth-wall{position:fixed;inset:0;z-index:99999;background:var(--brand-900,#1B4D3D);display:flex;align-items:center;justify-content:center;font-family:"Tajawal","Segoe UI",sans-serif}',
-      '#dh-auth-wall .aw-box{background:#fff;border-radius:18px;padding:40px 44px;width:440px;max-width:calc(100vw - 32px);box-shadow:0 24px 64px rgba(0,0,0,.35);direction:rtl;text-align:right}',
-      '#dh-auth-wall .aw-logo{display:flex;align-items:center;gap:10px;margin-bottom:28px}',
-      '#dh-auth-wall .aw-logo .mark{width:40px;height:40px;background:linear-gradient(135deg,#1B4D3D,#0E2A22);border-radius:10px;display:grid;place-items:center;font-size:20px}',
-      '#dh-auth-wall .aw-logo .brand-ar{font-size:22px;font-weight:700;color:#1B4D3D}',
-      '#dh-auth-wall .aw-logo .brand-en{font-size:12px;color:#C9A85F;font-style:italic;margin-top:1px}',
-      '#dh-auth-wall .aw-tabs{display:flex;gap:0;border-bottom:2px solid #EEE;margin-bottom:26px}',
-      '#dh-auth-wall .aw-tab{flex:1;text-align:center;padding:10px 8px;font-size:14px;font-weight:600;color:#999;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all 150ms}',
-      '#dh-auth-wall .aw-tab.on{color:#1B4D3D;border-bottom-color:#1B4D3D}',
-      '#dh-auth-wall .aw-pane{display:none}',
-      '#dh-auth-wall .aw-pane.on{display:block}',
-      '#dh-auth-wall .aw-title{font-size:18px;font-weight:700;color:#111;margin-bottom:6px}',
-      '#dh-auth-wall .aw-sub{font-size:13px;color:#666;margin-bottom:22px;line-height:1.55}',
-      '#dh-auth-wall .aw-field{margin-bottom:14px}',
-      '#dh-auth-wall .aw-field label{display:block;font-size:12px;color:#555;font-weight:600;margin-bottom:6px}',
-      '#dh-auth-wall .aw-field input,#dh-auth-wall .aw-field select{width:100%;box-sizing:border-box;padding:11px 14px;border:1.5px solid #DDD;border-radius:8px;font-size:14px;font-family:inherit;color:#111;outline:none;transition:border-color 150ms}',
-      '#dh-auth-wall .aw-field input:focus,#dh-auth-wall .aw-field select:focus{border-color:#1B4D3D;box-shadow:0 0 0 3px rgba(27,77,61,.12)}',
-      '#dh-auth-wall .aw-err{font-size:12px;color:#C0392B;margin-top:4px;display:none}',
-      '#dh-auth-wall .aw-btn-primary{width:100%;padding:13px;background:linear-gradient(135deg,#1B4D3D,#0E2A22);color:#fff;border:none;border-radius:9px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:4px;transition:opacity 150ms}',
-      '#dh-auth-wall .aw-btn-primary:hover{opacity:.88}',
-      '#dh-auth-wall .aw-btn-trial{width:100%;padding:13px;background:linear-gradient(135deg,#C9A85F,#B8913E);color:#1B4D3D;border:none;border-radius:9px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:10px;transition:opacity 150ms}',
-      '#dh-auth-wall .aw-btn-trial:hover{opacity:.88}',
-      '#dh-auth-wall .aw-divider{display:flex;align-items:center;gap:10px;margin:16px 0;color:#CCC;font-size:12px}',
-      '#dh-auth-wall .aw-divider::before,#dh-auth-wall .aw-divider::after{content:"";flex:1;height:1px;background:#EEE}',
-      '#dh-auth-wall .aw-demo-hint{background:#F0F7F4;border:1px solid #C6DDD7;border-radius:8px;padding:10px 14px;font-size:12px;color:#1B4D3D;margin-top:16px;line-height:1.6}',
-      '#dh-auth-wall .aw-demo-hint strong{font-weight:700}',
-      '#dh-auth-wall .aw-trial-badge{display:inline-block;background:#FEF3C7;color:#92400E;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;margin-bottom:14px}',
-      '#dh-auth-wall .aw-grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}',
-      /* 2FA styles */
-      '#dh-auth-wall .aw-2fa-code{font-size:36px;letter-spacing:0.3em;text-align:center;width:200px;margin:0 auto;display:block;border:2px solid #1B4D3D;border-radius:10px;padding:12px;font-family:monospace}',
-      '#dh-auth-wall .aw-2fa-hint{font-size:12px;color:#666;text-align:center;margin:10px 0 20px}',
-      '#dh-auth-wall .aw-resend{font-size:12px;color:#1B4D3D;cursor:pointer;text-decoration:underline;text-align:center;display:block;margin-top:10px}',
-    ].join('');
-    document.head.appendChild(s);
-  }
 
-  function showAuthWall(opts, onSuccess) {
-    injectAuthStyles();
-    var wall = document.createElement('div');
-    wall.id = 'dh-auth-wall';
-    wall.innerHTML = [
-      '<div class="aw-box">',
-        '<div class="aw-logo">',
-          '<div class="mark">🌿</div>',
-          '<div><div class="brand-ar">ضيوف</div><div class="brand-en">Dheuof · Hotel Management</div></div>',
-        '</div>',
-        '<div class="aw-tabs" id="aw-tabs-bar">',
-          '<div class="aw-tab on" onclick="dhAuthTab(\'login\',this)">دخول المشترك</div>',
-          '<div class="aw-tab" onclick="dhAuthTab(\'trial\',this)">تسجيل · تجربة مجانية</div>',
-        '</div>',
-
-        /* ── Login pane ── */
-        '<div class="aw-pane on" id="aw-pane-login">',
-          '<div class="aw-title">مرحباً بعودتك</div>',
-          '<div class="aw-sub">أدخل بريدك الإلكتروني وكلمة المرور للدخول إلى لوحة التحكم</div>',
-          '<div class="aw-field"><label>البريد الإلكتروني</label>',
-            '<input id="aw-login-email" type="email" placeholder="your@email.com" dir="ltr" autocomplete="email"/>',
-          '</div>',
-          '<div class="aw-field"><label>كلمة المرور</label>',
-            '<input id="aw-login-pass" type="password" placeholder="••••••••" dir="ltr" autocomplete="current-password"/>',
-            '<div class="aw-err" id="aw-login-err">البريد أو كلمة المرور غير صحيحة</div>',
-          '</div>',
-          '<button class="aw-btn-primary" onclick="dhAuthLogin()">دخول</button>',
-          '<div class="aw-demo-hint">',
-            'للتجربة: أدخل بريدك الإلكتروني وكلمة مرور (٦ أحرف على الأقل) لإنشاء حساب تجريبي فوري',
-          '</div>',
-        '</div>',
-
-        /* ── 2FA pane ── */
-        '<div class="aw-pane" id="aw-pane-2fa">',
-          '<div class="aw-title">التحقق بخطوتين</div>',
-          '<div class="aw-sub">أدخل رمز التحقق المرسل على جوالك (XXXXXX)</div>',
-          '<div class="aw-field">',
-            '<input id="aw-2fa-code" class="aw-2fa-code" type="text" inputmode="numeric" maxlength="6" placeholder="------" dir="ltr" autocomplete="one-time-code"/>',
-            '<div class="aw-2fa-hint">رمز مكوّن من ٦ أرقام</div>',
-            '<div class="aw-err" id="aw-2fa-err">الرمز غير صحيح. حاول مجدداً.</div>',
-          '</div>',
-          '<button class="aw-btn-primary" onclick="dhAuth2FAVerify()">تحقق</button>',
-          '<span class="aw-resend" onclick="dhAuth2FAResend()">إعادة إرسال الرمز</span>',
-        '</div>',
-
-        /* ── Trial / Register pane ── */
-        '<div class="aw-pane" id="aw-pane-trial">',
-          '<div class="aw-trial-badge">✦ تجربة مجانية 30 يوماً — بدون بطاقة ائتمان</div>',
-          '<div class="aw-title">سجّل منشأتك الآن</div>',
-          '<div class="aw-sub">١٧ برنامج متكامل · فنادق وشقق واستراحات وشاليهات</div>',
-          '<div class="aw-grid2">',
-            '<div class="aw-field"><label>الاسم الأول</label>',
-              '<input id="aw-reg-fname" type="text" placeholder="محمد"/>',
-            '</div>',
-            '<div class="aw-field"><label>اسم العائلة</label>',
-              '<input id="aw-reg-lname" type="text" placeholder="الأحمد"/>',
-            '</div>',
-          '</div>',
-          '<div class="aw-field"><label>اسم المنشأة</label>',
-            '<input id="aw-reg-prop" type="text" placeholder="فندق الواحة · الرياض"/>',
-          '</div>',
-          '<div class="aw-grid2">',
-            '<div class="aw-field"><label>نوع المنشأة</label>',
-              '<select id="aw-reg-type">',
-                '<option value="hotel">فندق</option>',
-                '<option value="apartment">شقق مفروشة</option>',
-                '<option value="resthouse">استراحة</option>',
-                '<option value="chalet">شاليه</option>',
-                '<option value="villa">فيلا</option>',
-              '</select>',
-            '</div>',
-            '<div class="aw-field"><label>المدينة</label>',
-              '<input id="aw-reg-city" type="text" placeholder="الرياض"/>',
-            '</div>',
-          '</div>',
-          '<div class="aw-field"><label>السجل التجاري <span style="color:var(--ink-400);font-weight:400">(اختياري)</span></label>',
-            '<input id="aw-reg-cr" type="text" placeholder="1010XXXXXX" dir="ltr" inputmode="numeric"/>',
-          '</div>',
-          '<div class="aw-field"><label>البريد الإلكتروني</label>',
-            '<input id="aw-reg-email" type="email" placeholder="your@email.com" dir="ltr"/>',
-          '</div>',
-          '<div class="aw-field"><label>رقم الجوال</label>',
-            '<input id="aw-reg-phone" type="tel" placeholder="05XXXXXXXX" dir="ltr" inputmode="numeric" autocomplete="tel"/>',
-          '</div>',
-          '<div class="aw-field"><label>كلمة المرور</label>',
-            '<input id="aw-reg-pass" type="password" placeholder="••••••••" dir="ltr"/>',
-            '<div class="aw-err" id="aw-reg-err">يرجى تعبئة جميع الحقول (رقم جوال صحيح ٠٥ + كلمة مرور ٦ أحرف)</div>',
-          '</div>',
-          '<button class="aw-btn-trial" onclick="dhAuthRegister()">ابدأ التجربة المجانية</button>',
-        '</div>',
-      '</div>',
-    ].join('');
-    document.body.appendChild(wall);
-
-    /* pending session used during 2FA step */
-    var _pendingSession = null;
-
-    /* ── Auth functions on window ── */
-    window.dhAuthTab = function(pane, btn) {
-      document.querySelectorAll('#dh-auth-wall .aw-tab').forEach(function(t){ t.classList.remove('on'); });
-      document.querySelectorAll('#dh-auth-wall .aw-pane').forEach(function(p){ p.classList.remove('on'); });
-      btn.classList.add('on');
-      document.getElementById('aw-pane-' + pane).classList.add('on');
-    };
-
-    function removeWall() {
-      var w = document.getElementById('dh-auth-wall');
-      if (w) { w.style.opacity='0'; w.style.transition='opacity .3s'; setTimeout(function(){ if(w.parentNode) w.remove(); }, 320); }
-    }
-
-    function completeLogin(session) {
-      saveSession(session);
-      removeWall();
-      if (onSuccess) onSuccess(session);
-      updateTopbarUser(session);
-    }
-
-    function show2FAPane(session) {
-      _pendingSession = session;
-      /* hide the tabs bar so user can't navigate away */
-      var tabsBar = document.getElementById('aw-tabs-bar');
-      if (tabsBar) tabsBar.style.display = 'none';
-      /* show only 2FA pane */
-      document.querySelectorAll('#dh-auth-wall .aw-pane').forEach(function(p){ p.classList.remove('on'); });
-      document.getElementById('aw-pane-2fa').classList.add('on');
-      /* clear previous input */
-      var codeEl = document.getElementById('aw-2fa-code');
-      if (codeEl) { codeEl.value = ''; codeEl.focus(); }
-    }
-
-    window.dhAuthLogin = function() {
-      var email = (document.getElementById('aw-login-email').value || '').trim();
-      var pass  = document.getElementById('aw-login-pass').value || '';
-      var err   = document.getElementById('aw-login-err');
-      err.style.display = 'none';
-      if (!email || pass.length < 6) { err.style.display = 'block'; return; }
-
-      var session = { email: email, name: email.split('@')[0], plan: 'trial', ts: Date.now() };
-
-      /* Check if 2FA is enabled for this account (read from localStorage flag set by security page) */
-      var twofaEnabled = localStorage.getItem('dheuof_2fa_enabled') === '1';
-      session.twofa = twofaEnabled;
-
-      if (twofaEnabled) {
-        /* Hold off saving until 2FA verified */
-        show2FAPane(session);
-      } else {
-        completeLogin(session);
-      }
-    };
-
-    window.dhAuth2FAVerify = function() {
-      var codeEl = document.getElementById('aw-2fa-code');
-      var errEl  = document.getElementById('aw-2fa-err');
-      var code   = (codeEl ? codeEl.value : '').trim();
-      errEl.style.display = 'none';
-
-      /* Accept any 6-digit code OR the hardcoded demo "123456" */
-      var valid = /^\d{6}$/.test(code);
-      if (!valid) { errEl.style.display = 'block'; return; }
-
-      if (_pendingSession) {
-        completeLogin(_pendingSession);
-        _pendingSession = null;
-      }
-    };
-
-    window.dhAuth2FAResend = function() {
-      showToast('تم إرسال رمز جديد');
-    };
-
-    window.dhAuthRegister = function() {
-      var fname = (document.getElementById('aw-reg-fname').value || '').trim();
-      var lname = (document.getElementById('aw-reg-lname').value || '').trim();
-      var prop  = (document.getElementById('aw-reg-prop').value  || '').trim();
-      var type  = document.getElementById('aw-reg-type').value;
-      var city  = (document.getElementById('aw-reg-city') || {}).value || '';
-      var cr    = (document.getElementById('aw-reg-cr')   || {}).value || '';
-      var email = (document.getElementById('aw-reg-email').value || '').trim();
-      var phone = (document.getElementById('aw-reg-phone').value || '').trim();
-      var pass  = document.getElementById('aw-reg-pass').value || '';
-      var err   = document.getElementById('aw-reg-err');
-      city = city.trim(); cr = cr.trim();
-      err.style.display = 'none';
-      // رقم جوال سعودي: يبدأ بـ 05 ويتكوّن من 10 أرقام (أو +9665 / 9665)
-      var phoneDigits = phone.replace(/[\s\-+]/g, '');
-      var phoneOk = /^05\d{8}$/.test(phoneDigits) || /^9665\d{8}$/.test(phoneDigits);
-      if (!fname || !email || !phoneOk || pass.length < 6) { err.style.display = 'block'; return; }
-      var propName = prop || (fname + ' ' + lname);
-      var ownerName = fname + (lname ? ' ' + lname : '');
-      /* بيانات التسجيل الكاملة: اسم المنشأة + المالك + الجوال + السجل التجاري + المدينة + البريد */
-      var session = {
-        email: email, phone: phoneDigits, name: ownerName,
-        plan: 'trial', property: propName, propType: type,
-        city: city, cr_number: cr,
-        ts: Date.now(), trialStart: Date.now(), twofa: false
-      };
-      /* Best-effort: persist the establishment server-side so all modules link to it */
-      try {
-        fetch('/api/client/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            client_id: email, hotel_name: propName, name: ownerName,
-            password: pass, type: type, city: city, phone: phoneDigits,
-            email: email, cr_number: cr
-          })
-        }).catch(function(){});
-      } catch (e) {}
-      completeLogin(session);
-    };
-
-    /* Enter key support */
-    ['aw-login-email','aw-login-pass'].forEach(function(id) {
-      var el = document.getElementById(id);
-      if (el) el.addEventListener('keydown', function(e){ if(e.key==='Enter') window.dhAuthLogin(); });
-    });
-    var codeInput = document.getElementById('aw-2fa-code');
-    if (codeInput) codeInput.addEventListener('keydown', function(e){ if(e.key==='Enter') window.dhAuth2FAVerify(); });
-  }
 
   /* ── Update topbar with real session info ──────────────────────────────── */
   function updateTopbarUser(session) {
@@ -468,7 +208,7 @@
       var tb = document.querySelector('.dh-topbar');
       if (sb) sb.outerHTML = renderSidebar(opts ? opts.activeId : undefined, opts);
       if (tb) tb.outerHTML = renderTopBar(opts);
-      window.dhShowAuth && window.dhShowAuth();
+      window.location.href = '/';
     }
   }
 
@@ -477,18 +217,16 @@
     opts = opts || {};
 
     // Expose global helpers before anything renders
+    // الدخول والتسجيل يقعان في الصفحة الرئيسية، لا في جدارٍ منبثق.
+    //
+    // كان هنا جدارٌ يغطّي الصفحة بـ`z-index:99999` ويقرّر ظهوره من
+    // `localStorage` — لا من جلسة الخادم. فمن يدخل من صفحة الدخول
+    // الحقيقية تُضبط جلسته في كوكي HttpOnly ويبقى `localStorage` فارغاً،
+    // فينزل الجدار **فوق مستخدمٍ مسجَّل الدخول فعلاً** ويعترض كل نقرة:
+    // لا حفظ، ولا تخصيص، ولا فاتورة. والبيانات تُقرأ من الخادم بنجاح
+    // خلفه — فتبدو المنصة كأنها لا تستجيب وهي تعمل.
     window.dhShowAuth = function() {
-      if (document.getElementById('dh-auth-wall')) return;
-      showAuthWall(opts, function(session) {
-        // Re-render sidebar + topbar with session info
-        var sb = document.querySelector('.dh-sidebar');
-        var tb = document.querySelector('.dh-topbar');
-        if (sb) sb.outerHTML = renderSidebar(opts.activeId, opts);
-        if (tb) tb.outerHTML = renderTopBar(opts);
-        // remove trial banner
-        var fl = document.getElementById('dh-float-trial');
-        if (fl) fl.remove();
-      });
+      window.location.href = '/';
     };
 
     window.dhLogout = function() {
@@ -511,25 +249,12 @@
       session = null;
     }
 
-    if (!session) {
-      // Render shell first so page is not blank behind the overlay
-      var sb = document.getElementById("sidebar-slot");
-      var tb = document.getElementById("topbar-slot");
-      if (sb) sb.outerHTML = renderSidebar(opts.activeId, opts);
-      if (tb) tb.outerHTML = renderTopBar(opts);
-      // Show blocking auth wall
-      showAuthWall(opts, function(s) {
-        var sb2 = document.querySelector('.dh-sidebar');
-        var tb2 = document.querySelector('.dh-topbar');
-        if (sb2) sb2.outerHTML = renderSidebar(opts.activeId, opts);
-        if (tb2) tb2.outerHTML = renderTopBar(opts);
-      });
-    } else {
-      var sb = document.getElementById("sidebar-slot");
-      var tb = document.getElementById("topbar-slot");
-      if (sb) sb.outerHTML = renderSidebar(opts.activeId, opts);
-      if (tb) tb.outerHTML = renderTopBar(opts);
-    }
+    // الصفحة تُرسم دائماً. حجبُ صفحات البرنامج مسؤولية الخادم وحده —
+    // فهو يعرف الجلسة الحقيقية، والمتصفّح لا يعرف إلا ما كُتب له محلياً.
+    var sb = document.getElementById("sidebar-slot");
+    var tb = document.getElementById("topbar-slot");
+    if (sb) sb.outerHTML = renderSidebar(opts.activeId, opts);
+    if (tb) tb.outerHTML = renderTopBar(opts);
 
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', injectTrialBanner);

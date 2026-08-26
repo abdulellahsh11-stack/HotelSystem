@@ -423,13 +423,29 @@ async function saveGuest(alsoCheckIn){
   if (!guest.ok) { toast(guest.error, true); return; }
   var guestId = guest.data && guest.data.data && guest.data.data.id;
 
+  // المبالغ تُرسَل مع الحجز.
+  //
+  // كانت الفاتورة تُحسب على الشاشة ثم تُرمى: الحجز يُنشأ بلا سعرٍ ولا
+  // ضرائب ولا إجمالي، فيُقيَّد إيراداً صفراً وتبقى المحاسبة فارغة مهما
+  // سجّل الاستقبال من نزلاء. الأعمدة موجودة في الجدول منذ البداية —
+  // الصفحة وحدها لم تكن تملؤها.
+  var nights = intVal('nights', 1);
+  var totalWithTax = Number(window.GR_INV_TOTAL || 0);
+  var roomOnly = roomPrice() * nights;
+
   var booking = await send('/api/bookings', {
     method: 'POST',
     body: JSON.stringify({
       guest_id: guestId,
       room_id: data.room_id,
+      room_number: data.room_number,
       check_in: data.check_in,
       check_out: data.check_out,
+      nights: nights,
+      guests_count: intVal('guests', 1),
+      nightly_rate: roomPrice(),
+      total_room: roomOnly,
+      total_amount: totalWithTax,
       status: 'confirmed'
     })
   });
@@ -442,9 +458,20 @@ async function saveGuest(alsoCheckIn){
 
   if (!alsoCheckIn) { toast('حُفظ النزيل وحجزه ✓'); return; }
 
+  // المبلغ المدفوع عند الوصول يُرسَل مع تسجيل الدخول، وإلا قُيّد إيراداً
+  // صفراً: السلسلة تُنشئ قيداً محاسبياً بما يصلها لا بما على الشاشة.
+  var paidNow = 0;
+  var firstPay = q('.pay-row .amt input');
+  if (firstPay) paidNow = Number(String(firstPay.value).replace(/[^\d.]/g, '')) || 0;
+
   var cascade = await send('/api/integration/checkin', {
     method: 'POST',
-    body: JSON.stringify({ booking_id: bookingId })
+    body: JSON.stringify({
+      booking_id: bookingId,
+      amount: paidNow || totalWithTax,
+      payment_method: 'cash',
+      checkin_by: 'استقبال'
+    })
   });
   toast(cascade.ok
     ? 'حُفظ النزيل وسُجّل وصوله — الغرفة ' + data.room_number + ' صارت مشغولة ✓'

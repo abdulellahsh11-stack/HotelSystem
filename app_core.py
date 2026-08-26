@@ -557,7 +557,10 @@ async def server_side_auth_gate(request: Request, call_next):
             # Browsers navigating get a redirect; programmatic/XHR get 401
             accept = request.headers.get("accept", "")
             if "text/html" in accept:
-                return RedirectResponse("/login", status_code=302)
+                # إلى الصفحة الرئيسية لا صفحة الدخول: الزائر بلا جلسة
+                # قد يكون عميلاً محتملاً، والرئيسية تُعرّفه بالمنصة
+                # وتحمل الدخول والتسجيل معاً.
+                return RedirectResponse("/", status_code=302)
             return JSONResponse({"detail": "غير مصرح — يلزم تسجيل الدخول"}, status_code=401)
     return await call_next(request)
 
