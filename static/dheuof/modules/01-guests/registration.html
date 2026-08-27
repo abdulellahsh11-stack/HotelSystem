@@ -290,7 +290,7 @@
             <!-- Direction toggles -->
             <div class="ap-dirs">
               <label class="ap-dir is-on">
-                <input type="checkbox" checked/>
+                <input type="checkbox" id="ap-arrival" data-price="220" checked/>
                 <div class="ic">↘</div>
                 <div class="t">
                   <div class="ar">استلام من المطار</div>
@@ -299,7 +299,7 @@
                 <div class="px">+٢٢٠ ر.س</div>
               </label>
               <label class="ap-dir is-on">
-                <input type="checkbox" checked/>
+                <input type="checkbox" id="ap-departure" data-price="220" checked/>
                 <div class="ic">↗</div>
                 <div class="t">
                   <div class="ar">توصيل إلى المطار</div>
@@ -682,7 +682,7 @@
                   <div class="phone-mock">
                     <div class="bar">رسالة جديدة · Dheuof</div>
                     <div class="bubble">
-                      <div class="line ar">عميلنا العزيز أحمد، رابط دفع آمن للدفعة الثانية (٣٬٠٠٠٫٠٠ ر.س) — فندق الواحة الذهبية:</div>
+                      <div class="line ar" id="sms-pay-line">عميلنا العزيز أحمد، رابط دفع آمن للدفعة الثانية (٣٬٠٠٠٫٠٠ ر.س) — فندق الواحة الذهبية:</div>
                       <div class="link">pay.dheuof.sa/r/8KQ2-AHM</div>
                       <div class="line en">Secure pay-link · valid 48h · powered by Dheuof.</div>
                     </div>
@@ -711,6 +711,10 @@
                 <div id="inv-meal-row" style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--hairline);font-size:13px">
                   <span id="inv-meal-label">فطور بوفيه × ٣ أيام × ٣ أشخاص</span>
                   <span id="inv-meal-amt" style="font-family:var(--font-mono);font-weight:600">٥٤٠٫٠٠</span>
+                </div>
+                <div id="inv-transfer-row" style="display:none;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--hairline);font-size:13px">
+                  <span id="inv-transfer-label">الاستلام والتوصيل للمطار</span>
+                  <span id="inv-transfer-amt" style="font-family:var(--font-mono);font-weight:600">٠٫٠٠</span>
                 </div>
                 <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:2px solid var(--hairline);font-size:13px">
                   <span style="color:var(--fg-2)">المجموع قبل الضرائب</span>
@@ -802,7 +806,7 @@
               <div class="ct-clauses">
                 <div class="ct-meta">
                   <div class="gr-grid c3">
-                    <div class="gr-field"><label>عنوان العقد</label><input value="عقد إقامة — جناح ملكي ٤٠٢"/></div>
+                    <div class="gr-field"><label>عنوان العقد</label><input id="ct-title" value="عقد إقامة"/></div>
                     <div class="gr-field"><label>اللغة</label><select><option>عربي + إنجليزي (ثنائي)</option><option>عربي فقط</option><option>English only</option></select></div>
                     <div class="gr-field"><label>القانون الحاكم</label><select><option>المملكة العربية السعودية</option><option>إمارة الرياض</option><option>تخصيص</option></select></div>
                   </div>
@@ -811,7 +815,7 @@
                 <div class="ct-clist">
                   <div class="ct-cl">
                     <div class="h"><span class="n">١</span><input class="ttl-in" value="مدة الإقامة والسعر"/><label class="req-tg"><input type="checkbox" checked/><span>إلزامي</span></label></div>
-                    <textarea rows="2">يتفق الطرفان على إقامة مدتها ٣ ليالٍ في الجناح الملكي رقم ٤٠٢ بسعر ٢٬٤٠٠ ر.س/ليلة، شاملاً ضريبة القيمة المضافة وضريبة السياحة.</textarea>
+                    <textarea rows="2" id="ct-clause-stay" data-auto="stay">يتفق الطرفان على إقامة مدتها ٣ ليالٍ في الجناح الملكي رقم ٤٠٢ بسعر ٢٬٤٠٠ ر.س/ليلة، شاملاً ضريبة القيمة المضافة وضريبة السياحة.</textarea>
                   </div>
                   <div class="ct-cl">
                     <div class="h"><span class="n">٢</span><input class="ttl-in" value="سياسة الإلغاء"/><label class="req-tg"><input type="checkbox" checked/><span>إلزامي</span></label></div>
@@ -884,7 +888,7 @@
                   <div class="phone-mock sm">
                     <div class="bar">SMS · Dheuof</div>
                     <div class="bubble">
-                      <div class="line ar">عميلنا العزيز أحمد، يُرجى مراجعة وتوقيع عقد إقامتك:</div>
+                      <div class="line ar" id="sms-sign-line">عميلنا العزيز أحمد، يُرجى مراجعة وتوقيع عقد إقامتك:</div>
                       <div class="link">sign.dheuof.sa/c/CT-001872</div>
                       <div class="line en">Tap to review · sign · save copy.</div>
                     </div>

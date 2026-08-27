@@ -414,7 +414,11 @@ class DataStore:
                     booking.get("nightly_rate", 0), booking.get("total_room", 0),
                     booking.get("status", "confirmed"), booking.get("source", "reception"),
                     booking.get("company_name", ""), companions_json,
-                    booking.get("pre_arrival_token", ""),
+                    # NULL لا "" — العمود UNIQUE، وPostgreSQL يعتبر النصّ
+                    # الفارغ قيمةً حقيقية بخلاف NULL. فحجزٌ بلا رمزٍ يمرّ،
+                    # والثاني يصطدم بقيد التفرّد ويفشل بـ500 — أي أن المنصة
+                    # تقبل حجزاً واحداً فقط ثم ترفض كل ما بعده.
+                    booking.get("pre_arrival_token") or None,
                     booking.get("pre_arrival_status", "pending"), pre_data_json,
                     booking.get("notes", ""),
                 ))

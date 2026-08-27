@@ -126,7 +126,7 @@ class TestIndexPage:
 # ---------------------------------------------------------------------------
 
 class TestServerSideAuthGate:
-    def test_module_page_unauthenticated_redirects_to_login(self):
+    def test_module_page_unauthenticated_goes_to_the_home_page(self):
         """Direct navigation to a module page without a session → 302 /login."""
         client = TestClient(app, raise_server_exceptions=False, follow_redirects=False)
         resp = client.get(
@@ -134,14 +134,18 @@ class TestServerSideAuthGate:
             headers={"accept": "text/html"},
         )
         assert resp.status_code == 302, f"Expected 302 redirect, got {resp.status_code}"
-        assert resp.headers.get("location") == "/login"
+        # إلى الصفحة الرئيسية لا صفحة الدخول: الزائر بلا جلسة قد يكون
+        # عميلاً محتملاً، والرئيسية تُعرّفه بالمنصة وتحمل الدخول والتسجيل.
+        assert resp.headers.get("location") == "/"
 
-    def test_shortcut_route_unauthenticated_redirects_to_login(self):
+    def test_shortcut_route_unauthenticated_goes_to_the_home_page(self):
         """Pretty shortcut (/hr) without a session → 302 /login."""
         client = TestClient(app, raise_server_exceptions=False, follow_redirects=False)
         resp = client.get("/hr", headers={"accept": "text/html"})
         assert resp.status_code == 302
-        assert resp.headers.get("location") == "/login"
+        # إلى الصفحة الرئيسية لا صفحة الدخول: الزائر بلا جلسة قد يكون
+        # عميلاً محتملاً، والرئيسية تُعرّفه بالمنصة وتحمل الدخول والتسجيل.
+        assert resp.headers.get("location") == "/"
 
     def test_module_page_authenticated_serves_html(self):
         """With a valid session the module page is served (200)."""
@@ -313,4 +317,51 @@ class TestMultiTenantIsolation:
         assert len(emps_a) != len(emps_b), (
             f"Both clients returned the same number of employees ({len(emps_a)}); "
             "isolation may be broken"
+        )
+
+
+class TestNoClientSideAuthWall:
+    """
+    الجدار الذي كان يحجب المنصة عن مستخدميها.
+
+    كان `sidebar.js` يُنزل `<div id="dh-auth-wall">` بـ`z-index:99999`
+    فوق كل صفحة، ويقرّر ظهوره من `localStorage` — **لا من جلسة الخادم**.
+    ومن يدخل من صفحة الدخول الحقيقية تُضبط جلسته في كوكي HttpOnly ويبقى
+    `localStorage` فارغاً، فينزل الجدار فوق مستخدمٍ مسجَّل الدخول فعلاً.
+
+    والنتيجة أن كل نقرة تُعترض: لا حفظ نزيل، ولا تخصيص، ولا فاتورة —
+    بينما البيانات تُقرأ من الخادم بنجاح خلفه. فتبدو المنصة معطّلة وهي
+    تعمل. (أثبته Playwright حرفياً: «dh-auth-wall intercepts pointer
+    events».)
+
+    الحجب الآن مسؤولية الخادم وحده: هو يعرف الجلسة الحقيقية.
+    """
+
+    def test_the_auth_wall_is_gone_from_the_shared_sidebar(self):
+        src = open("static/dheuof/shared/sidebar.js", encoding="utf-8").read()
+        for marker in ("dh-auth-wall", "showAuthWall", "injectAuthStyles"):
+            assert marker not in src, f"عاد جدار المصادقة إلى الواجهة: {marker}"
+
+    def test_no_page_ships_a_blocking_overlay(self):
+        import glob
+
+        offenders = []
+        for path in glob.glob("static/**/*.js", recursive=True) + \
+                glob.glob("static/**/*.html", recursive=True):
+            try:
+                body = open(path, encoding="utf-8").read()
+            except OSError:
+                continue
+            if "dh-auth-wall" in body:
+                offenders.append(path)
+        assert not offenders, "ملفات تحمل جدار الحجب: " + " · ".join(offenders)
+
+    def test_the_browser_never_decides_auth_from_local_storage(self):
+        """
+        `getSession()` يقرأ `localStorage` — وهو حالة عرضٍ لا هوية. لا
+        بأس ببقائه لتزيين الشريط، لكن لا يجوز أن يحجب شيئاً.
+        """
+        src = open("static/dheuof/shared/sidebar.js", encoding="utf-8").read()
+        assert "if (!session)" not in src or "showAuthWall" not in src, (
+            "قرار الحجب عاد يعتمد على localStorage"
         )

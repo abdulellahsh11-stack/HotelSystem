@@ -380,6 +380,99 @@ function setupContractPrint(){
 }
 
 /* ═══════════════════════════════════════════════
+   العقد والرسائل تتبع بيانات النزيل الفعلية
+
+   كان نصّ العقد يقول «إقامة ٣ ليالٍ في الجناح الملكي ٤٠٢ بسعر ٢٬٤٠٠»
+   ورسائل SMS تقول «عميلنا العزيز أحمد» — مهما أدخل الموظف. فيُرسَل عقدٌ
+   باسم شخصٍ آخر وغرفةٍ أخرى ومبلغٍ آخر، ويُوقَّع.
+
+   حقول الدمج `{{اسم_النزيل}}` كانت وسوماً زخرفية معروضة للعين ولا يملؤها
+   شيء. الآن تُملأ فعلاً — ومن يُعدّل نصّاً بيده لا يُكتب فوقه.
+═══════════════════════════════════════════════ */
+function liveContractData(){
+  var sel = q('#room-number-sel');
+  var opt = sel && sel.selectedOptions && sel.selectedOptions[0];
+  var nights = parseInt(fieldValue('nights'), 10);
+  var rate = 0;
+  if (opt) rate = Number(opt.getAttribute('data-price')) || 0;
+  return {
+    name: (q('[data-name="ar"]') || {}).value || '',
+    room: (opt && opt.getAttribute('data-room')) || '',
+    roomType: (opt && opt.getAttribute('data-type')) || '',
+    nights: (isNaN(nights) || nights < 1) ? 1 : nights,
+    rate: rate,
+    total: Number(window.GR_INV_TOTAL || 0),
+    checkin: fieldValue('checkin'),
+    checkout: fieldValue('checkout')
+  };
+}
+
+function money(n){
+  return Number(n || 0).toLocaleString('ar-SA', { minimumFractionDigits: 2 }) + ' ر.س';
+}
+
+function refreshContractText(){
+  var d = liveContractData();
+  if (!d.name && !d.room) return;      // نموذجٌ فارغ — لا تُبدَّل النصوص
+
+  var stay = q('#ct-clause-stay');
+  // `data-auto` يسقط أول ما يُعدّل الموظف النصّ بيده: الكتابة فوق تعديله
+  // إهدارٌ لعمله وإرباك.
+  if (stay && stay.dataset.auto === 'stay') {
+    var roomLabel = d.room ? ('الغرفة رقم ' + d.room + (d.roomType ? ' (' + d.roomType + ')' : ''))
+                           : 'الغرفة المتفق عليها';
+    stay.value = 'يتفق الطرفان على إقامة مدتها ' + d.nights + ' ليالٍ في '
+      + roomLabel + (d.rate ? ' بسعر ' + money(d.rate) + '/ليلة' : '')
+      + (d.checkin ? '، من ' + d.checkin : '')
+      + (d.checkout ? ' إلى ' + d.checkout : '')
+      + '، شاملاً ضريبة القيمة المضافة وضريبة السياحة.';
+    stay.addEventListener('input', function once(){
+      stay.dataset.auto = 'manual';
+      stay.removeEventListener('input', once);
+    });
+  }
+
+  var title = q('#ct-title');
+  if (title && !title.dataset.touched) {
+    title.value = 'عقد إقامة' + (d.name ? ' — ' + d.name : '')
+                + (d.room ? ' · غرفة ' + d.room : '');
+    title.addEventListener('input', function once(){
+      title.dataset.touched = '1';
+      title.removeEventListener('input', once);
+    });
+  }
+
+  var first = (d.name || '').split(' ')[0];
+  var signLine = q('#sms-sign-line');
+  if (signLine && first) {
+    signLine.textContent = 'عميلنا العزيز ' + first + '، يُرجى مراجعة وتوقيع عقد إقامتك:';
+  }
+  var payLine = q('#sms-pay-line');
+  if (payLine && first) {
+    payLine.textContent = 'عميلنا العزيز ' + first + '، رابط دفع آمن'
+      + (d.total ? ' بمبلغ ' + money(d.total) : '') + ':';
+  }
+}
+
+function watchContractInputs(){
+  ['[data-name="ar"]', '#room-number-sel', '[data-field="nights"]',
+   '[data-field="checkin"]', '[data-field="checkout"]'].forEach(function (sel) {
+    var el = q(sel);
+    if (!el) return;
+    el.addEventListener('input', refreshContractText);
+    el.addEventListener('change', refreshContractText);
+  });
+  // الفاتورة تُعلن إجماليها، فيتبعه نصّ رسالة الدفع
+  var prev = window.GR_onInvoiceTotal;
+  window.GR_onInvoiceTotal = function (t) {
+    if (typeof prev === 'function') { try { prev(t); } catch (e) { /* لا يُوقف */ } }
+    refreshContractText();
+  };
+  refreshContractText();
+}
+
+
+/* ═══════════════════════════════════════════════
    التصدير
 ═══════════════════════════════════════════════ */
 function init(){
@@ -387,6 +480,7 @@ function init(){
   setupCompanions();
   setupSignatureGate();
   setupContractPrint();
+  watchContractInputs();
 }
 
 if (document.readyState === 'loading') {
@@ -400,7 +494,8 @@ window.RegistrationSections = {
   syncCompanions: syncCompanions, printContract: printContract,
   buildContractHtml: buildContractHtml, collectClauses: collectClauses,
   setupCollapsibleSections: setupCollapsibleSections,
-  setupCompanions: setupCompanions, init: init
+  setupCompanions: setupCompanions, init: init,
+  refreshContractText: refreshContractText, liveContractData: liveContractData
 };
 
 })();

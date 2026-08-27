@@ -178,7 +178,35 @@ function computeInvoice(){
     if (mealAmt) mealAmt.textContent = toArabicNum(mealTotal);
   }
 
-  var base = roomTotal + mealTotal;
+  // الاستلام والتوصيل للمطار — يدخلان الفاتورة فعلاً.
+  //
+  // كان القسم يعرض «+٢٢٠ ر.س» بجانب كل اتجاه ولا يضيفهما إلى شيء:
+  // يُعلّم الموظف الاتجاهين فيرى وعداً بالسعر، ويخرج النزيل بفاتورةٍ
+  // لا تحوي النقل. والمنشأة تخسره صامتاً في كل حجز.
+  var transferTotal = 0;
+  var legs = [];
+  [['#ap-arrival', 'استلام من المطار'], ['#ap-departure', 'توصيل إلى المطار']]
+    .forEach(function (pair) {
+      var box = q(pair[0]);
+      if (box && box.checked) {
+        transferTotal += Number(box.getAttribute('data-price')) || 0;
+        legs.push(pair[1]);
+      }
+    });
+  var trRow = q('#inv-transfer-row');
+  if (trRow) {
+    if (transferTotal > 0) {
+      trRow.style.display = 'flex';
+      var trLabel = q('#inv-transfer-label');
+      if (trLabel) trLabel.textContent = legs.join(' + ');
+      var trAmt = q('#inv-transfer-amt');
+      if (trAmt) trAmt.textContent = toArabicNum(transferTotal);
+    } else {
+      trRow.style.display = 'none';
+    }
+  }
+
+  var base = roomTotal + mealTotal + transferTotal;
   var sub = q('#inv-subtotal');
   if (sub) sub.textContent = toArabicNum(base);
 
@@ -237,10 +265,29 @@ function wireInvoiceInputs(){
     var el = field(f);
     if (el) { el.addEventListener('input', computeInvoice); el.addEventListener('change', computeInvoice); }
   });
-  // تعديل الموظف لأي دفعةٍ مبكرة يُعيد حساب التسوية
-  document.querySelectorAll('.pay-row .amt input').forEach(function (inp, idx, all) {
-    if (idx < all.length - 1) inp.addEventListener('input', updateSettlement);
+  // مربّعا المطار يدخلان الحساب فور تعليمهما
+  ['#ap-arrival', '#ap-departure'].forEach(function (s) {
+    var el = q(s); if (el) el.addEventListener('change', computeInvoice);
   });
+
+  // الدفعات: الاستماع على الحاوية لا على كل حقل.
+  //
+  // كان الربط يُعلَّق على الصفوف الموجودة وقت التحميل، فأي دفعةٍ تُضاف
+  // بـ«+ إضافة دفعة» تُولد **بلا ربط**: يكتب فيها الموظف مبلغاً فلا
+  // تتغيّر التسوية ولا الإجمالي. الاستماع على الحاوية يشمل ما لم يُخلق بعد.
+  var payList = q('.pay-rows');
+  if (payList) {
+    payList.addEventListener('input', function (e) {
+      if (e.target && e.target.closest('.amt')) updateSettlement();
+    });
+    // الحذف يغيّر الصفّ الأخير — فتُعاد التسوية بعد أن يستقرّ الحذف
+    payList.addEventListener('click', function (e) {
+      if (e.target && e.target.classList.contains('x')) setTimeout(updateSettlement, 0);
+    });
+    // إضافة صفٍّ جديد تُعيد الحساب أيضاً
+    var addBtn = q('.pay-add');
+    if (addBtn) addBtn.addEventListener('click', function () { setTimeout(updateSettlement, 0); });
+  }
   computeInvoice();
 }
 
@@ -423,13 +470,29 @@ async function saveGuest(alsoCheckIn){
   if (!guest.ok) { toast(guest.error, true); return; }
   var guestId = guest.data && guest.data.data && guest.data.data.id;
 
+  // المبالغ تُرسَل مع الحجز.
+  //
+  // كانت الفاتورة تُحسب على الشاشة ثم تُرمى: الحجز يُنشأ بلا سعرٍ ولا
+  // ضرائب ولا إجمالي، فيُقيَّد إيراداً صفراً وتبقى المحاسبة فارغة مهما
+  // سجّل الاستقبال من نزلاء. الأعمدة موجودة في الجدول منذ البداية —
+  // الصفحة وحدها لم تكن تملؤها.
+  var nights = intVal('nights', 1);
+  var totalWithTax = Number(window.GR_INV_TOTAL || 0);
+  var roomOnly = roomPrice() * nights;
+
   var booking = await send('/api/bookings', {
     method: 'POST',
     body: JSON.stringify({
       guest_id: guestId,
       room_id: data.room_id,
+      room_number: data.room_number,
       check_in: data.check_in,
       check_out: data.check_out,
+      nights: nights,
+      guests_count: intVal('guests', 1),
+      nightly_rate: roomPrice(),
+      total_room: roomOnly,
+      total_amount: totalWithTax,
       status: 'confirmed'
     })
   });
@@ -442,9 +505,20 @@ async function saveGuest(alsoCheckIn){
 
   if (!alsoCheckIn) { toast('حُفظ النزيل وحجزه ✓'); return; }
 
+  // المبلغ المدفوع عند الوصول يُرسَل مع تسجيل الدخول، وإلا قُيّد إيراداً
+  // صفراً: السلسلة تُنشئ قيداً محاسبياً بما يصلها لا بما على الشاشة.
+  var paidNow = 0;
+  var firstPay = q('.pay-row .amt input');
+  if (firstPay) paidNow = Number(String(firstPay.value).replace(/[^\d.]/g, '')) || 0;
+
   var cascade = await send('/api/integration/checkin', {
     method: 'POST',
-    body: JSON.stringify({ booking_id: bookingId })
+    body: JSON.stringify({
+      booking_id: bookingId,
+      amount: paidNow || totalWithTax,
+      payment_method: 'cash',
+      checkin_by: 'استقبال'
+    })
   });
   toast(cascade.ok
     ? 'حُفظ النزيل وسُجّل وصوله — الغرفة ' + data.room_number + ' صارت مشغولة ✓'
