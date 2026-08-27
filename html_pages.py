@@ -203,7 +203,7 @@ async function doRegister(){{
   }}else showErr(d.error||'خطأ في التسجيل');
 }}
 </script>
-</body>
+<p style="text-align:center;margin-top:22px;padding-top:18px;border-top:1px solid #eee;font-size:12.5px;color:#888">موظف في منشأة مشتركة؟ <a href="/static/dheuof/staff-login.html" style="color:#1B4D3D;font-weight:600;text-decoration:none">دخول الموظفين ←</a></p></body>
 </html>"""
 
 

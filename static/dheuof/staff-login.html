@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<title>دخول الموظفين — ضيوف</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="robots" content="noindex"/>
+<link rel="stylesheet" href="/static/dheuof/colors_and_type.css"/>
+<style>
+  body{
+    margin:0;min-height:100vh;display:grid;place-items:center;padding:20px;
+    background:linear-gradient(135deg,#1B4D3D,#0E2A22);
+    font-family:"Tajawal","Segoe UI",Tahoma,sans-serif;
+  }
+  .box{
+    background:#fff;border-radius:18px;padding:38px 40px;
+    width:min(430px,100%);box-shadow:0 24px 64px rgba(0,0,0,.35);
+  }
+  .brand{display:flex;align-items:center;gap:11px;margin-bottom:8px}
+  .brand .mark{
+    width:42px;height:42px;border-radius:11px;display:grid;place-items:center;
+    background:linear-gradient(135deg,#1B4D3D,#0E2A22);font-size:21px;
+  }
+  .brand .ar{font-size:22px;font-weight:700;color:#1B4D3D;line-height:1.2}
+  .brand .en{font-size:11.5px;color:#C9A85F;font-style:italic}
+  h1{font-size:17px;color:#1B4D3D;margin:20px 0 4px}
+  .sub{font-size:12.5px;color:#888;margin:0 0 24px;line-height:1.7}
+  label{display:block;font-size:12.5px;font-weight:600;color:#444;margin:14px 0 5px}
+  input{
+    width:100%;box-sizing:border-box;padding:11px 13px;font-size:14px;
+    border:1.5px solid #DDD;border-radius:9px;font-family:inherit;
+    transition:border-color 140ms;
+  }
+  input:focus{outline:none;border-color:#1B4D3D;box-shadow:0 0 0 3px rgba(27,77,61,.1)}
+  .hint{font-size:11px;color:#999;margin-top:4px}
+  button{
+    width:100%;margin-top:24px;padding:12px;font-size:14.5px;font-weight:700;
+    border:none;border-radius:9px;cursor:pointer;font-family:inherit;color:#fff;
+    background:linear-gradient(135deg,#1B4D3D,#0E2A22);
+  }
+  button:disabled{opacity:.6;cursor:wait}
+  .msg{
+    margin-top:16px;padding:11px 14px;border-radius:9px;font-size:13px;
+    line-height:1.7;display:none;
+  }
+  .msg.err{display:block;background:#FEE2E2;color:#991B1B;border:1px solid #FCA5A5}
+  .msg.ok{display:block;background:#DCFCE7;color:#166534;border:1px solid #86EFAC}
+  .foot{
+    margin-top:26px;padding-top:18px;border-top:1px solid #EEE;
+    font-size:12px;color:#888;text-align:center;line-height:1.9;
+  }
+  .foot a{color:#1B4D3D;font-weight:600;text-decoration:none}
+</style>
+</head>
+<body>
+  <div class="box">
+    <div class="brand">
+      <div class="mark">🏨</div>
+      <div>
+        <div class="ar">ضيوف</div>
+        <div class="en">Dheuof</div>
+      </div>
+    </div>
+
+    <h1>دخول الموظفين</h1>
+    <p class="sub">
+      للمدير العام وموظفي الاستقبال والإشراف والمحاسبة.<br>
+      صاحب المنشأة يدخل من <a href="/login" style="color:#1B4D3D;font-weight:600">صفحة الدخول الرئيسية</a>.
+    </p>
+
+    <form id="staff-form" autocomplete="on">
+      <label for="client_id">رقم المنشأة</label>
+      <input id="client_id" name="client_id" inputmode="numeric" required
+             autocomplete="organization" placeholder="مثال: 11223344"/>
+      <div class="hint">الرقم الذي زوّدك به صاحب المنشأة</div>
+
+      <label for="username">اسم المستخدم</label>
+      <input id="username" name="username" required autocomplete="username"
+             dir="ltr" style="text-align:right"/>
+
+      <label for="password">كلمة المرور</label>
+      <input id="password" name="password" type="password" required
+             autocomplete="current-password"/>
+
+      <button type="submit" id="submit-btn">دخول</button>
+    </form>
+
+    <div class="msg" id="msg"></div>
+
+    <div class="foot">
+      نسيت كلمة المرور؟ صاحب المنشأة يُعيد ضبطها من لوحة التحكم.
+    </div>
+  </div>
+
+<script>
+(function () {
+  'use strict';
+
+  var form = document.getElementById('staff-form');
+  var btn = document.getElementById('submit-btn');
+  var msg = document.getElementById('msg');
+
+  function show(text, kind) {
+    msg.textContent = text;
+    msg.className = 'msg ' + kind;
+  }
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    msg.className = 'msg';
+    btn.disabled = true;
+    btn.textContent = 'جارٍ التحقق…';
+
+    var body = {
+      client_id: document.getElementById('client_id').value.trim(),
+      username: document.getElementById('username').value.trim(),
+      password: document.getElementById('password').value
+    };
+
+    try {
+      var res = await fetch('/api/staff/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      var data = null;
+      try { data = await res.json(); } catch (err) { /* ردٌّ بلا JSON */ }
+
+      if (!res.ok) {
+        // رسالة الخادم موحَّدة عمداً لكل فشل — لا تكشف أي الحقول أخطأ،
+        // فلا يستدلّ أحدٌ على وجود اسم مستخدم من اختلاف الرسالة.
+        show((data && (data.detail || data.error))
+             || 'تعذّر الدخول — تحقّق من البيانات', 'err');
+        btn.disabled = false;
+        btn.textContent = 'دخول';
+        return;
+      }
+
+      var name = (data && data.data && data.data.full_name) || '';
+      show('تم الدخول' + (name ? ' — أهلاً ' + name : '') + ' ✓', 'ok');
+      // الجلسة في كوكي يضعها الخادم؛ الانتقال بعدها إلى لوحة الضيوف.
+      setTimeout(function () {
+        window.location.href = '/static/dheuof/modules/01-guests/index.html';
+      }, 700);
+    } catch (err) {
+      show('تعذّر الاتصال بالخادم — تحقّق من الشبكة', 'err');
+      btn.disabled = false;
+      btn.textContent = 'دخول';
+    }
+  });
+
+  // رقم المنشأة يتكرّر لكل موظفي المنشأة، فحفظُه يوفّر كتابته كل مرة.
+  // اسم المستخدم وكلمة المرور لا يُحفظان هنا إطلاقاً.
+  try {
+    var saved = localStorage.getItem('dheuof_staff_client_id');
+    if (saved) document.getElementById('client_id').value = saved;
+    form.addEventListener('submit', function () {
+      try {
+        localStorage.setItem('dheuof_staff_client_id',
+                             document.getElementById('client_id').value.trim());
+      } catch (e) { /* وضع خاص */ }
+    });
+  } catch (e) { /* وضع خاص */ }
+})();
+</script>
+</body>
+</html>
