@@ -3,6 +3,10 @@
    No React, no Babel. Just call StaticSidebar.render(activeId).
    ========================================================================= */
 (function () {
+  // إعداد المنشأة أوّلاً لا برقمٍ في تسلسل البرامج: هو ما يُبدأ به،
+  // ومنه تُسجَّل الغرف — وبلا غرف لا تعمل بقية الوحدات أصلاً.
+  var SETUP = { id: "00-setup", ar: "إعداد المنشأة", num: "00" };
+
   var MODULES = [
     { id: "01-guests",            ar: "الضيوف",            num: "01" },
     { id: "02-shumus",            ar: "شموس",             num: "02" },
@@ -87,7 +91,14 @@
         '<div class="dh-brand-name"><div class="ar">ضيوف</div><div class="en">Dheuof</div></div>' +
       '</a>' +
       '<nav class="dh-nav"><div class="dh-nav-group">' +
-        '<div class="dh-nav-label">١٧ برنامج</div>' +
+        '<div class="dh-nav-label">الإعداد</div>' +
+        [SETUP].map(function(m){
+          var href = '../' + m.id + '/index.html';
+          return '<a class="dh-nav-item' + (m.id === activeId ? ' is-active' : '') + '" href="' + href + '" style="text-decoration:none">' +
+            '<span class="ic" style="font-family:var(--font-mono);font-size:10px;width:18px;text-align:center;opacity:0.65;font-weight:500">' + m.num + '</span>' +
+            '<span class="lbl">' + m.ar + '</span></a>';
+        }).join('') +
+        '<div class="dh-nav-label" style="margin-top:14px">١٧ برنامج</div>' +
         MODULES.map(function(m) {
           var isActive = m.id === activeId;
           var href = '../' + m.id + '/index.html';
