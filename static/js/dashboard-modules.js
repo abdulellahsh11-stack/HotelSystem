@@ -384,4 +384,3 @@ async function createBooking(){
   if(r){showToast('تم تأكيد الحجز','success');closeModal('modal-booking');loadHome();}else showToast('خطأ في إنشاء الحجز','error');
 }
 
-function createStaffTask(){showToast('تم إنشاء المهمة بنجاح','success');closeModal('modal-staff-task');}

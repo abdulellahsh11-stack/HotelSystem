@@ -64,23 +64,6 @@ async function loadBookingServices(bookingId){
   }).join('');
 }
 
-async function addBookingService(bookingId, type){
-  var body = {
-    service_type: type,
-    service_date: document.getElementById('svcDate').value,
-    quantity:     document.getElementById('svcQty').value,
-    unit_price:   document.getElementById('svcPrice').value
-  };
-  if(type === 'delivery'){
-    var dest = document.getElementById('svcDest');
-    if(dest) body.destination = dest.value;
-  }
-  var res = await apiSend('/api/bookings/' + encodeURIComponent(bookingId) + '/services',
-                          {method:'POST', body:JSON.stringify(body)});
-  if(!res.ok){ showToast(res.error, 'error'); return; }
-  loadBookingServices(bookingId);
-}
-
 async function removeService(id, bookingId){
   var res = await apiSend('/api/services/' + id, {method:'DELETE'});
   if(!res.ok){ showToast(res.error, 'error'); return; }

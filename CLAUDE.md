@@ -9,7 +9,7 @@
 
 ```bash
 pip install -r requirements.txt
-python3 -m pytest tests/ -q --ignore=tests/e2e   # ٣٠٨ اختباراً
+python3 -m pytest tests/ -q --ignore=tests/e2e   # ٣١٤ اختباراً
 ruff check . --select=E,F,W --ignore=E501
 uvicorn main:app --reload --port 5050
 ```
@@ -111,6 +111,18 @@ static/dheuof/modules/  ١٧ وحدة التشغيل اليومي
 التحكم» تُرسل المستخدم إلى شاشةٍ لا يشير إليها رابط. الآن في
 `modules/00-setup`، واللوحة تشير إليها ولا تُكرّرها: نموذجان لنفس العمل
 يتباعدان فيُصلَح أحدهما ويبقى الآخر.
+
+**التهيئة تنتظر بقيّة الملفات.** كان `dashboard-core.js` — وهو أول
+ما يُحمَّل — ينفّذ تهيئته فور التحليل وينادي `applySessionPermissions`
+المعرَّفة في `dashboard-staff.js` بعده، فيرمي «is not defined» **ويقطع
+بقيّة التهيئة بصمت**: لا مستمعات إغلاق للنوافذ ولا صلاحيات على الشريط.
+التهيئة الآن على `DOMContentLoaded`.
+
+**الشيفرة الميتة تُحذف لا تُترك.** تُقرأ في كل مراجعة، ويُصلَح فيها
+خطأ لا أثر له، وتُوهم أن ميزةً موجودة. وأسوأها ما يكذب: كانت
+`createStaffTask` تعرض «تم إنشاء المهمة بنجاح» ولا تنادي الخادم إطلاقاً.
+يحرس ذلك `tests/test_dead_code.py`: لا دالة بلا نداء، ولا نافذة بلا
+فاتح، ولا ملف يتيم، ولا دالة تدّعي نجاحاً بلا نداء خادم.
 
 **`run_in_executor` لا ينقل ContextVars.** أي عمل غير متزامن يلمس
 قاعدة البيانات يحتاج `contextvars.copy_context()`، وإلا فقد سياق
