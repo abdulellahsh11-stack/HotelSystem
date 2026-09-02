@@ -325,6 +325,7 @@ tr:hover td{background:#fafbfc}
   <a href="#" onclick="nav('employees',this)"><span class="icon">&#128188;</span> الموظفون</a>
   <a href="#" onclick="nav('modules',this)"><span class="icon">&#9881;</span> التحكم بالوحدات</a>
   <a href="#" onclick="nav('marketers',this)"><span class="icon">&#128279;</span> المسوقون</a>
+  <a href="#" onclick="nav('leads',this)"><span class="icon">&#128231;</span> الزوّار المهتمّون <span id="leads-badge" style="display:none;background:#dc2626;color:#fff;border-radius:20px;padding:0 7px;font-size:11px;margin-inline-start:6px"></span></a>
   <a href="#" onclick="nav('tickets',this)"><span class="icon">&#127917;</span> الدعم</a>
   <div class="spacer"></div>
   <a href="/api/health" target="_blank"><span class="icon">&#128154;</span> الصحة</a>
@@ -482,6 +483,29 @@ tr:hover td{background:#fafbfc}
   </div>
 
   <!-- ═══════════ TICKETS ═══════════ -->
+  <div id="pane-leads" class="pane">
+    <div class="card">
+      <div class="card-hdr">
+        <h3>الزوّار المهتمّون <span id="leads-count" style="color:#64748b;font-weight:400"></span></h3>
+        <div>
+          <select id="leads-filter" onchange="loadLeads()" style="padding:6px 10px;border:1px solid #cbd5e1;border-radius:6px;font-family:inherit">
+            <option value="">الكل</option>
+            <option value="new">جديد</option>
+            <option value="contacted">تُوُوصل معه</option>
+            <option value="converted">اشترك</option>
+            <option value="dropped">مُهمَل</option>
+          </select>
+          <button class="btn btn-s" onclick="loadLeads()">&#8635; تحديث</button>
+        </div>
+      </div>
+      <table><thead><tr>
+        <th>الاسم</th><th>الجوال</th><th>البريد</th><th>المنشأة</th>
+        <th>المدينة</th><th>الغرف</th><th>الرسالة</th><th>التاريخ</th><th>الحالة</th>
+      </tr></thead>
+      <tbody id="leads-body"></tbody></table>
+    </div>
+  </div>
+
   <div id="pane-tickets" class="pane">
     <div class="card">
       <div class="card-hdr"><h3>تذاكر الدعم</h3><button class="btn btn-s" onclick="loadTickets()">&#8635; تحديث</button></div>
@@ -667,7 +691,7 @@ function nav(id,el){
   document.querySelectorAll('.sidebar a').forEach(a=>a.classList.remove('active'));
   document.getElementById('pane-'+id).classList.add('active');
   if(el){el.classList.add('active');}
-  const titles={overview:'الرئيسية',clients:'المنشآت',sessions:'الجلسات النشطة',subs:'الاشتراكات',packages:'أسعار الباقات',employees:'الموظفون',modules:'التحكم بالوحدات',tickets:'تذاكر الدعم',marketers:'المسوقون'};
+  const titles={overview:'الرئيسية',clients:'المنشآت',sessions:'الجلسات النشطة',subs:'الاشتراكات',packages:'أسعار الباقات',employees:'الموظفون',modules:'التحكم بالوحدات',tickets:'تذاكر الدعم',marketers:'المسوقون',leads:'الزوّار المهتمّون'};
   document.getElementById('page-title').textContent=titles[id]||id;
   if(id==='clients')loadClients();
   else if(id==='sessions')loadSessions();
@@ -675,6 +699,7 @@ function nav(id,el){
   else if(id==='packages')loadPackages();
   else if(id==='employees')loadEmployees();
   else if(id==='modules')initModulesPane();
+  else if(id==='leads')loadLeads();
   else if(id==='tickets')loadTickets();
   else if(id==='marketers')loadMarketers();
 }
@@ -948,6 +973,63 @@ async function loadEmployees(){
 }
 
 // ─── Tickets ────────────────────────────────────────────────
+// ── الزوّار المهتمّون ──────────────────────────────────────────
+// ما يكتبه الزائر بيده في نموذج «تواصل معنا» — لا تتبّعٌ صامت.
+function escLead(v){
+  return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+const LEAD_STATUS={new:'جديد',contacted:'تُوُوصل معه',converted:'اشترك',dropped:'مُهمَل'};
+
+async function loadLeads(){
+  const f=document.getElementById('leads-filter').value;
+  const r=await fetch('/api/admin/leads'+(f?'?status='+encodeURIComponent(f):''))
+    .then(r=>r.json()).catch(()=>({}));
+  const rows=r.data||[];
+  const counts=r.counts||{};
+  const body=document.getElementById('leads-body');
+
+  const badge=document.getElementById('leads-badge');
+  if(badge){
+    const n=counts.new||0;
+    badge.textContent=n; badge.style.display=n?'inline-block':'none';
+  }
+  document.getElementById('leads-count').textContent =
+    rows.length ? '· '+rows.length+' سجل' : '';
+
+  if(!rows.length){
+    body.innerHTML='<tr><td colspan="9" style="text-align:center;padding:26px;color:#64748b">لا زوّار سجّلوا اهتمامهم بعد</td></tr>';
+    return;
+  }
+  body.innerHTML=rows.map(l=>{
+    const cls={new:'br',contacted:'bw',converted:'bg',dropped:''}[l.status]||'';
+    const opts=Object.keys(LEAD_STATUS).map(k=>
+      `<option value="${k}"${k===l.status?' selected':''}>${LEAD_STATUS[k]}</option>`).join('');
+    return `<tr>
+      <td><strong>${escLead(l.full_name)}</strong></td>
+      <td dir="ltr">${escLead(l.phone||'—')}</td>
+      <td dir="ltr">${escLead(l.email||'—')}</td>
+      <td>${escLead(l.hotel_name||'—')}</td>
+      <td>${escLead(l.city||'—')}</td>
+      <td>${l.rooms||'—'}</td>
+      <td style="max-width:220px">${escLead(l.message||'—')}</td>
+      <td>${(l.created_at||'').substring(0,10)}</td>
+      <td><span class="badge ${cls}">${LEAD_STATUS[l.status]||l.status}</span>
+          <select onchange="setLeadStatus(${l.id},this.value)"
+            style="margin-top:4px;padding:2px 6px;border:1px solid #cbd5e1;border-radius:5px;font-family:inherit;font-size:.72rem">
+            ${opts}
+          </select></td>
+    </tr>`;
+  }).join('');
+}
+
+async function setLeadStatus(id,status){
+  const r=await fetch('/api/admin/leads/'+id,
+    {method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status})})
+    .then(r=>r.json()).catch(()=>({}));
+  if(r.success)loadLeads();
+  else alert('تعذّر تحديث الحالة');
+}
+
 async function loadTickets(){
   const r=await fetch('/api/admin/tickets').then(r=>r.json()).catch(()=>({}));
   const tickets=r.tickets||[];

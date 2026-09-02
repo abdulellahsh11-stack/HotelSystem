@@ -285,6 +285,11 @@ async def lifespan(app_: FastAPI):
     except Exception as e:
         log.warning(f"guest crypto migration: {e}")
     try:
+        from routes.leads import ensure_schema as _leads_schema
+        _leads_schema(db)
+    except Exception as e:
+        log.warning(f"leads migration: {e}")
+    try:
         from db.schema_v3 import run_rls_migration
         run_rls_migration(db)
     except Exception as e:
@@ -747,6 +752,7 @@ ROUTE_MODULES: list[tuple[str, str]] = [
     ("pages",        "الصفحات العامة و PWA و SEO"),
     ("system",       "الصحة والحالة والنسخ الاحتياطي"),
     ("admin",        "لوحة مالك المنصة"),
+    ("leads",        "الزوّار المهتمّون"),
     ("auth",         "دخول المنشأة وتسجيلها"),
     ("hotel_ops",    "العمليات الفندقية"),
     ("staff_accounts", "حسابات دخول الموظفين"),
