@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-screen-label="18 Listing">
+<head>
+<meta charset="utf-8"/>
+<title>العرض والحجز — خصّص ما يراه الزائر | ضيوف</title>
+<meta name="description" content="اعرض منشأتك في تطبيق الحجوزات: هويتها وموقعها وأقرب معلم، ووحداتها — غرفاً وشققاً وشاليهات ومنتجعات ومزارع — بصورها وأسعارها ومرافقها."/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="canonical" href="https://dheuof.com/static/dheuof/modules/18-listing/index.html"/>
+<link rel="stylesheet" href="/static/dheuof/colors_and_type.css"/>
+<link rel="stylesheet" href="/static/dheuof/assets/animations.css"/>
+<link rel="stylesheet" href="/static/dheuof/shared/chrome.css"/>
+<link rel="stylesheet" href="/static/dheuof/shared/module.css"/>
+<link rel="stylesheet" href="/static/dheuof/modules/18-listing/listing.css"/>
+</head>
+<body>
+<div class="dh-app">
+  <div id="sidebar-slot"></div>
+  <div>
+    <div id="topbar-slot"></div>
+    <main class="dh-main">
+
+      <div class="mod-head" data-m-rise>
+        <div class="left">
+          <div class="num-row">
+            <span class="num">18 · LISTING</span>
+            <span class="en-tag">Property · Units · Photos</span>
+          </div>
+          <h1>العرض والحجز</h1>
+          <p class="sub">
+            خصّص ما يراه الزائر في تطبيق الحجوزات — ولا يُعرض شيء حتى تنشره.
+          </p>
+        </div>
+        <div class="actions">
+          <a class="ls-preview" href="/static/dheuof/booking/index.html" target="_blank"
+             rel="noopener">عايِن كزائر ↗</a>
+        </div>
+      </div>
+
+      <!-- ═══ هوية المنشأة ═══ -->
+      <section class="ls-sec">
+        <h2>هوية المنشأة <span class="ls-state" id="pf-state">—</span></h2>
+        <div class="ls-body">
+          <div class="ls-grid">
+            <label class="wide">الاسم المعروض *<input type="text" id="pf-display_name" placeholder="منتجع الواحة"/></label>
+            <label class="wide">جملة تعريفية<input type="text" id="pf-tagline" placeholder="على البحر مباشرة"/></label>
+            <label class="full">الوصف<textarea id="pf-description" rows="3" placeholder="منتجع عائلي بإطلالة بحرية…"></textarea></label>
+            <label>رابط الشعار<input type="url" id="pf-logo_url" placeholder="https://…"/></label>
+            <label>رابط صورة الغلاف<input type="url" id="pf-cover_url" placeholder="https://…"/></label>
+            <label>الدولة<input type="text" id="pf-country" value="السعودية"/></label>
+            <label>المدينة<input type="text" id="pf-city" placeholder="جدة"/></label>
+            <label>الحي<input type="text" id="pf-district" placeholder="أبحر الشمالية"/></label>
+            <label class="wide">العنوان<input type="text" id="pf-address" placeholder="طريق الكورنيش…"/></label>
+            <label>أقرب معلم<input type="text" id="pf-landmark" placeholder="كورنيش جدة"/></label>
+            <label>المسافة إليه (كم)<input type="number" id="pf-landmark_km" step="0.1" min="0"/></label>
+            <label>خط العرض<input type="number" id="pf-latitude" step="0.0000001"/></label>
+            <label>خط الطول<input type="number" id="pf-longitude" step="0.0000001"/></label>
+            <label>وقت الدخول<input type="text" id="pf-checkin_time" value="15:00"/></label>
+            <label>وقت الخروج<input type="text" id="pf-checkout_time" value="12:00"/></label>
+            <label>جوال التواصل<input type="text" id="pf-phone" placeholder="05…"/></label>
+          </div>
+          <label class="ls-switch">
+            <input type="checkbox" id="pf-published"/>
+            <span>اعرض المنشأة للزوّار</span>
+          </label>
+          <p class="ls-hint">
+            المسوّدة لا يراها أحد. وعند العرض تظهر وحداتك <strong>المنشورة</strong> وحدها.
+          </p>
+          <button class="ls-btn" id="pf-save">حفظ الهوية</button>
+        </div>
+      </section>
+
+      <!-- ═══ الوحدات ═══ -->
+      <section class="ls-sec">
+        <h2>الوحدات المعروضة <span class="ls-count" id="units-count">--</span></h2>
+        <div class="ls-body">
+
+          <div class="ls-card">
+            <h3 id="u-form-title">وحدة جديدة</h3>
+            <div class="ls-grid">
+              <label>النوع<select id="u-kind"></select></label>
+              <label class="wide">العنوان *<input type="text" id="u-title" placeholder="شاليه بمسبح خاص"/></label>
+              <label class="full">الوصف<textarea id="u-description" rows="2"></textarea></label>
+              <label>سعر الليلة<input type="number" id="u-base_price" min="0" step="0.01" value="0"/></label>
+              <label>سعر نهاية الأسبوع<input type="number" id="u-weekend_price" min="0" step="0.01"/></label>
+              <label>السعة<input type="number" id="u-capacity" min="1" max="100" value="2"/></label>
+              <label>غرف النوم<input type="number" id="u-bedrooms" min="0" value="1"/></label>
+              <label>الحمّامات<input type="number" id="u-bathrooms" min="0" value="1"/></label>
+              <label>المساحة (م²)<input type="number" id="u-area_sqm" min="0"/></label>
+              <label>أقل مدة (ليالٍ)<input type="number" id="u-min_nights" min="1" max="365" value="1"/></label>
+            </div>
+
+            <div class="ls-amen-head">المرافق</div>
+            <div class="ls-amen" id="u-amenities"></div>
+
+            <label class="ls-switch">
+              <input type="checkbox" id="u-published"/>
+              <span>اعرض هذه الوحدة</span>
+            </label>
+            <div class="ls-form-actions">
+              <button class="ls-btn" id="u-save">إضافة الوحدة</button>
+              <button class="ls-btn ghost" id="u-cancel" hidden>إلغاء التعديل</button>
+            </div>
+          </div>
+
+          <div id="units-list">
+            <div class="ls-empty">جارٍ التحميل…</div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script src="/static/dheuof/shared/sidebar.js"></script>
+<script>
+  StaticSidebar.mount({ activeId: "18-listing", placeholder: "بحث في الوحدات المعروضة..." });
+</script>
+<script src="/static/dheuof/modules/18-listing/js/listing.js"></script>
+</body>
+</html>

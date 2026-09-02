@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<title>احجز إقامتك — شاليهات وشقق ومنتجعات ومزارع | ضيوف</title>
+<meta name="description" content="ابحث واحجز: شاليهات وشقق ومنتجعات ومزارع وأجنحة وغرف فندقية. تصفّح بالمدينة والحي وأقرب معلم، وقارن الأسعار والمرافق والصور."/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="canonical" href="https://dheuof.com/static/dheuof/booking/index.html"/>
+<meta property="og:type" content="website"/>
+<meta property="og:site_name" content="ضيوف — Dheuof"/>
+<meta property="og:locale" content="ar_SA"/>
+<meta property="og:title" content="احجز إقامتك — شاليهات وشقق ومنتجعات ومزارع"/>
+<meta property="og:description" content="ابحث بالمدينة والحي وأقرب معلم، وقارن الأسعار والمرافق والصور."/>
+<link rel="stylesheet" href="/static/dheuof/colors_and_type.css"/>
+<link rel="stylesheet" href="/static/dheuof/booking/booking.css"/>
+</head>
+<body>
+
+<header class="bk-top">
+  <a class="bk-brand" href="/">
+    <span class="ar">ضيوف</span><span class="en">Dheuof</span>
+  </a>
+  <nav class="bk-nav">
+    <a href="/static/dheuof/booking/account.html">حجوزاتي</a>
+  </nav>
+</header>
+
+<section class="bk-hero">
+  <h1>أين تريد أن تقيم؟</h1>
+  <p>شاليهات · شقق · منتجعات · مزارع · أجنحة · غرف فندقية</p>
+</section>
+
+<main class="bk-main">
+
+  <aside class="bk-filters">
+    <h2>ابحث</h2>
+
+    <div class="bk-field"><label for="f-country">الدولة</label>
+      <select id="f-country"></select></div>
+    <div class="bk-field"><label for="f-city">المدينة</label>
+      <select id="f-city"></select></div>
+    <div class="bk-field"><label for="f-district">الحي</label>
+      <select id="f-district"></select></div>
+    <div class="bk-field"><label for="f-landmark">أقرب معلم</label>
+      <input type="text" id="f-landmark" placeholder="الكورنيش، المطار…"/></div>
+
+    <div class="bk-row">
+      <div class="bk-field"><label for="f-check_in">الوصول</label>
+        <input type="date" id="f-check_in"/></div>
+      <div class="bk-field"><label for="f-check_out">المغادرة</label>
+        <input type="date" id="f-check_out"/></div>
+    </div>
+
+    <div class="bk-row">
+      <div class="bk-field"><label for="f-kind">النوع</label>
+        <select id="f-kind"></select></div>
+      <div class="bk-field"><label for="f-guests">النزلاء</label>
+        <input type="number" id="f-guests" min="1" max="100" placeholder="٢"/></div>
+    </div>
+
+    <div class="bk-row">
+      <div class="bk-field"><label for="f-price_min">أقل سعر</label>
+        <input type="number" id="f-price_min" min="0"/></div>
+      <div class="bk-field"><label for="f-price_max">أعلى سعر</label>
+        <input type="number" id="f-price_max" min="0"/></div>
+    </div>
+
+    <div class="bk-field"><label>المرافق</label>
+      <div class="bk-amenities" id="f-amenities"></div></div>
+
+    <div class="bk-actions">
+      <button class="bk-btn" id="do-search">ابحث</button>
+      <button class="bk-btn ghost" id="clear">مسح</button>
+    </div>
+  </aside>
+
+  <section class="bk-results">
+    <div class="bk-results-head">
+      <span><b id="res-count">--</b> نتيجة</span>
+      <label class="bk-sort">
+        ترتيب:
+        <select id="f-sort">
+          <option value="price">الأقل سعراً</option>
+          <option value="price_desc">الأعلى سعراً</option>
+          <option value="capacity">الأكبر سعةً</option>
+          <option value="newest">الأحدث</option>
+        </select>
+      </label>
+    </div>
+    <div id="results"><div class="bk-empty">جارٍ التحميل…</div></div>
+    <div class="bk-pager" id="pager"></div>
+  </section>
+
+</main>
+
+<footer class="bk-foot">
+  <span>ضيوف — منصّة إدارة وحجز المنشآت</span>
+</footer>
+
+<script src="/static/dheuof/booking/js/booking.js"></script>
+</body>
+</html>

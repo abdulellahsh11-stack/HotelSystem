@@ -9,7 +9,7 @@
 
 ```bash
 pip install -r requirements.txt
-python3 -m pytest tests/ -q --ignore=tests/e2e   # ٤٦٣ اختباراً
+python3 -m pytest tests/ -q --ignore=tests/e2e   # ٥١٢ اختباراً
 ruff check . --select=E,F,W --ignore=E501
 uvicorn main:app --reload --port 5050
 ```
@@ -38,6 +38,8 @@ db/access.py      المسارات الخمسة — حارسٌ لكلٍّ باس
 routes/visitors.py  بوابة الزوّار — حجزٌ لأنفسهم لا غير
 routes/listings.py  تطبيق الحجوزات — مسار المنشأة: تُخصّص ما تعرضه
 routes/search.py    تطبيق الحجوزات — مسار الزائر: يبحث ويتصفّح
+static/dheuof/modules/18-listing/  واجهة المنشأة: تُخصّص ما تعرضه
+static/dheuof/booking/  بوابة الزائر: بحث · صفحة وحدة · حساب وطلبات
 db/tenant_context.py  ContextVar لمستأجر الطلب
 services/*.py     منطق المجال
 static/dashboard.html  لوحة التحكم — الاشتراك وحالة المنشأة
@@ -157,6 +159,15 @@ static/dheuof/modules/  ١٧ وحدة التشغيل اليومي
 صفوف تعني زائراً يبحث ولا يجد ثلثي المعروض. `UNIT_KINDS` و`AMENITIES`
 في `db/schema_listings.py`، وتُخدَم من `/api/listing/vocabulary` فلا
 تكتبها الواجهة.
+
+**اختبارُ الواجهة يحتاج قاعدةً نظيفة.** بيانات تشغيلٍ سابق تُبقي
+منشأةً منشورة، فيرى الزائر بطاقتين حيث يتوقّع الاختبار واحدة — وحلُّ
+ذلك بتضييق الفحص حيلةٌ تُخفي العطل. القاعدة تُسقَط وتُنشأ قبل كل
+تشغيل: `DROP DATABASE … CREATE DATABASE`.
+
+**قاعدةٌ مطلقة أقوى من قاعدةٍ باستثناءات.** «كل ما يُحقن في HTML
+يُهرَّب» تُراجَع في لمحة، أما «يُهرَّب إلا ما أعرف أنه آمن» فتحتاج
+إثباتاً جديداً عند كل تعديل — حتى عدّاد الصفحات يمرّ بـ`esc`.
 
 **قاعدتان لنفس القرار تتباعدان.** كتبتُ لكوكي الزائر قاعدة `secure`
 مختلفة عن قاعدة `app_core`، فرفضها المتصفّح خارج HTTPS ولم تثبت جلسة
