@@ -312,6 +312,12 @@ async def lifespan(app_: FastAPI):
         log.info("✓ جداول الزوّار جاهزة")
     except Exception as e:
         log.warning(f"جداول الزوّار: {e}")
+    try:
+        from db.schema_listings import run_listing_migrations
+        run_listing_migrations(db)
+        log.info("✓ جداول العرض والبحث جاهزة")
+    except Exception as e:
+        log.warning(f"جداول العرض: {e}")
 
     # ── Sentry (APM / error tracking) ──────────────────────────────────────
     if cfg.has_sentry:
@@ -760,6 +766,8 @@ ROUTE_MODULES: list[tuple[str, str]] = [
     ("admin",        "لوحة مالك المنصة"),
     ("leads",        "الزوّار المهتمّون"),
     ("visitors",     "بوابة الزوّار — حجزٌ لأنفسهم"),
+    ("listings",     "العرض — تُخصّصه المنشأة"),
+    ("search",       "البحث — يتصفّحه الزائر"),
     ("auth",         "دخول المنشأة وتسجيلها"),
     ("hotel_ops",    "العمليات الفندقية"),
     ("staff_accounts", "حسابات دخول الموظفين"),
