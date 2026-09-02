@@ -25,6 +25,7 @@
     { id: "15-tourism-trips",     ar: "جولات سياحية",     num: "15" },
     { id: "16-staff-app",         ar: "تطبيق الموظفين",   num: "16" },
     { id: "17-bookings",          ar: "حجوزات القنوات",   num: "17" },
+    { id: "18-listing",           ar: "العرض والحجز",     num: "18" },
   ];
 
   /* ── HTML-escape (prevents stored XSS from user-supplied session fields) ── */
@@ -128,7 +129,7 @@
             '<span class="ic" style="font-family:var(--font-mono);font-size:10px;width:18px;text-align:center;opacity:0.65;font-weight:500">' + m.num + '</span>' +
             '<span class="lbl">' + m.ar + '</span></a>';
         }).join('') +
-        '<div class="dh-nav-label" style="margin-top:14px">١٧ برنامج</div>' +
+        '<div class="dh-nav-label" style="margin-top:14px">١٨ برنامجاً</div>' +
         MODULES.map(function(m) {
           var isActive = m.id === activeId;
           var href = '../' + m.id + '/index.html';

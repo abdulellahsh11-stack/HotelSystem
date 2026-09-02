@@ -1,0 +1,165 @@
+/* listing.css — واجهة المنشأة في تطبيق الحجوزات */
+
+.ls-preview {
+  font-size: 13px; font-weight: 600; padding: 9px 16px; border-radius: 7px;
+  background: var(--brand-700, #1b4d3d); color: #fff; text-decoration: none;
+}
+.ls-preview:hover { filter: brightness(1.12); }
+
+.ls-sec {
+  background: var(--white, #fff);
+  border: 1px solid var(--ink-100, #e6e2da);
+  border-radius: 12px; margin-bottom: 22px; overflow: hidden;
+}
+.ls-sec > h2 {
+  margin: 0; padding: 15px 20px; font-size: 16px; font-weight: 700;
+  border-bottom: 1px solid var(--ink-100, #e6e2da);
+  background: var(--paper, #faf8f4);
+  display: flex; align-items: center; gap: 10px;
+}
+.ls-body { padding: 18px 20px 22px; }
+
+.ls-count {
+  padding: 1px 9px; border-radius: 20px; font-size: 11.5px;
+  background: var(--brand-700, #1b4d3d); color: #fff;
+  font-family: var(--font-mono, monospace);
+}
+.ls-state { font-size: 12px; font-weight: 600; color: var(--ink-500, #6b6b6b); }
+.ls-state.is-live { color: #14602f; }
+
+.ls-card {
+  border: 1px solid var(--ink-100, #e6e2da); border-radius: 10px;
+  padding: 16px 18px; margin-bottom: 20px; background: var(--paper, #faf8f4);
+}
+.ls-card h3 { margin: 0 0 12px; font-size: 14.5px; font-weight: 700; }
+
+.ls-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px;
+}
+.ls-grid label {
+  display: flex; flex-direction: column; gap: 5px;
+  font-size: 12px; font-weight: 600; color: var(--ink-700, #3d3a35);
+}
+.ls-grid label.wide { grid-column: span 2; }
+.ls-grid label.full { grid-column: 1 / -1; }
+.ls-grid input, .ls-grid select, .ls-grid textarea {
+  font-family: inherit; font-size: 13.5px; padding: 8px 10px;
+  border: 1px solid var(--ink-100, #ddd8ce); border-radius: 7px;
+  background: var(--white, #fff); color: inherit; resize: vertical;
+}
+.ls-grid input:focus, .ls-grid select:focus, .ls-grid textarea:focus {
+  outline: 2px solid var(--brand-700, #1b4d3d); outline-offset: -1px;
+}
+
+.ls-amen-head { margin: 16px 0 8px; font-size: 12px; font-weight: 700; }
+.ls-amen { display: flex; flex-wrap: wrap; gap: 7px; }
+.ls-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 11px; border-radius: 20px; cursor: pointer;
+  border: 1px solid var(--ink-100, #ddd8ce);
+  background: var(--white, #fff); font-size: 12px;
+}
+.ls-chip:has(input:checked) {
+  background: rgba(27, 77, 61, .1);
+  border-color: var(--brand-700, #1b4d3d);
+  color: var(--brand-700, #1b4d3d); font-weight: 600;
+}
+.ls-chip input { margin: 0; }
+
+.ls-switch {
+  display: flex; align-items: center; gap: 9px;
+  margin: 15px 0 6px; font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.ls-hint { margin: 0 0 12px; font-size: 12.5px; line-height: 1.8; color: var(--ink-500, #6b6b6b); }
+
+.ls-btn {
+  font-family: inherit; font-size: 13.5px; font-weight: 600;
+  padding: 9px 20px; border: none; border-radius: 7px;
+  background: var(--brand-700, #1b4d3d); color: #fff; cursor: pointer;
+}
+.ls-btn:hover { filter: brightness(1.12); }
+.ls-btn.ghost {
+  background: var(--white, #fff); color: var(--ink-900, #211f1c);
+  border: 1px solid var(--ink-100, #ddd8ce);
+}
+.ls-form-actions { display: flex; gap: 9px; margin-top: 6px; }
+
+/* ── بطاقة الوحدة ── */
+.ls-unit {
+  display: grid; grid-template-columns: 220px 1fr; gap: 0;
+  border: 1px solid var(--ink-100, #e6e2da); border-radius: 10px;
+  overflow: hidden; margin-bottom: 14px; background: var(--white, #fff);
+}
+.ls-unit.is-draft { opacity: .82; border-style: dashed; }
+
+.ls-unit-photos {
+  display: flex; gap: 4px; padding: 8px; overflow-x: auto;
+  background: var(--paper, #faf8f4); align-items: flex-start;
+}
+.ls-thumb { position: relative; flex: 0 0 auto; }
+.ls-thumb img {
+  width: 96px; height: 72px; object-fit: cover; border-radius: 6px; display: block;
+  background: var(--ink-100, #eee);
+}
+.ls-thumb-x {
+  position: absolute; inset-block-start: 3px; inset-inline-end: 3px;
+  width: 20px; height: 20px; border: none; border-radius: 50%;
+  background: rgba(0, 0, 0, .6); color: #fff; font-size: 11px;
+  cursor: pointer; line-height: 1; padding: 0;
+}
+.ls-nophoto {
+  font-size: 11.5px; color: #8a4310; padding: 22px 10px;
+  text-align: center; line-height: 1.7;
+}
+
+.ls-unit-body { padding: 13px 16px; }
+.ls-unit-head { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.ls-unit-head h4 { margin: 0; font-size: 14.5px; font-weight: 700; }
+
+.ls-tag {
+  padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600;
+  background: rgba(0, 0, 0, .06);
+}
+.ls-tag.live { background: rgba(27, 122, 61, .13); color: #14602f; }
+.ls-tag.draft { background: rgba(180, 90, 20, .14); color: #8a4310; }
+
+.ls-unit-meta {
+  display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 9px 0;
+  font-size: 12.5px; color: var(--ink-500, #6b6b6b);
+}
+.ls-unit-meta b { color: var(--ink-900, #211f1c); font-size: 14px; }
+.ls-unit-meta .ok { color: #14602f; font-weight: 600; }
+.ls-unit-meta .warn { color: #8a4310; font-weight: 600; }
+
+.ls-unit-amen { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+.ls-unit-amen span {
+  padding: 2px 8px; border-radius: 5px; font-size: 11px;
+  background: rgba(27, 77, 61, .07); color: var(--brand-700, #1b4d3d);
+}
+
+.ls-unit-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.ls-x {
+  font-family: inherit; font-size: 11.5px; padding: 4px 11px;
+  border: 1px solid var(--ink-100, #ddd8ce); border-radius: 6px;
+  background: var(--white, #fff); color: var(--ink-700, #3d3a35); cursor: pointer;
+}
+.ls-x:hover { border-color: var(--brand-700, #1b4d3d); color: var(--brand-700, #1b4d3d); }
+.ls-x.danger:hover { border-color: #b02a2a; color: #b02a2a; }
+
+.ls-empty {
+  padding: 26px 14px; text-align: center;
+  font-size: 13px; color: var(--ink-500, #6b6b6b);
+}
+
+.ls-toast {
+  position: fixed; bottom: 24px; inset-inline-start: 50%;
+  transform: translateX(-50%); background: #1b4d3d; color: #fff;
+  padding: 12px 24px; border-radius: 10px; font-family: inherit; font-size: 14px;
+  z-index: 999999; box-shadow: 0 4px 20px rgba(0, 0, 0, .3); transition: opacity .3s;
+}
+.ls-toast.is-err { background: #c0392b; }
+
+@media (max-width: 720px) {
+  .ls-unit { grid-template-columns: 1fr; }
+  .ls-grid label.wide { grid-column: span 1; }
+}
