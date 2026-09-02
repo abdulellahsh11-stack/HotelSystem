@@ -310,3 +310,45 @@ def test_stored_extra_perms_are_applied_on_login(client):
         "client_id": "hotel_A", "username": "reception1", "password": "كلمة-سر-طويلة"})
     assert "reports" in login.json()["data"]["permissions"]
     assert json.loads(app.state.db.rows[0]["extra_perms"]) == ["reports"]
+
+
+class TestStaffLoginPageExists:
+    """
+    الباب الذي لم يكن موجوداً.
+
+    `POST /api/staff/login` مبنيٌّ ويعمل ومُختبَر — ولم تكن **أي شاشة**
+    تستدعيه. فمن يُنشئ حساب مدير عام أو موظف استقبال يسلّمه بيانات دخولٍ
+    لبابٍ غير مرسوم.
+
+    كشفه سؤال المستخدم «كيف الدخول على حساب مدير المنشأة؟» — لا فحصٌ
+    للكود: المسار موجود، والاختبارات تمرّ، والميزة معطّلة عملياً.
+    """
+
+    def test_the_staff_login_page_exists(self):
+        import os
+        assert os.path.exists("static/dheuof/staff-login.html"), \
+            "لا صفحة دخولٍ للموظفين — الحسابات تُنشأ بلا باب"
+
+    def test_the_page_calls_the_real_endpoint(self):
+        html = open("static/dheuof/staff-login.html", encoding="utf-8").read()
+        assert "/api/staff/login" in html
+        for field in ("client_id", "username", "password"):
+            assert field in html, f"الحقل {field} مفقود من النموذج"
+
+    def test_the_page_is_public(self):
+        """صفحة دخولٍ محجوبةٌ خلف الدخول تناقض نفسها."""
+        from app_core import _is_protected_page
+        assert not _is_protected_page("/static/dheuof/staff-login.html")
+
+    def test_the_main_login_page_links_to_it(self):
+        """بابٌ لا يُشار إليه كبابٍ غير موجود — وهذا ما وقع."""
+        src = open("html_pages.py", encoding="utf-8").read()
+        assert "staff-login.html" in src, "صفحة الدخول الرئيسية لا تشير إليها"
+
+    def test_the_page_never_stores_credentials(self):
+        """رقم المنشأة يُحفظ للتيسير؛ الاسم وكلمة المرور لا يُحفظان أبداً."""
+        html = open("static/dheuof/staff-login.html", encoding="utf-8").read()
+        import re
+        for m in re.finditer(r"localStorage\.setItem\(\s*'([^']+)'", html):
+            assert "password" not in m.group(1).lower(), "كلمة المرور تُخزَّن محلياً"
+            assert "username" not in m.group(1).lower(), "اسم المستخدم يُخزَّن محلياً"
