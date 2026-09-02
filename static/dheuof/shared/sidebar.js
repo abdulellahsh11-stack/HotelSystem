@@ -35,8 +35,38 @@
   }
 
   /* ── Auth helpers ──────────────────────────────────────────────────────── */
+  // الجلسة الحقيقية في كوكي HttpOnly لا يراها الجافاسكربت إطلاقاً، فقراءة
+  // `localStorage` وحدها كانت تُعلن «زائر» لمالكٍ داخلٍ فعلاً — في كل صفحة،
+  // مع زرّ «سجّل / دخول» يوحي أن الدخول فشل وهو ناجح. الخادم هو المرجع،
+  // و`localStorage` مجرّد ذاكرةٍ مؤقّتة تُغني عن وميضٍ قبل وصول الردّ.
   function getSession() {
+    if (SERVER_SESSION) return SERVER_SESSION;
     try { return JSON.parse(localStorage.getItem('dheuof_session') || 'null'); } catch(e) { return null; }
+  }
+
+  var SERVER_SESSION = null;
+
+  /* يسأل الخادم من أنا، ثم يُعيد رسم الشريط بالحقيقة. */
+  function refreshFromServer(opts) {
+    fetch('/api/staff/me', { credentials: 'same-origin' })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(body){
+        var me = body && body.data;
+        if (!me || !me.client_id) return;          // زائرٌ فعلاً
+        SERVER_SESSION = {
+          name: me.full_name || me.username || 'مالك المنشأة',
+          email: me.username || '',
+          property: me.property_name || '',
+          role: me.role,
+          plan: 'active'
+        };
+        try { localStorage.setItem('dheuof_session', JSON.stringify(SERVER_SESSION)); } catch(e) {}
+        var sb = document.querySelector('.dh-sidebar');
+        var tb = document.querySelector('.dh-topbar');
+        if (sb) sb.outerHTML = renderSidebar((opts||{}).activeId, opts||{});
+        if (tb) tb.outerHTML = renderTopBar(opts||{});
+      })
+      .catch(function(){ /* الشبكة ساقطة: يبقى الرسم الأول */ });
   }
   function saveSession(s) {
     // NOTE: session token lives in an HttpOnly+Secure+SameSite=Lax cookie set by the server.
@@ -272,6 +302,8 @@
     var tb = document.getElementById("topbar-slot");
     if (sb) sb.outerHTML = renderSidebar(opts.activeId, opts);
     if (tb) tb.outerHTML = renderTopBar(opts);
+
+    refreshFromServer(opts);
 
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', injectTrialBanner);

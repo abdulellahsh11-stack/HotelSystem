@@ -434,11 +434,25 @@ async def staff_login(request: Request):
 
 
 @router.get("/me")
-async def whoami(session=Depends(require_client)):
-    """هوية الجلسة الحالية وصلاحياتها — تبني عليها الواجهة ما تُظهره."""
+async def whoami(request: Request, session=Depends(require_client)):
+    """
+    هوية الجلسة الحالية وصلاحياتها — تبني عليها الواجهة ما تُظهره.
+
+    اسم المنشأة منها: الشريط كان يقرأ الجلسة من `localStorage` وهي فارغة
+    دائماً (الجلسة الحقيقية كوكي HttpOnly)، فيُعلن «زائر» لمالكٍ داخلٍ
+    فعلاً. صار يسأل هذا المسار، فيحتاج الاسم ليعرضه.
+    """
+    property_name = ""
+    try:
+        client = request.app.state.store.get_client(session.get("client_id"))
+        property_name = (client or {}).get("hotel_name") or (client or {}).get("name") or ""
+    except Exception:  # الاسم زينةُ عرض؛ فشلُ قراءته لا يُسقط الهوية
+        pass
+
     return {
         "success": True,
         "data": {
+            "property_name": property_name,
             "client_id": session.get("client_id"),
             "username": session.get("username"),
             "full_name": session.get("full_name"),
