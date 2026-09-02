@@ -6,6 +6,7 @@ import logging
 from datetime import datetime
 from typing import Optional
 from fastapi import APIRouter, Request, Depends, HTTPException
+from db.connection import count_of
 
 router = APIRouter(prefix="/api/m06", tags=["HR"])
 
@@ -31,7 +32,7 @@ async def list_employees(request: Request, status: Optional[str] = None, page: i
                 q += " AND status = %s"; params.append(status)  # noqa: E702
             count_q = q.replace("SELECT *", "SELECT COUNT(*)", 1)
             count_result = db.execute(count_q, params, fetch="one")
-            total = count_result[0] if count_result else 0
+            total = count_of(count_result)
             q += " ORDER BY full_name_ar LIMIT %s OFFSET %s"
             params.extend([limit, offset])
             rows = db.execute(q, params, fetch="all")
