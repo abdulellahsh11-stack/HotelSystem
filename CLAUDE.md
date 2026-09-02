@@ -9,7 +9,7 @@
 
 ```bash
 pip install -r requirements.txt
-python3 -m pytest tests/ -q --ignore=tests/e2e   # ٤٠٢ اختباراً
+python3 -m pytest tests/ -q --ignore=tests/e2e   # ٤٢٦ اختباراً
 ruff check . --select=E,F,W --ignore=E501
 uvicorn main:app --reload --port 5050
 ```
@@ -34,6 +34,8 @@ routes/*.py       ٢٩ وحدة، كلٌّ يُصدّر router
 db/connection.py  مجمَّع الاتصالات + ربط سياق المستأجر
 db/store.py       طبقة البيانات (PostgreSQL + مخزن JSON للتطوير)
 db/rls.py         سياسات العزل في قاعدة البيانات
+db/access.py      المسارات الخمسة — حارسٌ لكلٍّ باسمه
+routes/visitors.py  بوابة الزوّار — حجزٌ لأنفسهم لا غير
 db/tenant_context.py  ContextVar لمستأجر الطلب
 services/*.py     منطق المجال
 static/dashboard.html  لوحة التحكم — الاشتراك وحالة المنشأة
@@ -143,6 +145,11 @@ static/dheuof/modules/  ١٧ وحدة التشغيل اليومي
 قط. يحرس ذلك `tests/test_dashboard_wiring.py`: كل عنصرٍ يُشار إليه
 موجود، وكل مسارٍ يُنادى يخدمه الخادم.
 
+**قاعدتان لنفس القرار تتباعدان.** كتبتُ لكوكي الزائر قاعدة `secure`
+مختلفة عن قاعدة `app_core`، فرفضها المتصفّح خارج HTTPS ولم تثبت جلسة
+زائرٍ واحدة — **والتسجيل يعود ٢٠٠ فيبدو الباب سليماً**. الكوكي كلها
+تقرأ `app_core._COOKIE_SECURE`.
+
 **`run_in_executor` لا ينقل ContextVars.** أي عمل غير متزامن يلمس
 قاعدة البيانات يحتاج `contextvars.copy_context()`، وإلا فقد سياق
 المستأجر.
@@ -183,13 +190,24 @@ static/dheuof/modules/  ١٧ وحدة التشغيل اليومي
 `_guard_target` في `routes/staff_accounts.py`. يحرسهما
 `tests/test_role_hierarchy.py`.
 
-### أبواب الدخول الثلاثة
+### المسارات الخمسة
 
-| من | الباب | البيانات |
-|---|---|---|
-| مالك المنشأة | `/login` | رقم المنشأة + كلمة المرور |
-| مدير عام وموظفون | `/static/dheuof/staff-login.html` | رقم المنشأة + اسم المستخدم + كلمة المرور |
-| مالك المنصة | `/admin` | جلسة `admin_token` منفصلة، عبر كل المنشآت |
+| # | من | الباب | يحجز للضيوف؟ |
+|---|---|---|---|
+| ١ | مالك المنصة | `/admin` — جلسة `admin_token` منفصلة | عبر كل المنشآت |
+| ٢ | مالك المنشأة | `/login` — رقم المنشأة + كلمة المرور | ✅ ويعيّن المدير |
+| ٣ | مدير المنشأة | `/static/dheuof/staff-login.html` | ✅ ويعيّن الموظفين |
+| ٤ | الموظفون | نفس الباب — اسم مستخدم + كلمة مرور | ✅ بحدّ وظيفته |
+| ٥ | **الزوّار** | `/api/visit/*` — جوال + كلمة مرور | ❌ **لنفسه فقط** |
+
+حارسٌ لكل مسارٍ باسمه في `db/access.py`: `require_platform_owner` ·
+`require_facility_owner` · `require_manager` · `require_staff` ·
+`require_visitor`. حارسٌ واحدٌ للجميع — كما كان `require_client` —
+يُخفي من يحقّ له من قارئ المسار.
+
+**الزائر منفصلٌ مادّياً**: كوكي `visitor_token` وجدول `visitor_sessions`
+وجدول `visitors` بلا رقم هوية. المشاركة تعني أن خطأً واحداً في التحقق
+يمنح زائراً صلاحيات موظف. يحرسه `tests/test_five_paths.py`.
 
 ---
 

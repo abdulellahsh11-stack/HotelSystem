@@ -306,6 +306,12 @@ async def lifespan(app_: FastAPI):
         log.info("✓ v4 migrations (ZATCA + Night Audit + Reviews) ready")
     except Exception as e:
         log.warning(f"v4 migrations: {e}")
+    try:
+        from db.schema_visitors import run_visitor_migrations
+        run_visitor_migrations(db)
+        log.info("✓ جداول الزوّار جاهزة")
+    except Exception as e:
+        log.warning(f"جداول الزوّار: {e}")
 
     # ── Sentry (APM / error tracking) ──────────────────────────────────────
     if cfg.has_sentry:
@@ -753,6 +759,7 @@ ROUTE_MODULES: list[tuple[str, str]] = [
     ("system",       "الصحة والحالة والنسخ الاحتياطي"),
     ("admin",        "لوحة مالك المنصة"),
     ("leads",        "الزوّار المهتمّون"),
+    ("visitors",     "بوابة الزوّار — حجزٌ لأنفسهم"),
     ("auth",         "دخول المنشأة وتسجيلها"),
     ("hotel_ops",    "العمليات الفندقية"),
     ("staff_accounts", "حسابات دخول الموظفين"),
