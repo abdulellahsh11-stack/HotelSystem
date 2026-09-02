@@ -228,8 +228,17 @@ async def channels_status(client_id: str, request: Request, session=Depends(_req
     if not channels:
         return {"success": True, "data": {}}
     try:
-        status = channels.get_status(cid)
-        return {"success": True, "data": status}
+        # `get_status` لم توجد قط في `ChannelManager` — كان المسار يرمي
+        # ٥٠٠ في كل نداء. الحالة تُبنى من الاتصالات القائمة نفسها.
+        connections = channels.list_connections(cid)
+        return {
+            "success": True,
+            "data": {
+                "connections": connections,
+                "connected": sum(1 for c in connections if c.get("is_active")),
+                "total": len(connections),
+            },
+        }
     except Exception as e:
         return JSONResponse({"success": False, "error": str(e)}, status_code=500)
 
