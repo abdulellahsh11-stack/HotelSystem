@@ -82,18 +82,11 @@ class ChannelManager:
                 UNIQUE (client_id, channel_code)
             )
         """)
-        self.db.execute("""
-            CREATE TABLE IF NOT EXISTS channel_sync_log (
-                id           SERIAL PRIMARY KEY,
-                client_id    VARCHAR(50) NOT NULL,
-                channel_code VARCHAR(30) NOT NULL,
-                action       VARCHAR(30) NOT NULL,
-                rooms_count  INTEGER DEFAULT 0,
-                ok           BOOLEAN DEFAULT TRUE,
-                detail       TEXT DEFAULT '',
-                created_at   TIMESTAMPTZ DEFAULT NOW()
-            )
-        """)
+        # `channel_sync_log` يملكه `db/migrations.py` — كان مُعرَّفاً هنا
+        # أيضاً بأعمدةٍ مختلفة، و`IF NOT EXISTS` لا يُعدّل جدولاً قائماً،
+        # فبقي مخطّط الترحيلات وحده نافذاً بينما تكتب هذه الوحدة وتقرأ
+        # بأسماءٍ لا وجود لها: القراءة ترمي ٥٠٠، والكتابة تُبتلع بتحذير
+        # فيبقى سجلّ التدقيق فارغاً أبداً ولا أحد يعلم.
         self.db.execute("""
             CREATE TABLE IF NOT EXISTS channel_reservations (
                 id           SERIAL PRIMARY KEY,
@@ -127,9 +120,10 @@ class ChannelManager:
         try:
             self.db.execute(
                 """INSERT INTO channel_sync_log
-                   (client_id, channel_code, action, rooms_count, ok, detail)
+                   (client_id, channel_name, sync_type, records_synced, status, error_message)
                    VALUES (%s,%s,%s,%s,%s,%s)""",
-                (client_id, channel_code, action, rooms, ok, detail[:500]))
+                (client_id, channel_code, action, rooms,
+                 "success" if ok else "failed", detail[:500] or None))
         except Exception as e:  # pragma: no cover
             log.warning(f"تعذّر تسجيل المزامنة: {e}")
 
@@ -264,7 +258,12 @@ class ChannelManager:
         if not getattr(self.db, "use_postgres", False):
             return []
         rows = self.db.execute(
-            """SELECT channel_code, action, rooms_count, ok, detail, created_at
+            """SELECT channel_name  AS channel_code,
+                      sync_type     AS action,
+                      records_synced AS rooms_count,
+                      (status = 'success') AS ok,
+                      COALESCE(error_message, '') AS detail,
+                      created_at
                FROM channel_sync_log WHERE client_id=%s
                ORDER BY created_at DESC LIMIT %s""",
             (client_id, limit), fetch="all")

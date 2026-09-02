@@ -115,8 +115,6 @@ function init(){
   const d=now.toLocaleDateString('ar-SA-u-nu-latn',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   const topDate=document.getElementById('topbarDate');
   if(topDate)topDate.textContent=d;
-  const curDate=document.getElementById('currentDate');
-  if(curDate)curDate.textContent=d;
   loadHome();
   applySessionPermissions();
   document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');}));

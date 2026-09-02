@@ -37,39 +37,6 @@ function serviceGroupHtml(group, summary, rowsHtml){
   + '</div>';
 }
 
-// ── خدمات حجزٍ بعينه ──────────────────────────────────────────
-async function loadBookingServices(bookingId){
-  var el = document.getElementById('bookingServices');
-  if(!el) return;
-  var res = await apiSend('/api/bookings/' + encodeURIComponent(bookingId) + '/services');
-  if(!res.ok){ el.innerHTML = empty(res.error); return; }
-
-  var groups = (res.data && res.data.data && res.data.data.groups) || [];
-  el.innerHTML = groups.map(function(g){
-    var rows = g.items.length
-      ? '<table class="mod-table"><thead><tr><th>التاريخ</th><th>الكمية</th>'
-        + '<th>سعر الوحدة</th><th>الإجمالي</th><th>الحالة</th><th></th></tr></thead><tbody>'
-        + g.items.map(function(it){
-            return '<tr><td>' + esc(it.service_date) + '</td>'
-              + '<td>' + esc(it.quantity) + '</td>'
-              + '<td>' + esc(it.unit_price) + '</td>'
-              + '<td>' + esc(it.total) + ' ر.س</td>'
-              + '<td>' + esc(SERVICE_STATUS_AR[it.status] || it.status) + '</td>'
-              + '<td><button class="nz-btn is-secondary" onclick="removeService('
-              +   it.id + ',\'' + esc(bookingId) + '\')">حذف</button></td></tr>';
-          }).join('')
-        + '</tbody></table>'
-      : empty('لا ' + g.label + ' مُسجَّل على هذا الحجز');
-    return serviceGroupHtml(g, g.count + ' · ' + g.total + ' ر.س', rows);
-  }).join('');
-}
-
-async function removeService(id, bookingId){
-  var res = await apiSend('/api/services/' + id, {method:'DELETE'});
-  if(!res.ok){ showToast(res.error, 'error'); return; }
-  if(bookingId) loadBookingServices(bookingId); else loadDailyServices();
-}
-
 // ── قائمة التشغيل اليومية ─────────────────────────────────────
 async function loadDailyServices(day){
   var el = document.getElementById('dailyServices');
