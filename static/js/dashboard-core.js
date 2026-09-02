@@ -62,12 +62,6 @@ async function apiSend(url, opts={}){
     return {ok:false, error:'تعذّر الاتصال بالخادم'};
   }
 }
-function showFormError(elId, msg){
-  const el=document.getElementById(elId);
-  if(!el) return;
-  if(msg){ el.textContent=msg; el.style.display='block'; }
-  else { el.textContent=''; el.style.display='none'; }
-}
 
 // ======== SECTION LOADER ========
 function loadSection(id){
@@ -110,14 +104,21 @@ async function loadHome(){
 }
 
 // ======== INIT ========
-(function init(){
+//
+// `DOMContentLoaded` لا زينةً بل ضرورة: هذا الملف يُحمَّل **أولاً**
+// وينادي `applySessionPermissions` المعرَّفة في `dashboard-staff.js`
+// بعده. تنفيذُه فور التحليل يرمي «is not defined» فيقطع بقية التهيئة —
+// فلا تُربَط مستمعات إغلاق النوافذ، ولا تُطبَّق الصلاحيات على الشريط،
+// ولا شيء في الصفحة يقول إن شيئاً انكسر.
+function init(){
   const now=new Date();
   const d=now.toLocaleDateString('ar-SA-u-nu-latn',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   const topDate=document.getElementById('topbarDate');
   if(topDate)topDate.textContent=d;
-  const curDate=document.getElementById('currentDate');
-  if(curDate)curDate.textContent=d;
   loadHome();
   applySessionPermissions();
   document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');}));
-})();
+}
+
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init);
+else init();

@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-screen-label="00 Setup">
+<head>
+<meta charset="utf-8"/>
+<title>إعداد المنشأة — الغرف والأدوار وحسابات الموظفين | ضيوف</title>
+<meta name="description" content="إعداد منشأتك في ضيوف: تسجيل الأدوار والغرف دفعةً واحدة، وفتح حسابات الدخول للمدير العام والموظفين بصلاحيات كل دور."/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="canonical" href="https://dheuof.com/static/dheuof/modules/00-setup/index.html"/>
+<link rel="stylesheet" href="/static/dheuof/colors_and_type.css"/>
+<link rel="stylesheet" href="/static/dheuof/assets/animations.css"/>
+<link rel="stylesheet" href="/static/dheuof/shared/chrome.css"/>
+<link rel="stylesheet" href="/static/dheuof/shared/module.css"/>
+<link rel="stylesheet" href="/static/dheuof/modules/00-setup/setup.css"/>
+</head>
+<body>
+<div class="dh-app">
+  <div id="sidebar-slot"></div>
+  <div>
+    <div id="topbar-slot"></div>
+    <main class="dh-main">
+
+      <div class="mod-head" data-m-rise>
+        <div class="left">
+          <div class="num-row">
+            <span class="num">00 · SETUP</span>
+            <span class="en-tag">Rooms · Floors · Staff accounts</span>
+          </div>
+          <h1>إعداد المنشأة</h1>
+          <p class="sub">
+            سجّل أدوارك وغرفك، وافتح حسابات الدخول لفريقك.
+            <strong>ابدأ من هنا:</strong> بلا غرف لا تعمل الخريطة ولا الحجز ولا الفاتورة.
+          </p>
+        </div>
+        <div class="actions"><span class="su-who" id="su-who"></span></div>
+      </div>
+
+      <!-- ═══ الغرف ═══ -->
+      <section class="su-sec" id="sec-rooms">
+        <h2>الأدوار والغرف <span class="su-count" id="su-rooms-count">--</span></h2>
+        <div class="su-body">
+
+          <div class="su-card">
+            <h3>تسجيل دفعة واحدة</h3>
+            <p class="su-hint">
+              تسجيل أربعين غرفةً نموذجاً نموذجاً عملٌ يُهجَر في منتصفه.
+              صِف النمط مرةً: ٤ أدوار × ١٠ غرف ← ١٠١…١١٠ ثم ٢٠١…٢١٠.
+              الغرف المسجَّلة تُتخطّى ولا تُستبدل.
+            </p>
+            <div class="su-grid">
+              <label>عدد الأدوار<input type="number" id="su-floors" value="4" min="1" max="50"/></label>
+              <label>غرف كل دور<input type="number" id="su-per-floor" value="10" min="1" max="100"/></label>
+              <label>رقم أول دور<input type="number" id="su-first-floor" value="1" min="0" max="200"/></label>
+              <label>أول رقم غرفة<input type="number" id="su-start" value="1" min="1" max="99"/></label>
+              <label>خانات الرقم<input type="number" id="su-digits" value="2" min="1" max="3"/></label>
+              <label>النوع
+                <select id="su-type">
+                  <option value="standard">عادية</option><option value="double">مزدوجة</option>
+                  <option value="twin">سريران</option><option value="suite">جناح</option>
+                  <option value="family">عائلية</option>
+                </select>
+              </label>
+              <label>السعة<input type="number" id="su-capacity" value="2" min="1" max="50"/></label>
+              <label>سعر الليلة<input type="number" id="su-price" value="0" min="0" step="0.01"/></label>
+            </div>
+            <div class="su-preview" id="su-preview">أدخل عدد الأدوار وعدد الغرف.</div>
+            <button class="su-btn" id="su-bulk-save">إنشاء الغرف</button>
+          </div>
+
+          <div class="su-card">
+            <h3>إضافة غرفة واحدة</h3>
+            <div class="su-grid">
+              <label>رقم الغرفة<input type="text" id="su-r-number" placeholder="١٠١"/></label>
+              <label>الدور<input type="number" id="su-r-floor" value="1" min="0"/></label>
+              <label>النوع
+                <select id="su-r-type">
+                  <option value="standard">عادية</option><option value="double">مزدوجة</option>
+                  <option value="twin">سريران</option><option value="suite">جناح</option>
+                  <option value="family">عائلية</option>
+                </select>
+              </label>
+              <label>السعة<input type="number" id="su-r-capacity" value="2" min="1"/></label>
+              <label>سعر الليلة<input type="number" id="su-r-price" value="0" min="0" step="0.01"/></label>
+            </div>
+            <button class="su-btn ghost" id="su-one-save">تسجيل الغرفة</button>
+          </div>
+
+          <div id="su-rooms-table" class="su-table-wrap">
+            <div class="su-empty">جارٍ التحميل…</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══ حسابات الموظفين ═══ -->
+      <section class="su-sec" id="sec-staff">
+        <h2>حسابات الدخول <span class="su-count" id="su-staff-count">--</span></h2>
+        <div class="su-body">
+
+          <p class="su-hint">
+            <strong>المالك</strong> يدخل من <code>/login</code> برقم المنشأة وكلمة المرور،
+            و<strong>الموظفون</strong> من <code>/static/dheuof/staff-login.html</code>
+            برقم المنشأة واسم المستخدم وكلمة المرور.
+            تعيين <strong>مدير عام</strong> للمالك وحده — المدير يعيّن الموظفين لا نظراءه.
+          </p>
+
+          <div class="su-card">
+            <h3>حساب جديد</h3>
+            <div class="su-grid">
+              <label>اسم الموظف<input type="text" id="su-a-name" placeholder="أحمد الفهد"/></label>
+              <label>اسم المستخدم<input type="text" id="su-a-username" placeholder="ahmed" autocomplete="off"/></label>
+              <label>كلمة المرور<input type="password" id="su-a-pass" autocomplete="new-password"/></label>
+              <label>الدور<select id="su-a-role"></select></label>
+            </div>
+            <div class="su-note" id="su-a-note"></div>
+            <button class="su-btn" id="su-a-save">إنشاء الحساب</button>
+            <div class="su-result" id="su-a-result" hidden></div>
+          </div>
+
+          <div id="su-staff-table" class="su-table-wrap">
+            <div class="su-empty">جارٍ التحميل…</div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script src="/static/dheuof/shared/sidebar.js"></script>
+<script>
+  StaticSidebar.mount({ activeId: "00-setup", placeholder: "بحث في الغرف والحسابات..." });
+</script>
+<script src="/static/dheuof/modules/00-setup/js/setup.js"></script>
+</body>
+</html>

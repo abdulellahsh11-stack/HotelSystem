@@ -105,8 +105,42 @@ ROLES: dict[str, dict] = {
 NON_ASSIGNABLE_ROLES = frozenset({"owner"})
 
 
+# أدوار لا يُنشئها إلا مالك المنشأة نفسه
+#
+# المدير العام صلاحياته `*`، فلو أنشأ مديراً عاماً آخر لخلق نِدّاً بنفس
+# سلطته — يستطيع كلٌّ منهما إيقاف الآخر، والمالك لا يعلم بأيّهما البادئ.
+# الهرم يقول: المدير يعيّن الموظفين، والمالك وحده يعيّن المدير.
+OWNER_ONLY_ROLES = frozenset({"gm"})
+
+
+def _is_owner(session: dict | None) -> bool:
+    """
+    المالك وحده. لا تستعمل `is_owner` المنشورة في `/me` هنا: هي تجمع
+    المالك والمدير العام عمداً لأغراض العرض، واستعمالها للتصريح يُعيد
+    الثغرة نفسها التي يُغلقها هذا الملف.
+    """
+    return (session or {}).get("role", "owner") == "owner"
+
+
+def assignable_by(session: dict | None) -> list[dict]:
+    """الأدوار التي يحقّ لصاحب هذه الجلسة إسنادها."""
+    roles = assignable_roles()
+    if _is_owner(session):
+        return roles
+    return [r for r in roles if r["value"] not in OWNER_ONLY_ROLES]
+
+
+def can_assign(session: dict | None, role: str) -> bool:
+    """هل يحقّ لصاحب الجلسة إسناد هذا الدور؟"""
+    if not is_valid_role(role):
+        return False
+    if role in OWNER_ONLY_ROLES:
+        return _is_owner(session)
+    return True
+
+
 def assignable_roles() -> list[dict]:
-    """الأدوار المتاحة لصاحب المنشأة عند إنشاء حساب موظف."""
+    """كل الأدوار القابلة للإسناد — قبل تصفيتها بحسب الجلسة."""
     return [
         {
             "value": key,

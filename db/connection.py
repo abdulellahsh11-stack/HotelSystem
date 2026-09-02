@@ -325,3 +325,26 @@ def get_db() -> DatabasePool:
     if _db is None:
         raise RuntimeError("Database لم يُهيَّأ — استدعِ init_db() في main() أولاً")
     return _db
+
+
+def count_of(row) -> int:
+    """
+    يقرأ ناتج `SELECT COUNT(*)` أياً كان نوع المؤشّر.
+
+    المجمَّع يستعمل `RealDictCursor`، فالصفّ العائد `RealDictRow` —
+    قاموسٌ لا تصحّ فيه الفهرسة الرقمية: `row[0]` يرمي `KeyError: 0`
+    لا `IndexError`، فيمرّ من `except Exception` ويعود ٥٠٠ بلا أثرٍ
+    مفهوم. وكانت أربعة مسارات صفحيّة تفعلها: الموظفون، نقاط البيع،
+    الفواتير، حجوزات القنوات — كلها معطّلة بالكامل.
+
+    ومفتاح العدّ ليس `count` دائماً: `COUNT(*) AS n` يُسمّيه `n`.
+    فتُؤخذ أول قيمةٍ في الصفّ بدل افتراض اسم.
+    """
+    if not row:
+        return 0
+    try:
+        return int(next(iter(row.values())))          # RealDictRow ونظائره
+    except AttributeError:
+        return int(row[0])                            # صفّ عادي (tuple)
+    except (TypeError, ValueError, StopIteration):
+        return 0

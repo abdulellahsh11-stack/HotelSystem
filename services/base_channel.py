@@ -88,24 +88,3 @@ class BaseChannel(ABC):
     def channel_name(self) -> str:
         """اسم القناة: booking.com · mawasim · airbnb"""
 
-    # ─── Helper Methods مشتركة ────────────────────────────────
-
-    def _safe_call(self, func, *args, **kwargs) -> ChannelResult:
-        """
-        يُنفّذ أي دالة بأمان مع timeout.
-        يُعيد ChannelResult(success=False) عند أي خطأ.
-        """
-        try:
-            return func(*args, **kwargs)
-        except TimeoutError:
-            return ChannelResult(
-                success=False,
-                message=f"انتهى وقت الاتصال بـ {self.channel_name}",
-                error_code="TIMEOUT"
-            )
-        except Exception as e:
-            return ChannelResult(
-                success=False,
-                message=str(e),
-                error_code="UNKNOWN_ERROR"
-            )

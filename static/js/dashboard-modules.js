@@ -32,15 +32,23 @@ async function loadGuests(){
   const el=document.getElementById('guestsTable');
   if(data&&Array.isArray(data)){
     document.getElementById('totalGuests').textContent=data.length;
-    document.getElementById('activeGuests').textContent=data.filter(g=>g.status==='active'||!g.status).length;
+    document.getElementById('newGuestsMonth').textContent=data.filter(g=>g.status==='active'||!g.status).length;
     document.getElementById('vipGuests').textContent=data.filter(g=>g.vip||g.tier==='vip').length;
     const rows=data.map(g=>'<tr><td>'+(g.id||g._id||'--')+'</td><td>'+(g.first_name||g.firstName||'')+' '+(g.last_name||g.lastName||'')+'</td><td>'+(g.phone||g.mobile||'--')+'</td><td>'+(g.email||'--')+'</td><td>'+(g.nationality||'--')+'</td><td>'+statusBadge(g.status||'active')+'</td><td><button class="btn btn-sm btn-outline" onclick="showToast(\'عرض الضيف\',\'info\')">عرض</button></td></tr>').join('');
     el.innerHTML='<table class="mod-table"><thead><tr><th>الرقم</th><th>الاسم</th><th>الجوال</th><th>البريد</th><th>الجنسية</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody>'+rows+'</tbody></table>';
   }else{el.innerHTML=empty('لا يوجد ضيوف مسجلون');}
 }
 async function createGuest(){
-  const data={first_name:document.getElementById('guestFirstName').value,last_name:document.getElementById('guestLastName').value,phone:document.getElementById('guestPhone').value,email:document.getElementById('guestEmail').value,nationality:document.getElementById('guestNationality').value,id_number:document.getElementById('guestId').value,notes:document.getElementById('guestNotes').value};
-  if(!data.first_name||!data.last_name){showToast('يرجى إدخال اسم الضيف','error');return;}
+  // النموذج فيه اسمٌ كامل ونوع هوية وتاريخ ميلاد — لا اسمٌ أول وأخير
+  // ولا بريد ولا ملاحظات. كانت الدالة تقرأ حقولاً غير موجودة فتنهار عند
+  // أول واحدٍ منها، فلم يُحفظ ضيفٌ من اللوحة قط.
+  const data={full_name:document.getElementById('guestFullName').value.trim(),
+    absher_phone:document.getElementById('guestPhone').value.trim(),
+    id_type:document.getElementById('guestIdType').value,
+    id_number:document.getElementById('guestIdNumber').value.trim(),
+    nationality:document.getElementById('guestNationality').value.trim(),
+    birth_date:document.getElementById('guestBirth').value||null};
+  if(!data.full_name){showToast('يرجى إدخال اسم الضيف','error');return;}
   const res=await apiPost('/api/guests',data);
   if(res){showToast('تم إضافة الضيف بنجاح','success');closeModal('modal-guest');loadGuests();}
   else showToast('حدث خطأ في الحفظ','error');
@@ -63,7 +71,11 @@ async function doCheckout(id){const r=await apiFetch('/api/m02/checkout/'+id,{me
 
 // ======== M03 CHANNELS ========
 async function loadChannels(){
-  const data=await apiFetch('/api/channels/status');
+  // `/api/channels/status` بلا معرّف لا وجود له — كان يعود ٤٠٤ دائماً.
+  // والمسار المُعرَّف يطلب معرّفاً في المسار ثم يتجاهله ويستعمل الجلسة،
+  // فالاتصالات القائمة هي المصدر المباشر.
+  const body=await apiFetch('/api/channels/connections');
+  const data=(body&&body.data)||body;
   const el=document.getElementById('channelsTable');
   if(data&&Array.isArray(data)&&data.length){
     const rows=data.map(ch=>'<tr><td>'+(ch.channel||ch.name||'--')+'</td><td>'+statusBadge(ch.status)+'</td><td>'+fmt(ch.bookings_today||ch.today_bookings||0)+'</td><td>'+fmt(ch.revenue||0)+' ر.س</td><td>'+(ch.last_sync||ch.lastSync||'--')+'</td></tr>').join('');
@@ -78,8 +90,8 @@ async function loadChannels(){
 async function loadAccounting(){
   const inv=await apiFetch('/api/invoices');
   if(inv&&Array.isArray(inv)){
-    document.getElementById('totalInvoices').textContent=inv.length;
-    document.getElementById('paidInvoices').textContent=inv.filter(i=>i.status==='paid').length;
+    document.getElementById('todayInvoices').textContent=inv.length;
+    document.getElementById('monthRevenue').textContent=inv.filter(i=>i.status==='paid').length;
     document.getElementById('pendingInvoices').textContent=inv.filter(i=>i.status==='pending'||!i.status).length;
     const rows=inv.slice(0,10).map(i=>'<tr><td>'+(i.id||i._id||i.invoice_number||'--')+'</td><td>'+(i.guest_name||i.guestName||i.guest||'--')+'</td><td>'+fmt(i.amount||i.total)+' ر.س</td><td>'+(i.date||i.created_at||'--')+'</td><td>'+statusBadge(i.status||'pending')+'</td><td>'+(i.status!=='paid'?'<button class="btn btn-sm btn-green" onclick="payInvoice(\''+(i.id||i._id||'')+'\')\">دفع</button>':'--')+'</td></tr>').join('');
     document.getElementById('invoicesTable').innerHTML='<table class="mod-table"><thead><tr><th>رقم الفاتورة</th><th>الضيف</th><th>المبلغ</th><th>التاريخ</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody>'+rows+'</tbody></table>';
@@ -92,14 +104,21 @@ async function loadAccounting(){
 }
 async function payInvoice(id){const r=await apiFetch('/api/invoices/'+id+'/pay',{method:'POST'});if(r){showToast('تم الدفع بنجاح','success');loadAccounting();}else showToast('خطأ في تسجيل الدفع','error');}
 async function createInvoice(){
-  const data={guest_name:document.getElementById('invoiceGuest').value,booking_id:document.getElementById('invoiceBooking').value,amount:parseFloat(document.getElementById('invoiceAmount').value)||0,payment_method:document.getElementById('invoicePayment').value,items:document.getElementById('invoiceItems').value};
-  if(!data.guest_name||!data.amount){showToast('يرجى ملء الحقول المطلوبة','error');return;}
+  const data={booking_id:document.getElementById('invBooking').value.trim(),
+    amount:parseFloat(document.getElementById('invAmount').value)||0,
+    payment_method:document.getElementById('invMethod').value,
+    status:document.getElementById('invStatus').value};
+  if(!data.amount){showToast('يرجى إدخال المبلغ','error');return;}
   const r=await apiPost('/api/invoices',data);
   if(r){showToast('تم إصدار الفاتورة','success');closeModal('modal-invoice');loadAccounting();}else showToast('خطأ في إصدار الفاتورة','error');
 }
 async function createPOS(){
-  const data={type:document.getElementById('posType').value,amount:parseFloat(document.getElementById('posAmount').value)||0,description:document.getElementById('posDescription').value,room:document.getElementById('posRoom').value};
-  const r=await apiPost('/api/pos',data);
+  const data={item:document.getElementById('posItem').value.trim(),
+    quantity:parseInt(document.getElementById('posQty').value)||1,
+    unit_price:parseFloat(document.getElementById('posPrice').value)||0,
+    payment_method:document.getElementById('posMethod').value};
+  if(!data.item||!data.unit_price){showToast('يرجى إدخال الصنف والسعر','error');return;}
+  const r=await apiPost('/api/m07/sales',data);
   if(r){showToast('تم تسجيل المعاملة','success');closeModal('modal-pos');loadAccounting();}else showToast('خطأ في التسجيل','error');
 }
 
@@ -151,8 +170,8 @@ async function loadHR(){
     const rows=emp.map(e=>'<tr><td>'+(e.id||e._id||'--')+'</td><td>'+(e.name||e.full_name||e.fullName||'--')+'</td><td>'+(e.department||e.dept||'--')+'</td><td>'+(e.title||e.position||'--')+'</td><td>'+(e.phone||'--')+'</td><td>'+statusBadge(e.status||'active')+'</td><td>'+fmt(e.salary||e.basic_salary)+' ر.س</td></tr>').join('');
     document.getElementById('employeesTable').innerHTML='<table class="mod-table"><thead><tr><th>الرقم</th><th>الاسم</th><th>القسم</th><th>المسمى</th><th>الجوال</th><th>الحالة</th><th>الراتب</th></tr></thead><tbody>'+rows+'</tbody></table>';
   }else{document.getElementById('employeesTable').innerHTML=empty('لا يوجد موظفون');}
-  if(att&&Array.isArray(att)){document.getElementById('todayAttendance').textContent=att.length;}
-  document.getElementById('payrollCount').textContent='--';
+  if(att&&Array.isArray(att)){document.getElementById('presentToday').textContent=att.length;}
+  document.getElementById('pendingPayroll').textContent='--';
 }
 async function createEmployee(){
   const data={name:document.getElementById('empName').value,department:document.getElementById('empDept').value,phone:document.getElementById('empPhone').value,salary:parseFloat(document.getElementById('empSalary').value)||0,hire_date:document.getElementById('empHireDate').value,title:document.getElementById('empTitle').value};
@@ -164,14 +183,14 @@ async function createEmployee(){
 // ======== M07 HOUSEKEEPING ========
 async function loadHousekeeping(){
   const tasks=await apiFetch('/api/m07/tasks');
-  const el=document.getElementById('hkTasksTable');
+  const el=document.getElementById('hkTable');
   if(tasks&&Array.isArray(tasks)){
     const rows=tasks.map(t=>'<tr><td>'+(t.id||t._id||'--')+'</td><td>'+(t.room||t.room_number||'--')+'</td><td>'+(t.type||t.task_type||'--')+'</td><td>'+(t.worker||t.assigned_to||t.employee||'--')+'</td><td>'+statusBadge(t.status||'pending')+'</td><td>'+(t.priority||'--')+'</td></tr>').join('');
     el.innerHTML='<table class="mod-table"><thead><tr><th>الرقم</th><th>الغرفة</th><th>النوع</th><th>الموظف</th><th>الحالة</th><th>الأولوية</th></tr></thead><tbody>'+rows+'</tbody></table>';
   }else{el.innerHTML=empty('لا توجد مهام تنظيف');}
 }
 async function createHKTask(){
-  const data={room:document.getElementById('hkRoom').value,type:document.getElementById('hkType').value,worker:document.getElementById('hkWorker').value,priority:document.getElementById('hkPriority').value,notes:document.getElementById('hkNotes').value};
+  const data={room:document.getElementById('hkRoom').value,type:document.getElementById('hkType').value,worker:document.getElementById('hkAssigned').value,priority:document.getElementById('hkPriority').value,notes:document.getElementById('hkNotes').value};
   if(!data.room){showToast('يرجى إدخال رقم الغرفة','error');return;}
   const r=await apiPost('/api/m07/tasks',data);
   if(r){showToast('تم إنشاء مهمة التنظيف','success');closeModal('modal-hk-task');loadHousekeeping();}else showToast('خطأ في إنشاء المهمة','error');
@@ -191,13 +210,22 @@ async function loadMaintenance(){
   }else{document.getElementById('assetsTable').innerHTML=empty('لا توجد أصول مسجلة');}
 }
 async function createMaintenance(){
-  const data={location:document.getElementById('maintLocation').value,category:document.getElementById('maintCategory').value,description:document.getElementById('maintDesc').value,priority:document.getElementById('maintPriority').value,technician:document.getElementById('maintTech').value};
+  const data={location:document.getElementById('maintRoom').value.trim(),
+    category:document.getElementById('maintType').value,
+    description:document.getElementById('maintDesc').value.trim(),
+    priority:document.getElementById('maintPriority').value,
+    technician:document.getElementById('maintAssigned').value.trim()};
   if(!data.description){showToast('يرجى وصف المشكلة','error');return;}
   const r=await apiPost('/api/m08/orders',data);
   if(r){showToast('تم إنشاء أمر الصيانة','success');closeModal('modal-maintenance');loadMaintenance();}else showToast('خطأ في إنشاء الأمر','error');
 }
 async function createAsset(){
-  const data={name:document.getElementById('assetName').value,location:document.getElementById('assetLocation').value,serial:document.getElementById('assetSerial').value,value:parseFloat(document.getElementById('assetValue').value)||0};
+  const data={name:document.getElementById('assetName').value.trim(),
+    location:document.getElementById('assetLocation').value.trim(),
+    serial:document.getElementById('assetCode').value.trim(),
+    category:document.getElementById('assetCategory').value,
+    value:parseFloat(document.getElementById('assetCost').value)||0,
+    purchase_date:document.getElementById('assetDate').value||null};
   if(!data.name){showToast('يرجى إدخال اسم الأصل','error');return;}
   const r=await apiPost('/api/m08/assets',data);
   if(r){showToast('تم إضافة الأصل','success');closeModal('modal-asset');loadMaintenance();}else showToast('خطأ في الحفظ','error');
@@ -207,9 +235,9 @@ async function createAsset(){
 async function loadCRM(){
   const stats=await apiFetch('/api/m10/stats');
   if(stats){
-    document.getElementById('crmTotal').textContent=fmt(stats.total_contacts||stats.total||'--');
-    document.getElementById('crmLoyalty').textContent=fmt(stats.loyalty_members||stats.loyalty||'--');
-    document.getElementById('crmPoints').textContent=fmt(stats.points_today||stats.points||'--');
+    document.getElementById('totalContacts').textContent=fmt(stats.total_contacts||stats.total||'--');
+    document.getElementById('crmVIP').textContent=fmt(stats.loyalty_members||stats.loyalty||'--');
+    document.getElementById('totalPoints').textContent=fmt(stats.points_today||stats.points||'--');
   }
   const contacts=await apiFetch('/api/m10/contacts');
   const el=document.getElementById('crmTable');
@@ -219,7 +247,7 @@ async function loadCRM(){
   }else{el.innerHTML=empty('لا توجد جهات اتصال');}
 }
 async function awardLoyalty(){
-  const data={guest_id:document.getElementById('loyaltyGuest').value,points:parseInt(document.getElementById('loyaltyPoints').value)||0,reason:document.getElementById('loyaltyReason').value};
+  const data={guest_id:document.getElementById('loyaltyGuest').value,points:parseInt(document.getElementById('loyaltyPoints').value)||0,reason:document.getElementById('loyaltyDesc').value};
   if(!data.guest_id||!data.points){showToast('يرجى ملء جميع الحقول','error');return;}
   const r=await apiPost('/api/m10/loyalty/award',data);
   if(r){showToast('تم منح النقاط بنجاح','success');closeModal('modal-loyalty');loadCRM();}else showToast('خطأ في منح النقاط','error');
@@ -230,12 +258,12 @@ async function loadKPI(){
   const kpi=await apiFetch('/api/m11/dashboard')||await apiFetch('/api/kpi');
   if(kpi){
     const occ=kpi.occupancy_rate||kpi.occupancy;
-    document.getElementById('kpi2Occ').textContent=occ!=null?occ+'%':'--';
-    document.getElementById('kpi2ADR').textContent=fmt(kpi.adr||kpi.ADR)+' ر.س';
-    document.getElementById('kpi2RevPAR').textContent=fmt(kpi.revpar||kpi.RevPAR)+' ر.س';
-    document.getElementById('kpi2Sat').textContent=(kpi.guest_satisfaction||kpi.satisfaction||'--')+'/5';
-    document.getElementById('kpi2Los').textContent=(kpi.avg_los||kpi.los||'--')+' ليلة';
-    document.getElementById('kpi2Cancel').textContent=(kpi.cancellation_rate||kpi.cancel_rate||'--')+'%';
+    document.getElementById('kpiDashOcc').textContent=occ!=null?occ+'%':'--';
+    document.getElementById('kpiDashADR').textContent=fmt(kpi.adr||kpi.ADR)+' ر.س';
+    document.getElementById('kpiDashRevPAR').textContent=fmt(kpi.revpar||kpi.RevPAR)+' ر.س';
+    document.getElementById('kpiDashNPS').textContent=(kpi.guest_satisfaction||kpi.satisfaction||'--')+'/5';
+    document.getElementById('kpiDashRevenue').textContent=(kpi.avg_los||kpi.los||'--')+' ليلة';
+    document.getElementById('kpiDashNPS').textContent=(kpi.cancellation_rate||kpi.cancel_rate||'--')+'%';
     const entries=Object.entries(kpi).filter(([k])=>!['_id','id'].includes(k));
     const rows=entries.map(([k,v])=>'<tr><td style="font-weight:600">'+k+'</td><td>'+v+'</td></tr>').join('');
     document.getElementById('kpiTable').innerHTML='<table class="mod-table"><thead><tr><th>المؤشر</th><th>القيمة</th></tr></thead><tbody>'+rows+'</tbody></table>';
@@ -256,7 +284,12 @@ async function loadWarehouses(){
   }else{document.getElementById('lowStockTable').innerHTML=empty('المخزون بمستويات جيدة ✅');}
 }
 async function createWarehouseItem(){
-  const data={name:document.getElementById('whItem').value,category:document.getElementById('whCategory').value,quantity:parseInt(document.getElementById('whQty').value)||0,min_quantity:parseInt(document.getElementById('whMinQty').value)||0,unit_price:parseFloat(document.getElementById('whPrice').value)||0,supplier:document.getElementById('whSupplier').value};
+  const data={name:document.getElementById('itemNameAr').value.trim(),
+    name_en:document.getElementById('itemNameEn').value.trim(),
+    category:document.getElementById('itemCategory').value,
+    unit:document.getElementById('itemUnit').value,
+    quantity:parseInt(document.getElementById('itemQty').value)||0,
+    min_quantity:parseInt(document.getElementById('itemMin').value)||0};
   if(!data.name){showToast('يرجى إدخال اسم العنصر','error');return;}
   const r=await apiPost('/api/m13/items',data);
   if(r){showToast('تم إضافة العنصر','success');closeModal('modal-warehouse-item');loadWarehouses();}else showToast('خطأ في الحفظ','error');
@@ -267,7 +300,7 @@ async function loadTourism(){
   const stats=await apiFetch('/api/m14/stats');
   if(stats){
     document.getElementById('totalTours').textContent=fmt(stats.total_tours||stats.tours||'--');
-    document.getElementById('tourBookings').textContent=fmt(stats.bookings_today||stats.bookings||'--');
+    document.getElementById('tourBookingsCount').textContent=fmt(stats.bookings_today||stats.bookings||'--');
     document.getElementById('tourRevenue').textContent=fmt(stats.revenue||'--')+' ر.س';
   }
   const tours=await apiFetch('/api/m14/tours');
@@ -314,20 +347,25 @@ async function createDestination(){
 
 // ======== POS ========
 async function loadPOS(){
-  const summary=await apiFetch('/api/m04/cashier/summary');
+  // البادئة `m04` لا وجود لها في الخادم — كل هذه النداءات كانت ٤٠٤.
+  // الحقيقية: `m07` لنقاط البيع و`m06acc` للمحاسبة.
+  const sumBody=await apiFetch('/api/m07/stats');
+  const summary=(sumBody&&sumBody.data)||null;
   if(summary){
-    document.getElementById('posTodaySales').textContent=fmt(summary.today_sales||summary.total_sales||0)+' ر.س';
-    document.getElementById('posTodayCount').textContent=fmt(summary.today_count||summary.count||0);
-    document.getElementById('posTodayVat').textContent=fmt(summary.today_vat||summary.vat||0)+' ر.س';
+    document.getElementById('posTodaySales').textContent=fmt(summary.today_revenue||summary.today_sales||0)+' ر.س';
+    document.getElementById('posTodayCount').textContent=fmt(summary.today_sales||0);
+    document.getElementById('posTodayVat').textContent=fmt(summary.today_vat||0)+' ر.س';
   }
-  const items=await apiFetch('/api/m04/pos/items');
+  const itemsBody=await apiFetch('/api/m07/items');
+  const items=(itemsBody&&itemsBody.data)||itemsBody;
   const iel=document.getElementById('posItemsTable');
   if(items&&Array.isArray(items)&&items.length){
     document.getElementById('posItemsCount').textContent=items.length;
     const rows=items.map(i=>'<tr><td>'+(i.id||'--')+'</td><td>'+(i.name||i.item_name||'--')+'</td><td>'+(i.category||'--')+'</td><td>'+fmt(i.price||i.unit_price||0)+' ر.س</td><td>'+(i.unit||'قطعة')+'</td></tr>').join('');
     iel.innerHTML='<table class="mod-table"><thead><tr><th>الرقم</th><th>الصنف</th><th>الفئة</th><th>السعر</th><th>الوحدة</th></tr></thead><tbody>'+rows+'</tbody></table>';
   }else{iel.innerHTML=empty('لا توجد أصناف مسجلة');}
-  const sales=await apiFetch('/api/m04/pos/sales');
+  const salesBody=await apiFetch('/api/m07/sales');
+  const sales=(salesBody&&salesBody.data)||salesBody;
   const sel=document.getElementById('posTable');
   if(sales&&Array.isArray(sales)&&sales.length){
     const rows=sales.slice(0,10).map(s=>'<tr><td>'+(s.id||'--')+'</td><td>'+(s.item_name||s.item||'--')+'</td><td>'+fmt(s.qty||s.quantity||1)+'</td><td>'+fmt(s.amount||s.total||0)+' ر.س</td><td>'+(s.payment_method||'نقد')+'</td><td>'+statusBadge('paid')+'</td></tr>').join('');
@@ -337,7 +375,7 @@ async function loadPOS(){
 async function createPOSItem(){
   const data={name:document.getElementById('piName').value,category:document.getElementById('piCategory').value,price:parseFloat(document.getElementById('piPrice').value)||0,unit:document.getElementById('piUnit').value||'قطعة'};
   if(!data.name||!data.price){showToast('يرجى إدخال اسم الصنف والسعر','error');return;}
-  const r=await apiPost('/api/m04/pos/items',data);
+  const r=await apiPost('/api/m07/items',data);
   if(r){showToast('تم إضافة الصنف بنجاح','success');closeModal('modal-pos-item');loadPOS();}else showToast('خطأ في الحفظ','error');
 }
 
@@ -349,13 +387,18 @@ async function loadAnalytics(){
     document.getElementById('anaADR').textContent=fmt(kpi.adr||kpi.ADR||0);
     document.getElementById('anaRevPAR').textContent=fmt(kpi.revpar||kpi.RevPAR||0);
   }
-  const rev=await apiFetch('/api/m04/revenue/monthly');
+  // لا مسار سلسلةٍ شهرية في الخادم؛ `/revenue/summary` يُرجع ملخّصاً
+  // بمفاتيح زمنية. عرضُ المتاح أصدق من عمودٍ فارغ بعنوانٍ يَعِد بأكثر.
+  const revBody=await apiFetch('/api/m06acc/revenue/summary');
+  const revSum=(revBody&&revBody.data)||null;
+  const REV_LABELS={today:'اليوم',this_week:'هذا الأسبوع',this_month:'هذا الشهر',last_month:'الشهر الماضي'};
+  const rev=revSum ? Object.keys(REV_LABELS).map(k=>({month:REV_LABELS[k],revenue:revSum[k]||0})) : null;
   const revEl=document.getElementById('anaRevBars');
   const anaRevEl=document.getElementById('anaMonthRev');
   if(rev&&Array.isArray(rev)&&rev.length){
     const maxV=Math.max(...rev.map(r=>r.revenue||r.amount||0))||1;
     const latest=rev[rev.length-1];
-    if(anaRevEl&&latest)anaRevEl.textContent=fmt(latest.revenue||latest.amount||0);
+    if(anaRevEl&&revSum)anaRevEl.textContent=fmt(revSum.this_month||0);
     const bars=rev.slice(-6).map(r=>{const v=r.revenue||r.amount||0;const pct=Math.round((v/maxV)*100);return`<div class="ana-bar-row"><div class="ana-bar-label">${r.month||r.period||'--'}</div><div class="ana-bar-track"><div class="ana-bar-fill" style="width:${pct}%"></div></div><div class="ana-bar-val">${fmt(v)} ر.س</div></div>`;}).join('');
     revEl.innerHTML=bars||'<div class="mod-empty">لا بيانات</div>';
   }else{
@@ -384,4 +427,3 @@ async function createBooking(){
   if(r){showToast('تم تأكيد الحجز','success');closeModal('modal-booking');loadHome();}else showToast('خطأ في إنشاء الحجز','error');
 }
 
-function createStaffTask(){showToast('تم إنشاء المهمة بنجاح','success');closeModal('modal-staff-task');}

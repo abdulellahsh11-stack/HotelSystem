@@ -3,6 +3,10 @@
    No React, no Babel. Just call StaticSidebar.render(activeId).
    ========================================================================= */
 (function () {
+  // إعداد المنشأة أوّلاً لا برقمٍ في تسلسل البرامج: هو ما يُبدأ به،
+  // ومنه تُسجَّل الغرف — وبلا غرف لا تعمل بقية الوحدات أصلاً.
+  var SETUP = { id: "00-setup", ar: "إعداد المنشأة", num: "00" };
+
   var MODULES = [
     { id: "01-guests",            ar: "الضيوف",            num: "01" },
     { id: "02-shumus",            ar: "شموس",             num: "02" },
@@ -31,8 +35,38 @@
   }
 
   /* ── Auth helpers ──────────────────────────────────────────────────────── */
+  // الجلسة الحقيقية في كوكي HttpOnly لا يراها الجافاسكربت إطلاقاً، فقراءة
+  // `localStorage` وحدها كانت تُعلن «زائر» لمالكٍ داخلٍ فعلاً — في كل صفحة،
+  // مع زرّ «سجّل / دخول» يوحي أن الدخول فشل وهو ناجح. الخادم هو المرجع،
+  // و`localStorage` مجرّد ذاكرةٍ مؤقّتة تُغني عن وميضٍ قبل وصول الردّ.
   function getSession() {
+    if (SERVER_SESSION) return SERVER_SESSION;
     try { return JSON.parse(localStorage.getItem('dheuof_session') || 'null'); } catch(e) { return null; }
+  }
+
+  var SERVER_SESSION = null;
+
+  /* يسأل الخادم من أنا، ثم يُعيد رسم الشريط بالحقيقة. */
+  function refreshFromServer(opts) {
+    fetch('/api/staff/me', { credentials: 'same-origin' })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(body){
+        var me = body && body.data;
+        if (!me || !me.client_id) return;          // زائرٌ فعلاً
+        SERVER_SESSION = {
+          name: me.full_name || me.username || 'مالك المنشأة',
+          email: me.username || '',
+          property: me.property_name || '',
+          role: me.role,
+          plan: 'active'
+        };
+        try { localStorage.setItem('dheuof_session', JSON.stringify(SERVER_SESSION)); } catch(e) {}
+        var sb = document.querySelector('.dh-sidebar');
+        var tb = document.querySelector('.dh-topbar');
+        if (sb) sb.outerHTML = renderSidebar((opts||{}).activeId, opts||{});
+        if (tb) tb.outerHTML = renderTopBar(opts||{});
+      })
+      .catch(function(){ /* الشبكة ساقطة: يبقى الرسم الأول */ });
   }
   function saveSession(s) {
     // NOTE: session token lives in an HttpOnly+Secure+SameSite=Lax cookie set by the server.
@@ -87,7 +121,14 @@
         '<div class="dh-brand-name"><div class="ar">ضيوف</div><div class="en">Dheuof</div></div>' +
       '</a>' +
       '<nav class="dh-nav"><div class="dh-nav-group">' +
-        '<div class="dh-nav-label">١٧ برنامج</div>' +
+        '<div class="dh-nav-label">الإعداد</div>' +
+        [SETUP].map(function(m){
+          var href = '../' + m.id + '/index.html';
+          return '<a class="dh-nav-item' + (m.id === activeId ? ' is-active' : '') + '" href="' + href + '" style="text-decoration:none">' +
+            '<span class="ic" style="font-family:var(--font-mono);font-size:10px;width:18px;text-align:center;opacity:0.65;font-weight:500">' + m.num + '</span>' +
+            '<span class="lbl">' + m.ar + '</span></a>';
+        }).join('') +
+        '<div class="dh-nav-label" style="margin-top:14px">١٧ برنامج</div>' +
         MODULES.map(function(m) {
           var isActive = m.id === activeId;
           var href = '../' + m.id + '/index.html';
@@ -261,6 +302,8 @@
     var tb = document.getElementById("topbar-slot");
     if (sb) sb.outerHTML = renderSidebar(opts.activeId, opts);
     if (tb) tb.outerHTML = renderTopBar(opts);
+
+    refreshFromServer(opts);
 
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', injectTrialBanner);

@@ -24,7 +24,7 @@ from app_core import (
     _COOKIE_SECURE, _client_sessions, _lock, _login_rate_ok, _make_password,
     _new_token, _verify_password, client_ip as _client_ip, log, require_client,
 )
-from services.staff_roles import assignable_roles, is_valid_role, permissions_for
+from services.staff_roles import assignable_by, can_assign, is_valid_role, permissions_for
 
 router = APIRouter(prefix="/api/staff", tags=["Staff Accounts"])
 
@@ -59,6 +59,22 @@ def _require_staff_manage(session: dict) -> None:
         )
 
 
+def _guard_target(session: dict, row: dict) -> None:
+    """
+    يمنع المدير العام من المساس بحسابٍ في مرتبته.
+
+    إغلاق الإنشاء وحده لا يكفي: مديرٌ عام يستطيع إعادة كلمة مرور مديرٍ
+    عام آخر ثم الدخول بها، أو حذفه. المرتبة تُحمى في الاتجاهين.
+    """
+    from services.staff_roles import OWNER_ONLY_ROLES, _is_owner
+
+    if row.get("role") in OWNER_ONLY_ROLES and not _is_owner(session):
+        raise HTTPException(
+            status_code=403,
+            detail="حسابات المديرين العامّين يديرها مالك المنشأة وحده",
+        )
+
+
 def _db(request: Request):
     db = request.app.state.db
     if not getattr(db, "use_postgres", False):
@@ -88,7 +104,7 @@ async def list_roles(session=Depends(require_client)):
     _require_staff_manage(session)
     from services.staff_roles import PERMISSIONS
 
-    return {"success": True, "data": {"roles": assignable_roles(), "permissions": PERMISSIONS}}
+    return {"success": True, "data": {"roles": assignable_by(session), "permissions": PERMISSIONS}}
 
 
 # ──────────────────────────────────────────────────────────────
@@ -127,6 +143,11 @@ async def create_account(request: Request, session=Depends(require_client)):
         raise HTTPException(status_code=400, detail="اسم الموظف مطلوب")
     if not is_valid_role(role):
         raise HTTPException(status_code=400, detail="الدور غير معروف")
+    if not can_assign(session, role):
+        raise HTTPException(
+            status_code=403,
+            detail="تعيين مديرٍ عام لمالك المنشأة وحده — المدير يعيّن الموظفين لا نظراءه",
+        )
     if len(password) < MIN_PASSWORD_LENGTH:
         raise HTTPException(
             status_code=400, detail=f"كلمة المرور {MIN_PASSWORD_LENGTH} محارف على الأقل"
@@ -171,11 +192,12 @@ async def update_account(account_id: int, request: Request, session=Depends(requ
     cid = session["client_id"]
 
     row = db.execute(
-        "SELECT id, username FROM staff_users WHERE id=%s AND client_id=%s",
+        "SELECT id, username, role FROM staff_users WHERE id=%s AND client_id=%s",
         (account_id, cid), fetch="one",
     )
     if not row:
         raise HTTPException(status_code=404, detail="الحساب غير موجود")
+    _guard_target(session, dict(row))
 
     updates: list[str] = []
     params: list = []
@@ -188,6 +210,11 @@ async def update_account(account_id: int, request: Request, session=Depends(requ
     if "role" in data:
         if not is_valid_role(str(data["role"])):
             raise HTTPException(status_code=400, detail="الدور غير معروف")
+        if not can_assign(session, str(data["role"])):
+            raise HTTPException(
+                status_code=403,
+                detail="ترقية حسابٍ إلى مدير عام لمالك المنشأة وحده",
+            )
         updates.append("role=%s")
         params.append(str(data["role"]))
     if "is_active" in data:
@@ -233,11 +260,13 @@ async def reset_password(account_id: int, request: Request, session=Depends(requ
     # التحقق من الوجود أولاً: بدونه يُعاد «تم» لمعرّف وهمي أو لحساب في
     # منشأة أخرى، فيظنّ المالك أنه غيّر كلمة مرور ولم يتغيّر شيء —
     # ويكشف الردّ الناجح وجود حسابات غيره.
-    if not db.execute(
-        "SELECT id FROM staff_users WHERE id=%s AND client_id=%s",
+    target = db.execute(
+        "SELECT id, role FROM staff_users WHERE id=%s AND client_id=%s",
         (account_id, cid), fetch="one",
-    ):
+    )
+    if not target:
         raise HTTPException(status_code=404, detail="الحساب غير موجود")
+    _guard_target(session, dict(target))
 
     pass_hash, pass_salt = _make_password(password)
     db.execute(
@@ -255,11 +284,13 @@ async def delete_account(account_id: int, request: Request, session=Depends(requ
     _require_staff_manage(session)
     db = _db(request)
     cid = session["client_id"]
-    if not db.execute(
-        "SELECT id FROM staff_users WHERE id=%s AND client_id=%s",
+    target = db.execute(
+        "SELECT id, role FROM staff_users WHERE id=%s AND client_id=%s",
         (account_id, cid), fetch="one",
-    ):
+    )
+    if not target:
         raise HTTPException(status_code=404, detail="الحساب غير موجود")
+    _guard_target(session, dict(target))
     db.execute("DELETE FROM staff_users WHERE id=%s AND client_id=%s", (account_id, cid))
     _revoke_staff_sessions(request, cid, account_id)
     log.info("حُذف حساب الموظف %s للمنشأة %s", account_id, cid)
@@ -403,11 +434,25 @@ async def staff_login(request: Request):
 
 
 @router.get("/me")
-async def whoami(session=Depends(require_client)):
-    """هوية الجلسة الحالية وصلاحياتها — تبني عليها الواجهة ما تُظهره."""
+async def whoami(request: Request, session=Depends(require_client)):
+    """
+    هوية الجلسة الحالية وصلاحياتها — تبني عليها الواجهة ما تُظهره.
+
+    اسم المنشأة منها: الشريط كان يقرأ الجلسة من `localStorage` وهي فارغة
+    دائماً (الجلسة الحقيقية كوكي HttpOnly)، فيُعلن «زائر» لمالكٍ داخلٍ
+    فعلاً. صار يسأل هذا المسار، فيحتاج الاسم ليعرضه.
+    """
+    property_name = ""
+    try:
+        client = request.app.state.store.get_client(session.get("client_id"))
+        property_name = (client or {}).get("hotel_name") or (client or {}).get("name") or ""
+    except Exception:  # الاسم زينةُ عرض؛ فشلُ قراءته لا يُسقط الهوية
+        pass
+
     return {
         "success": True,
         "data": {
+            "property_name": property_name,
             "client_id": session.get("client_id"),
             "username": session.get("username"),
             "full_name": session.get("full_name"),

@@ -285,6 +285,11 @@ async def lifespan(app_: FastAPI):
     except Exception as e:
         log.warning(f"guest crypto migration: {e}")
     try:
+        from routes.leads import ensure_schema as _leads_schema
+        _leads_schema(db)
+    except Exception as e:
+        log.warning(f"leads migration: {e}")
+    try:
         from db.schema_v3 import run_rls_migration
         run_rls_migration(db)
     except Exception as e:
@@ -301,6 +306,18 @@ async def lifespan(app_: FastAPI):
         log.info("✓ v4 migrations (ZATCA + Night Audit + Reviews) ready")
     except Exception as e:
         log.warning(f"v4 migrations: {e}")
+    try:
+        from db.schema_visitors import run_visitor_migrations
+        run_visitor_migrations(db)
+        log.info("✓ جداول الزوّار جاهزة")
+    except Exception as e:
+        log.warning(f"جداول الزوّار: {e}")
+    try:
+        from db.schema_listings import run_listing_migrations
+        run_listing_migrations(db)
+        log.info("✓ جداول العرض والبحث جاهزة")
+    except Exception as e:
+        log.warning(f"جداول العرض: {e}")
 
     # ── Sentry (APM / error tracking) ──────────────────────────────────────
     if cfg.has_sentry:
@@ -747,6 +764,10 @@ ROUTE_MODULES: list[tuple[str, str]] = [
     ("pages",        "الصفحات العامة و PWA و SEO"),
     ("system",       "الصحة والحالة والنسخ الاحتياطي"),
     ("admin",        "لوحة مالك المنصة"),
+    ("leads",        "الزوّار المهتمّون"),
+    ("visitors",     "بوابة الزوّار — حجزٌ لأنفسهم"),
+    ("listings",     "العرض — تُخصّصه المنشأة"),
+    ("search",       "البحث — يتصفّحه الزائر"),
     ("auth",         "دخول المنشأة وتسجيلها"),
     ("hotel_ops",    "العمليات الفندقية"),
     ("staff_accounts", "حسابات دخول الموظفين"),
