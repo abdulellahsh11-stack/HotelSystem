@@ -624,6 +624,42 @@ async def api_rate_limit(request: Request, call_next):
     return await call_next(request)
 
 
+# طلبات الكتابة المُصادَقة بالكوكي معرّضة لتزوير الطلب عبر المواقع (CSRF).
+# `samesite=lax` على كل كوكي هو الدفاع الأول؛ هذا فحص Origin/Referer دفاعٌ
+# ثانٍ يرفض أي طلب كتابةٍ يحمل كوكي جلسة وأصلُه ليس من نطاقات ضيوف المعروفة.
+from urllib.parse import urlsplit as _urlsplit  # noqa: E402
+
+_CSRF_AUTH_COOKIES = ("client_token", "admin_token", "visitor_token")
+_CSRF_ALLOWED_HOSTS = frozenset(
+    _urlsplit(o).netloc for o in _ALLOWED_ORIGINS if _urlsplit(o).netloc
+)
+
+
+@app.middleware("http")
+async def csrf_origin_guard(request: Request, call_next):
+    """دفاعٌ ثانٍ ضد CSRF: يتحقّق أن أصل طلب الكتابة المُصادَق بالكوكي موثوق.
+
+    يُفحَص فقط حين يحمل الطلب كوكي جلسة (client/admin/visitor) ومنهجه مُغيِّر
+    للحالة على `/api/*`. غياب Origin وReferer معاً يعني عميلاً غير متصفّح
+    (تطبيق/أداة) فلا يُطبَّق — المتصفّحات تُرسل Origin على طلبات الكتابة عبر
+    المواقع دائماً، وهي وحدها سطح خطر CSRF. الطلب من نفس المضيف يمرّ دائماً.
+    """
+    if (request.method in ("POST", "PUT", "PATCH", "DELETE")
+            and request.url.path.startswith("/api/")
+            and any(c in request.cookies for c in _CSRF_AUTH_COOKIES)):
+        src = request.headers.get("origin") or request.headers.get("referer")
+        if src:
+            host = _urlsplit(src).netloc
+            allowed = set(_CSRF_ALLOWED_HOSTS)
+            req_host = request.headers.get("host")
+            if req_host:
+                allowed.add(req_host)
+            if host not in allowed:
+                return JSONResponse(
+                    {"detail": "طلبٌ مرفوض — أصلٌ غير موثوق"}, status_code=403)
+    return await call_next(request)
+
+
 # ── الضغط يُسجَّل **بعد** بقيّة الوسطاء عمداً ─────────────────
 #
 # Starlette يجعل آخر وسيطٍ يُسجَّل هو الأبعد عن التطبيق. فلو سُجّل الضغط
