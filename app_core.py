@@ -582,6 +582,46 @@ async def server_side_auth_gate(request: Request, call_next):
     return await call_next(request)
 
 
+# مسارات لها حدُّها الأضيق الخاصّ في هذا الملف — لا يُطبَّق الحدُّ العامّ
+# عليها كي لا يُخفّف حمايتها (حدُّ الدخول أضيق بكثير من حدّ الكتابة العامّ).
+_RATE_LIMIT_EXEMPT = frozenset({
+    "/api/login", "/api/client/register", "/api/admin/login",
+})
+
+
+@app.middleware("http")
+async def api_rate_limit(request: Request, call_next):
+    """حدٌّ عامٌّ لطلبات الكتابة على الـ API ضد إغراق مجمّع الاتصالات.
+
+    يحدُّ فقط طلبات الكتابة (POST/PUT/PATCH/DELETE) على `/api/*`، فالقراءة
+    قليلة الكلفة والحجب الخاطئ لها أشدُّ إزعاجاً. المسارات ذات الحدّ الأضيق
+    الخاصّ (الدخول والتسجيل) مستثناة كي لا يُضعِفها هذا الحدُّ الأوسع.
+
+    المفتاح من الجلسة على الخادم لا من أي مُدخل: مستأجرٌ داخلٌ يُحسب بمعرّف
+    منشأته (`WRITE_LIMIT`)، والمجهول بعنوانه (`ANON_LIMIT`) — فلا يُسقط
+    مستأجرٌ حدَّ آخر، ولا يفلت مجهولٌ بتدوير جلسةٍ لا يملكها.
+    """
+    if (request.method in ("POST", "PUT", "PATCH", "DELETE")
+            and request.url.path.startswith("/api/")
+            and request.url.path not in _RATE_LIMIT_EXEMPT):
+        from services import rate_limit
+
+        try:
+            session = get_client_session(request)
+        except Exception:
+            session = None
+
+        if session and session.get("client_id"):
+            key, limit = f"t:{session['client_id']}", rate_limit.WRITE_LIMIT
+        else:
+            key, limit = f"ip:{client_ip(request)}", rate_limit.ANON_LIMIT
+
+        if not rate_limit.check(key, limit):
+            return JSONResponse(
+                {"detail": "طلبات كثيرة — تجاوزت حدَّ المعدّل، أعد المحاولة بعد قليل"},
+                status_code=429,
+            )
+    return await call_next(request)
 
 
 # ── الضغط يُسجَّل **بعد** بقيّة الوسطاء عمداً ─────────────────

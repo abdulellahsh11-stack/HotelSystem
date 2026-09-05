@@ -32,6 +32,21 @@ def pytest_configure(config):
     )
 
 
+@pytest.fixture(autouse=True)
+def _reset_rate_limit():
+    """Clear the in-process API rate-limit buckets before each test.
+
+    The general limiter counts writes across the whole process; without a
+    reset a test that issues many writes could exhaust the window and make an
+    unrelated later test see a spurious 429. Reset keeps tests independent.
+    """
+    from services import rate_limit
+
+    rate_limit.reset()
+    yield
+    rate_limit.reset()
+
+
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 _db_available = bool(DATABASE_URL)
