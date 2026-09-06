@@ -5,6 +5,7 @@ import json
 import logging
 from typing import Optional
 from fastapi import APIRouter, Request, Depends, HTTPException, Header
+from fastapi.responses import Response
 from db.connection import count_of
 
 router = APIRouter(prefix="/api/m06acc", tags=["Accounting"])
@@ -314,6 +315,52 @@ async def revenue_by_month(request: Request, session=Depends(_require_client)):
     except Exception as e:
         logger.error(f"Error in revenue_by_month: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"خطأ في الخادم: {str(e)}")
+
+
+@router.get("/export")
+async def export_ledger(
+    request: Request,
+    format: str = "csv",
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    session=Depends(_require_client),
+):
+    """دفتر أستاذٍ موحّد (دفعات + قيود) مربوطٌ بمصدره — CSV أو JSON.
+
+    كلّ استعلامٍ معزولٌ بالمنشأة؛ نطاق التاريخ اختياري.
+    """
+    from services import accounting_export
+    db = request.app.state.db
+    cid = session["client_id"]
+    payments, journals = [], []
+    if getattr(db, "use_postgres", False):
+        pq = "SELECT amount, method, reference, device_id, currency, created_at FROM payments WHERE client_id=%s"
+        pp = [cid]
+        if date_from:
+            pq += " AND created_at::date >= %s::date"; pp.append(date_from)  # noqa: E702
+        if date_to:
+            pq += " AND created_at::date <= %s::date"; pp.append(date_to)  # noqa: E702
+        pq += " ORDER BY created_at DESC LIMIT 5000"
+        payments = [dict(r) for r in (db.execute(pq, tuple(pp), fetch="all") or [])]
+
+        jq = "SELECT reference, entry_date, description, lines, source, created_at FROM journal_entries WHERE client_id=%s"
+        jp = [cid]
+        if date_from:
+            jq += " AND entry_date >= %s::date"; jp.append(date_from)  # noqa: E702
+        if date_to:
+            jq += " AND entry_date <= %s::date"; jp.append(date_to)  # noqa: E702
+        jq += " ORDER BY entry_date DESC LIMIT 5000"
+        journals = [dict(r) for r in (db.execute(jq, tuple(jp), fetch="all") or [])]
+
+    rows = accounting_export.build_ledger(payments, journals)
+    if format == "json":
+        return {"success": True, "data": accounting_export.to_json(rows)}
+    csv_text = accounting_export.to_csv(rows)
+    return Response(
+        content=csv_text,
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": "attachment; filename=ledger.csv"},
+    )
 
 
 @router.get("/outstanding")
