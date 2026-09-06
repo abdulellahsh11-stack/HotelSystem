@@ -600,9 +600,11 @@ async def api_rate_limit(request: Request, call_next):
     التصنيف من **ذاكرة الجلسات وحدها** لا من قاعدة البيانات: لو استُعلمت
     القاعدة لاختيار المفتاح، لأمكن مهاجماً يُدوّر كوكيات جلسةٍ عشوائية أن
     يُجبر استعلاماً على المجمّع في كل طلب — أي أن الحارس يستهلك ما يحميه.
-    فمن له جلسةٌ في الذاكرة يُحسب بجلسته (`WRITE_LIMIT` لكل فاعلٍ لا لكل
-    منشأة، كي لا يخنق موظفو منشأةٍ مزدحمة بعضهم)، والباقي بعنوانه
-    (`ANON_LIMIT`) — والكوكي العشوائية لا تصيب الذاكرة فتقع في دلو العنوان.
+
+    وطبقتان لمن له جلسةٌ صالحة في الذاكرة: حدٌّ لكل جلسة (`WRITE_LIMIT`)
+    كي لا يخنق موظفو منشأةٍ بعضهم، وسقفٌ أعلى لكل منشأة (`TENANT_LIMIT`)
+    كي لا يُغرق مستأجرٌ المجمّعَ بفتح جلساتٍ كثيرة. المجهول بعنوانه
+    (`ANON_LIMIT`)، والكوكي العشوائية لا تصيب الذاكرة فتقع في دلو العنوان.
     """
     if (request.method in ("POST", "PUT", "PATCH", "DELETE")
             and request.url.path.startswith("/api/")
@@ -614,13 +616,25 @@ async def api_rate_limit(request: Request, call_next):
         if token:
             with _lock:
                 session = _client_sessions.get(token)   # ذاكرة فقط — لا قاعدة
+            # جلسةٌ منتهية (لم تُنظَّف بعد) تُعامَل كمجهول — كي لا يختلف هذا
+            # المسار عن get_client_session في معنى «جلسةٍ صالحة».
+            if session:
+                try:
+                    from db.security import session_is_expired
+                    if session_is_expired(session):
+                        session = None
+                except Exception:
+                    pass
 
         if session and session.get("client_id"):
-            key, limit = f"s:{token}", rate_limit.WRITE_LIMIT
+            allowed = (rate_limit.check(f"s:{token}", rate_limit.WRITE_LIMIT)
+                       and rate_limit.check(f"t:{session['client_id']}",
+                                            rate_limit.TENANT_LIMIT))
         else:
-            key, limit = f"ip:{client_ip(request)}", rate_limit.ANON_LIMIT
+            allowed = rate_limit.check(f"ip:{client_ip(request)}",
+                                       rate_limit.ANON_LIMIT)
 
-        if not rate_limit.check(key, limit):
+        if not allowed:
             return JSONResponse(
                 {"detail": "طلبات كثيرة — تجاوزت حدَّ المعدّل، أعد المحاولة بعد قليل"},
                 status_code=429,
@@ -640,13 +654,15 @@ _CSRF_ALLOWED_HOSTS = frozenset(
 )
 
 
-def _trusted_host(request: Request) -> str:
-    """مضيف الطلب الموثوق — من X-Forwarded-Host خلف الوسيط كما في client_ip."""
-    if TRUST_PROXY:
-        xfh = request.headers.get("x-forwarded-host", "")
-        first = xfh.split(",")[0].strip()
-        if first:
-            return first.lower()
+def _same_host(request: Request) -> str:
+    """مضيف الطلب من ترويسة Host الخام (صغيرة).
+
+    لا نستعمل X-Forwarded-Host هنا: إنه رأسٌ يحدّده العميل، ولا يصلح أساساً
+    لقرار «سماح» أمني ما لم يضمن الوسيط تنظيفه. وHost يكفي ضد CSRF المتصفّح:
+    في الطلب المزوّر عبر موقعٍ آخر يضبط المتصفّح Host على خادمنا (الهدف) لا
+    على موقع المهاجم، بينما Origin يحمل موقعه — فيقع عدم التطابق فيُرفض. أي
+    أصلٍ أول طرفٍ آخر (مضيفٌ عام مختلف) يجب إدراجه في `CORS_ORIGINS`.
+    """
     return (request.headers.get("host") or "").lower()
 
 
@@ -665,7 +681,7 @@ async def csrf_origin_guard(request: Request, call_next):
         src = request.headers.get("origin") or request.headers.get("referer")
         if src:
             host = _urlsplit(src).netloc.lower()
-            if host != _trusted_host(request) and host not in _CSRF_ALLOWED_HOSTS:
+            if host != _same_host(request) and host not in _CSRF_ALLOWED_HOSTS:
                 return JSONResponse(
                     {"detail": "طلبٌ مرفوض — أصلٌ غير موثوق"}, status_code=403)
     return await call_next(request)

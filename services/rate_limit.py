@@ -44,7 +44,11 @@ from typing import Optional
 # الحدود الافتراضية (طلب/دقيقة) — تُضبط من متغيّرات البيئة.
 # القراءة لا تُحدُّ (الحارس على مسارات الكتابة فقط)، فلا ثابت READ_LIMIT
 # يوهم عاملاً بأنه يستطيع خنق القراءة بينما لا شيء يقرؤه.
+#
+# طبقتان: حدٌّ لكل جلسة (فاعل) كي لا يخنق موظفو منشأةٍ بعضهم، وسقفٌ أعلى
+# لكل منشأة كي لا يُغرق مستأجرٌ المجمّعَ بفتح جلساتٍ كثيرة (كلٌّ بحدّها).
 WRITE_LIMIT = int(os.environ.get("RATE_LIMIT_WRITE", "180"))
+TENANT_LIMIT = int(os.environ.get("RATE_LIMIT_TENANT", "600"))
 ANON_LIMIT = int(os.environ.get("RATE_LIMIT_ANON", "60"))
 
 # سقف عدد المفاتيح المحفوظة — يمنع نمو الذاكرة بلا حدّ
@@ -113,4 +117,5 @@ def stats() -> dict:
     """لمحةٌ تشغيلية عن حالة الحدّ."""
     with _lock:
         return {"keys": len(_buckets), "max_keys": MAX_KEYS,
-                "write_limit": WRITE_LIMIT, "anon_limit": ANON_LIMIT}
+                "write_limit": WRITE_LIMIT, "tenant_limit": TENANT_LIMIT,
+                "anon_limit": ANON_LIMIT}
