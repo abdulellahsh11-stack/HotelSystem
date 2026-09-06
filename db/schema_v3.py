@@ -910,3 +910,12 @@ def run_v4_migrations(db) -> None:
     except Exception as e:
         if "already exists" not in str(e).lower():
             log.warning(f"clients.api_key col: {e}")
+
+    # ── ربط الدفعة بجهاز نقطة البيع (payments.device_id) ─────────
+    try:
+        db.execute(
+            "ALTER TABLE payments ADD COLUMN IF NOT EXISTS device_id INTEGER"
+        )
+    except Exception as e:
+        if "already exists" not in str(e).lower():
+            log.warning(f"payments.device_id col: {e}")

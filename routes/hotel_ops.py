@@ -230,7 +230,8 @@ async def checkin_booking(booking_id: str, request: Request, session=Depends(req
         payment = payments.record(request.app.state.db, cid,
                                   data.get("amount"),
                                   data.get("payment_method", "cash"),
-                                  reference=str(booking_id))
+                                  reference=str(booking_id),
+                                  device_id=data.get("device_id"))
     except Exception:
         log.warning("تعذّر تسجيل دفعة تسجيل الدخول للحجز %s", booking_id)
 
@@ -261,7 +262,8 @@ async def create_payment(request: Request, session=Depends(require_client)):
     data = await request.json()
     rec = payments.record(request.app.state.db, session["client_id"],
                          data.get("amount"), data.get("method", "cash"),
-                         reference=data.get("reference"))
+                         reference=data.get("reference"),
+                         device_id=data.get("device_id"))
     if rec is None:
         raise HTTPException(status_code=400, detail="مبلغ الدفعة غير صالح")
     return {"success": True, "data": rec}
