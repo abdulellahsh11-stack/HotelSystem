@@ -62,3 +62,14 @@ class TestCsrfOriginGuard:
     def test_get_is_never_guarded(self):
         r = _c().get(WRITE, cookies=AUTHED, headers={"origin": "https://evil.example"})
         assert r.status_code != 403
+
+    @pytest.mark.parametrize("method", ["POST", "PUT", "PATCH", "DELETE"])
+    def test_all_write_methods_are_guarded(self, method):
+        r = _c().request(method, WRITE, cookies=AUTHED,
+                         headers={"origin": "https://evil.example"})
+        assert r.status_code == 403, f"{method} من أصلٍ غريب يجب أن يُرفض"
+
+    def test_uppercase_host_in_origin_is_accepted(self):
+        # أسماء المضيفات لا تُميّز الحالة — أصلٌ مسموح بأحرف كبيرة يمرّ الحارس
+        r = _c().post(WRITE, cookies=AUTHED, headers={"origin": "https://DHEUOF.com"})
+        assert r.status_code != 403

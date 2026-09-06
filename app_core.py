@@ -597,22 +597,26 @@ async def api_rate_limit(request: Request, call_next):
     قليلة الكلفة والحجب الخاطئ لها أشدُّ إزعاجاً. المسارات ذات الحدّ الأضيق
     الخاصّ (الدخول والتسجيل) مستثناة كي لا يُضعِفها هذا الحدُّ الأوسع.
 
-    المفتاح من الجلسة على الخادم لا من أي مُدخل: مستأجرٌ داخلٌ يُحسب بمعرّف
-    منشأته (`WRITE_LIMIT`)، والمجهول بعنوانه (`ANON_LIMIT`) — فلا يُسقط
-    مستأجرٌ حدَّ آخر، ولا يفلت مجهولٌ بتدوير جلسةٍ لا يملكها.
+    التصنيف من **ذاكرة الجلسات وحدها** لا من قاعدة البيانات: لو استُعلمت
+    القاعدة لاختيار المفتاح، لأمكن مهاجماً يُدوّر كوكيات جلسةٍ عشوائية أن
+    يُجبر استعلاماً على المجمّع في كل طلب — أي أن الحارس يستهلك ما يحميه.
+    فمن له جلسةٌ في الذاكرة يُحسب بجلسته (`WRITE_LIMIT` لكل فاعلٍ لا لكل
+    منشأة، كي لا يخنق موظفو منشأةٍ مزدحمة بعضهم)، والباقي بعنوانه
+    (`ANON_LIMIT`) — والكوكي العشوائية لا تصيب الذاكرة فتقع في دلو العنوان.
     """
     if (request.method in ("POST", "PUT", "PATCH", "DELETE")
             and request.url.path.startswith("/api/")
             and request.url.path not in _RATE_LIMIT_EXEMPT):
         from services import rate_limit
 
-        try:
-            session = get_client_session(request)
-        except Exception:
-            session = None
+        token = _get_client_token(request)
+        session = None
+        if token:
+            with _lock:
+                session = _client_sessions.get(token)   # ذاكرة فقط — لا قاعدة
 
         if session and session.get("client_id"):
-            key, limit = f"t:{session['client_id']}", rate_limit.WRITE_LIMIT
+            key, limit = f"s:{token}", rate_limit.WRITE_LIMIT
         else:
             key, limit = f"ip:{client_ip(request)}", rate_limit.ANON_LIMIT
 
@@ -630,9 +634,20 @@ async def api_rate_limit(request: Request, call_next):
 from urllib.parse import urlsplit as _urlsplit  # noqa: E402
 
 _CSRF_AUTH_COOKIES = ("client_token", "admin_token", "visitor_token")
+# أسماء المضيفات لا تُميّز حالة الأحرف (RFC 3986) — تُخزَّن وتُقارَن صغيرةً.
 _CSRF_ALLOWED_HOSTS = frozenset(
-    _urlsplit(o).netloc for o in _ALLOWED_ORIGINS if _urlsplit(o).netloc
+    _urlsplit(o).netloc.lower() for o in _ALLOWED_ORIGINS if _urlsplit(o).netloc
 )
+
+
+def _trusted_host(request: Request) -> str:
+    """مضيف الطلب الموثوق — من X-Forwarded-Host خلف الوسيط كما في client_ip."""
+    if TRUST_PROXY:
+        xfh = request.headers.get("x-forwarded-host", "")
+        first = xfh.split(",")[0].strip()
+        if first:
+            return first.lower()
+    return (request.headers.get("host") or "").lower()
 
 
 @app.middleware("http")
@@ -649,12 +664,8 @@ async def csrf_origin_guard(request: Request, call_next):
             and any(c in request.cookies for c in _CSRF_AUTH_COOKIES)):
         src = request.headers.get("origin") or request.headers.get("referer")
         if src:
-            host = _urlsplit(src).netloc
-            allowed = set(_CSRF_ALLOWED_HOSTS)
-            req_host = request.headers.get("host")
-            if req_host:
-                allowed.add(req_host)
-            if host not in allowed:
+            host = _urlsplit(src).netloc.lower()
+            if host != _trusted_host(request) and host not in _CSRF_ALLOWED_HOSTS:
                 return JSONResponse(
                     {"detail": "طلبٌ مرفوض — أصلٌ غير موثوق"}, status_code=403)
     return await call_next(request)
