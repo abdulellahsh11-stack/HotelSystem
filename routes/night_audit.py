@@ -55,6 +55,12 @@ class PaymentDeviceSchema(BaseModel):
     serial_number: Optional[str] = None
 
 
+class RenameDeviceSchema(BaseModel):
+    device_name: Optional[str] = None
+    device_type: Optional[str] = None
+    serial_number: Optional[str] = None
+
+
 class SettleDeviceSchema(BaseModel):
     notes: Optional[str] = None
 
@@ -449,6 +455,43 @@ async def add_payment_device(
             return {"success": True, "data": dict(row) if row else {}, "message": "تم إضافة جهاز الدفع"}
         except Exception as e:
             raise HTTPException(500, f"خطأ: {e}")
+    raise HTTPException(400, "يتطلب PostgreSQL")
+
+
+@router.patch("/payment-devices/{device_id}")
+async def rename_payment_device(
+    device_id: int,
+    body: RenameDeviceSchema,
+    request: Request,
+    session=Depends(_require_client),
+):
+    """إعادة تسمية جهاز الدفع أو تعديل نوعه ورقمه — لا يمسّ رصيده اليومي."""
+    _require_manager(session)
+    db  = request.app.state.db
+    cid = session["client_id"]
+    fields, params = [], []
+    if body.device_name is not None:
+        fields.append("device_name=%s"); params.append(body.device_name)  # noqa: E702
+    if body.device_type is not None:
+        fields.append("device_type=%s"); params.append(body.device_type)  # noqa: E702
+    if body.serial_number is not None:
+        fields.append("serial_number=%s"); params.append(body.serial_number)  # noqa: E702
+    if not fields:
+        raise HTTPException(400, "لا حقول للتعديل")
+    if db.use_postgres:
+        try:
+            params += [device_id, cid]
+            row = db.execute(
+                f"UPDATE payment_devices SET {', '.join(fields)} "
+                "WHERE id=%s AND client_id=%s AND is_deleted=FALSE RETURNING *",
+                tuple(params), fetch="one")
+            if not row:
+                raise HTTPException(404, "الجهاز غير موجود")
+            return {"success": True, "data": dict(row), "message": "تم تحديث الجهاز"}
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(500, str(e))
     raise HTTPException(400, "يتطلب PostgreSQL")
 
 

@@ -296,6 +296,7 @@ CREATE TABLE IF NOT EXISTS payments (
     currency    VARCHAR(10) DEFAULT 'SAR',
     method      VARCHAR(50),
     reference   VARCHAR(100),
+    device_id   INTEGER,
     period_from DATE,
     period_to   DATE,
     created_at  TIMESTAMPTZ DEFAULT NOW()
