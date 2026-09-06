@@ -223,8 +223,48 @@ async def checkin_booking(booking_id: str, request: Request, session=Depends(req
         # خصم الضيافة أفضل-جهد: لا يمنع تسجيل الدخول، ولا يسقط صامتاً
         log.warning("تعذّر خصم الضيافة عند تسجيل دخول الحجز %s", booking_id)
 
+    # المحاسبة الفورية (البند ٨): يُحتسَب المبلغ المدفوع مباشرة إن أُرسل.
+    payment = None
+    try:
+        from services import payments
+        payment = payments.record(request.app.state.db, cid,
+                                  data.get("amount"),
+                                  data.get("payment_method", "cash"),
+                                  reference=str(booking_id))
+    except Exception:
+        log.warning("تعذّر تسجيل دفعة تسجيل الدخول للحجز %s", booking_id)
+
     return {"success": True, "data": {
-        "id": booking_id, "status": "checked_in", "consumed": consumed}}
+        "id": booking_id, "status": "checked_in",
+        "consumed": consumed, "payment": payment}}
+
+
+# ──────────────────────────────────────────────────────────────
+#  الدفعات — تسجيلٌ فوري وتقرير اليوم (البند ٨)
+# ──────────────────────────────────────────────────────────────
+@router.get("/api/payments")
+async def list_payments(request: Request, limit: int = 100, session=Depends(require_client)):
+    db = request.app.state.db
+    cid = session["client_id"]
+    if getattr(db, "use_postgres", False):
+        rows = db.execute(
+            "SELECT * FROM payments WHERE client_id=%s ORDER BY created_at DESC LIMIT %s",
+            (cid, limit), fetch="all")
+        return {"success": True, "data": [dict(r) for r in (rows or [])]}
+    return {"success": True, "data": []}
+
+
+@router.post("/api/payments")
+async def create_payment(request: Request, session=Depends(require_client)):
+    """يُسجّل دفعةً فورية (نقدي/نقاط بيع) مربوطةً بمرجعٍ اختياري (حجز)."""
+    from services import payments
+    data = await request.json()
+    rec = payments.record(request.app.state.db, session["client_id"],
+                         data.get("amount"), data.get("method", "cash"),
+                         reference=data.get("reference"))
+    if rec is None:
+        raise HTTPException(status_code=400, detail="مبلغ الدفعة غير صالح")
+    return {"success": True, "data": rec}
 
 
 # ──────────────────────────────────────────────────────────────

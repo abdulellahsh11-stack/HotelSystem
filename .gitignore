@@ -16,3 +16,4 @@ reports/
 *.bundle
 test_results/
 scripts/generate_*.py
+venv/
