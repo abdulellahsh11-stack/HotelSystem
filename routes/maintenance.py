@@ -92,6 +92,35 @@ async def update_order(order_id: int, request: Request, session=Depends(_require
         raise HTTPException(status_code=500, detail=f"خطأ في الخادم: {str(e)}")
 
 
+@router.post("/orders/{order_id}/materials")
+async def use_materials(order_id: int, request: Request, session=Depends(_require_client)):
+    """يخصم مواد الصيانة المستخدَمة في أمرٍ من المستودع (عشرة، استُخدم ثلاثة → سبعة).
+
+    الأمر يجب أن يخصّ هذه المنشأة، والأصناف تُخصَم بمعرّفها معزولةً بالمنشأة.
+    """
+    try:
+        from services import maintenance_stock
+        data = await request.json()
+        db = request.app.state.db
+        cid = session["client_id"]
+        actor = session.get("username") or session.get("role") or "maintenance"
+        if not db.use_postgres:
+            return {"success": True, "data": []}
+        order = db.execute(
+            "SELECT order_number FROM maintenance_orders WHERE id=%s AND client_id=%s",
+            (order_id, cid), fetch="one")
+        if not order:
+            raise HTTPException(status_code=404, detail="أمر الصيانة غير موجود")
+        ref = dict(order).get("order_number") or order_id
+        used = maintenance_stock.consume(db, cid, data.get("materials"), order_ref=ref, actor=actor)
+        return {"success": True, "data": used}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in use_materials: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"خطأ في الخادم: {str(e)}")
+
+
 @router.get("/assets")
 async def list_assets(request: Request, session=Depends(_require_client)):
     try:
