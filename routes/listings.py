@@ -78,9 +78,11 @@ async def vocabulary(request: Request):
     تظهر هناك، أو تُرسل قيمةٌ يرفضها الخادم بلا سبب مفهوم.
     """
     require_manager(request)
+    from db.schema_listings import kind_labels, amenity_labels
+    lang = request.query_params.get("lang", "ar")
     return {"success": True, "data": {
-        "kinds": [{"value": k, "label": v} for k, v in UNIT_KINDS.items()],
-        "amenities": [{"value": k, "label": v} for k, v in AMENITIES.items()],
+        "kinds": [{"value": k, "label": v} for k, v in kind_labels(lang).items()],
+        "amenities": [{"value": k, "label": v} for k, v in amenity_labels(lang).items()],
     }}
 
 
