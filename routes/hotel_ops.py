@@ -17,6 +17,7 @@ from app_core import (
     log,
     require_client,
 )
+from db.access import require_manager
 
 router = APIRouter()
 
@@ -53,10 +54,53 @@ async def get_guests(request: Request, limit: int = 100, session=Depends(require
     return {"success": True, "data": _present(guests[:limit], session)}
 
 
+@router.get("/api/guests/required-fields")
+async def guest_required_fields(request: Request, session=Depends(require_client)):
+    """الحقول المعروفة والإلزامية لهذه المنشأة — تبني عليها الواجهة التحقّق."""
+    from services import guest_fields
+    client = request.app.state.store.get_client(session["client_id"]) or {}
+    return {"success": True, "data": {
+        "fields": guest_fields.GUEST_FIELDS,
+        "required": guest_fields.get_required(client),
+    }}
+
+
+@router.post("/api/guests/required-fields")
+async def set_guest_required_fields(request: Request, session=Depends(require_manager)):
+    """يحفظ الحقول الإلزامية — مالك المنشأة/المدير وحدهما.
+
+    يُقرأ السجل كاملاً ويُعاد حفظه كي لا تُمَسّ بقيّة الإعدادات (ومنها حقول
+    الحساب في `_account`)."""
+    from services import guest_fields
+    data = await request.json()
+    fields = guest_fields.sanitize(data.get("required") or [])
+    store = request.app.state.store
+    client = store.get_client(session["client_id"])
+    if not client:
+        raise HTTPException(status_code=404, detail="المنشأة غير موجودة")
+    settings = dict(client.get("settings") or {})
+    settings["guest_required_fields"] = fields
+    client["settings"] = settings
+    store.save_client(client)
+    return {"success": True, "data": {"required": fields}}
+
+
 @router.post("/api/guests")
 async def save_guest(request: Request, session=Depends(require_client)):
     data = await request.json()
     store = request.app.state.store
+    # الحقول الإلزامية تُفرَض على الخادم — واجهةٌ تتحقّق وحدها لا تكفي.
+    from services import guest_fields
+    try:
+        _client = store.get_client(session["client_id"]) or {}
+    except Exception:
+        _client = {}
+    _missing = guest_fields.missing_required(data, guest_fields.get_required(_client))
+    if _missing:
+        raise HTTPException(status_code=422, detail={
+            "error": "حقول إلزامية ناقصة",
+            "fields": _missing,
+        })
     # `guests.id` عمود SERIAL تُسنده قاعدة البيانات — بخلاف `bookings.id`
     # الذي هو VARCHAR فيصحّ فيه معرّفٌ مولَّد. اختراع معرّفٍ ست عشري هنا
     # كان يُسقط الحفظ بـ٥٠٠ في كل مرة (`int()` على نصٍّ ست عشري داخل
