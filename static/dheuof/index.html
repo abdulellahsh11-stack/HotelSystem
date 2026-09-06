@@ -915,5 +915,27 @@ setTimeout(function(){
 <script src="/static/dheuof/shared/sidebar.js"></script>
 <script>StaticSidebar.mount({ activeId: "home", placeholder: "ابحث في البرامج..." });</script>
 <script src="/static/dheuof/shared/i18n.js" defer></script>
+<script>
+/* تقييد بطاقات البرامج بالصلاحية — القرار من الخادم.
+ * الموظّف الداخل يرى ما يخصّ دوره فقط؛ الزائر المجهول (401) يبقى العرض
+ * الكامل بوصفه واجهةً تسويقية. أي فشل يترك البطاقات كما هي (لا صفحة عمياء). */
+(function () {
+  document.addEventListener("DOMContentLoaded", function () {
+    fetch("/api/staff/programs", { credentials: "same-origin" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        if (!j || !j.success || !j.data || !Array.isArray(j.data.allowed)) return;
+        var allowed = {};
+        j.data.allowed.forEach(function (id) { allowed[id] = true; });
+        var tiles = document.querySelectorAll("[data-module-id]");
+        for (var i = 0; i < tiles.length; i++) {
+          var id = tiles[i].getAttribute("data-module-id");
+          if (!allowed[id]) tiles[i].hidden = true;
+        }
+      })
+      .catch(function () {});
+  });
+})();
+</script>
 </body>
 </html>

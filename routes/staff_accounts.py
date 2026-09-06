@@ -461,3 +461,13 @@ async def whoami(request: Request, session=Depends(require_client)):
             "is_owner": session.get("role", "owner") in ("owner", "gm"),
         },
     }
+
+
+@router.get("/programs")
+async def my_programs(request: Request, session=Depends(require_client)):
+    """
+    معرّفات البرامج التي يحقّ لصاحب الجلسة رؤيتها — تبني عليها الرئيسية ما
+    تُظهره من بطاقات، فتُخفى ما لا صلاحية له. القرار من الخادم لا الواجهة.
+    """
+    from services.programs import programs_for
+    return {"success": True, "data": {"allowed": programs_for(session)}}
