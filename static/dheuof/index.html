@@ -386,12 +386,12 @@
     </div>
   </a>
   <nav class="links">
-    <a href="/static/dheuof/modules/01-guests/index.html">البرامج</a>
+    <a href="/static/dheuof/modules/01-guests/index.html" data-i18n="nav.programs">البرامج</a>
     <a href="/marketing">الموقع التسويقي</a>
     <a href="/static/dheuof/slides/index.html">العرض التعريفي</a>
   </nav>
   <div class="actions">
-    <a class="lang">EN</a>
+    <a class="lang" data-i18n-toggle title="Language / اللغة">EN</a>
     <a class="cta" style="cursor:pointer" onclick="openCustomize()">⚙ تخصيص اللوحة</a>
     <a class="cta" style="margin-inline-start:8px">احجز عرضاً تجريبياً</a>
   </div>
@@ -914,5 +914,6 @@ setTimeout(function(){
 </script>
 <script src="/static/dheuof/shared/sidebar.js"></script>
 <script>StaticSidebar.mount({ activeId: "home", placeholder: "ابحث في البرامج..." });</script>
+<script src="/static/dheuof/shared/i18n.js" defer></script>
 </body>
 </html>

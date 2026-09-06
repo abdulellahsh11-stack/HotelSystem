@@ -68,6 +68,59 @@ AMENITIES = {
     "crib":         "سرير أطفال",
 }
 
+# المسمّيات الإنجليزية — نفس المفاتيح كي تبقى القيمة المخزَّنة واحدة والعرض
+# ثنائي اللغة. أي مفتاح ينقص هنا يعود إلى مسمّاه العربي (لا فراغ).
+UNIT_KINDS_EN = {
+    "room":       "Hotel room",
+    "suite":      "Suite",
+    "apartment":  "Apartment",
+    "chalet":     "Chalet",
+    "resort":     "Resort",
+    "farm":       "Farm",
+    "villa":      "Villa",
+    "camp":       "Camp",
+    "rest_house": "Rest house",
+}
+
+AMENITIES_EN = {
+    "wifi":         "Wi-Fi",
+    "parking":      "Private parking",
+    "pool":         "Pool",
+    "private_pool": "Private pool",
+    "kitchen":      "Kitchen",
+    "ac":           "Air conditioning",
+    "heating":      "Heating",
+    "tv":           "TV",
+    "washer":       "Washer",
+    "bbq":          "BBQ area",
+    "garden":       "Garden",
+    "gym":          "Gym",
+    "breakfast":    "Breakfast included",
+    "sea_view":     "Sea view",
+    "family_only":  "Families only",
+    "kids_ok":      "Children allowed",
+    "pets_ok":      "Pets allowed",
+    "accessible":   "Accessible",
+    "smoking":      "Smoking allowed",
+    "elevator":     "Elevator",
+    "workspace":    "Workspace",
+    "crib":         "Baby crib",
+}
+
+
+def kind_labels(lang: str = "ar") -> dict:
+    """مسمّيات الأنواع باللغة المطلوبة، مع العربية أساساً تُكمّل النقص."""
+    if str(lang).lower().startswith("en"):
+        return {k: UNIT_KINDS_EN.get(k, v) for k, v in UNIT_KINDS.items()}
+    return dict(UNIT_KINDS)
+
+
+def amenity_labels(lang: str = "ar") -> dict:
+    """مسمّيات المرافق باللغة المطلوبة، مع العربية أساساً تُكمّل النقص."""
+    if str(lang).lower().startswith("en"):
+        return {k: AMENITIES_EN.get(k, v) for k, v in AMENITIES.items()}
+    return dict(AMENITIES)
+
 LISTINGS_SCHEMA = """
 CREATE TABLE IF NOT EXISTS property_profile (
     client_id     VARCHAR(50) PRIMARY KEY,

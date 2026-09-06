@@ -1,0 +1,19 @@
+{
+  "app.name": "Dheuof",
+  "app.tagline": "Hotel & Serviced-Apartment Management System",
+  "action.login": "Log in",
+  "action.logout": "Log out",
+  "action.language": "العربية",
+  "action.open": "Open",
+  "nav.home": "Home",
+  "nav.programs": "Programs",
+  "programs.reception": "Front Desk",
+  "programs.guests": "Guests",
+  "programs.inventory": "Inventory",
+  "programs.maintenance": "Maintenance",
+  "programs.accounting": "Accounting",
+  "programs.pos": "Point of Sale",
+  "programs.reports": "Reports",
+  "programs.setup": "Setup",
+  "programs.settings": "Settings"
+}
