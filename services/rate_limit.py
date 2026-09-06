@@ -38,11 +38,17 @@ import os
 import threading
 import time
 from collections import OrderedDict
+from itertools import islice
 from typing import Optional
 
-# الحدود الافتراضية (طلب/دقيقة) — تُضبط من متغيّرات البيئة
-READ_LIMIT = int(os.environ.get("RATE_LIMIT_READ", "600"))
+# الحدود الافتراضية (طلب/دقيقة) — تُضبط من متغيّرات البيئة.
+# القراءة لا تُحدُّ (الحارس على مسارات الكتابة فقط)، فلا ثابت READ_LIMIT
+# يوهم عاملاً بأنه يستطيع خنق القراءة بينما لا شيء يقرؤه.
+#
+# طبقتان: حدٌّ لكل جلسة (فاعل) كي لا يخنق موظفو منشأةٍ بعضهم، وسقفٌ أعلى
+# لكل منشأة كي لا يُغرق مستأجرٌ المجمّعَ بفتح جلساتٍ كثيرة (كلٌّ بحدّها).
 WRITE_LIMIT = int(os.environ.get("RATE_LIMIT_WRITE", "180"))
+TENANT_LIMIT = int(os.environ.get("RATE_LIMIT_TENANT", "600"))
 ANON_LIMIT = int(os.environ.get("RATE_LIMIT_ANON", "60"))
 
 # سقف عدد المفاتيح المحفوظة — يمنع نمو الذاكرة بلا حدّ
@@ -60,12 +66,10 @@ def _prune(now: float) -> None:
     يُستدعى تحت القفل. الحدّ الأعلى للفحص يُبقي الكلفة ثابتة مهما كبر
     القاموس، فلا يتحوّل التنظيف نفسه إلى بطء.
     """
-    checked = 0
-    for key in list(_buckets.keys()):
-        if checked >= 64:
-            break
-        checked += 1
-        stamps = _buckets[key]
+    # نفحص أقدم ٦٤ مفتاحاً فقط. `islice` يُجسّد ٦٤ مفتاحاً لا القاموس كلّه،
+    # فتبقى الكلفة ثابتة مهما كبر — والنسخ إلى قائمة يسمح بالحذف أثناء الجولة.
+    for key in list(islice(_buckets, 64)):
+        stamps = _buckets.get(key)
         if not stamps or now - stamps[-1] > WINDOW_SECONDS:
             _buckets.pop(key, None)
 
@@ -113,5 +117,5 @@ def stats() -> dict:
     """لمحةٌ تشغيلية عن حالة الحدّ."""
     with _lock:
         return {"keys": len(_buckets), "max_keys": MAX_KEYS,
-                "read_limit": READ_LIMIT, "write_limit": WRITE_LIMIT,
+                "write_limit": WRITE_LIMIT, "tenant_limit": TENANT_LIMIT,
                 "anon_limit": ANON_LIMIT}

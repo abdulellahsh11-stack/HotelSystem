@@ -136,3 +136,34 @@ class TestRateLimitMiddleware:
         assert ca.post("/api/m06/employees").status_code == 429
         # B غير متأثّر بدلو A
         assert cb.post("/api/m06/employees").status_code != 429
+
+    def test_tenant_ceiling_caps_all_sessions_of_one_tenant(self, monkeypatch):
+        # حدّ الجلسة عالٍ كي لا يُطلَق أولاً، والسقف لكل منشأة منخفض
+        monkeypatch.setattr(rate_limit, "WRITE_LIMIT", 100)
+        monkeypatch.setattr(rate_limit, "TENANT_LIMIT", 3)
+        from datetime import datetime
+        now_iso = datetime.now().isoformat()
+        # جلستان مختلفتان لنفس المنشأة
+        _client_sessions["tok-1"] = {"client_id": "hotel-Z", "created_at": now_iso}
+        _client_sessions["tok-2"] = {"client_id": "hotel-Z", "created_at": now_iso}
+        c1 = TestClient(app, raise_server_exceptions=False)
+        c1.cookies.set("client_token", "tok-1")
+        c2 = TestClient(app, raise_server_exceptions=False)
+        c2.cookies.set("client_token", "tok-2")
+        # ثلاث كتابات موزّعة على الجلستين تمرّ، والرابعة تتجاوز سقف المنشأة
+        assert c1.post("/api/m06/employees").status_code != 429
+        assert c2.post("/api/m06/employees").status_code != 429
+        assert c1.post("/api/m06/employees").status_code != 429
+        assert c2.post("/api/m06/employees").status_code == 429  # فتح جلسات لا يتجاوز السقف
+
+    def test_expired_session_falls_back_to_anon_bucket(self, monkeypatch):
+        monkeypatch.setattr(rate_limit, "ANON_LIMIT", 2)
+        monkeypatch.setattr(rate_limit, "WRITE_LIMIT", 100)
+        # جلسة قديمة (created_at بعيد) — تُعامَل كمجهول فتقع في دلو العنوان
+        _client_sessions["tok-old"] = {"client_id": "hotel-Q",
+                                       "created_at": "2000-01-01T00:00:00"}
+        c = TestClient(app, raise_server_exceptions=False)
+        c.cookies.set("client_token", "tok-old")
+        assert c.post("/api/m06/employees").status_code != 429
+        assert c.post("/api/m06/employees").status_code != 429
+        assert c.post("/api/m06/employees").status_code == 429  # حدّ المجهول لا الكتابة

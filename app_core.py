@@ -597,30 +597,93 @@ async def api_rate_limit(request: Request, call_next):
     قليلة الكلفة والحجب الخاطئ لها أشدُّ إزعاجاً. المسارات ذات الحدّ الأضيق
     الخاصّ (الدخول والتسجيل) مستثناة كي لا يُضعِفها هذا الحدُّ الأوسع.
 
-    المفتاح من الجلسة على الخادم لا من أي مُدخل: مستأجرٌ داخلٌ يُحسب بمعرّف
-    منشأته (`WRITE_LIMIT`)، والمجهول بعنوانه (`ANON_LIMIT`) — فلا يُسقط
-    مستأجرٌ حدَّ آخر، ولا يفلت مجهولٌ بتدوير جلسةٍ لا يملكها.
+    التصنيف من **ذاكرة الجلسات وحدها** لا من قاعدة البيانات: لو استُعلمت
+    القاعدة لاختيار المفتاح، لأمكن مهاجماً يُدوّر كوكيات جلسةٍ عشوائية أن
+    يُجبر استعلاماً على المجمّع في كل طلب — أي أن الحارس يستهلك ما يحميه.
+
+    وطبقتان لمن له جلسةٌ صالحة في الذاكرة: حدٌّ لكل جلسة (`WRITE_LIMIT`)
+    كي لا يخنق موظفو منشأةٍ بعضهم، وسقفٌ أعلى لكل منشأة (`TENANT_LIMIT`)
+    كي لا يُغرق مستأجرٌ المجمّعَ بفتح جلساتٍ كثيرة. المجهول بعنوانه
+    (`ANON_LIMIT`)، والكوكي العشوائية لا تصيب الذاكرة فتقع في دلو العنوان.
     """
     if (request.method in ("POST", "PUT", "PATCH", "DELETE")
             and request.url.path.startswith("/api/")
             and request.url.path not in _RATE_LIMIT_EXEMPT):
         from services import rate_limit
 
-        try:
-            session = get_client_session(request)
-        except Exception:
-            session = None
+        token = _get_client_token(request)
+        session = None
+        if token:
+            with _lock:
+                session = _client_sessions.get(token)   # ذاكرة فقط — لا قاعدة
+            # جلسةٌ منتهية (لم تُنظَّف بعد) تُعامَل كمجهول — كي لا يختلف هذا
+            # المسار عن get_client_session في معنى «جلسةٍ صالحة».
+            if session:
+                try:
+                    from db.security import session_is_expired
+                    if session_is_expired(session):
+                        session = None
+                except Exception:
+                    pass
 
         if session and session.get("client_id"):
-            key, limit = f"t:{session['client_id']}", rate_limit.WRITE_LIMIT
+            allowed = (rate_limit.check(f"s:{token}", rate_limit.WRITE_LIMIT)
+                       and rate_limit.check(f"t:{session['client_id']}",
+                                            rate_limit.TENANT_LIMIT))
         else:
-            key, limit = f"ip:{client_ip(request)}", rate_limit.ANON_LIMIT
+            allowed = rate_limit.check(f"ip:{client_ip(request)}",
+                                       rate_limit.ANON_LIMIT)
 
-        if not rate_limit.check(key, limit):
+        if not allowed:
             return JSONResponse(
                 {"detail": "طلبات كثيرة — تجاوزت حدَّ المعدّل، أعد المحاولة بعد قليل"},
                 status_code=429,
             )
+    return await call_next(request)
+
+
+# طلبات الكتابة المُصادَقة بالكوكي معرّضة لتزوير الطلب عبر المواقع (CSRF).
+# `samesite=lax` على كل كوكي هو الدفاع الأول؛ هذا فحص Origin/Referer دفاعٌ
+# ثانٍ يرفض أي طلب كتابةٍ يحمل كوكي جلسة وأصلُه ليس من نطاقات ضيوف المعروفة.
+from urllib.parse import urlsplit as _urlsplit  # noqa: E402
+
+_CSRF_AUTH_COOKIES = ("client_token", "admin_token", "visitor_token")
+# أسماء المضيفات لا تُميّز حالة الأحرف (RFC 3986) — تُخزَّن وتُقارَن صغيرةً.
+_CSRF_ALLOWED_HOSTS = frozenset(
+    _urlsplit(o).netloc.lower() for o in _ALLOWED_ORIGINS if _urlsplit(o).netloc
+)
+
+
+def _same_host(request: Request) -> str:
+    """مضيف الطلب من ترويسة Host الخام (صغيرة).
+
+    لا نستعمل X-Forwarded-Host هنا: إنه رأسٌ يحدّده العميل، ولا يصلح أساساً
+    لقرار «سماح» أمني ما لم يضمن الوسيط تنظيفه. وHost يكفي ضد CSRF المتصفّح:
+    في الطلب المزوّر عبر موقعٍ آخر يضبط المتصفّح Host على خادمنا (الهدف) لا
+    على موقع المهاجم، بينما Origin يحمل موقعه — فيقع عدم التطابق فيُرفض. أي
+    أصلٍ أول طرفٍ آخر (مضيفٌ عام مختلف) يجب إدراجه في `CORS_ORIGINS`.
+    """
+    return (request.headers.get("host") or "").lower()
+
+
+@app.middleware("http")
+async def csrf_origin_guard(request: Request, call_next):
+    """دفاعٌ ثانٍ ضد CSRF: يتحقّق أن أصل طلب الكتابة المُصادَق بالكوكي موثوق.
+
+    يُفحَص فقط حين يحمل الطلب كوكي جلسة (client/admin/visitor) ومنهجه مُغيِّر
+    للحالة على `/api/*`. غياب Origin وReferer معاً يعني عميلاً غير متصفّح
+    (تطبيق/أداة) فلا يُطبَّق — المتصفّحات تُرسل Origin على طلبات الكتابة عبر
+    المواقع دائماً، وهي وحدها سطح خطر CSRF. الطلب من نفس المضيف يمرّ دائماً.
+    """
+    if (request.method in ("POST", "PUT", "PATCH", "DELETE")
+            and request.url.path.startswith("/api/")
+            and any(c in request.cookies for c in _CSRF_AUTH_COOKIES)):
+        src = request.headers.get("origin") or request.headers.get("referer")
+        if src:
+            host = _urlsplit(src).netloc.lower()
+            if host != _same_host(request) and host not in _CSRF_ALLOWED_HOSTS:
+                return JSONResponse(
+                    {"detail": "طلبٌ مرفوض — أصلٌ غير موثوق"}, status_code=403)
     return await call_next(request)
 
 
