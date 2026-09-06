@@ -160,6 +160,74 @@ async def update_booking(booking_id: str, request: Request, session=Depends(requ
 
 
 # ──────────────────────────────────────────────────────────────
+#  رحلة تسجيل الدخول — العقد ثم الضيافة (البند ٦)
+# ──────────────────────────────────────────────────────────────
+@router.get("/api/hospitality/consumables")
+async def get_hospitality_consumables(request: Request, session=Depends(require_client)):
+    """أصناف الضيافة وكميّاتها لهذه المنشأة — تُخصَم عند تسجيل الدخول."""
+    from services import hospitality
+    client = request.app.state.store.get_client(session["client_id"]) or {}
+    return {"success": True, "data": {"consumables": hospitality.get_consumables(client)}}
+
+
+@router.post("/api/hospitality/consumables")
+async def set_hospitality_consumables(request: Request, session=Depends(require_manager)):
+    """يحفظ أصناف الضيافة — المالك/المدير. يُعاد حفظ السجل كاملاً كي لا
+    تُمَسّ بقيّة الإعدادات (ومنها _account)."""
+    from services import hospitality
+    data = await request.json()
+    items = hospitality.sanitize(data.get("consumables") or [])
+    store = request.app.state.store
+    client = store.get_client(session["client_id"])
+    if not client:
+        raise HTTPException(status_code=404, detail="المنشأة غير موجودة")
+    settings = dict(client.get("settings") or {})
+    settings["hospitality_consumables"] = items
+    client["settings"] = settings
+    store.save_client(client)
+    return {"success": True, "data": {"consumables": items}}
+
+
+@router.post("/api/bookings/{booking_id}/checkin")
+async def checkin_booking(booking_id: str, request: Request, session=Depends(require_client)):
+    """تسجيل دخول النزيل: لا يتمّ حتى يُوقَّع العقد، وعنده تُخصَم الضيافة
+    من المخزون ويصير الحجز `checked_in` (الإشارة الخضراء في قائمة النزلاء)."""
+    from services import hospitality
+    data = await request.json()
+    if not hospitality.can_check_in(data.get("contract_signed")):
+        raise HTTPException(status_code=403, detail="يجب توقيع العقد قبل تسجيل الدخول")
+
+    store = request.app.state.store
+    cid = session["client_id"]
+    booking = store.get_booking(cid, booking_id) if hasattr(store, "get_booking") else None
+    if not booking:
+        booking = next((b for b in store.get_bookings(cid)
+                        if str(b.get("id")) == str(booking_id)), None)
+    if not booking:
+        raise HTTPException(status_code=404, detail="الحجز غير موجود")
+
+    booking = dict(booking)
+    booking["status"] = "checked_in"
+    store.save_booking(cid, booking)
+
+    consumed = {}
+    try:
+        client = store.get_client(cid) or {}
+        plan = hospitality.plan_consumption(
+            hospitality.get_consumables(client),
+            nights=int(data.get("nights", 1) or 1),
+            guests=int(data.get("guests", 1) or 1),
+        )
+        consumed = hospitality.apply_consumption(request.app.state.db, cid, plan)
+    except Exception:
+        # خصم الضيافة أفضل-جهد: لا يمنع تسجيل الدخول، ولا يسقط صامتاً
+        log.warning("تعذّر خصم الضيافة عند تسجيل دخول الحجز %s", booking_id)
+
+    return {"success": True, "data": {
+        "id": booking_id, "status": "checked_in", "consumed": consumed}}
+
+
+# ──────────────────────────────────────────────────────────────
 #  Invoices
 # ──────────────────────────────────────────────────────────────
 @router.get("/api/invoices")
